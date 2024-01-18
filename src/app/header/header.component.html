@@ -1,0 +1,33 @@
+<header>
+  <div class="logo">
+    <a href="#" class="home-link">Home</a>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="#" class="nav-link">Game Editor</a></li>
+      <li><a href="#" class="nav-link">Last Games</a></li>
+    </ul>
+  </nav>
+  <div class="user-section">
+    <div class="user-info">
+      <a href="#" class="avatar-link">
+        <object data="account_circle.svg" height="24" width="24"></object>
+      </a>
+      <div class="user-dropdown">
+        <button class="logout-button">Logout</button>
+      </div>
+    </div>
+    <div class="login-section">
+      <button class="login-button" onclick="openLoginForm()">Login</button>
+      <div class="login-form" id="loginForm" style="display: none;">
+        <!-- Your login form HTML goes here -->
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password">
+        <button onclick="closeLoginForm()">Close</button>
+        <button onclick="login()">Login</button>
+      </div>
+    </div>
+  </div>
+</header>
