@@ -1,5 +1,6 @@
 /* Importing Roboto font for Material Design */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+@import '../app.component';
 
 body {
   font-family: 'Roboto', sans-serif;
@@ -8,7 +9,7 @@ body {
 }
 
 header {
-  background-color: #4CAF50;
+  background-color: $shvatka_green;
   color: #fff;
   padding: 10px;
   display: flex;
@@ -81,7 +82,7 @@ nav li {
   left: 0;
   background-color: #fff;
   padding: 10px;
-  border: 1px solid #4CAF50;
+  border: 1px solid $shvatka_green;
   border-radius: 5px;
   display: flex;
   flex-direction: column;
@@ -100,7 +101,7 @@ nav li {
 }
 
 .login-form button {
-  background-color: #4CAF50;
+  background-color: $shvatka_green;
   color: #fff;
   border: none;
   border-radius: 5px;
