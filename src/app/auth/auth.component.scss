@@ -4,3 +4,114 @@
 .visible {
   display: unset;
 }
+
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+.logo a {
+  color: #fff;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+nav li {
+  margin-right: 20px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+}
+
+.avatar-link i {
+  font-size: 36px;
+  margin-right: 10px;
+}
+
+.user-dropdown {
+  position: relative;
+}
+
+.user-link {
+  text-decoration: none;
+  color: #fff;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.logout-button, .login-button {
+  background-color: transparent;
+  color: #fff;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+#loginFormBackCover {
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+#loginForm {
+  display: flex;
+  align-items: center;
+  margin: 30%;
+  height: 200px;
+  width: 200px;
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #4CAF50;
+  border-radius: 5px;
+  flex-direction: column;
+  z-index: 1;
+}
+
+.login-form label {
+  margin-bottom: 5px;
+}
+
+.login-form input {
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.login-form button {
+  background-color: #4CAF50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
