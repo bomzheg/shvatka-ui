@@ -1,23 +1,36 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {Injectable} from '@angular/core';
 import {AuthComponent} from "./auth.component";
+import {HttpAdapter} from "../http.adapter";
+
+export class AuthResponse {
+  access_token: string | undefined;
+  token_type: string | undefined;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'https://nemesis.bomzheg.dev/shvatka_test';
   private authComponent: AuthComponent | undefined;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpAdapter) {
+  }
 
   async login(username: string, password: string) {
+    this.postLoginForm(username, password)
+      .subscribe(r => localStorage.setItem("jwt", JSON.stringify(r)) );
+    this.authComponent?.closeLoginForm();
+    this.authComponent?.updateUser();
+  }
+
+  private postLoginForm(username: string, password: string) {
     const formData = new FormData();
     formData.append("username", username);
     formData.append("password", password);
-    console.log(formData)
-    await this.http.post(`${this.apiUrl}/auth/token`, formData)
-      .forEach(r => console.log(r));
+    return this.http.post<AuthResponse>(
+      '/auth/token',
+      formData,
+    )
   }
 
   registerCallback(authComponent: AuthComponent) {
