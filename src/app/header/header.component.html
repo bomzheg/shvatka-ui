@@ -18,16 +18,8 @@
       </div>
     </div>
     <div class="login-section">
-      <button class="login-button" onclick="openLoginForm()">Login</button>
-      <div class="login-form" id="loginForm" style="display: none;">
-        <!-- Your login form HTML goes here -->
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username">
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password">
-        <button onclick="closeLoginForm()">Close</button>
-        <button onclick="login()">Login</button>
-      </div>
+      <button class="login-button" (click)="openLoginForm()">Login</button>
     </div>
   </div>
 </header>
+<app-auth [visible]="true"/>

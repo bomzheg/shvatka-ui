@@ -1,0 +1,8 @@
+<div *ngIf="visible" id="loginForm">
+  <label for="username">Username:</label>
+  <input type="text" id="username" name="username" [(ngModel)]="username">
+  <label for="password">Password:</label>
+  <input type="password" id="password" name="password" [(ngModel)]="password">
+  <button (click)="closeLoginForm()">Close</button>
+  <button (click)="login(username, password)">Login</button>
+</div>
