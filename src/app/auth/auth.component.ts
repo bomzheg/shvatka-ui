@@ -23,12 +23,8 @@ export class AuthComponent {
     authService.registerCallback(this);
   }
 
-  login(username: string | undefined, password: string | undefined) {
-    if (username === undefined || password === undefined) {
-      console.log("username or password is undefined");
-      return;
-    }
-    this.authService.login(username, password);
+  async login(username: string | undefined, password: string | undefined) {
+    await this.authService.login(username!, password!);
   }
 
   closeLoginForm() {

@@ -1,12 +1,5 @@
-.hidden {
-  display: none;
-}
-.visible {
-  display: unset;
-}
-
-
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+@import '../app.component';
 
 .logo a {
   color: #fff;
@@ -82,13 +75,13 @@ nav li {
 #loginForm {
   display: flex;
   align-items: center;
-  margin: 30%;
-  height: 200px;
-  width: 200px;
+  margin: 10% auto;
+  height: 40%;
+  width: 40%;
   background-color: #fff;
   padding: 10px;
-  border: 1px solid #4CAF50;
-  border-radius: 5px;
+  border: 1px solid $shvatka_green;
+  border-radius: 10px;
   flex-direction: column;
   z-index: 1;
 }
@@ -105,7 +98,7 @@ nav li {
 }
 
 .login-form button {
-  background-color: #4CAF50;
+  background-color: $shvatka_green;
   color: #fff;
   border: none;
   border-radius: 5px;
