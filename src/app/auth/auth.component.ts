@@ -17,9 +17,7 @@ import {NgClass, NgIf} from "@angular/common";
 export class AuthComponent {
   username: string | undefined;
   password: string | undefined;
-  @Input("visible")
-  visible: boolean = false;
-  constructor(private authService: AuthService) {
+  constructor(public authService: AuthService) {
   }
 
   login(username: string | undefined, password: string | undefined) {
@@ -31,11 +29,11 @@ export class AuthComponent {
   }
 
   closeLoginForm() {
-    this.visible = false;
+    this.authService.show = false;
   }
 
-  openLoginForm() {
-    this.visible = true;
+  public openLoginForm() {
+    this.authService.show = true;
   }
 
 }

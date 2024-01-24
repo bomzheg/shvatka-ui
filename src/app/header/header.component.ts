@@ -1,6 +1,7 @@
 import {Component, ViewChild} from '@angular/core';
 import {NgOptimizedImage} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
+import {AuthService} from "../auth/auth.service";
 
 @Component({
   selector: 'app-header',
@@ -13,11 +14,12 @@ import {AuthComponent} from "../auth/auth.component";
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-  authVisible = true;
+  constructor(private authService: AuthService) {
+  }
 
 
   openLoginForm() {
-    this.authVisible = true;
+    this.authService.show = true
   }
 
 }

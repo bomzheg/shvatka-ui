@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
   private apiUrl = 'https://nemesis.bomzheg.dev/shvatka_test/';
+  public show = false;
 
   constructor(private http: HttpClient) { }
 
