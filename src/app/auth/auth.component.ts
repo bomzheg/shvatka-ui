@@ -1,7 +1,7 @@
-import {Component, Input} from '@angular/core';
+import {Component} from '@angular/core';
 import {AuthService} from "./auth.service";
 import {FormsModule} from "@angular/forms";
-import {NgClass, NgIf} from "@angular/common";
+import {NgClass, NgIf, NgStyle} from "@angular/common";
 
 @Component({
   selector: 'app-auth',
@@ -9,7 +9,8 @@ import {NgClass, NgIf} from "@angular/common";
   imports: [
     FormsModule,
     NgClass,
-    NgIf
+    NgIf,
+    NgStyle
   ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
@@ -17,7 +18,9 @@ import {NgClass, NgIf} from "@angular/common";
 export class AuthComponent {
   username: string | undefined;
   password: string | undefined;
+  isVisible: boolean = false;
   constructor(public authService: AuthService) {
+    authService.registerCallback(this);
   }
 
   login(username: string | undefined, password: string | undefined) {
@@ -29,11 +32,11 @@ export class AuthComponent {
   }
 
   closeLoginForm() {
-    this.authService.show = false;
+    this.isVisible = false;
   }
 
   public openLoginForm() {
-    this.authService.show = true;
+    this.isVisible = true;
   }
 
 }

@@ -1,4 +1,4 @@
-<div *ngIf="false" id="loginForm">
+<div [ngClass]="isVisible ? 'visible' : 'hidden'" id="loginForm">
   <label for="username">Username:</label>
   <input type="text" id="username" name="username" [(ngModel)]="username">
   <label for="password">Password:</label>

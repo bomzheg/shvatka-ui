@@ -1,4 +1,4 @@
-import {Component, ViewChild} from '@angular/core';
+import {Component} from '@angular/core';
 import {NgOptimizedImage} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
@@ -19,7 +19,7 @@ export class HeaderComponent {
 
 
   openLoginForm() {
-    this.authService.show = true
+    this.authService.showLoginForm();
   }
 
 }
