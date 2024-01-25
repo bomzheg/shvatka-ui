@@ -1,4 +1,5 @@
 # Shvatka
+[![wakatime](https://wakatime.com/badge/user/929ee39b-4eb0-4076-ab5e-5ade3c56e464/project/018bab70-cb63-4b53-8fa5-b8b6632b06bd.svg)](https://wakatime.com/badge/user/929ee39b-4eb0-4076-ab5e-5ade3c56e464/project/018bab70-cb63-4b53-8fa5-b8b6632b06bd)
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.0.10.
 
