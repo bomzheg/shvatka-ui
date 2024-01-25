@@ -18,9 +18,11 @@ export class AuthService {
 
   async login(username: string, password: string) {
     this.postLoginForm(username, password)
-      .subscribe(r => localStorage.setItem("jwt", JSON.stringify(r)) );
+      .subscribe(r => {
+        localStorage.setItem("jwt", JSON.stringify(r));
+        this.authComponent?.updateUser();
+      } );
     this.authComponent?.closeLoginForm();
-    this.authComponent?.updateUser();
   }
 
   private postLoginForm(username: string, password: string) {
