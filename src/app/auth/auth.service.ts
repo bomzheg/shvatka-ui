@@ -18,9 +18,9 @@ export class AuthService {
 
   async login(username: string, password: string) {
     this.postLoginForm(username, password)
-      .subscribe(r => {
+      .subscribe(async r => {
         localStorage.setItem("jwt", JSON.stringify(r));
-        this.authComponent?.updateUser();
+        await this.authComponent?.updateUser();
       } );
     this.authComponent?.closeLoginForm();
   }
@@ -43,4 +43,7 @@ export class AuthService {
     this.authComponent?.openLoginForm();
   }
 
+  logout() {
+    localStorage.removeItem("jwt");
+  }
 }

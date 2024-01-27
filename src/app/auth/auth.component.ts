@@ -36,7 +36,7 @@ export class AuthComponent {
     this.isVisible = true;
   }
 
-  updateUser() {
-    this.userService.getMe().subscribe(r => console.log(r))
+  async updateUser() {
+    await this.userService.loadMe()
   }
 }

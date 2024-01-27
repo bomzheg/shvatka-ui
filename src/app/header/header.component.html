@@ -10,14 +10,15 @@
   </nav>
   <div class="user-section">
     <div class="user-info">
-      <a href="#" class="avatar-link">
+      <a href="#" class="avatar-link" [ngClass]="isAuthenticated()?'':'hidden'">
         <object data="account_circle.svg" height="24" width="24"></object>
+        <p>{{getMe()?.username}}</p>
       </a>
-      <div class="user-dropdown">
-        <button class="logout-button">Logout</button>
+      <div class="user-dropdown" >
+        <button class="logout-button" (click)="logout()">Logout</button>
       </div>
     </div>
-    <div class="login-section">
+    <div class="login-section"  [ngClass]="isAuthenticated()?'hidden':''" >
       <button class="login-button" (click)="openLoginForm()">Login</button>
     </div>
   </div>
