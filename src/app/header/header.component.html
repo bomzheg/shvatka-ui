@@ -9,8 +9,8 @@
     </ul>
   </nav>
   <div class="user-section">
-    <div class="user-info">
-      <a href="#" class="avatar-link" [ngClass]="isAuthenticated()?'':'hidden'">
+    <div class="user-info" [ngClass]="{hidden: !isAuthenticated(), flex: isAuthenticated()}">
+      <a href="#" class="avatar-link">
         <object data="account_circle.svg" height="24" width="24"></object>
         <p>{{getMe()?.username}}</p>
       </a>
@@ -18,7 +18,7 @@
         <button class="logout-button" (click)="logout()">Logout</button>
       </div>
     </div>
-    <div class="login-section"  [ngClass]="isAuthenticated()?'hidden':''" >
+    <div class="login-section"  [ngClass]='{hidden: isAuthenticated(), flex: !isAuthenticated()}' >
       <button class="login-button" (click)="openLoginForm()">Login</button>
     </div>
   </div>
