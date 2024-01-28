@@ -2,6 +2,10 @@
 .editorconfig
 /node_modules
 /e2e
+/.nx
+/dist
+/.angular
+/.github
 /docs
 .gitignore
 *.zip
