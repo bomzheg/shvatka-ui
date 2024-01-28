@@ -13,4 +13,5 @@ export const appConfig: ApplicationConfig = {
 })
 export class ShvatkaConfig {
   apiUrl = 'https://nemesis.bomzheg.dev/shvatka_test';
+  botUsername = "shvatkatestbot";
 }

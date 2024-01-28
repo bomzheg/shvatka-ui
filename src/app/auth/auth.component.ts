@@ -1,8 +1,9 @@
-import {Component} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
 import {AuthService} from "./auth.service";
 import {FormsModule} from "@angular/forms";
 import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {UserService} from "./user.service";
+import {ShvatkaConfig} from "../app.config";
 
 @Component({
   selector: 'app-auth',
@@ -16,11 +17,18 @@ import {UserService} from "./user.service";
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
 })
-export class AuthComponent {
+export class AuthComponent implements AfterViewInit {
   username: string | undefined;
   password: string | undefined;
   isVisible: boolean = false;
-  constructor(public authService: AuthService, private userService: UserService) {
+  public authPath = "/auth/login/data"
+  @ViewChild('script', {static: true}) script: ElementRef | undefined;
+
+  constructor(
+    public authService: AuthService,
+    private userService: UserService,
+    private config: ShvatkaConfig,
+  ) {
     authService.registerCallback(this);
   }
 
@@ -38,5 +46,19 @@ export class AuthComponent {
 
   async updateUser() {
     await this.userService.loadMe()
+  }
+  convertToScript() {
+    const element = this.script?.nativeElement;
+    const script = document.createElement('script');
+    script.src = 'https://telegram.org/js/telegram-widget.js?21';
+    script.setAttribute('data-telegram-login', this.config.botUsername);
+    script.setAttribute('data-size', 'large');
+    script.setAttribute('data-auth-url', this.config.apiUrl + this.authPath);
+    script.setAttribute('data-request-access', 'write');
+    element.parentElement.replaceChild(script, element);
+  }
+
+  ngAfterViewInit() {
+    this.convertToScript();
   }
 }

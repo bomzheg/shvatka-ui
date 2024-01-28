@@ -1,10 +1,13 @@
 <div [ngClass]="isVisible ? 'visible' : 'hidden'" id="loginFormBackCover">
-<form class="login-form" id="loginForm">
-  <label for="username">Username:</label>
-  <input type="text" id="username" name="username" [(ngModel)]="username">
-  <label for="password">Password:</label>
-  <input type="password" id="password" name="password" [(ngModel)]="password">
-  <button (click)="closeLoginForm()">Close</button>
-  <button (click)="login(username, password)">Login</button>
-</form>
+  <form class="login-form" id="loginForm">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" [(ngModel)]="username">
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" [(ngModel)]="password">
+    <button (click)="closeLoginForm()">Close</button>
+    <button (click)="login(username, password)">Login</button>
+  </form>
+  <div #script style='{display: none}'>
+    <ng-content></ng-content>
+  </div>
 </div>
