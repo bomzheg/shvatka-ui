@@ -3,6 +3,7 @@ import {provideRouter} from '@angular/router';
 
 import {routes} from './app.routes';
 import {provideHttpClient} from "@angular/common/http";
+import {environment} from "../environments/environment";
 
 export const appConfig: ApplicationConfig = {
   providers: [provideRouter(routes), provideHttpClient()]
@@ -12,6 +13,10 @@ export const appConfig: ApplicationConfig = {
   providedIn: "root",
 })
 export class ShvatkaConfig {
-  apiUrl = 'https://nemesis.bomzheg.dev/shvatka_test';
-  botUsername = "shvatkatestbot";
+  apiUrl: string;
+  botUsername: string;
+  constructor() {
+    this.apiUrl = environment.apiUrl
+    this.botUsername = environment.botUsername
+  }
 }
