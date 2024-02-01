@@ -3,6 +3,7 @@ import {NgClass, NgOptimizedImage, NgStyle} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
 import {UserService} from "../auth/user.service";
+import {RouterLink, RouterLinkActive} from "@angular/router";
 
 @Component({
   selector: 'app-header',
@@ -12,6 +13,8 @@ import {UserService} from "../auth/user.service";
     AuthComponent,
     NgClass,
     NgStyle,
+    RouterLink,
+    RouterLinkActive,
   ],
   templateUrl: 'header.component.html',
   styleUrl: './header.component.scss',
