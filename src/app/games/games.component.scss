@@ -2,13 +2,35 @@
 
 .games-list {
   list-style: none;
+  padding-left: 0;
 }
 
 .games-list-item {
-  border: $shvatka_green;
+  padding: 5px;
+  border: 1px solid $shvatka_green;
+  border-radius: 10px;
+  margin-bottom: 10px;
 }
 
 .games-list-item a {
   text-decoration: none;
   color: #000;
+  box-sizing: border-box;
+  display: block;
 }
+.games-list-item div {
+  display: inline-block;
+  padding: 5px;
+  margin-right: 10px;
+}
+
+.game-number {
+  width: 20px;
+}
+
+.game-name {
+  width: 90%;
+  text-align: center;
+  align-content: center;
+}
+
