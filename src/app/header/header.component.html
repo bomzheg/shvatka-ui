@@ -1,11 +1,11 @@
 <header>
   <div class="logo">
-    <a routerLink="" routerLinkActive="active" ariaCurrentWhenActive="page" class="home-link">Home</a>
+    <a routerLink="" routerLinkActive="active" ariaCurrentWhenActive="page" class="home-link">Схватка</a>
   </div>
   <nav>
     <ul>
-      <li><a href="#" class="nav-link">Game Editor</a></li>
-      <li><a routerLink="games" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-link">Last Games</a></li>
+      <li><a href="#" class="nav-link">Редактор сценария</a></li>
+      <li><a routerLink="games" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-link">Прошедшие игры</a></li>
     </ul>
   </nav>
   <div class="user-section">
@@ -15,11 +15,11 @@
         <p>{{getMe()?.username}}</p>
       </a>
       <div class="user-dropdown" >
-        <button class="logout-button" (click)="logout()">Logout</button>
+        <button class="logout-button" (click)="logout()">Выйти</button>
       </div>
     </div>
     <div class="login-section"  [ngClass]='{hidden: isAuthenticated(), flex: !isAuthenticated()}' >
-      <button class="login-button" (click)="openLoginForm()">Login</button>
+      <button class="login-button" (click)="openLoginForm()">Войти</button>
     </div>
   </div>
 </header>
