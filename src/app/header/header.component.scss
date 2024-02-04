@@ -1,6 +1,6 @@
 /* Importing Roboto font for Material Design */
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-@import '../app.component';
+@import "../../styles";
 
 body {
   font-family: 'Roboto', sans-serif;

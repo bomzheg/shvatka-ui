@@ -1,1 +1,9 @@
-<p>games works!</p>
+<h4>games:</h4>
+<ul class="games-list">
+  @for (game of getGames(); track game.id) {
+    <li class="games-list-item"><a routerLink="{{game.id}}" routerLinkActive="active" ariaCurrentWhenActive="page">
+      <span class="game-number">{{game.number}}</span>
+      <span class="game-name">{{game.name}}</span>
+    </a></li>
+  }
+</ul>

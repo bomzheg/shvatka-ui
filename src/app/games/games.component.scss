@@ -1,0 +1,14 @@
+@import "../../styles";
+
+.games-list {
+  list-style: none;
+}
+
+.games-list-item {
+  border: $shvatka_green;
+}
+
+.games-list-item a {
+  text-decoration: none;
+  color: #000;
+}
