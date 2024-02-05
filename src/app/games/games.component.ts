@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Game, GameService} from "./game.service";
+import {Game, GamesService} from "./games.service";
 import {RouterLink, RouterLinkActive} from "@angular/router";
 
 @Component({
@@ -13,15 +13,15 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
   styleUrl: './games.component.scss'
 })
 export class GamesComponent implements OnInit {
-  constructor(private gameService: GameService) {
+  constructor(private gamesService: GamesService) {
   }
 
   getGames(): [Game] {
-    return this.gameService.games!;
+    return this.gamesService.games!;
   }
 
   ngOnInit(): void {
-        this.gameService.loadGamesList();
+        this.gamesService.loadGamesList();
     }
 
 }

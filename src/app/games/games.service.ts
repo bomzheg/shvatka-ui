@@ -18,7 +18,7 @@ export class Game {
 @Injectable({
   providedIn: 'root'
 })
-export class GameService {
+export class GamesService {
   get games(): [Game] | undefined {
     return this._games;
   }
