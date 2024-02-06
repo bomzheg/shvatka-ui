@@ -1,21 +1,23 @@
-<h2>{{getGame().name}}</h2>
-<div>
+<h2 class="game-name">{{ getGame().name }}</h2>
+<div class="scenario">
   @for (level of getGame().levels; track level.db_id) {
-    <p>Уровень №{{level.number_in_game! + 1}} ({{level.name_id}})</p>
-    <p>Ключи: </p>
-    <ul>
+    <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
+    <h4 class="level-keys-header">Ключи: </h4>
+    <ul class="level-keys">
       @for (key of level.scenario.keys; track key) {
-        <li>{{key}}</li>
+        <li class="level-key">{{ key }}</li>
       }
     </ul>
-    <p>Подсказки:</p>
-    <ul>
-    @for (timeHint of level.scenario.time_hints; track timeHint.time) {
-      <p>Подсказка {{timeHint.time}} мин.</p>
-      @for (hint of timeHint.hint; track hint) {
-        <p>{{hint.text}}</p>
+    <h4 class="hints-header">Подсказки:</h4>
+    <ul class="hints">
+      @for (timeHint of level.scenario.time_hints; track timeHint.time) {
+        <li>
+          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
+          @for (hint of timeHint.hint; track hint) {
+            <p class="hint-text">{{ hint.text }}</p>
+          }
+        </li>
       }
-    }
     </ul>
   }
 </div>
