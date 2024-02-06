@@ -1,4 +1,21 @@
 <h2>{{getGame().name}}</h2>
 <div>
-
+  @for (level of getGame().levels; track level.db_id) {
+    <p>Уровень №{{level.number_in_game! + 1}} ({{level.name_id}})</p>
+    <p>Ключи: </p>
+    <ul>
+      @for (key of level.scenario.keys; track key) {
+        <li>{{key}}</li>
+      }
+    </ul>
+    <p>Подсказки:</p>
+    <ul>
+    @for (timeHint of level.scenario.time_hints; track timeHint.time) {
+      <p>Подсказка {{timeHint.time}} мин.</p>
+      @for (hint of timeHint.hint; track hint) {
+        <p>{{hint.text}}</p>
+      }
+    }
+    </ul>
+  }
 </div>

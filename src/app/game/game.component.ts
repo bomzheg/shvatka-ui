@@ -24,4 +24,5 @@ export class GameComponent implements OnInit {
       return this.gameService.getGame();
     }
 
+  protected readonly JSON = JSON;
 }
