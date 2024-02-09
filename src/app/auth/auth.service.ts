@@ -2,11 +2,6 @@ import {Injectable} from '@angular/core';
 import {AuthComponent} from "./auth.component";
 import {HttpAdapter} from "../http.adapter";
 
-export class AuthResponse {
-  access_token: string | undefined;
-  token_type: string | undefined;
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -16,20 +11,19 @@ export class AuthService {
   constructor(private http: HttpAdapter) {
   }
 
-  async login(username: string, password: string) {
-    this.postLoginForm(username, password)
-      .subscribe(async r => {
-        localStorage.setItem("jwt", JSON.stringify(r));
-        await this.authComponent?.updateUser();
-      } );
-    this.authComponent?.closeLoginForm();
+  login(username: string, password: string) {
+    this.postLoginForm(username, password).subscribe(async unused => {
+      this.authComponent?.closeLoginForm();
+      await this.authComponent?.updateUser();
+    });
   }
 
   private postLoginForm(username: string, password: string) {
     const formData = new FormData();
     formData.append("username", username);
     formData.append("password", password);
-    return this.http.post<AuthResponse>(
+
+    return this.http.postWithoutCookies<any>(
       '/auth/token',
       formData,
     )

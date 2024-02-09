@@ -32,8 +32,8 @@ export class AuthComponent implements AfterViewInit {
     authService.registerCallback(this);
   }
 
-  async login(username: string | undefined, password: string | undefined) {
-    await this.authService.login(username!, password!);
+  login(username: string | undefined, password: string | undefined) {
+    this.authService.login(username!, password!);
   }
 
   closeLoginForm() {
