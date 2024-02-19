@@ -11,7 +11,8 @@ body {
 header {
   background-color: $shvatka_green;
   color: #fff;
-  padding: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22,6 +23,7 @@ header {
   text-decoration: none;
   font-size: 18px;
   font-weight: bold;
+  margin-left: 10px;
 }
 
 nav ul {
@@ -68,6 +70,7 @@ nav li {
   border: none;
   font-size: 14px;
   cursor: pointer;
+  margin-right: 10px;
 }
 
 .login-section {
