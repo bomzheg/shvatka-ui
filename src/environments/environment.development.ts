@@ -1,5 +1,5 @@
 export const environment = {
-  apiUrl: "https://nemesis.bomzheg.dev/shvatka_dev/api",
+  apiUrl: "http://localhost:8000/api",
   botUsername: "shvatkatestbot",
   baseHref: "/",
 };

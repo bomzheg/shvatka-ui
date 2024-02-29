@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {GameService} from "./game.service";
+import {GameService, HintType} from "./game.service";
 import {ActivatedRoute} from "@angular/router";
+import {environment} from "../../environments/environment";
 
 @Component({
   selector: 'app-game',
@@ -24,5 +25,7 @@ export class GameComponent implements OnInit {
       return this.gameService.getGame();
     }
 
+  protected readonly HintType = HintType;
+  protected readonly environment = environment;
   protected readonly JSON = JSON;
 }

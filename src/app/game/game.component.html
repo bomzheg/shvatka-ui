@@ -14,7 +14,19 @@
         <li>
           <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
           @for (hint of timeHint.hint; track hint) {
-            <p class="hint-text">{{ hint.text }}</p>
+            @switch (hint.type) {
+              @case (HintType.text) {
+                <p class="hint-text">{{ hint.text }}</p>
+              }
+              @case (HintType.photo) {
+                <img [src]="environment.apiUrl + '/games/' + getGame().id + '/files/' +hint.file_guid"
+                     alt="hint content"
+                >
+              }
+              @default {
+                <pre>{{JSON.stringify(hint)}}</pre>
+              }
+            }
           }
         </li>
       }
