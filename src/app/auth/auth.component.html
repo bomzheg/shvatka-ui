@@ -6,8 +6,12 @@
     <input type="password" id="password" name="password" [(ngModel)]="password">
     <button (click)="closeLoginForm()">Закрыть</button>
     <button (click)="login(username, password)">Войти</button>
+
+    <div class="tg-login-widget">
+      <div #script style='{display: none}'>
+        <ng-content></ng-content>
+      </div>
+    </div>
   </form>
-  <div #script style='{display: none}'>
-    <ng-content></ng-content>
-  </div>
+
 </div>
