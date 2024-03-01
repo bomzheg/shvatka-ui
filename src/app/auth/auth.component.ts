@@ -59,6 +59,6 @@ export class AuthComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    //this.convertToScript();
+    this.convertToScript();
   }
 }
