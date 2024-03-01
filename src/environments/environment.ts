@@ -1,6 +1,6 @@
 
 export const environment = {
-  apiUrl: "https://shvatka-test.bomzheg.dev/shvatka_test/api",
+  apiUrl: "https://shvatka-test.bomzheg.dev/api",
   botUsername: "shvatkatestbot",
   baseHref: "/",
 };
