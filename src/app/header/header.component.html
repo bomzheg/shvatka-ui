@@ -11,7 +11,7 @@
   <div class="user-section">
     <div class="user-info" [ngClass]="{hidden: !isAuthenticated(), flex: isAuthenticated()}">
       <a href="#" class="avatar-link">
-        <object data="account_circle.svg" height="24" width="24"></object>
+        <mat-icon svgIcon="account-circle"/>
         <p>{{getMe()?.username}}</p>
       </a>
       <div class="user-dropdown" >

@@ -1,8 +1,10 @@
 import {Component} from '@angular/core';
+import {MatIconRegistry} from '@angular/material/icon';
 import {APP_BASE_HREF, CommonModule} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
 import {HeaderComponent} from "./header/header.component";
 import {environment} from "../environments/environment";
+import {DomSanitizer} from "@angular/platform-browser";
 
 @Component({
   selector: 'app-root',
@@ -16,4 +18,13 @@ import {environment} from "../environments/environment";
 })
 export class AppComponent {
   title = 'shvatka';
+  constructor(
+    private matIconRegistry: MatIconRegistry,
+    private domSanitizer:DomSanitizer,
+  ) {
+    this.matIconRegistry.addSvgIcon(
+      "account-circle",
+      domSanitizer.bypassSecurityTrustResourceUrl('/assets/account_circle.svg')
+    )
+  }
 }

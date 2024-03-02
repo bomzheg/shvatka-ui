@@ -4,6 +4,7 @@ import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
 import {UserService} from "../auth/user.service";
 import {RouterLink, RouterLinkActive} from "@angular/router";
+import {MatIcon} from "@angular/material/icon";
 
 @Component({
   selector: 'app-header',
@@ -15,6 +16,7 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
     NgStyle,
     RouterLink,
     RouterLinkActive,
+    MatIcon,
   ],
   templateUrl: 'header.component.html',
   styleUrl: './header.component.scss',
