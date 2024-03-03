@@ -19,9 +19,17 @@
                 <p class="hint-text">{{ hint.text }}</p>
               }
               @case (HintType.photo) {
-                <img [src]="environment.apiUrl + '/games/' + getGame().id + '/files/' +hint.file_guid"
+                <img [src]="getFileUrl(hint)"
                      alt="hint content"
                 >
+              }
+              @case (HintType.animation) {
+                <img [src]="getFileUrl(hint)"
+                     alt="hint content"
+                >
+              }
+              @case (HintType.video) {
+                <video [src]="getFileUrl(hint)"></video>
               }
               @default {
                 <pre>{{JSON.stringify(hint)}}</pre>

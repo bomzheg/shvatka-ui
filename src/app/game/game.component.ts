@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {GameService, HintType} from "./game.service";
+import {GameService, HintPart, HintType} from "./game.service";
 import {ActivatedRoute} from "@angular/router";
 import {environment} from "../../environments/environment";
 
@@ -23,6 +23,10 @@ export class GameComponent implements OnInit {
 
     getGame() {
       return this.gameService.getGame();
+    }
+
+    getFileUrl(hint: HintPart) {
+      return `${environment.apiUrl}/games/${this.getGame().id}/files/${hint.file_guid}`
     }
 
   protected readonly HintType = HintType;
