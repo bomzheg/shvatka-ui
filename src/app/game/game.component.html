@@ -18,6 +18,11 @@
               @case (HintType.text) {
                 <p class="hint-text">{{ hint.text }}</p>
               }
+              @case (HintType.gps) {
+                <a [href]="'yandexmaps://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '5&z=12'">
+                  {{hint.latitude}},{{hint.longitude}}
+                </a>
+              }
               @case (HintType.photo) {
                 <img [src]="getFileUrl(hint)"
                      alt="hint content"
@@ -29,7 +34,7 @@
                 >
               }
               @case (HintType.video) {
-                <video [src]="getFileUrl(hint)"></video>
+                <video><source [src]="getFileUrl(hint)" type="video/mp4"/></video>
               }
               @default {
                 <pre>{{JSON.stringify(hint)}}</pre>
