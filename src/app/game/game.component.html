@@ -19,7 +19,7 @@
                 <p class="hint-text">{{ hint.text }}</p>
               }
               @case (HintType.gps) {
-                <a [href]="'yandexmaps://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '5&z=12'">
+                <a [href]="'yandexmaps://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=12'">
                   {{hint.latitude}},{{hint.longitude}}
                 </a>
               }
