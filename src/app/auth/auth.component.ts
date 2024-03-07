@@ -1,4 +1,5 @@
 import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {AuthService} from "./auth.service";
 import {FormsModule} from "@angular/forms";
 import {NgClass, NgIf, NgStyle} from "@angular/common";
@@ -28,12 +29,17 @@ export class AuthComponent implements AfterViewInit {
     public authService: AuthService,
     private userService: UserService,
     private config: ShvatkaConfig,
+    private snackBar: MatSnackBar,
   ) {
     authService.registerCallback(this);
   }
 
   login(username: string | undefined, password: string | undefined) {
-    this.authService.login(username!, password!);
+    try {
+      this.authService.login(username!, password!);
+    } catch (e) {
+     this.snackBar.open('Ошибка логина' + e, "ok");
+    }
   }
 
   closeLoginForm() {
