@@ -38,6 +38,6 @@ export class AuthService {
   }
 
   logout() {
-    this.http.post<any>("/auth/logout", null);
+    return this.http.post<any>("/auth/logout", {});
   }
 }
