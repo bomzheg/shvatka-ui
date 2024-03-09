@@ -38,6 +38,6 @@ export class AuthService {
   }
 
   logout() {
-    localStorage.removeItem("jwt");
+    this.http.post<any>("/auth/logout", null);
   }
 }
