@@ -13,6 +13,7 @@
       @for (timeHint of level.scenario.time_hints; track timeHint.time) {
         <li>
           <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
+          <div class="hint-part">
           @for (hint of timeHint.hint; track hint) {
             @switch (hint.type) {
               @case (HintType.text) {
@@ -71,6 +72,7 @@
               }
             }
           }
+          </div>
         </li>
       }
     </ul>
