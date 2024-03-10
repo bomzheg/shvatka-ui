@@ -32,9 +32,7 @@
                 <p>адресс: {{hint.address}}</p>
               }
               @case (HintType.photo) {
-                <img [src]="getFileUrl(hint)"
-                     alt="hint content"
-                >
+                <img [src]="getFileUrl(hint)" alt="">
               }
               @case (HintType.animation) {
                 <video autoplay loop>
