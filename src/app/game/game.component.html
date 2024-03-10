@@ -1,6 +1,6 @@
 <h2 class="game-name">{{ getGame().name }}</h2>
 <details>
-  <summary>Сценарий игры</summary>
+  <summary class="game-scn-spoiler">Сценарий игры</summary>
   <div class="scenario">
     @for (level of getGame().levels; track level.db_id) {
       <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
