@@ -11,7 +11,9 @@ import {environment} from "../../environments/environment";
   styleUrl: './game.component.scss'
 })
 export class GameComponent implements OnInit {
-
+  protected readonly HintType = HintType;
+  protected readonly environment = environment;
+  protected readonly JSON = JSON;
   constructor(
     private gameService: GameService,
     private route: ActivatedRoute,
@@ -28,8 +30,4 @@ export class GameComponent implements OnInit {
     getFileUrl(hint: HintPart) {
       return `${environment.apiUrl}/games/${this.getGame().id}/files/${hint.file_guid}`
     }
-
-  protected readonly HintType = HintType;
-  protected readonly environment = environment;
-  protected readonly JSON = JSON;
 }

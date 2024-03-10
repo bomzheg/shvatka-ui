@@ -19,9 +19,16 @@
                 <p class="hint-text">{{ hint.text }}</p>
               }
               @case (HintType.gps) {
-                <a [href]="'yandexmaps://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=12'">
+                <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
                   {{hint.latitude}},{{hint.longitude}}
                 </a>
+              }
+              @case (HintType.venue) {
+                <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
+                  {{hint.latitude}},{{hint.longitude}}
+                </a>
+                <p>название: {{hint.title}}</p>
+                <p>адресс: {{hint.address}}</p>
               }
               @case (HintType.photo) {
                 <img [src]="getFileUrl(hint)"
@@ -29,12 +36,35 @@
                 >
               }
               @case (HintType.animation) {
-                <img [src]="getFileUrl(hint)"
-                     alt="hint content"
-                >
+                <video  autoplay>
+                  <source [src]="getFileUrl(hint)" type="video/mp4">
+                </video>
               }
               @case (HintType.video) {
-                <video><source [src]="getFileUrl(hint)" type="video/mp4"/></video>
+                <video controls>
+                  <source [src]="getFileUrl(hint)" type="video/mp4"/>
+                </video>
+              }
+              @case (HintType.video_note) {
+                <video controls>
+                  <source [src]="getFileUrl(hint)" type="video/mp4"/>
+                </video>
+              }
+              @case (HintType.audio) {
+                <audio controls>
+                  <source [src]="getFileUrl(hint)" type="audio/mp4">
+                </audio>
+              }
+              @case (HintType.voice) {
+                <audio controls>
+                  <source [src]="getFileUrl(hint)" type="audio/ogg">
+                </audio>
+              }
+              @case (HintType.document) {
+                <a [href]="getFileUrl(hint)" download>скачать</a>
+              }
+              @case (HintType.contact) {
+                <p>{{hint.phone_number}} {{hint.first_name}} {{hint.last_name}}</p>
               }
               @default {
                 <pre>{{JSON.stringify(hint)}}</pre>
