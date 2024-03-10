@@ -13,8 +13,8 @@
       @for (timeHint of level.scenario.time_hints; track timeHint.time) {
         <li>
           <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
-          <div class="hint-part">
           @for (hint of timeHint.hint; track hint) {
+            <div class="hint-part">
             @switch (hint.type) {
               @case (HintType.text) {
                 <p class="hint-text">{{ hint.text }}</p>
@@ -37,7 +37,7 @@
                 >
               }
               @case (HintType.animation) {
-                <video  autoplay>
+                <video autoplay controls>
                   <source [src]="getFileUrl(hint)" type="video/mp4">
                 </video>
               }
@@ -71,8 +71,8 @@
                 <pre>{{JSON.stringify(hint)}}</pre>
               }
             }
+            </div>
           }
-          </div>
         </li>
       }
     </ul>
