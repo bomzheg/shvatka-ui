@@ -71,6 +71,9 @@
                 <pre>{{JSON.stringify(hint)}}</pre>
               }
             }
+            @if (hint.caption) {
+              <p>{{hint.caption}}</p>
+            }
             </div>
           }
         </li>
