@@ -35,7 +35,7 @@
                 <img [src]="getFileUrl(hint)" alt="">
               }
               @case (HintType.animation) {
-                <video autoplay loop>
+                <video autoplay loop controls>
                   <source [src]="getFileUrl(hint)" type="video/mp4">
                 </video>
               }
