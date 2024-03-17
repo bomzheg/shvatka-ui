@@ -70,7 +70,7 @@ export class HintPart {
 export class TimeHint {
   constructor(
     public time: number,
-    public hint: [HintPart],
+    public hint: HintPart[],
   ) {
   }
 }
@@ -78,9 +78,9 @@ export class TimeHint {
 export class Scenario {
   constructor(
     public id: string,
-    public time_hints: [TimeHint],
-    public keys: [string],
-    public bonus_keys: [any],
+    public time_hints: TimeHint[],
+    public keys: string[],
+    public bonus_keys: any[],
   ) {
   }
 }
@@ -104,7 +104,7 @@ constructor(
   public name: string,
   public status: string,
   public start_at: string | undefined,
-  public levels: [Level],
+  public levels: Level[],
 ) {}
 }
 

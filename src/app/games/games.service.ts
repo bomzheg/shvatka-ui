@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http.adapter";
 
 export class Page<T> {
-  constructor(public content: [T]) {
+  constructor(public content: T[]) {
   }
 }
 
@@ -19,10 +19,10 @@ export class Game {
   providedIn: 'root'
 })
 export class GamesService {
-  get games(): [Game] | undefined {
+  get games(): Game[] | undefined {
     return this._games;
   }
-  private _games: [Game] | undefined
+  private _games: Game[] | undefined
 
   constructor(private http: HttpAdapter) { }
 

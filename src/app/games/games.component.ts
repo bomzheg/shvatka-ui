@@ -16,7 +16,7 @@ export class GamesComponent implements OnInit {
   constructor(private gamesService: GamesService) {
   }
 
-  getGames(): [Game] {
+  getGames(): Game[] {
     return this.gamesService.games!;
   }
 
