@@ -45,25 +45,77 @@ const haveFile: {[key in HintType]: boolean} = {
   [HintType.venue]: false,
   [HintType.contact]: false,
 }
+interface HintPartArgs {
+  type: HintType
+  text?: string | undefined
+  latitude?: number | undefined
+  longitude?: number | undefined
+  title?: string | undefined
+  address?: string | undefined
+  foursquare_id?: string | undefined
+  foursquare_type?: string | undefined
+  caption?: string | undefined
+  file_guid?: string | undefined
+  thumb_guid?: string | undefined
+  phone_number?: string | undefined
+  first_name?: string | undefined
+  last_name?: string | undefined
+  vcard?: string | undefined
+}
 
 export class HintPart {
   constructor(
     public type: HintType,
-    public text: string | undefined,
-    public latitude: number | undefined,
-    public longitude: number | undefined,
-    public title: string | undefined,
-    public address: string | undefined,
-    public foursquare_id: string | undefined,
-    public foursquare_type: string | undefined,
-    public caption: string | undefined,
-    public file_guid: string | undefined,
-    public thumb_guid: string | undefined,
-    public phone_number: string | undefined,
-    public first_name: string | undefined,
-    public last_name: string | undefined,
-    public vcard: string | undefined,
-  ) {
+    public text: string | undefined = undefined,
+    public latitude: number | undefined = undefined,
+    public longitude: number | undefined = undefined,
+    public title: string | undefined = undefined,
+    public address: string | undefined = undefined,
+    public foursquare_id: string | undefined = undefined,
+    public foursquare_type: string | undefined = undefined,
+    public caption: string | undefined = undefined,
+    public file_guid: string | undefined = undefined,
+    public thumb_guid: string | undefined = undefined,
+    public phone_number: string | undefined = undefined,
+    public first_name: string | undefined = undefined,
+    public last_name: string | undefined = undefined,
+    public vcard: string | undefined = undefined,
+  ) {}
+
+  public static create({
+                type,
+                text,
+                latitude,
+                longitude,
+                title,
+                address,
+                foursquare_id,
+                foursquare_type,
+                caption,
+                file_guid,
+                thumb_guid,
+                phone_number,
+                first_name,
+                last_name,
+                vcard,
+              }: HintPartArgs) {
+    return new HintPart(
+      type,
+      text,
+      latitude,
+      longitude,
+      title,
+      address,
+      foursquare_id,
+      foursquare_type,
+      caption,
+      file_guid,
+      thumb_guid,
+      phone_number,
+      first_name,
+      last_name,
+      vcard,
+    )
   }
 }
 

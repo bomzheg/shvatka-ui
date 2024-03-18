@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
 import {UserData} from "../app/auth/user.service";
 import {Game, Page} from "../app/games/games.service";
-import {FullGame, Level, Scenario} from "../app/game/game.service";
+import {FullGame, HintPart, HintType, Level, Scenario, TimeHint} from "../app/game/game.service";
 
 @Injectable({
   providedIn: "root",
@@ -35,7 +35,24 @@ export class HttpAdapter {
         "admin",
         new Scenario(
           "foo",
-          [],
+          [
+            new TimeHint(
+              0, [
+                HintPart.create({type: HintType.text, text: "puzzle time"}),
+              ]
+            ),
+            new TimeHint(
+              5, [
+                HintPart.create({type: HintType.text, text: "some hint"}),
+                HintPart.create({type: HintType.text, text: "more hint hint"}),
+              ]
+            ),
+            new TimeHint(
+              10, [
+                HintPart.create({type: HintType.text, text: "SH123"}),
+              ]
+            ),
+          ],
           ["SH123"],
           []
         ),
