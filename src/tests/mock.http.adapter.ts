@@ -44,7 +44,7 @@ export class HttpAdapter {
             new TimeHint(
               5, [
                 HintPart.create({type: HintType.text, text: "some hint"}),
-                HintPart.create({type: HintType.text, text: "more hint hint"}),
+                HintPart.create({type: HintType.photo, file_guid: "be9b08d4-1775-476b-87b6-e2219b9ecb01"}),
               ]
             ),
             new TimeHint(
@@ -135,5 +135,9 @@ export class HttpAdapter {
       default:
         return new Observable<T>(() => {throw new Error("Not implemented")});
     }
+  }
+
+  getFileUrl(gameId: number, fileId: string): string {
+    return `/assets/scenario/${fileId}`;
   }
 }

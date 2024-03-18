@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {GameService, HintPart, HintType} from "./game.service";
 import {ActivatedRoute} from "@angular/router";
-import {environment} from "../../environments/environment";
+import {HttpAdapter} from "../http.adapter";
 
 @Component({
   selector: 'app-game',
@@ -12,11 +12,11 @@ import {environment} from "../../environments/environment";
 })
 export class GameComponent implements OnInit {
   protected readonly HintType = HintType;
-  protected readonly environment = environment;
   protected readonly JSON = JSON;
   constructor(
     private gameService: GameService,
     private route: ActivatedRoute,
+    private http: HttpAdapter,
     ) {
   }
     ngOnInit(): void {
@@ -28,6 +28,6 @@ export class GameComponent implements OnInit {
     }
 
     getFileUrl(hint: HintPart) {
-      return `${environment.apiUrl}/games/${this.getGame().id}/files/${hint.file_guid}`
+      return this.http.getFileUrl(this.getGame().id, hint.file_guid!)
     }
 }

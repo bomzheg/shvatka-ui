@@ -43,4 +43,8 @@ export class HttpAdapter {
       {withCredentials: true, params: params},
     );
   }
+
+  getFileUrl(gameId: number, fileId: string): string {
+    return `${this.config.apiUrl}/games/${gameId}/files/${fileId}`
+  }
 }
