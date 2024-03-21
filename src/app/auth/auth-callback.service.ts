@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http.adapter";
-import {UserService} from "../auth/user.service";
+import {UserService} from "./user.service";
 import {ParamMap} from "@angular/router";
 
 export class UserTgAuth {
