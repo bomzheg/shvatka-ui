@@ -36,7 +36,7 @@ export class AuthCallbackService {
   }
 
   public authenticate(user: UserTgAuth) {
-    this.http.getWithQuery("/auth/login/data", user)
+    this.http.postWithoutCookies("/auth/login/data", user)
       .subscribe(
         () => {
           console.log(user)
