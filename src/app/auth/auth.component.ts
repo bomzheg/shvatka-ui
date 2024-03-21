@@ -68,7 +68,10 @@ export class AuthComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     // @ts-ignore
-    window["tgOnLogin"] = (user: UserTgAuth) => this.authCallbackService.authenticate(user);
+    window["tgOnLogin"] = (user: UserTgAuth) => {
+      this.authCallbackService.authenticate(user);
+      this.closeLoginForm()
+    };
   }
   ngAfterViewInit() {
     this.convertToScript();
