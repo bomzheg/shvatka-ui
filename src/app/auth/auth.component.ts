@@ -6,7 +6,6 @@ import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {UserService} from "./user.service";
 import {ShvatkaConfig} from "../app.config";
 import {AuthCallbackService, UserTgAuth} from "./auth-callback.service";
-import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-auth',
@@ -31,7 +30,6 @@ export class AuthComponent implements AfterViewInit, OnInit {
     private userService: UserService,
     private config: ShvatkaConfig,
     private snackBar: MatSnackBar,
-    private router: Router,
     private authCallbackService: AuthCallbackService,
   ) {
     authService.registerCallback(this);
@@ -74,9 +72,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
       this.authCallbackService.authenticate(user);
       this.closeLoginForm();
       await this.updateUser();
-      this.router.navigateByUrl(this.router.url, { skipLocationChange: true }).then(() => {
-        this.router.navigate([this.router.url]);
-      });
+      window.location.reload();
     };
   }
   ngAfterViewInit() {
