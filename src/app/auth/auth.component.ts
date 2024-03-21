@@ -1,11 +1,11 @@
-import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {AuthService} from "./auth.service";
 import {FormsModule} from "@angular/forms";
 import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {UserService} from "./user.service";
 import {ShvatkaConfig} from "../app.config";
-import {AuthCallbackService} from "./auth-callback.service";
+import {AuthCallbackService, UserTgAuth} from "./auth-callback.service";
 
 @Component({
   selector: 'app-auth',
@@ -19,7 +19,7 @@ import {AuthCallbackService} from "./auth-callback.service";
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
 })
-export class AuthComponent implements AfterViewInit {
+export class AuthComponent implements AfterViewInit, OnInit {
   username: string | undefined;
   password: string | undefined;
   isVisible: boolean = false;
@@ -66,6 +66,10 @@ export class AuthComponent implements AfterViewInit {
     element.parentElement.replaceChild(script, element);
   }
 
+  ngOnInit(): void {
+    // @ts-ignore
+    window["tgOnLogin"] = (user: UserTgAuth) => this.authCallbackService.authenticate(user);
+  }
   ngAfterViewInit() {
     this.convertToScript();
   }
