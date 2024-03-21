@@ -5,7 +5,7 @@ import {FormsModule} from "@angular/forms";
 import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {UserService} from "./user.service";
 import {ShvatkaConfig} from "../app.config";
-import {AuthCallbackService, UserTgAuth} from "./auth-callback.service";
+import {AuthCallbackService} from "./auth-callback.service";
 
 @Component({
   selector: 'app-auth',
@@ -53,10 +53,6 @@ export class AuthComponent implements AfterViewInit {
 
   async updateUser() {
     await this.userService.loadMe()
-  }
-
-  public tgOnLogin(user: UserTgAuth)  {
-    this.authCallbackService.authenticate(user)
   }
 
   convertToScript() {

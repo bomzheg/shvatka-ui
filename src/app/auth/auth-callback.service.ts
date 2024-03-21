@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+import {Injectable, OnInit} from '@angular/core';
 import {HttpAdapter} from "../http.adapter";
 import {UserService} from "./user.service";
 import {ParamMap} from "@angular/router";
@@ -29,11 +29,16 @@ export class UserTgAuth {
 @Injectable({
   providedIn: 'root'
 })
-export class AuthCallbackService {
+export class AuthCallbackService implements OnInit{
 
   constructor(private http: HttpAdapter, private userService: UserService) {
 
   }
+
+  ngOnInit(): void {
+    // @ts-ignore
+    window["tgOnLogin"] = (user: UserTgAuth) => this.authenticate(user);
+    }
 
   public authenticate(user: UserTgAuth) {
     this.http.postWithoutCookies("/auth/login/data", user)
