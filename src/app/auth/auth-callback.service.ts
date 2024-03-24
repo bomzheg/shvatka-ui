@@ -35,12 +35,6 @@ export class AuthCallbackService {
   }
 
   public authenticate(user: UserTgAuth) {
-    this.http.postWithoutCookies("/auth/login/data", user)
-      .subscribe(
-        () => {
-          console.log(user)
-          this.userService.loadMe()
-        }
-      );
+    return this.http.postWithoutCookies("/auth/login/data", user)
   }
 }
