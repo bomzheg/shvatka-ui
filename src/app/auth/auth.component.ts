@@ -39,7 +39,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
     try {
       this.authService.login(username!, password!);
     } catch (e) {
-     this.snackBar.open('Ошибка логина' + e, "ok");
+      this.snackBar.open('Ошибка логина' + e, "ok");
     }
   }
 
@@ -71,14 +71,16 @@ export class AuthComponent implements AfterViewInit, OnInit {
     window["tgOnLogin"] = (user: UserTgAuth) => {
       console.log("tg on login")
       this.authCallbackService.authenticate(user)
-        .subscribe( () => {
-          this.updateUser().then(() => {
-            this.closeLoginForm();
-            console.log("is_visible now is " + this.isVisible);
-          });
-      });
+        .subscribe(() => {
+          this.updateUser()
+            .then(() => {
+              this.closeLoginForm();
+              console.log("is_visible now is " + this.isVisible);
+            });
+        });
     };
   }
+
   ngAfterViewInit() {
     this.convertToScript();
   }
