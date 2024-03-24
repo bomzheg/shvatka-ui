@@ -76,6 +76,9 @@ export class AuthComponent implements AfterViewInit, OnInit {
             .then(() => {
               this.closeLoginForm();
               console.log("is_visible now is " + this.isVisible);
+              const el = document.getElementById("loginFormBackCover")!;
+              console.log(el);
+              el.setAttribute("class", "hidden")
             });
         });
     };
