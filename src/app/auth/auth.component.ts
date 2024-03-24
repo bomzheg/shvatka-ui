@@ -5,7 +5,6 @@ import {FormsModule} from "@angular/forms";
 import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {UserService} from "./user.service";
 import {ShvatkaConfig} from "../app.config";
-import {AuthCallbackService, UserTgAuth} from "./auth-callback.service";
 
 @Component({
   selector: 'app-auth',
@@ -30,14 +29,16 @@ export class AuthComponent implements AfterViewInit, OnInit {
     private userService: UserService,
     private config: ShvatkaConfig,
     private snackBar: MatSnackBar,
-    private authCallbackService: AuthCallbackService,
   ) {
     authService.registerCallback(this);
   }
 
   login(username: string | undefined, password: string | undefined) {
     try {
-      this.authService.login(username!, password!);
+      this.authService.login(username!, password!)
+        .subscribe(() => {
+          this.updateUser().then(() => this.closeLoginForm());
+        });
     } catch (e) {
       this.snackBar.open('Ошибка логина' + e, "ok");
     }
@@ -68,8 +69,8 @@ export class AuthComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     // @ts-ignore
-    window["tgOnLogin"] = (user: UserTgAuth) => {
-      this.authCallbackService.authenticate(user)
+    window["tgOnLogin"] = (user: any) => {
+      this.authService.authenticate(user)
         .subscribe(() => {
           this.updateUser()
             .then(() => {

@@ -12,13 +12,6 @@ export class AuthService {
   }
 
   login(username: string, password: string) {
-    this.postLoginForm(username, password).subscribe(async unused => {
-      this.authComponent?.closeLoginForm();
-      await this.authComponent?.updateUser();
-    });
-  }
-
-  private postLoginForm(username: string, password: string) {
     const formData = new FormData();
     formData.append("username", username);
     formData.append("password", password);
@@ -27,6 +20,10 @@ export class AuthService {
       '/auth/token',
       formData,
     )
+  }
+
+  public authenticate(user: any) {
+    return this.http.postWithoutCookies("/auth/login/data", user)
   }
 
   registerCallback(authComponent: AuthComponent) {
