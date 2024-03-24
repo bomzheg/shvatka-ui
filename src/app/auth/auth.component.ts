@@ -72,6 +72,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
       console.log("tg on login")
       this.authCallbackService.authenticate(user);
       this.closeLoginForm();
+      console.log("is_visible now is " + this.isVisible);
       this.updateUser().then(() => {console.log("updated user")})
     };
   }
