@@ -68,11 +68,11 @@ export class AuthComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     // @ts-ignore
-    window["tgOnLogin"] = async (user: UserTgAuth) => {
+    window["tgOnLogin"] = (user: UserTgAuth) => {
+      console.log("tg on login")
       this.authCallbackService.authenticate(user);
       this.closeLoginForm();
-      await this.updateUser();
-      window.location.reload();
+      this.updateUser().then(() => {console.log("updated user")})
     };
   }
   ngAfterViewInit() {
