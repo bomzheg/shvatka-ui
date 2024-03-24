@@ -69,16 +69,14 @@ export class AuthComponent implements AfterViewInit, OnInit {
   ngOnInit(): void {
     // @ts-ignore
     window["tgOnLogin"] = (user: UserTgAuth) => {
-      console.log("tg on login")
       this.authCallbackService.authenticate(user)
         .subscribe(() => {
           this.updateUser()
             .then(() => {
               this.closeLoginForm();
-              console.log("is_visible now is " + this.isVisible);
               const el = document.getElementById("loginFormBackCover")!;
-              console.log(el);
-              el.setAttribute("class", "hidden")
+              el.setAttribute("class", "hidden");
+              window.location.reload();
             });
         });
     };
