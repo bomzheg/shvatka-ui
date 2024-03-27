@@ -1,18 +1,19 @@
 import {Component, OnInit} from '@angular/core';
-import {GameService, HintPart, HintType} from "./game.service";
+import {GameService, HintPart} from "./game.service";
 import {ActivatedRoute} from "@angular/router";
 import {HttpAdapter} from "../http.adapter";
+import {HintPartComponent} from "../hint.part/hint.part.component";
 
 @Component({
   selector: 'app-game',
   standalone: true,
-  imports: [],
+  imports: [
+    HintPartComponent
+  ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
 })
 export class GameComponent implements OnInit {
-  protected readonly HintType = HintType;
-  protected readonly JSON = JSON;
   constructor(
     private gameService: GameService,
     private route: ActivatedRoute,
@@ -28,6 +29,9 @@ export class GameComponent implements OnInit {
     }
 
     getFileUrl(hint: HintPart) {
-      return this.http.getFileUrl(this.getGame().id, hint.file_guid!)
+      if (hint.file_guid === undefined) {
+        return undefined;
+      }
+      return this.http.getFileUrl(this.getGame().id, hint.file_guid)
     }
 }

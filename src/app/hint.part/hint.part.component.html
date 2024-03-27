@@ -1,0 +1,62 @@
+<div class="hint-part">
+  @switch (hint.type) {
+    @case (HintType.text) {
+      <p class="hint-text">{{ hint.text }}</p>
+    }
+    @case (HintType.gps) {
+      <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
+        {{ hint.latitude }},{{ hint.longitude }}
+      </a>
+    }
+    @case (HintType.venue) {
+      <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
+        {{ hint.latitude }},{{ hint.longitude }}
+      </a>
+      <p>название: {{ hint.title }}</p>
+      <p>адресс: {{ hint.address }}</p>
+    }
+    @case (HintType.photo) {
+      <img [src]="fileUrl!" alt="">
+    }
+    @case (HintType.animation) {
+      <video autoplay loop controls>
+        <source [src]="fileUrl!" type="video/mp4">
+      </video>
+    }
+    @case (HintType.video) {
+      <video controls>
+        <source [src]="fileUrl!" type="video/mp4"/>
+      </video>
+    }
+    @case (HintType.video_note) {
+      <video controls>
+        <source [src]="fileUrl!" type="video/mp4"/>
+      </video>
+    }
+    @case (HintType.audio) {
+      <audio controls>
+        <source [src]="fileUrl!" type="audio/mp4">
+      </audio>
+    }
+    @case (HintType.voice) {
+      <audio controls>
+        <source [src]="fileUrl!" type="audio/ogg">
+      </audio>
+    }
+    @case (HintType.document) {
+      <a [href]="fileUrl!" download>скачать</a>
+    }
+    @case (HintType.sticker) {
+      <p>sorry, stickers are not supported on web view now</p>
+    }
+    @case (HintType.contact) {
+      <p>{{ hint.phone_number }} {{ hint.first_name }} {{ hint.last_name }}</p>
+    }
+    @default {
+      <pre>{{ JSON.stringify(hint) }}</pre>
+    }
+  }
+  @if (hint.caption) {
+    <p>{{ hint.caption }}</p>
+  }
+</div>
