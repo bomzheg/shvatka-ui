@@ -1,8 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {GameService, HintPart} from "./game.service";
+import {GameService, HintPart, KeyType} from "./game.service";
 import {ActivatedRoute} from "@angular/router";
 import {HttpAdapter} from "../http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
+import {throwIfEmpty} from "rxjs";
 
 @Component({
   selector: 'app-game',
@@ -27,6 +28,9 @@ export class GameComponent implements OnInit {
     getGame() {
       return this.gameService.getGame();
     }
+    getKeys() {
+      return this.gameService.getKeys();
+    }
 
     getFileUrl(hint: HintPart) {
       if (hint.file_guid === undefined) {
@@ -34,4 +38,7 @@ export class GameComponent implements OnInit {
       }
       return this.http.getFileUrl(this.getGame().id, hint.file_guid)
     }
+
+  protected readonly throwIfEmpty = throwIfEmpty;
+  protected readonly KeyType = KeyType;
 }

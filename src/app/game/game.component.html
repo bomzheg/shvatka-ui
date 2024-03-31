@@ -24,3 +24,56 @@
     }
   </div>
 </details>
+<details>
+  <summary class="game-keys-spoiler">Ключи</summary>
+  <div class="keys-log">
+    @for (teamKeys of getKeys(); track teamKeys[0]) {
+      @if (teamKeys[1].length > 0) {
+        <hr>
+        <h3>Ключи команды {{teamKeys[1][0].team}}</h3>
+        <table>
+          <thead class="game-keys-table">
+            <tr>
+              <th>Тип</th>
+              <th>Ключ</th>
+              <th>Игрок</th>
+              <th>Время</th>
+              <th>Уровень</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (key of teamKeys[1]; track key) {
+              <tr>
+                <!-- {{key.level_number}} -->
+                <td>
+                  @if (key.is_duplicate) {
+                    <span>💤</span>
+                  } @else {
+                    @switch (key.type_) {
+                      @case (KeyType.simple) {
+                        <span>✅</span>
+                      }
+                      @case (KeyType.wrong) {
+                        <span>❌</span>
+                      }
+                      @case (KeyType.bonus) {
+                        <span>💰</span>
+                      }
+                      @default {
+                        <span>❔</span>
+                      }
+                    }
+                  }
+                </td>
+                <td>{{key.text}}</td>
+                <td>{{key.player}}</td>
+                <td>{{key.at.toLocaleTimeString()}}</td>
+                <td>{{key.level_number + 1}}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    }
+  </div>
+</details>

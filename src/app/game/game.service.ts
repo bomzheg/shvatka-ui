@@ -160,11 +160,43 @@ constructor(
 ) {}
 }
 
+export enum KeyType {
+  wrong = "wrong",
+  simple = "simple",
+  bonus = "bonus",
+}
+export class KeyTime {
+  constructor(
+    public text: string,
+    public type_: string,
+    public is_duplicate: boolean,
+    public at: Date,
+    public level_number: number,
+    public player: any,
+    public team: any,
+  ) {}
+}
+export type Keys = Map<number, KeyTime[]>
+
+export class LevelTime {
+  constructor(
+    public id: number,
+    public game: FullGame,
+    public team: any,
+    public level_number: number,
+    public start_at: Date,
+    public is_finished: boolean,
+  ) {
+  }
+}
+type GameStat = Map<number, LevelTime[]>
+
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
   private game: FullGame | undefined;
+  private keys: Keys | undefined;
 
   constructor(private http: HttpAdapter) { }
 
@@ -172,9 +204,15 @@ export class GameService {
     this.http.get<FullGame>(`/games/${id}`).subscribe(g => {
       this.game = g;
     })
+    this.http.get<Keys>(`/games/${id}/keys`).subscribe(k => {
+      this.keys = k;
+    })
   }
 
   getGame(): FullGame {
     return this.game!;
+  }
+  getKeys() : Keys {
+    return this.keys!;
   }
 }

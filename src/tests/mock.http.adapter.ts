@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
 import {UserData} from "../app/auth/user.service";
 import {Game, Page} from "../app/games/games.service";
-import {FullGame, HintPart, HintType, Level, Scenario, TimeHint} from "../app/game/game.service";
+import {FullGame, HintPart, HintType, Keys, KeyTime, Level, Scenario, TimeHint} from "../app/game/game.service";
 
 @Injectable({
   providedIn: "root",
@@ -12,15 +12,16 @@ export class HttpAdapter {
   private readonly user: UserData;
   private readonly games: Page<Game>;
   private readonly first_game: FullGame;
+  private readonly keys: Keys;
   constructor() {
     this.user = new UserData();
     this.user.username = "admin"
     this.games = new Page<Game>(
       [
-        new Game(1, "Название игры", 1),
-        new Game(2, "Весёлая игра", 2),
-        new Game(3, "Ещё какая-то", 3),
-        new Game(4, "Some English name", 4),
+        new Game(4, "Название игры", 4),
+        new Game(3, "Весёлая игра", 3),
+        new Game(2, "Ещё какая-то", 2),
+        new Game(1, "Some English name", 1),
       ]
     );
     this.first_game = new FullGame(
@@ -59,7 +60,58 @@ export class HttpAdapter {
         1,
         0
       )]
-    )
+    );
+    this.keys = new Map([
+      [1, [
+        new KeyTime(
+          "SH123",
+          "wrong",
+          false,
+          new Date(Date.now()),
+          0,
+          "player",
+          "team1"
+        ),
+        new KeyTime(
+          "SH124",
+          "simple",
+          false,
+          new Date(Date.now()),
+          0,
+          "player",
+          "team1"
+        ),
+        new KeyTime(
+          "SH125",
+          "simple",
+          false,
+          new Date(Date.now()),
+          1,
+          "player",
+          "team1"
+        ),
+      ]],
+      [2, [
+        new KeyTime(
+          "SH124",
+          "simple",
+          false,
+          new Date(Date.now()),
+          0,
+          "player6",
+          "team42"
+        ),
+        new KeyTime(
+          "SH125",
+          "simple",
+          false,
+          new Date(Date.now()),
+          1,
+          "player6",
+          "team42"
+        ),
+      ]],
+    ]);
   }
 
   postWithoutCookies<T>(url: string, body: any): Observable<T> {
@@ -118,6 +170,11 @@ export class HttpAdapter {
           return new Observable<T>(() => {throw new Error("401")})
         }
         return new Observable<T>(o=> o.next(this.first_game as T));
+      case "/games/4/keys":
+        if (!this.authorized) {
+          return new Observable<T>(() => {throw new Error("401")})
+        }
+        return new Observable<T>(o=> o.next(this.keys as T));
       default:
         return new Observable<T>(() => {throw new Error("Not implemented")});
     }
