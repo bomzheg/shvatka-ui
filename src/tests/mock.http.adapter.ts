@@ -4,6 +4,98 @@ import {UserData} from "../app/auth/user.service";
 import {Game, Page} from "../app/games/games.service";
 import {FullGame, HintPart, HintType, Keys, KeyTime, Level, Scenario, TimeHint} from "../app/game/game.service";
 
+const team1 = {
+  "id": 2,
+  "name": "команда командиров",
+  "captain": {
+    "id": 3,
+    "can_be_author": true,
+    "is_dummy": false,
+    "_user": {
+      "tg_id": 32121,
+      "db_id": 75,
+      "username": null,
+      "first_name": "капитан",
+      "last_name": null,
+      "is_bot": false
+    },
+    "_forum_user": null
+  },
+  "is_dummy": false,
+  "description": null,
+  "_chat": {
+    "tg_id": -1001771824557,
+    "type": 4,
+    "db_id": 62,
+    "username": null,
+    "title": "команда командиров",
+    "first_name": null,
+    "last_name": null,
+    "description": null
+  },
+  "_forum_team": null
+};
+const team42 = {
+  "id": 1,
+  "name": "Название команды",
+  "captain": {
+    "id": 2,
+    "can_be_author": true,
+    "is_dummy": false,
+    "_user": {
+      "tg_id": 12321,
+      "db_id": 66,
+      "username": null,
+      "first_name": "Ivan",
+      "last_name": "Ivanov",
+      "is_bot": false
+    },
+    "_forum_user": null
+  },
+  "is_dummy": false,
+  "description": null,
+  "_chat": {
+    "tg_id": -1001549956989,
+    "type": 4,
+    "db_id": 55,
+    "username": null,
+    "title": "Название команды",
+    "first_name": null,
+    "last_name": null,
+    "description": null
+  },
+  "_forum_team": null
+};
+const player = {
+  "id": 3,
+  "can_be_author": true,
+  "is_dummy": false,
+  "_user": {
+    "tg_id": 32121,
+    "db_id": 75,
+    "username": null,
+    "first_name": "капитан",
+    "last_name": null,
+    "is_bot": false
+  },
+  "_forum_user": null
+}
+const player2 = {
+  "id": 2,
+    "can_be_author": true,
+    "is_dummy": false,
+    "_user": {
+    "tg_id": 12321,
+      "db_id": 66,
+      "username": null,
+      "first_name": "Ivan",
+      "last_name": "Ivanov",
+      "is_bot": false
+  },
+  "_forum_user": null
+}
+
+
 @Injectable({
   providedIn: "root",
 })
@@ -69,8 +161,8 @@ export class HttpAdapter {
           false,
           new Date(Date.now()),
           0,
-          "player",
-          "team1"
+          player,
+          team1
         ),
         new KeyTime(
           "SH124",
@@ -78,8 +170,8 @@ export class HttpAdapter {
           false,
           new Date(Date.now()),
           0,
-          "player",
-          "team1"
+          player,
+          team1
         ),
         new KeyTime(
           "SH125",
@@ -87,8 +179,8 @@ export class HttpAdapter {
           false,
           new Date(Date.now()),
           1,
-          "player",
-          "team1"
+          player,
+          team1
         ),
       ]],
       [2, [
@@ -98,8 +190,8 @@ export class HttpAdapter {
           false,
           new Date(Date.now()),
           0,
-          "player6",
-          "team42"
+          player2,
+          team42
         ),
         new KeyTime(
           "SH125",
@@ -107,8 +199,8 @@ export class HttpAdapter {
           false,
           new Date(Date.now()),
           1,
-          "player6",
-          "team42"
+          player2,
+          team42
         ),
       ]],
     ]);
