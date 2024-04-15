@@ -41,4 +41,5 @@ export class GameComponent implements OnInit {
 
   protected readonly throwIfEmpty = throwIfEmpty;
   protected readonly KeyType = KeyType;
+  protected readonly JSON = JSON;
 }
