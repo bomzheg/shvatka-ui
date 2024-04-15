@@ -27,10 +27,10 @@
 <details>
   <summary class="game-keys-spoiler">Ключи</summary>
   <div class="keys-log">
-    @for (teamKeys of getKeys(); track teamKeys[0]) {
+    @for (teamKeys of Object.entries(getKeys()); track teamKeys[0]) {
       @if (teamKeys[1].length > 0) {
         <hr>
-        <h3>Ключи команды {{JSON.stringify(teamKeys[1][0].team)}}</h3>
+        <h3>Ключи команды {{teamKeys[1][0].team.name}}</h3>
         <table>
           <thead class="game-keys-table">
             <tr>
@@ -67,7 +67,7 @@
                 </td>
                 <td>{{key.text}}</td>
                 <td>{{JSON.stringify(key.player)}}</td>
-                <td>{{JSON.stringify(key.at.toLocaleTimeString())}}</td>
+                <td>{{key.at.toLocaleTimeString("ru-RU")}}</td>
                 <td>{{key.level_number + 1}}</td>
               </tr>
             }
