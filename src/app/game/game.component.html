@@ -81,7 +81,7 @@
 <details>
   <summary class="game-stat-spoiler">Результаты игры</summary>
   <div>
-    @for (results of getStat(); track results[0]) {
+    @for (results of Object.entries(getStat()); track results[0]) {
       <div>{{JSON.stringify(results[1])}}</div>
     }
   </div>
