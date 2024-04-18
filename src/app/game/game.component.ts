@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {GameService, HintPart, KeyType} from "./game.service";
+import {GameService, GameStat, HintPart, KeyType} from "./game.service";
 import {ActivatedRoute} from "@angular/router";
 import {HttpAdapter} from "../http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
@@ -29,6 +29,9 @@ export class GameComponent implements OnInit {
   }
   getKeys() {
     return this.gameService.getKeys();
+  }
+  getStat(): GameStat {
+    return this.gameService.getStat();
   }
 
   getFileUrl(hint: HintPart) {

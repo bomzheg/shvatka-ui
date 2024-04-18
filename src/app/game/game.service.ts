@@ -207,7 +207,7 @@ export class LevelTime {
   ) {
   }
 }
-type GameStat = Map<number, LevelTime[]>
+export type GameStat = Map<number, LevelTime[]>
 
 @Injectable({
   providedIn: 'root'
@@ -215,6 +215,7 @@ type GameStat = Map<number, LevelTime[]>
 export class GameService {
   private game: FullGame | undefined;
   private keys: Keys | undefined;
+  private stat: GameStat | undefined;
 
   constructor(private http: HttpAdapter) { }
 
@@ -225,6 +226,9 @@ export class GameService {
     this.http.get<Keys>(`/games/${id}/keys`).subscribe(k => {
       this.keys = k;
     })
+    this.http.get<GameStat>(`/games/${id}/stat`).subscribe(s => {
+      this.stat = s;
+    })
   }
 
   getGame(): FullGame {
@@ -232,5 +236,8 @@ export class GameService {
   }
   getKeys() : Keys {
     return this.keys!;
+  }
+  getStat(): GameStat {
+    return this.stat!;
   }
 }
