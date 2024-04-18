@@ -166,17 +166,15 @@ export enum KeyType {
   bonus = "bonus",
 }
 export class KeyTime {
-  public at: Date;
   constructor(
     public text: string,
     public type_: string,
     public is_duplicate: boolean,
-    at: string,
+    public at: string,
     public level_number: number,
     public player: any,
     public team: any,
   ) {
-    this.at = new Date(Date.parse(at));
   }
 }
 export type Keys = Map<number, KeyTime[]>
