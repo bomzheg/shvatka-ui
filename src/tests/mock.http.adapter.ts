@@ -564,6 +564,11 @@ export class HttpAdapter {
           return new Observable<T>(() => {throw new Error("401")})
         }
         return new Observable<T>(o=> o.next(keyResponse as T));
+      case "/games/4/stat":
+        if (!this.authorized) {
+          return new Observable<T>(() => {throw new Error("401")})
+        }
+        return new Observable<T>(o=> o.next(new Map() as T));
       default:
         return new Observable<T>(() => {throw new Error("Not implemented")});
     }
