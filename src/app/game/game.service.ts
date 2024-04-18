@@ -1,6 +1,23 @@
 import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http.adapter";
 
+export class Player {
+  constructor(
+    public name_mention: string,
+    public id: number,
+    public can_be_author: boolean,
+  ) {}
+}
+
+export class Team {
+  constructor(
+    public id: number,
+    public name: string,
+    public captain: Player,
+    public description: string | null,
+  ) {}
+}
+
 export enum HintType {
   text = "text",
   gps = "gps",
@@ -141,7 +158,7 @@ export class Level {
   constructor(
     public db_id: number,
     public name_id: string,
-    public author: any,
+    public author: Player,
     public scenario: Scenario,
     public game_id: number | undefined,
     public number_in_game: number | undefined,
@@ -152,7 +169,7 @@ export class Level {
 export class FullGame {
 constructor(
   public id: number ,
-  public author: any,
+  public author: Player,
   public name: string,
   public status: string,
   public start_at: string | undefined,
@@ -172,8 +189,8 @@ export class KeyTime {
     public is_duplicate: boolean,
     public at: string,
     public level_number: number,
-    public player: any,
-    public team: any,
+    public player: Player,
+    public team: Team,
   ) {
   }
 }
@@ -183,7 +200,7 @@ export class LevelTime {
   constructor(
     public id: number,
     public game: FullGame,
-    public team: any,
+    public team: Team,
     public level_number: number,
     public start_at: Date,
     public is_finished: boolean,

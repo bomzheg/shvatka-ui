@@ -10,89 +10,29 @@ const team1 = {
   "captain": {
     "id": 3,
     "can_be_author": true,
-    "is_dummy": false,
-    "_user": {
-      "tg_id": 32121,
-      "db_id": 75,
-      "username": null,
-      "first_name": "капитан",
-      "last_name": null,
-      "is_bot": false
-    },
-    "_forum_user": null
+    "name_mention": "капитан",
   },
-  "is_dummy": false,
   "description": null,
-  "_chat": {
-    "tg_id": -1001771824557,
-    "type": 4,
-    "db_id": 62,
-    "username": null,
-    "title": "команда командиров",
-    "first_name": null,
-    "last_name": null,
-    "description": null
-  },
-  "_forum_team": null
 };
 const team42 = {
   "id": 1,
   "name": "Название команды",
-  "captain": {
+  "captain":{
     "id": 2,
     "can_be_author": true,
-    "is_dummy": false,
-    "_user": {
-      "tg_id": 12321,
-      "db_id": 66,
-      "username": null,
-      "first_name": "Ivan",
-      "last_name": "Ivanov",
-      "is_bot": false
-    },
-    "_forum_user": null
+    "name_mention": "Ivan Ivanov",
   },
-  "is_dummy": false,
   "description": null,
-  "_chat": {
-    "tg_id": -1001549956989,
-    "type": 4,
-    "db_id": 55,
-    "username": null,
-    "title": "Название команды",
-    "first_name": null,
-    "last_name": null,
-    "description": null
-  },
-  "_forum_team": null
 };
 const player = {
   "id": 3,
   "can_be_author": true,
-  "is_dummy": false,
-  "_user": {
-    "tg_id": 32121,
-    "db_id": 75,
-    "username": null,
-    "first_name": "капитан",
-    "last_name": null,
-    "is_bot": false
-  },
-  "_forum_user": null
+  "name_mention": "капитан",
 }
 const player2 = {
   "id": 2,
-    "can_be_author": true,
-    "is_dummy": false,
-    "_user": {
-    "tg_id": 12321,
-      "db_id": 66,
-      "username": null,
-      "first_name": "Ivan",
-      "last_name": "Ivanov",
-      "is_bot": false
-  },
-  "_forum_user": null
+  "can_be_author": true,
+  "name_mention": "Ivan Ivanov",
 }
 const keyResponse = {
   "2": [
@@ -100,21 +40,12 @@ const keyResponse = {
       "text": "SH1",
       "type_": "wrong",
       "is_duplicate": false,
-      "at": "2024-02-27T07:22:43.030123+00:00",
+      "at": "2024-02-27T07:22:43.030123Z",
       "level_number": 0,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -122,51 +53,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH2",
       "type_": "wrong",
       "is_duplicate": false,
-      "at": "2024-02-27T07:22:46.772315+00:00",
+      "at": "2024-02-27T07:22:46.772315Z",
       "level_number": 0,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -174,51 +75,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "СХ1",
       "type_": "wrong",
       "is_duplicate": false,
-      "at": "2024-02-27T07:22:50.896739+00:00",
+      "at": "2024-02-27T07:22:50.896739Z",
       "level_number": 0,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -226,51 +97,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "СХ123",
       "type_": "wrong",
       "is_duplicate": false,
-      "at": "2024-02-27T07:22:55.361916+00:00",
+      "at": "2024-02-27T07:22:55.361916Z",
       "level_number": 0,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -278,51 +119,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH123",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T07:30:42.524332+00:00",
+      "at": "2024-02-27T07:30:42.524332Z",
       "level_number": 0,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -330,51 +141,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "СХ543",
       "type_": "wrong",
       "is_duplicate": false,
-      "at": "2024-02-27T08:04:54.599461+00:00",
+      "at": "2024-02-27T08:04:54.599461Z",
       "level_number": 1,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -382,51 +163,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH543",
       "type_": "wrong",
       "is_duplicate": false,
-      "at": "2024-02-27T08:05:10.413031+00:00",
+      "at": "2024-02-27T08:05:10.413031Z",
       "level_number": 1,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -434,51 +185,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH123",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T08:40:54.186750+00:00",
+      "at": "2024-02-27T08:40:54.186750Z",
       "level_number": 1,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -486,51 +207,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH321",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T08:47:50.269908+00:00",
+      "at": "2024-02-27T08:47:50.269908Z",
       "level_number": 2,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -538,51 +229,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH123",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T08:47:55.545393+00:00",
+      "at": "2024-02-27T08:47:55.545393Z",
       "level_number": 2,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -590,51 +251,21 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH123",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T08:48:06.224876+00:00",
+      "at": "2024-02-27T08:48:06.224876Z",
       "level_number": 3,
       "player": {
         "id": 3,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 5778822859,
-          "db_id": 75,
-          "username": null,
-          "first_name": "капитан",
-          "last_name": null,
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "капитан"
       },
       "team": {
         "id": 2,
@@ -642,30 +273,9 @@ const keyResponse = {
         "captain": {
           "id": 3,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 5778822859,
-            "db_id": 75,
-            "username": null,
-            "first_name": "капитан",
-            "last_name": null,
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "капитан"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001771824557,
-          "type": 4,
-          "db_id": 62,
-          "username": null,
-          "title": "команда командиров",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     }
   ],
@@ -674,21 +284,12 @@ const keyResponse = {
       "text": "SH123",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T08:06:22.605183+00:00",
+      "at": "2024-02-27T08:06:22.605183Z",
       "level_number": 0,
       "player": {
         "id": 2,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 487754183,
-          "db_id": 66,
-          "username": null,
-          "first_name": "William",
-          "last_name": "Murderface",
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "William Murderface"
       },
       "team": {
         "id": 1,
@@ -696,51 +297,21 @@ const keyResponse = {
         "captain": {
           "id": 2,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 487754183,
-            "db_id": 66,
-            "username": null,
-            "first_name": "William",
-            "last_name": "Murderface",
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "William Murderface"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001549956989,
-          "type": 4,
-          "db_id": 55,
-          "username": null,
-          "title": "Название команды",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH123",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T08:40:26.074603+00:00",
+      "at": "2024-02-27T08:40:26.074603Z",
       "level_number": 1,
       "player": {
         "id": 2,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 487754183,
-          "db_id": 66,
-          "username": null,
-          "first_name": "William",
-          "last_name": "Murderface",
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "William Murderface"
       },
       "team": {
         "id": 1,
@@ -748,51 +319,21 @@ const keyResponse = {
         "captain": {
           "id": 2,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 487754183,
-            "db_id": 66,
-            "username": null,
-            "first_name": "William",
-            "last_name": "Murderface",
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "William Murderface"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001549956989,
-          "type": 4,
-          "db_id": 55,
-          "username": null,
-          "title": "Название команды",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH123",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T12:09:25.742597+00:00",
+      "at": "2024-02-27T12:09:25.742597Z",
       "level_number": 2,
       "player": {
         "id": 2,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 487754183,
-          "db_id": 66,
-          "username": null,
-          "first_name": "William",
-          "last_name": "Murderface",
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "William Murderface"
       },
       "team": {
         "id": 1,
@@ -800,51 +341,21 @@ const keyResponse = {
         "captain": {
           "id": 2,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 487754183,
-            "db_id": 66,
-            "username": null,
-            "first_name": "William",
-            "last_name": "Murderface",
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "William Murderface"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001549956989,
-          "type": 4,
-          "db_id": 55,
-          "username": null,
-          "title": "Название команды",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH321",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T12:09:29.417825+00:00",
+      "at": "2024-02-27T12:09:29.417825Z",
       "level_number": 2,
       "player": {
         "id": 2,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 487754183,
-          "db_id": 66,
-          "username": null,
-          "first_name": "William",
-          "last_name": "Murderface",
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "William Murderface"
       },
       "team": {
         "id": 1,
@@ -852,51 +363,21 @@ const keyResponse = {
         "captain": {
           "id": 2,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 487754183,
-            "db_id": 66,
-            "username": null,
-            "first_name": "William",
-            "last_name": "Murderface",
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "William Murderface"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001549956989,
-          "type": 4,
-          "db_id": 55,
-          "username": null,
-          "title": "Название команды",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     },
     {
       "text": "SH123",
       "type_": "simple",
       "is_duplicate": false,
-      "at": "2024-02-27T12:15:20.078393+00:00",
+      "at": "2024-02-27T12:15:20.078393Z",
       "level_number": 3,
       "player": {
         "id": 2,
         "can_be_author": true,
-        "is_dummy": false,
-        "_user": {
-          "tg_id": 487754183,
-          "db_id": 66,
-          "username": null,
-          "first_name": "William",
-          "last_name": "Murderface",
-          "is_bot": false
-        },
-        "_forum_user": null
+        "name_mention": "William Murderface"
       },
       "team": {
         "id": 1,
@@ -904,30 +385,9 @@ const keyResponse = {
         "captain": {
           "id": 2,
           "can_be_author": true,
-          "is_dummy": false,
-          "_user": {
-            "tg_id": 487754183,
-            "db_id": 66,
-            "username": null,
-            "first_name": "William",
-            "last_name": "Murderface",
-            "is_bot": false
-          },
-          "_forum_user": null
+          "name_mention": "William Murderface"
         },
-        "is_dummy": false,
-        "description": null,
-        "_chat": {
-          "tg_id": -1001549956989,
-          "type": 4,
-          "db_id": 55,
-          "username": null,
-          "title": "Название команды",
-          "first_name": null,
-          "last_name": null,
-          "description": null
-        },
-        "_forum_team": null
+        "description": null
       }
     }
   ]
@@ -955,14 +415,14 @@ export class HttpAdapter {
     );
     this.first_game = new FullGame(
       1,
-      "admin",
+      player,
       "Название игры",
       "complete",
       "2022-05-12T23:00:00",
       [new Level(
         5,
         "foo",
-        "admin",
+        player,
         new Scenario(
           "foo",
           [
