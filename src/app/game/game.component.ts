@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {GameService, GameStat, HintPart, KeyType, Level} from "./game.service";
 import {ActivatedRoute} from "@angular/router";
-import {HttpAdapter} from "../http.adapter";
+import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 
 @Component({

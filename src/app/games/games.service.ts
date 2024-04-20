@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpAdapter} from "../http.adapter";
+import {HttpAdapter} from "../http/http.adapter";
 
 export class Page<T> {
   constructor(public content: T[]) {

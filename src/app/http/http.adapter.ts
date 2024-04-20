@@ -1,6 +1,6 @@
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
-import {ShvatkaConfig} from "./app.config";
+import {ShvatkaConfig} from "../app.config";
 import {HttpClient} from "@angular/common/http";
 
 @Injectable({
