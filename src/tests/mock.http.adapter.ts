@@ -587,36 +587,95 @@ export class HttpAdapter {
       "Название игры",
       "complete",
       "2022-05-12T23:00:00",
-      [new Level(
-        5,
-        "foo",
-        player,
-        new Scenario(
+      [
+          new Level(
+          5,
           "foo",
-          [
-            new TimeHint(
-              0, [
-                HintPart.create({type: HintType.text, text: "puzzle time"}),
-              ]
-            ),
-            new TimeHint(
-              5, [
-                HintPart.create({type: HintType.text, text: "some hint"}),
-                HintPart.create({type: HintType.photo, file_guid: "be9b08d4-1775-476b-87b6-e2219b9ecb01"}),
-              ]
-            ),
-            new TimeHint(
-              10, [
-                HintPart.create({type: HintType.text, text: "SH123"}),
-              ]
-            ),
-          ],
-          ["SH123"],
-          []
+          player,
+          new Scenario(
+            "foo",
+            [
+              new TimeHint(
+                0, [
+                  HintPart.create({type: HintType.text, text: "puzzle time"}),
+                ]
+              ),
+              new TimeHint(
+                5, [
+                  HintPart.create({type: HintType.text, text: "some hint"}),
+                  HintPart.create({type: HintType.photo, file_guid: "be9b08d4-1775-476b-87b6-e2219b9ecb01"}),
+                ]
+              ),
+              new TimeHint(
+                10, [
+                  HintPart.create({type: HintType.text, text: "SH123"}),
+                ]
+              ),
+            ],
+            ["SH123"],
+            []
+          ),
+          1,
+          0
         ),
-        1,
-        0
-      )]
+        new Level(
+          6,
+          "bar",
+          player,
+          new Scenario(
+            "bar",
+            [
+              new TimeHint(
+                0, [
+                  HintPart.create({type: HintType.text, text: "puzzle2"}),
+                ]
+              )
+            ],
+            ["SH1234"],
+            [],
+          ),
+          1,
+          1,
+        ),
+        new Level(
+          7,
+          "baz",
+          player,
+          new Scenario(
+            "baz",
+            [
+              new TimeHint(
+                0, [
+                  HintPart.create({type: HintType.text, text: "puzzle3"}),
+                ]
+              )
+            ],
+            ["SH12345"],
+            [],
+          ),
+          1,
+          2,
+        ),
+        new Level(
+          8,
+          "barissiomo",
+          player,
+          new Scenario(
+            "barissimo",
+            [
+              new TimeHint(
+                0, [
+                  HintPart.create({type: HintType.text, text: "puzzle3"}),
+                ]
+              )
+            ],
+            ["SH12346"],
+            [],
+          ),
+          1,
+          3,
+        ),
+      ]
     );
     this.keys = new Map([
       [1, [

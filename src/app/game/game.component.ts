@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {GameService, GameStat, HintPart, KeyType} from "./game.service";
+import {GameService, GameStat, HintPart, KeyType, Level} from "./game.service";
 import {ActivatedRoute} from "@angular/router";
 import {HttpAdapter} from "../http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
@@ -32,6 +32,9 @@ export class GameComponent implements OnInit {
   }
   getStat(): GameStat {
     return this.gameService.getStat();
+  }
+  getLevels(): Level[] {
+    return this.gameService.getGame().levels;
   }
 
   getFileUrl(hint: HintPart) {

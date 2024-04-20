@@ -80,9 +80,40 @@
 </details>
 <details>
   <summary class="game-stat-spoiler">Результаты игры</summary>
-  <div>
-    @for (results of Object.entries(getStat()); track results[0]) {
-      <div>{{JSON.stringify(results[1])}}</div>
+  <div class="game-stat">
+    @if (Object.keys(getStat()).length > 0) {
+      <table>
+        <thead>
+          <tr>
+            <th>Команда</th>
+            @for (level of getLevels(); track level.number_in_game) {
+              <th>
+                Уровень {{level.number_in_game! + 1}}
+                <br>
+                {{level.name_id}}
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (results of Object.entries(getStat().level_times); track results[0]) {
+            @if (results[1].length > 0) {
+              <tr>
+                <td>
+                  {{results[1][0].team.name}}
+                </td>
+                @for (lt of results[1]; track lt.id) {
+                  @if (!$first) {
+                    <td>
+                      {{toLocal(lt.start_at)}}
+                    </td>
+                  }
+                }
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
     }
   </div>
 </details>

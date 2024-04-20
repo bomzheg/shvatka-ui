@@ -25,10 +25,14 @@
 .level-keys {
 
 }
+.keys-log table, th, td {
+  border: 1px solid;
+}
 .keys-log table {
   text-align: center;
   margin-left: auto;
   margin-right: auto;
+  border-collapse: collapse;
 }
 
 .game-keys-spoiler {
@@ -41,4 +45,13 @@
 
 .game-stat-spoiler {
   text-align: center;
+}
+.game-stat table, th, td {
+  border: 1px solid;
+}
+.game-stat table {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  border-collapse: collapse;
 }

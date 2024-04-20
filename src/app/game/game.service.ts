@@ -207,7 +207,13 @@ export class LevelTime {
   ) {
   }
 }
-export type GameStat = Map<number, LevelTime[]>
+export class GameStat {
+  constructor(
+    public level_times: Map<number, LevelTime[]>,
+  ) {
+
+  }
+}
 
 @Injectable({
   providedIn: 'root'
