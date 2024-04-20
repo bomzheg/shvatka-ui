@@ -392,6 +392,174 @@ const keyResponse = {
     }
   ]
 };
+const stat = {
+  "level_times": {
+    "1": [
+      {
+        "id": 8,
+        "team": {
+          "id": 1,
+          "name": "Название команды",
+          "captain": {
+            "id": 2,
+            "can_be_author": true,
+            "name_mention": "William Murderface"
+          },
+          "description": null
+        },
+        "level_number": 0,
+        "start_at": "2024-02-27T07:10:00.066046Z",
+        "is_finished": false
+      },
+      {
+        "id": 11,
+        "team": {
+          "id": 1,
+          "name": "Название команды",
+          "captain": {
+            "id": 2,
+            "can_be_author": true,
+            "name_mention": "William Murderface"
+          },
+          "description": null
+        },
+        "level_number": 1,
+        "start_at": "2024-02-27T08:06:22.607608Z",
+        "is_finished": false
+      },
+      {
+        "id": 12,
+        "team": {
+          "id": 1,
+          "name": "Название команды",
+          "captain": {
+            "id": 2,
+            "can_be_author": true,
+            "name_mention": "William Murderface"
+          },
+          "description": null
+        },
+        "level_number": 2,
+        "start_at": "2024-02-27T08:40:26.077926Z",
+        "is_finished": false
+      },
+      {
+        "id": 16,
+        "team": {
+          "id": 1,
+          "name": "Название команды",
+          "captain": {
+            "id": 2,
+            "can_be_author": true,
+            "name_mention": "William Murderface"
+          },
+          "description": null
+        },
+        "level_number": 3,
+        "start_at": "2024-02-27T12:09:29.419915Z",
+        "is_finished": false
+      },
+      {
+        "id": 17,
+        "team": {
+          "id": 1,
+          "name": "Название команды",
+          "captain": {
+            "id": 2,
+            "can_be_author": true,
+            "name_mention": "William Murderface"
+          },
+          "description": null
+        },
+        "level_number": 4,
+        "start_at": "2024-02-27T12:15:20.086196Z",
+        "is_finished": true
+      }
+    ],
+    "2": [
+      {
+        "id": 9,
+        "team": {
+          "id": 2,
+          "name": "команда командиров",
+          "captain": {
+            "id": 3,
+            "can_be_author": true,
+            "name_mention": "капитан"
+          },
+          "description": null
+        },
+        "level_number": 0,
+        "start_at": "2024-02-27T07:10:00.066788Z",
+        "is_finished": false
+      },
+      {
+        "id": 10,
+        "team": {
+          "id": 2,
+          "name": "команда командиров",
+          "captain": {
+            "id": 3,
+            "can_be_author": true,
+            "name_mention": "капитан"
+          },
+          "description": null
+        },
+        "level_number": 1,
+        "start_at": "2024-02-27T07:30:42.527302Z",
+        "is_finished": false
+      },
+      {
+        "id": 13,
+        "team": {
+          "id": 2,
+          "name": "команда командиров",
+          "captain": {
+            "id": 3,
+            "can_be_author": true,
+            "name_mention": "капитан"
+          },
+          "description": null
+        },
+        "level_number": 2,
+        "start_at": "2024-02-27T08:40:54.190128Z",
+        "is_finished": false
+      },
+      {
+        "id": 14,
+        "team": {
+          "id": 2,
+          "name": "команда командиров",
+          "captain": {
+            "id": 3,
+            "can_be_author": true,
+            "name_mention": "капитан"
+          },
+          "description": null
+        },
+        "level_number": 3,
+        "start_at": "2024-02-27T08:47:55.547498Z",
+        "is_finished": false
+      },
+      {
+        "id": 15,
+        "team": {
+          "id": 2,
+          "name": "команда командиров",
+          "captain": {
+            "id": 3,
+            "can_be_author": true,
+            "name_mention": "капитан"
+          },
+          "description": null
+        },
+        "level_number": 4,
+        "start_at": "2024-02-27T08:48:06.227181Z",
+        "is_finished": true
+      }
+    ]
+  }
+}
 
 @Injectable({
   providedIn: "root",
@@ -568,7 +736,7 @@ export class HttpAdapter {
         if (!this.authorized) {
           return new Observable<T>(() => {throw new Error("401")})
         }
-        return new Observable<T>(o=> o.next(new Map() as T));
+        return new Observable<T>(o=> o.next(stat as T));
       default:
         return new Observable<T>(() => {throw new Error("Not implemented")});
     }
