@@ -574,20 +574,6 @@ export class HttpAdapter {
     }
   }
 
-
-  getWithQuery<T>(
-    url: string,
-    query: any
-  ): Observable<T> {
-
-    switch (url) {
-      case "/auth/login/data":
-        return new Observable<T>(() => {throw new Error("Not implemented")});
-      default:
-        return new Observable<T>(() => {throw new Error("Not implemented")});
-    }
-  }
-
   getFileUrl(gameId: number, fileId: string): string {
     return `/assets/scenario/${fileId}`;
   }

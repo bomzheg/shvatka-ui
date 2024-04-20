@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
 import {ShvatkaConfig} from "./app.config";
-import {HttpClient, HttpParams} from "@angular/common/http";
+import {HttpClient} from "@angular/common/http";
 
 @Injectable({
   providedIn: "root",
@@ -29,18 +29,6 @@ export class HttpAdapter {
     return this.http.get<T>(
       this.config.apiUrl + url,
       {withCredentials: true},
-    );
-  }
-
-
-  getWithQuery<T>(
-    url: string,
-    query: any
-  ): Observable<T> {
-    const params = new HttpParams({fromObject: query})
-    return this.http.get<T>(
-      this.config.apiUrl + url,
-      {withCredentials: true, params: params},
     );
   }
 
