@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {HttpAdapter} from "../http.adapter";
+import {HttpAdapter} from "../http/http.adapter";
 
 export class Page<T> {
   constructor(public content: T[]) {
@@ -27,7 +27,7 @@ export class GamesService {
   constructor(private http: HttpAdapter) { }
 
   loadGamesList() {
-    return this.http.get<Page<Game>>("/games").subscribe(async r => {
+    return this.http.get<Page<Game>>("/games").subscribe(r => {
       this._games = r.content;
     })
   }

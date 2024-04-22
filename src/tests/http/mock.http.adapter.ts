@@ -1,8 +1,8 @@
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
-import {UserData} from "../app/auth/user.service";
-import {Game, Page} from "../app/games/games.service";
-import {FullGame, HintPart, HintType, Keys, KeyTime, Level, Scenario, TimeHint} from "../app/game/game.service";
+import {UserData} from "../../app/auth/user.service";
+import {Game, Page} from "../../app/games/games.service";
+import {FullGame, HintPart, HintType, Keys, KeyTime, Level, Scenario, TimeHint} from "../../app/game/game.service";
 
 const team1 = {
   "id": 2,

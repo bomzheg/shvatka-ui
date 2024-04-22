@@ -1,5 +1,7 @@
 import {Injectable} from '@angular/core';
-import {HttpAdapter} from "../http.adapter";
+import {HttpAdapter} from "../http/http.adapter";
+import {HttpErrorResponse} from "@angular/common/http";
+import {MatSnackBar} from "@angular/material/snack-bar";
 
 export class Player {
   constructor(
@@ -223,17 +225,42 @@ export class GameService {
   private keys: Keys | undefined;
   private stat: GameStat | undefined;
 
-  constructor(private http: HttpAdapter) { }
+  constructor(private http: HttpAdapter, private snackBar: MatSnackBar) { }
 
   loadGame(id: number) {
-    this.http.get<FullGame>(`/games/${id}`).subscribe(g => {
-      this.game = g;
+    this.http.get<FullGame>(`/games/${id}`)
+      .subscribe({
+        next: g => {this.game = g;},
+        error: error => {
+          if (error instanceof HttpErrorResponse && error.status === 401) {
+            console.log("game id 401 response: " + JSON.stringify(error));
+            this.snackBar.open("Сценарии игр доступны только авторизованным пользователям", 'Закрыть', {duration: 3000});
+          } else {
+            throw error;
+          }
+        }
+      })
+    this.http.get<Keys>(`/games/${id}/keys`)
+      .subscribe({
+        next: k => { this.keys = k;},
+        error: error => {
+          if (error instanceof HttpErrorResponse && error.status === 401) {
+            console.log("keys auth error")
+          } else {
+            throw error;
+          }
+        }
     })
-    this.http.get<Keys>(`/games/${id}/keys`).subscribe(k => {
-      this.keys = k;
-    })
-    this.http.get<GameStat>(`/games/${id}/stat`).subscribe(s => {
-      this.stat = s;
+    this.http.get<GameStat>(`/games/${id}/stat`)
+      .subscribe({
+        next: s => { this.stat = s;},
+        error: error => {
+          if (error instanceof HttpErrorResponse && error.status === 401) {
+            console.log("stat auth error")
+          } else {
+            throw error;
+          }
+        }
     })
   }
 
