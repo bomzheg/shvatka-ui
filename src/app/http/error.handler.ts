@@ -13,7 +13,7 @@ export class GlobalErrorHandler implements ErrorHandler {
   handleError(error: any): void {
     this._zone.run(() => {
       console.log(JSON.stringify(error));
-      this._snackBar.open(JSON.stringify(error), 'Close', { duration: 3000 });
+      this._snackBar.open("Какая-то сетевая ошибка=(", 'Закрыть', { duration: 3000 });
     });
   }
 }
