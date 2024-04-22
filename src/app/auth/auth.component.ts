@@ -1,9 +1,11 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {MatSnackBar} from "@angular/material/snack-bar";
 import {AuthService} from "./auth.service";
 import {FormsModule} from "@angular/forms";
 import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {UserService} from "./user.service";
 import {ShvatkaConfig} from "../app.config";
+import {HttpErrorResponse} from "@angular/common/http";
 
 @Component({
   selector: 'app-auth',
@@ -27,15 +29,26 @@ export class AuthComponent implements AfterViewInit, OnInit {
     public authService: AuthService,
     private userService: UserService,
     private config: ShvatkaConfig,
+    private snackBar: MatSnackBar,
   ) {
     authService.registerCallback(this);
   }
 
   login(username: string | undefined, password: string | undefined) {
       this.authService.login(username!, password!)
-        .subscribe(() => {
-          this.updateUser().then(() => this.closeLoginForm());
+        .subscribe({
+          next: () => {this.updateUser().then(() => this.closeLoginForm())},
+          error: (err) => {
+            if (err instanceof HttpErrorResponse && err.status === 401) {
+              console.error("auth error " + err.message);
+              console.log(JSON.stringify(err));
+              this.snackBar.open('Неверные имя пользователя или пароль', "ok");
+            } else {
+              throw err;
+            }
+          },
         });
+
   }
 
   closeLoginForm() {
