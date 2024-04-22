@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
-import {ShvatkaConfig} from "../app/app.config";
+import {ShvatkaConfig} from "../../app/app.config";
 
 @Injectable({
   providedIn: "root",

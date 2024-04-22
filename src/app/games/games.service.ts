@@ -27,7 +27,7 @@ export class GamesService {
   constructor(private http: HttpAdapter) { }
 
   loadGamesList() {
-    return this.http.get<Page<Game>>("/games").subscribe(async r => {
+    return this.http.get<Page<Game>>("/games").subscribe(r => {
       this._games = r.content;
     })
   }
