@@ -24,9 +24,9 @@ export class GamesComponent implements OnInit {
     this.window = this._document.defaultView;
     // @ts-ignore
     this.tg = this.window.Telegram;
-    console.log("this telegram is " + this.tg);
+    console.log("this telegram is " + JSON.stringify(this.tg));
     if (this.tg !== undefined) {
-      console.log("and webapp is " + this.tg.WebApp);
+      console.log("and webapp is " + JSON.stringify(this.tg.WebApp));
       this.tgWa = this.tg.WebApp;
     }
   }
@@ -38,7 +38,7 @@ export class GamesComponent implements OnInit {
   ngOnInit(): void {
         this.gamesService.loadGamesList();
         if (this.tgWa) {
-          console.log("on init tgwa is " + this.tgWa);
+          console.log("on init tgwa is " + JSON.stringify(this.tgWa));
         }
     }
 
