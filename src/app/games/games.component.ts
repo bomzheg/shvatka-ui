@@ -13,7 +13,10 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
   styleUrl: './games.component.scss'
 })
 export class GamesComponent implements OnInit {
+  private readonly tg;
   constructor(private gamesService: GamesService) {
+    // @ts-ignore
+    this.tg = this.window.Telegram.WebApp;
   }
 
   getGames(): Game[] {
@@ -22,10 +25,8 @@ export class GamesComponent implements OnInit {
 
   ngOnInit(): void {
         this.gamesService.loadGamesList();
-        // @ts-ignore
-        if (window.Telegram.WebApp) {
-          // @ts-ignore
-          console.log(window.Telegram.WebApp)
+        if (this.tg) {
+          console.log(this.tg);
         }
     }
 
