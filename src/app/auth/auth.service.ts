@@ -26,6 +26,10 @@ export class AuthService {
     return this.http.postWithoutCookies("/auth/login/data", user)
   }
 
+  public authenticateWebApp(webAppData: any) {
+    return this.http.postWithoutCookies("/auth/login/webapp", webAppData);
+  }
+
   registerCallback(authComponent: AuthComponent) {
     this.authComponent = authComponent;
   }
