@@ -22,6 +22,11 @@ export class GamesComponent implements OnInit {
 
   ngOnInit(): void {
         this.gamesService.loadGamesList();
+        // @ts-ignore
+        if (window.Telegram.WebApp) {
+          // @ts-ignore
+          console.log(window.Telegram.WebApp)
+        }
     }
 
 }
