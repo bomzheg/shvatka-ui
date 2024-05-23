@@ -14,9 +14,15 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
 })
 export class GamesComponent implements OnInit {
   private readonly tg;
+  private readonly tgWa;
   constructor(private gamesService: GamesService) {
     // @ts-ignore
-    this.tg = this.window.Telegram.WebApp;
+    this.tg = this.window.Telegram;
+    console.log("this telegram is " + this.tg);
+    if (this.tg !== undefined) {
+      console.log("and webapp is " + this.tg.WebApp);
+      this.tgWa = this.tg.WebApp;
+    }
   }
 
   getGames(): Game[] {
@@ -25,8 +31,8 @@ export class GamesComponent implements OnInit {
 
   ngOnInit(): void {
         this.gamesService.loadGamesList();
-        if (this.tg) {
-          console.log(this.tg);
+        if (this.tgWa) {
+          console.log("on init tgwa is " + this.tgWa);
         }
     }
 
