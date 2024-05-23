@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, ViewChild} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
 import {APP_BASE_HREF, CommonModule} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
@@ -16,7 +16,7 @@ import {DomSanitizer} from "@angular/platform-browser";
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent {
   title = 'shvatka';
   @ViewChild('WebAppScript', {static: true}) script: ElementRef | undefined;
   constructor(
@@ -27,18 +27,6 @@ export class AppComponent implements AfterViewInit {
       "account-circle",
       domSanitizer.bypassSecurityTrustResourceUrl('/assets/account_circle.svg')
     )
-  }
-
-  convertToScript() {
-    const element = this.script?.nativeElement;
-    const script = document.createElement('script');
-    script.src = 'https://telegram.org/js/telegram-web-app.js';
-    element.parentElement.replaceChild(script, element);
-  }
-
-
-  ngAfterViewInit() {
-    this.convertToScript();
   }
 
 }
