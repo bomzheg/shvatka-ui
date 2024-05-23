@@ -1,6 +1,7 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {Game, GamesService} from "./games.service";
 import {RouterLink, RouterLinkActive} from "@angular/router";
+import {DOCUMENT} from "@angular/common";
 
 @Component({
   selector: 'app-games',
@@ -13,9 +14,14 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
   styleUrl: './games.component.scss'
 })
 export class GamesComponent implements OnInit {
+  private window;
   private readonly tg;
   private readonly tgWa;
-  constructor(private gamesService: GamesService) {
+  constructor(
+    private gamesService: GamesService,
+    @Inject(DOCUMENT) private _document: any,
+    ) {
+    this.window = this._document.defaultView;
     // @ts-ignore
     this.tg = this.window.Telegram;
     console.log("this telegram is " + this.tg);
