@@ -2,7 +2,7 @@ name: ShvatkaUIBuild
 
 on:
   push:
-    branches: [ master, web_app_auth ]
+    branches: [ master ]
     tags: ["*.*.*"]
 
 jobs:
