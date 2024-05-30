@@ -41,7 +41,9 @@ export class GamesComponent implements OnInit {
 
   ngOnInit(): void {
         this.gamesService.loadGamesList();
+        console.log("tgwa is on init" + this.tgWa.initData)
         if (this.tgWa.initData) {
+          console.log("let's try to auth")
           this.authService.authenticateWebApp(this.tgWa.initData)
             .subscribe({
               next: () => {this.updateUser()},
