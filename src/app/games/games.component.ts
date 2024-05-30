@@ -1,9 +1,7 @@
-import {Component, Inject, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Game, GamesService} from "./games.service";
 import {RouterLink, RouterLinkActive} from "@angular/router";
-import {DOCUMENT} from "@angular/common";
-import {AuthService} from "../auth/auth.service";
-import {UserService} from "../auth/user.service";
+
 
 @Component({
   selector: 'app-games',
@@ -16,42 +14,16 @@ import {UserService} from "../auth/user.service";
   styleUrl: './games.component.scss'
 })
 export class GamesComponent implements OnInit {
-  private window;
-  private readonly tg;
-  private readonly tgWa;
   constructor(
     private gamesService: GamesService,
-    @Inject(DOCUMENT) private _document: any,
-    private authService: AuthService,
-    private userService: UserService,
     ) {
-    this.window = this._document.defaultView;
-    this.tg = this.window.Telegram;
-    this.tgWa = this.tg.WebApp;
   }
 
   getGames(): Game[] {
     return this.gamesService.games!;
   }
 
-
-  async updateUser() {
-    await this.userService.loadMe()
-  }
-
   ngOnInit(): void {
         this.gamesService.loadGamesList();
-        console.log("tgwa is on init" + this.tgWa.initData)
-        if (this.tgWa.initData) {
-          console.log("let's try to auth")
-          this.authService.authenticateWebApp(this.tgWa)
-            .subscribe({
-              next: () => {this.updateUser()},
-              error: (err) => {
-                console.error("webapp auth error " + err.message);
-              },
-            });
-        }
     }
-
 }
