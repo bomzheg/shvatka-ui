@@ -44,7 +44,7 @@ export class GamesComponent implements OnInit {
         console.log("tgwa is on init" + this.tgWa.initData)
         if (this.tgWa.initData) {
           console.log("let's try to auth")
-          this.authService.authenticateWebApp(this.tgWa.initData)
+          this.authService.authenticateWebApp(this.tgWa)
             .subscribe({
               next: () => {this.updateUser()},
               error: (err) => {
