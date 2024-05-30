@@ -1,5 +1,5 @@
-import {Component, OnInit} from '@angular/core';
-import {NgClass, NgOptimizedImage, NgStyle} from "@angular/common";
+import {Component, Inject, OnInit} from '@angular/core';
+import {DOCUMENT, NgClass, NgOptimizedImage, NgStyle} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
 import {UserService} from "../auth/user.service";
@@ -22,7 +22,17 @@ import {MatIcon} from "@angular/material/icon";
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit {
-  constructor(private authService: AuthService, private userService: UserService) {
+  private window;
+  private readonly tg;
+  private readonly tgWa;
+  constructor(
+    @Inject(DOCUMENT) private _document: any,
+    private authService: AuthService,
+    private userService: UserService,
+  ) {
+    this.window = this._document.defaultView;
+    this.tg = this.window.Telegram;
+    this.tgWa = this.tg.WebApp;
   }
 
   openLoginForm() {
@@ -43,7 +53,23 @@ export class HeaderComponent implements OnInit {
   }
 
   async ngOnInit() {
-    await this.userService.loadMe();
+    if (this.tgWa.initData) {
+      console.debug("let's try to auth with webapp")
+      this.authService.authenticateWebApp(this.tgWa)
+        .subscribe({
+          next: () => {
+            console.debug("success webapp auth, let's load profile")
+            this.userService.loadMe()
+          },
+          error: async (err) => {
+            console.error("webapp auth error " + err.message);
+            await this.userService.loadMe();
+          },
+        });
+    } else {
+      console.debug("no webapp auth data, so try to use cookies if exists")
+      await this.userService.loadMe();
+    }
   }
 
 }

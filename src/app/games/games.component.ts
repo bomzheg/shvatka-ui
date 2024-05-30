@@ -2,6 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {Game, GamesService} from "./games.service";
 import {RouterLink, RouterLinkActive} from "@angular/router";
 
+
 @Component({
   selector: 'app-games',
   standalone: true,
@@ -13,7 +14,9 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
   styleUrl: './games.component.scss'
 })
 export class GamesComponent implements OnInit {
-  constructor(private gamesService: GamesService) {
+  constructor(
+    private gamesService: GamesService,
+    ) {
   }
 
   getGames(): Game[] {
@@ -23,5 +26,4 @@ export class GamesComponent implements OnInit {
   ngOnInit(): void {
         this.gamesService.loadGamesList();
     }
-
 }
