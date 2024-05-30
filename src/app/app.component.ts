@@ -1,4 +1,4 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
 import {APP_BASE_HREF, CommonModule} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
@@ -18,10 +18,9 @@ import {DomSanitizer} from "@angular/platform-browser";
 })
 export class AppComponent {
   title = 'shvatka';
-  @ViewChild('WebAppScript', {static: true}) script: ElementRef | undefined;
   constructor(
     private matIconRegistry: MatIconRegistry,
-    private domSanitizer:DomSanitizer,
+    domSanitizer:DomSanitizer,
   ) {
     this.matIconRegistry.addSvgIcon(
       "account-circle",
