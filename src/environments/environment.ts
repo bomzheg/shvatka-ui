@@ -1,7 +1,7 @@
-
+const env = (window as { [key: string]: any })["env"] as { [key: string]: string };
 export const environment = {
-  mainUrl: "https://shvatka-test.bomzheg.dev",
-  apiUrl: "https://shvatka-test.bomzheg.dev/api",
-  botUsername: "shvatkatestbot",
-  baseHref: "/",
+  mainUrl: env["mainUrl"],
+  apiUrl: env["apiUrl"],
+  botUsername: env["botUsername"],
+  baseHref: env["baseHref"] || "/",
 };
