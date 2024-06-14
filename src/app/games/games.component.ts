@@ -28,7 +28,7 @@ export class GamesComponent implements OnInit {
   ngOnInit(): void {
       this.activatedRoute.queryParams
         .subscribe((params: Params) => {
-          const tgParams = params.tgWebAppStartParam as string;
+          const tgParams = params["tgWebAppStartParam"] as string;
           const gameId = Number(tgParams)
           if (!isNaN(gameId)) {
             this.router.navigate(['/games/' + gameId]);
