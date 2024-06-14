@@ -1,6 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {Game, GamesService} from "./games.service";
-import {RouterLink, RouterLinkActive} from "@angular/router";
+import {ActivatedRoute, Params, Router, RouterLink, RouterLinkActive} from "@angular/router";
 
 
 @Component({
@@ -16,6 +16,8 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
 export class GamesComponent implements OnInit {
   constructor(
     private gamesService: GamesService,
+    private activatedRoute: ActivatedRoute,
+    private router: Router,
     ) {
   }
 
@@ -24,6 +26,14 @@ export class GamesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+      this.activatedRoute.queryParams
+        .subscribe((params: Params) => {
+          const tgParams = params.tgWebAppStartParam as string;
+          const gameId = Number(tgParams)
+          if (!isNaN(gameId)) {
+            this.router.navigate(['/games/' + gameId]);
+          }
+        });
         this.gamesService.loadGamesList();
     }
 }
