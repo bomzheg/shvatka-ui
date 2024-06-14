@@ -57,9 +57,10 @@ export class HeaderComponent implements OnInit {
       console.debug("let's try to auth with webapp")
       this.authService.authenticateWebApp(this.tgWa)
         .subscribe({
-          next: () => {
+          next: async () => {
             console.debug("success webapp auth, let's load profile")
-            this.userService.loadMe()
+            await this.userService.loadMe()
+            this.tgWa.ready()
           },
           error: async (err) => {
             console.error("webapp auth error " + err.message);
