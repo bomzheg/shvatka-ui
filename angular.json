@@ -61,57 +61,24 @@
                   "with": "src/environments/environment.development.ts"
                 }
               ]
-            },
-            "dev": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.mock.ts"
-                },
-                {
-                  "replace": "src/app/http/http.adapter.ts",
-                  "with": "src/tests/http/dev.http.adapter.ts"
-                }
-              ]
-            },
-            "mock": {
-              "optimization": false,
-              "extractLicenses": false,
-              "sourceMap": true,
-              "fileReplacements": [
-                {
-                  "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.mock.ts"
-                },
-                {
-                  "replace": "src/app/http/http.adapter.ts",
-                  "with": "src/tests/http/mock.http.adapter.ts"
-                }
-              ]
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.config.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "shvatka:build:production"
-            },
-            "mock": {
-              "buildTarget": "shvatka:build:mock"
-            },
-            "dev": {
-              "buildTarget": "shvatka:build:dev"
             },
             "development": {
               "buildTarget": "shvatka:build:development"
             }
           },
-          "defaultConfiguration": "dev"
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",

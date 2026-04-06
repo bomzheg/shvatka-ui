@@ -1,0 +1,8 @@
+{
+  "/api/*": {
+    "target": "https://shvatka-test.bomzheg.dev/",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
