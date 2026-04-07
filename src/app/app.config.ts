@@ -1,5 +1,5 @@
 import {ApplicationConfig, ErrorHandler, Injectable} from '@angular/core';
-import {provideRouter} from '@angular/router';
+import {provideRouter, withRouterConfig} from '@angular/router';
 
 import {routes} from './app.routes';
 import {provideHttpClient} from "@angular/common/http";
@@ -9,7 +9,7 @@ import {GlobalErrorHandler} from "./http/error.handler";
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(routes, withRouterConfig({onSameUrlNavigation: 'reload'})),
     provideHttpClient(),
     provideAnimationsAsync(),
     { provide: ErrorHandler, useClass: GlobalErrorHandler }
