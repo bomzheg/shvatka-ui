@@ -5,6 +5,7 @@ import {AuthService} from "../auth/auth.service";
 import {UserService} from "../auth/user.service";
 import {RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
+import {ActiveGame, GamesService} from "../games/games.service";
 
 @Component({
   selector: 'app-header',
@@ -25,10 +26,13 @@ export class HeaderComponent implements OnInit {
   private window;
   private readonly tg;
   private readonly tgWa;
+  activeGame: ActiveGame | undefined;
+
   constructor(
     @Inject(DOCUMENT) private _document: any,
     private authService: AuthService,
     private userService: UserService,
+    private gamesService: GamesService,
   ) {
     this.window = this._document.defaultView;
     this.tg = this.window.Telegram;
@@ -53,6 +57,8 @@ export class HeaderComponent implements OnInit {
   }
 
   async ngOnInit() {
+    this.gamesService.getActiveGame().subscribe(game => this.activeGame = game);
+
     if (this.tgWa.initData) {
       console.debug("let's try to auth with webapp")
       this.authService.authenticateWebApp(this.tgWa)
@@ -71,6 +77,10 @@ export class HeaderComponent implements OnInit {
       console.debug("no webapp auth data, so try to use cookies if exists")
       await this.userService.loadMe();
     }
+  }
+
+  hasActiveGame() {
+    return this.activeGame !== undefined;
   }
 
 }
