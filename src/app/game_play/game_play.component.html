@@ -1,0 +1,14 @@
+<div class="scenario">
+  <h3 class="level-header">Уровень №{{ getCurrentHints().level_number! + 1 }}</h3>
+  <p>начался {{toLocal(getCurrentHints().started_at)}}</p>
+  <ul class="hints">
+    @for (timeHint of getCurrentHints().hints; track timeHint.time) {
+      <li>
+        <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
+        @for (hint of timeHint.hint; track hint) {
+          <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
+        }
+      </li>
+    }
+  </ul>
+</div>
