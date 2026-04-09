@@ -23,7 +23,19 @@
 }
 
 .level-keys {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
 
+#key-input {
+  text-transform: uppercase;
+}
+
+.key-result {
+  margin-left: 8px;
 }
 .keys-log table, th, td {
   border: 1px solid;
