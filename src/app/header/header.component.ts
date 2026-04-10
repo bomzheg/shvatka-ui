@@ -7,6 +7,15 @@ import {RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {ActiveGame, GamesService} from "../games/games.service";
 
+type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
+
+interface Countdown {
+  firstValue: number;
+  firstUnit: CountdownUnit;
+  secondValue: number;
+  secondUnit: CountdownUnit;
+}
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -28,7 +37,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private readonly tgWa;
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
-  startInMessage: string = "";
+  countdown: Countdown | undefined;
 
   constructor(
     @Inject(DOCUMENT) private _document: any,
@@ -61,7 +70,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   async ngOnInit() {
     this.gamesService.getActiveGame().subscribe(game => {
       this.activeGame = game;
-      this.startInMessage = this.getStartInMessage();
+      this.countdown = this.getCountdown();
       this.setupCountdownTicker();
     });
 
@@ -93,26 +102,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return this.activeGame?.status === "running";
   }
 
-  getBannerText() {
-    if (!this.activeGame) {
-      return "";
-    }
+  isGettingWaiversStatus() {
+    return this.activeGame?.status === "getting_waivers";
+  }
 
-    if (this.activeGame.status === "running") {
-      return `Идёт игра: ${this.activeGame.name}`;
-    }
+  isFinishedStatus() {
+    return this.activeGame?.status === "finished";
+  }
 
-    if (this.activeGame.status === "getting_waivers") {
-      return `в настоящее время игра ${this.activeGame.name} собирает вейверы${this.startInMessage}`;
-    }
-
-    if (this.activeGame.status === "finished") {
-      return "игра завершена, ждём публикацию результатов";
-    }
-
-    return this.startInMessage
-      ? `игра ${this.activeGame.name} ещё не началась${this.startInMessage}`
-      : `игра ${this.activeGame.name} ещё не началась`;
+  isOtherPreStartStatus() {
+    return !!this.activeGame && !this.hasRunningGame() && !this.isGettingWaiversStatus() && !this.isFinishedStatus();
   }
 
   ngOnDestroy() {
@@ -132,32 +131,69 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     this.countdownInterval = window.setInterval(() => {
-      this.startInMessage = this.getStartInMessage();
+      this.countdown = this.getCountdown();
+
+      if (!this.countdown) {
+        window.location.reload();
+      }
     }, 1000);
   }
 
-  private getStartInMessage(): string {
+  private getCountdown(): Countdown | undefined {
     if (!this.activeGame?.start_at || this.activeGame.status === "running" || this.activeGame.status === "finished") {
-      return "";
+      return undefined;
     }
 
     const startAtMs = Date.parse(this.activeGame.start_at);
     const diffMs = Math.max(startAtMs - Date.now(), 0);
     const totalSeconds = Math.floor(diffMs / 1000);
+
+    if (totalSeconds <= 0) {
+      return undefined;
+    }
+
     const days = Math.floor(totalSeconds / 86400);
     const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
     if (days > 0) {
-      return `, игра начнётся через ${days} дней ${hours} часов`;
+      return {
+        firstValue: days,
+        firstUnit: "days",
+        secondValue: hours,
+        secondUnit: "hours",
+      };
     }
 
     if (hours > 0) {
-      return `, игра начнётся через ${hours} часов ${minutes} минут`;
+      return {
+        firstValue: hours,
+        firstUnit: "hours",
+        secondValue: minutes,
+        secondUnit: "minutes",
+      };
     }
 
-    return `, игра начнётся через ${minutes} минут ${seconds} секунд`;
+    return {
+      firstValue: minutes,
+      firstUnit: "minutes",
+      secondValue: seconds,
+      secondUnit: "seconds",
+    };
+  }
+
+  countdownUnitLabel(unit: CountdownUnit): string {
+    switch (unit) {
+      case "days":
+        return "дней";
+      case "hours":
+        return "часов";
+      case "minutes":
+        return "минут";
+      case "seconds":
+        return "секунд";
+    }
   }
 
 }

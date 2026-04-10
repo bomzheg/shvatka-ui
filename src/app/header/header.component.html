@@ -1,5 +1,25 @@
 @if (hasActiveGame()) {
-  <div class="active-game-banner">{{ getBannerText() }}</div>
+  <div class="active-game-banner">
+    @if (hasRunningGame()) {
+      Идёт игра: {{ activeGame?.name }}
+    }
+
+    @if (isGettingWaiversStatus()) {
+      в настоящее время игра {{ activeGame?.name }} собирает вейверы
+    }
+
+    @if (isFinishedStatus()) {
+      игра завершена, ждём публикацию результатов
+    }
+
+    @if (isOtherPreStartStatus()) {
+      игра {{ activeGame?.name }} ещё не началась
+    }
+
+    @if (countdown) {
+      , игра начнётся через {{ countdown.firstValue }} {{ countdownUnitLabel(countdown.firstUnit) }} {{ countdown.secondValue }} {{ countdownUnitLabel(countdown.secondUnit) }}
+    }
+  </div>
 }
 <header>
   <div class="logo">
