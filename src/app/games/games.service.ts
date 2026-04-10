@@ -31,7 +31,7 @@ export class ActiveGame {
     public author: GameAuthor,
     public name: string,
     public status: string,
-    public start_at: string,
+    public start_at: string | null,
     public number: number,
   ) {
   }
