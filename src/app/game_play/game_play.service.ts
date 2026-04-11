@@ -3,6 +3,7 @@ import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {TimeHint} from "../game/game.service";
+import {Observable, tap} from "rxjs";
 
 export class CurrentHints {
   constructor(
@@ -11,6 +12,29 @@ export class CurrentHints {
     public level_number: number,
     public started_at: string,
     public game_id: number,
+  ) {
+  }
+}
+
+export class KeyEffect {
+  constructor(
+    public id: string,
+    public hints_: any[],
+    public bonus_minutes: number,
+    public level_up: boolean,
+    public next_level: string,
+  ) {
+  }
+}
+
+export class TypedKeyResult {
+  constructor(
+    public text: string,
+    public is_duplicate: boolean,
+    public wrong: boolean,
+    public at: string,
+    public effects: KeyEffect[],
+    public game_finished: boolean,
   ) {
   }
 }
@@ -42,5 +66,16 @@ export class GamePlayService {
 
   getCurrentHints(): CurrentHints {
     return this.currentHints!;
+  }
+
+  submitKey(text: string): Observable<TypedKeyResult> {
+    return this.http.post<TypedKeyResult>(`/games/running/key`, {text}).pipe(
+      tap(result => {
+        if (result.effects?.some(effect => effect.level_up)) {
+          this.snackBar.open("Уровень пройден! Загружаем следующий уровень.", 'Закрыть', {duration: 3000});
+          this.loadHints();
+        }
+      }),
+    );
   }
 }
