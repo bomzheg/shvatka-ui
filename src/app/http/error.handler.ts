@@ -1,6 +1,7 @@
 import {ErrorHandler, Injectable, NgZone} from "@angular/core";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {HttpErrorResponse} from "@angular/common/http";
+import {AuthService} from "../auth/auth.service";
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +10,7 @@ export class GlobalErrorHandler implements ErrorHandler {
   constructor(
     private _snackBar: MatSnackBar,
     private _zone: NgZone,
+    private authService: AuthService,
   ) { }
 
   handleError(error: any): void {
@@ -20,6 +22,7 @@ export class GlobalErrorHandler implements ErrorHandler {
       if (error.status === 401) {
         console.log("401 response: " + JSON.stringify(error));
         this._snackBar.open("Для выполнения этой операции необходимо залогиниться", 'Закрыть', {duration: 3000});
+        this.authService.showLoginForm();
       } else {
         console.error(error);
         this._snackBar.open("Какая-то сетевая(?) ошибка=(", 'Закрыть', {duration: 3000});

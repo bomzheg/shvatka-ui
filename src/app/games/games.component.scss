@@ -3,34 +3,45 @@
 .games-list {
   list-style: none;
   padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
 }
 
 .games-list-item {
-  padding: 5px;
-  border: 1px solid $shvatka_green;
-  border-radius: 10px;
-  margin-bottom: 10px;
+  border: 1px solid #d1e7d7;
+  border-radius: 12px;
+  background: #fff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.games-list-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
 }
 
 .games-list-item a {
   text-decoration: none;
-  color: var(--tg-theme-text-color);
-  box-sizing: border-box;
-  display: block;
-}
-.games-list-item div {
-  display: inline-block;
-  padding: 5px;
-  margin-right: 10px;
+  color: var(--tg-theme-text-color, #111827);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.8rem;
 }
 
 .game-number {
-  width: 20px;
+  background: #e7f7ec;
+  color: #17603a;
+  min-width: 2rem;
+  min-height: 2rem;
+  border-radius: 999px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
 }
 
 .game-name {
-  width: 90%;
-  text-align: center;
-  align-content: center;
+  text-align: left;
 }
-

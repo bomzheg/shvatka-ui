@@ -1,0 +1,28 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+}
+
+.app-shell {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 1rem auto 2rem;
+}
+
+.app-content {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    width: calc(100% - 1rem);
+    margin-top: 0.5rem;
+  }
+
+  .app-content {
+    border-radius: 12px;
+    padding: 0.9rem;
+  }
+}

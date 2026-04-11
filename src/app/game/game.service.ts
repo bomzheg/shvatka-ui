@@ -35,35 +35,6 @@ export enum HintType {
   sticker = "sticker",
 }
 
-const contentTypes: {[key in HintType]: string} = {
-  [HintType.photo]: "image/jpg",
-  [HintType.video]: "video/mpg4",
-  [HintType.audio]: "audio/mpeg",
-  [HintType.document]: "application/octet-stream",
-  [HintType.animation]: "video/mp4",
-  [HintType.voice]: "audio/ogg",
-  [HintType.video_note]: "video/mp4",
-  [HintType.sticker]: "image/webp",
-  [HintType.text]: "text/plain",
-  [HintType.gps]: "text/plain",
-  [HintType.venue]: "text/plain",
-  [HintType.contact]: "text/plain",
-}
-
-const haveFile: {[key in HintType]: boolean} = {
-  [HintType.photo]: true,
-  [HintType.video]: true,
-  [HintType.audio]: true,
-  [HintType.document]: true,
-  [HintType.animation]: true,
-  [HintType.voice]: true,
-  [HintType.video_note]: true,
-  [HintType.sticker]: true,
-  [HintType.text]: false,
-  [HintType.gps]: false,
-  [HintType.venue]: false,
-  [HintType.contact]: false,
-}
 interface HintPartArgs {
   type: HintType
   text?: string | undefined
@@ -102,22 +73,22 @@ export class HintPart {
   ) {}
 
   public static create({
-                type,
-                text,
-                latitude,
-                longitude,
-                title,
-                address,
-                foursquare_id,
-                foursquare_type,
-                caption,
-                file_guid,
-                thumb_guid,
-                phone_number,
-                first_name,
-                last_name,
-                vcard,
-              }: HintPartArgs) {
+    type,
+    text,
+    latitude,
+    longitude,
+    title,
+    address,
+    foursquare_id,
+    foursquare_type,
+    caption,
+    file_guid,
+    thumb_guid,
+    phone_number,
+    first_name,
+    last_name,
+    vcard,
+  }: HintPartArgs) {
     return new HintPart(
       type,
       text,
@@ -134,7 +105,7 @@ export class HintPart {
       first_name,
       last_name,
       vcard,
-    )
+    );
   }
 }
 
@@ -169,14 +140,14 @@ export class Level {
 }
 
 export class FullGame {
-constructor(
-  public id: number ,
-  public author: Player,
-  public name: string,
-  public status: string,
-  public start_at: string | undefined,
-  public levels: Level[],
-) {}
+  constructor(
+    public id: number,
+    public author: Player,
+    public name: string,
+    public status: string,
+    public start_at: string | undefined,
+    public levels: Level[],
+  ) {}
 }
 
 export enum KeyType {
@@ -184,6 +155,7 @@ export enum KeyType {
   simple = "simple",
   bonus = "bonus",
 }
+
 export class KeyTime {
   constructor(
     public text: string,
@@ -196,6 +168,7 @@ export class KeyTime {
   ) {
   }
 }
+
 export type Keys = Map<number, KeyTime[]>
 
 export class LevelTime {
@@ -209,13 +182,19 @@ export class LevelTime {
   ) {
   }
 }
+
 export class GameStat {
   constructor(
     public level_times: Map<number, LevelTime[]>,
   ) {
-
   }
 }
+
+type GameCacheItem = {
+  game?: FullGame;
+  keys?: Keys;
+  stat?: GameStat;
+};
 
 @Injectable({
   providedIn: 'root'
@@ -224,53 +203,142 @@ export class GameService {
   private game: FullGame | undefined;
   private keys: Keys | undefined;
   private stat: GameStat | undefined;
+  private currentGameId: number | undefined;
+  private requestVersion = 0;
+  private cache = new Map<number, GameCacheItem>();
+
+  private isGameLoading = false;
+  private isKeysLoading = false;
+  private isStatLoading = false;
 
   constructor(private http: HttpAdapter, private snackBar: MatSnackBar) { }
 
   loadGame(id: number) {
+    this.currentGameId = id;
+    const version = ++this.requestVersion;
+    const cached = this.cache.get(id);
+
+    this.game = cached?.game;
+    this.keys = cached?.keys;
+    this.stat = cached?.stat;
+
+    this.fetchGame(id, version, !cached?.game);
+    this.fetchKeys(id, version, !cached?.keys);
+    this.fetchStat(id, version, !cached?.stat);
+  }
+
+  private fetchGame(id: number, version: number, shouldFetch: boolean) {
+    if (!shouldFetch) {
+      this.isGameLoading = false;
+      return;
+    }
+
+    this.isGameLoading = true;
     this.http.get<FullGame>(`/games/${id}`)
       .subscribe({
-        next: g => {this.game = g;},
+        next: g => {
+          this.upsertCache(id, {game: g});
+          if (this.shouldApply(id, version)) {
+            this.game = g;
+            this.isGameLoading = false;
+          }
+        },
         error: error => {
+          if (this.shouldApply(id, version)) {
+            this.isGameLoading = false;
+          }
+
           if (error instanceof HttpErrorResponse && error.status === 401) {
-            console.log("game id 401 response: " + JSON.stringify(error));
             this.snackBar.open("Сценарии игр доступны только авторизованным пользователям", 'Закрыть', {duration: 3000});
           } else {
             throw error;
           }
         }
-      })
-    this.http.get<Keys>(`/games/${id}/keys`)
-      .subscribe({
-        next: k => { this.keys = k;},
-        error: error => {
-          if (error instanceof HttpErrorResponse && error.status === 401) {
-            console.log("keys auth error")
-          } else {
-            throw error;
-          }
-        }
-    })
-    this.http.get<GameStat>(`/games/${id}/stat`)
-      .subscribe({
-        next: s => { this.stat = s;},
-        error: error => {
-          if (error instanceof HttpErrorResponse && error.status === 401) {
-            console.log("stat auth error")
-          } else {
-            throw error;
-          }
-        }
-    })
+      });
   }
 
-  getGame(): FullGame {
-    return this.game!;
+  private fetchKeys(id: number, version: number, shouldFetch: boolean) {
+    if (!shouldFetch) {
+      this.isKeysLoading = false;
+      return;
+    }
+
+    this.isKeysLoading = true;
+    this.http.get<Keys>(`/games/${id}/keys`)
+      .subscribe({
+        next: k => {
+          this.upsertCache(id, {keys: k});
+          if (this.shouldApply(id, version)) {
+            this.keys = k;
+            this.isKeysLoading = false;
+          }
+        },
+        error: error => {
+          if (this.shouldApply(id, version)) {
+            this.isKeysLoading = false;
+          }
+
+          if (!(error instanceof HttpErrorResponse && error.status === 401)) {
+            throw error;
+          }
+        }
+      });
   }
-  getKeys() : Keys {
-    return this.keys!;
+
+  private fetchStat(id: number, version: number, shouldFetch: boolean) {
+    if (!shouldFetch) {
+      this.isStatLoading = false;
+      return;
+    }
+
+    this.isStatLoading = true;
+    this.http.get<GameStat>(`/games/${id}/stat`)
+      .subscribe({
+        next: s => {
+          this.upsertCache(id, {stat: s});
+          if (this.shouldApply(id, version)) {
+            this.stat = s;
+            this.isStatLoading = false;
+          }
+        },
+        error: error => {
+          if (this.shouldApply(id, version)) {
+            this.isStatLoading = false;
+          }
+
+          if (!(error instanceof HttpErrorResponse && error.status === 401)) {
+            throw error;
+          }
+        }
+      });
   }
-  getStat(): GameStat {
-    return this.stat!;
+
+  private shouldApply(id: number, version: number): boolean {
+    return this.currentGameId === id && this.requestVersion === version;
+  }
+
+  private upsertCache(id: number, patch: GameCacheItem) {
+    const existing = this.cache.get(id) ?? {};
+    this.cache.set(id, {...existing, ...patch});
+  }
+
+  isLoading(): boolean {
+    return this.isGameLoading || this.isKeysLoading || this.isStatLoading;
+  }
+
+  hasLoadedCurrentGameData(): boolean {
+    return !!this.game && !!this.keys && !!this.stat;
+  }
+
+  getGame(): FullGame | undefined {
+    return this.game;
+  }
+
+  getKeys(): Keys | undefined {
+    return this.keys;
+  }
+
+  getStat(): GameStat | undefined {
+    return this.stat;
   }
 }

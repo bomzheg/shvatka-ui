@@ -1,57 +1,85 @@
-.game-name {
+
+.loading-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #1f2937;
+  margin: 0.5rem 0 1rem;
+}
+
+.loading-spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid #c7d2fe;
+  border-top-color: #4f46e5;
+  animation: spin 0.8s linear infinite;
+}
+
+.empty-state {
+  color: #6b7280;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.game-name,
+.level-header,
+.game-scn-spoiler,
+.game-keys-spoiler,
+.game-stat-spoiler,
+.keys-log h3 {
   text-align: center;
 }
 
-.level-header {
-  text-align: center;
+details {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.75rem;
+  margin-bottom: 0.85rem;
 }
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
 .level-header::before {
   display: inline-block;
   content: "";
-  border-top: .1rem solid black;
+  border-top: .1rem solid #9ca3af;
   width: 100%;
   margin: 0;
   transform: translateY(-1rem);
 }
 
-.hint-part {
-  display: block;
+.level-keys,
+.hints {
+  padding-left: 1.1rem;
 }
 
-.game-scn-spoiler {
-  text-align: center;
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
 }
 
-.level-keys {
-
-}
-.keys-log table, th, td {
-  border: 1px solid;
-}
-.keys-log table {
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
+table {
+  width: 100%;
+  min-width: 620px;
   border-collapse: collapse;
-}
-
-.game-keys-spoiler {
   text-align: center;
 }
 
-.keys-log h3 {
-  text-align: center;
-}
-
-.game-stat-spoiler {
-  text-align: center;
-}
-.game-stat table, th, td {
-  border: 1px solid;
-}
-.game-stat table {
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-  border-collapse: collapse;
+th,
+td {
+  border: 1px solid #d1d5db;
+  padding: 0.45rem;
 }
