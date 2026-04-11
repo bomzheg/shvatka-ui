@@ -38,6 +38,14 @@ export class HttpAdapter {
     );
   }
 
+  put<T>(url: string, body: any): Observable<T> {
+    return this.http.put<T>(
+      this.config.apiUrl + url,
+      body,
+      this.getOptions(),
+    );
+  }
+
   getFileUrl(gameId: number, fileId: string): string {
     return `${this.config.apiUrl}/games/${gameId}/files/${fileId}`
   }
