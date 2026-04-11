@@ -1,0 +1,69 @@
+.game-name {
+  text-align: center;
+}
+
+.level-header {
+  text-align: center;
+}
+.level-header::before {
+  display: inline-block;
+  content: "";
+  border-top: .1rem solid black;
+  width: 100%;
+  margin: 0;
+  transform: translateY(-1rem);
+}
+
+.hint-part {
+  display: block;
+}
+
+.game-scn-spoiler {
+  text-align: center;
+}
+
+.level-keys {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+#key-input {
+  text-transform: uppercase;
+}
+
+.key-result {
+  margin-left: 8px;
+}
+.keys-log table, th, td {
+  border: 1px solid;
+}
+.keys-log table {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  border-collapse: collapse;
+}
+
+.game-keys-spoiler {
+  text-align: center;
+}
+
+.keys-log h3 {
+  text-align: center;
+}
+
+.game-stat-spoiler {
+  text-align: center;
+}
+.game-stat table, th, td {
+  border: 1px solid;
+}
+.game-stat table {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  border-collapse: collapse;
+}

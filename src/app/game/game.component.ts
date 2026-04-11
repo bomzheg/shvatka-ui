@@ -21,7 +21,12 @@ export class GameComponent implements OnInit {
     ) {
   }
   ngOnInit(): void {
-    this.gameService.loadGame(Number(this.route.snapshot.paramMap.get('id')));
+    const gameId = Number(this.route.snapshot.paramMap.get('id'));
+    if (Number.isNaN(gameId)) {
+      return;
+    }
+
+    this.gameService.loadGame(gameId);
   }
 
   getGame() {
