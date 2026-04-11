@@ -84,7 +84,7 @@
 
 .mobile-menu-button {
   display: none;
-  justify-self: end;
+  justify-self: start;
   background: transparent;
   color: #fff;
   border: none;
@@ -97,7 +97,7 @@
 
 @media (max-width: 768px) {
   .main-header {
-    grid-template-columns: auto auto;
+    grid-template-columns: auto 1fr;
   }
 
   .desktop-nav,
