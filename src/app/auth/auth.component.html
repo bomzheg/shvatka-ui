@@ -1,5 +1,6 @@
 <div class="login-overlay" [ngClass]="isVisible ? 'visible' : 'hidden'" id="loginFormBackCover" (click)="closeLoginForm()">
   <form class="login-form" id="loginForm" (click)="$event.stopPropagation()" (ngSubmit)="login(username, password)">
+    <button type="button" class="icon-close" (click)="closeLoginForm()" aria-label="Закрыть">✕</button>
     <h3>Авторизация</h3>
 
     <label for="username">Имя пользователя</label>
@@ -9,7 +10,6 @@
     <input type="password" id="password" name="password" [(ngModel)]="password" autocomplete="current-password">
 
     <div class="actions">
-      <button type="button" class="secondary" (click)="closeLoginForm()">Закрыть</button>
       <button type="submit" class="primary">Войти</button>
     </div>
 

@@ -56,11 +56,6 @@
   <button class="mobile-close" type="button" (click)="closeMobileMenu()" aria-label="Close menu">
     <mat-icon>close</mat-icon>
   </button>
-  <a routerLink="/" class="mobile-link" (click)="onNavClick('/', $event)">Главная</a>
-  <a routerLink="/games" class="mobile-link" (click)="onNavClick('/games', $event)">Прошедшие игры</a>
-  @if (hasRunningGame()) {
-    <a routerLink="/games/running" class="mobile-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
-  }
   <div class="mobile-auth">
     @if (isAuthenticated()) {
       <p class="mobile-username">{{ getMe()?.username }}</p>
@@ -69,6 +64,11 @@
       <button class="solid-button" type="button" (click)="openLoginForm()">Войти</button>
     }
   </div>
+  <a routerLink="/" class="mobile-link" (click)="onNavClick('/', $event)">Главная</a>
+  <a routerLink="/games" class="mobile-link" (click)="onNavClick('/games', $event)">Прошедшие игры</a>
+  @if (hasRunningGame()) {
+    <a routerLink="/games/running" class="mobile-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
+  }
 </aside>
 
 <app-auth/>
