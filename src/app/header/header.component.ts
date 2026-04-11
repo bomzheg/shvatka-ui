@@ -99,7 +99,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   hasRunningGame() {
-    return this.activeGame?.status === "running";
+    if (!this.activeGame || this.isFinishedStatus()) {
+      return false;
+    }
+
+    if (this.activeGame.status === "running") {
+      return true;
+    }
+
+    return this.isStartTimeReached();
   }
 
   isGettingWaiversStatus() {
@@ -130,13 +138,40 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.isStartTimeReached()) {
+      this.reloadOnceAfterCountdown();
+      return;
+    }
+
     this.countdownInterval = window.setInterval(() => {
       this.countdown = this.getCountdown();
 
       if (!this.countdown) {
-        window.location.reload();
+        this.reloadOnceAfterCountdown();
       }
     }, 1000);
+  }
+
+  private isStartTimeReached(): boolean {
+    if (!this.activeGame?.start_at) {
+      return false;
+    }
+
+    return Date.parse(this.activeGame.start_at) <= Date.now();
+  }
+
+  private reloadOnceAfterCountdown() {
+    if (!this.activeGame?.start_at) {
+      return;
+    }
+
+    const reloadKey = `active-game-reload:${this.activeGame.id}:${this.activeGame.start_at}`;
+    if (this.window.sessionStorage.getItem(reloadKey) === "done") {
+      return;
+    }
+
+    this.window.sessionStorage.setItem(reloadKey, "done");
+    window.location.reload();
   }
 
   private getCountdown(): Countdown | undefined {
