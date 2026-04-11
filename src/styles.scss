@@ -1,6 +1,10 @@
 /* Importing Roboto font for Material Design */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-$shvatka_green: #4CAF50;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+$shvatka_green: #2f8f4e;
+
+:root {
+  color-scheme: light;
+}
 
 .hidden {
   display: none;
@@ -12,12 +16,32 @@ $shvatka_green: #4CAF50;
   display: flex;
 }
 
-html, body { height: 100%; }
-body {
-  margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-
-  color: var(--tg-theme-text-color);
-  background-color: var(--tg-theme-bg-color);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: Inter, Roboto, "Helvetica Neue", sans-serif;
+  overflow-x: hidden;
+
+  color: var(--tg-theme-text-color, #1f2937);
+  background: linear-gradient(180deg, #f1f6f3 0%, #eef2ff 100%);
+}
+
+app-root {
+  display: block;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+table,
+video,
+pre {
+  max-width: 100%;
+}

@@ -1,57 +1,54 @@
-.game-name {
+.game-name,
+.level-header,
+.game-scn-spoiler,
+.game-keys-spoiler,
+.game-stat-spoiler,
+.keys-log h3 {
   text-align: center;
 }
 
-.level-header {
-  text-align: center;
+details {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.75rem;
+  margin-bottom: 0.85rem;
 }
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
 .level-header::before {
   display: inline-block;
   content: "";
-  border-top: .1rem solid black;
+  border-top: .1rem solid #9ca3af;
   width: 100%;
   margin: 0;
   transform: translateY(-1rem);
 }
 
-.hint-part {
-  display: block;
+.level-keys,
+.hints {
+  padding-left: 1.1rem;
 }
 
-.game-scn-spoiler {
-  text-align: center;
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
 }
 
-.level-keys {
-
-}
-.keys-log table, th, td {
-  border: 1px solid;
-}
-.keys-log table {
-  text-align: center;
-  margin-left: auto;
-  margin-right: auto;
+table {
+  width: 100%;
+  min-width: 620px;
   border-collapse: collapse;
-}
-
-.game-keys-spoiler {
   text-align: center;
 }
 
-.keys-log h3 {
-  text-align: center;
-}
-
-.game-stat-spoiler {
-  text-align: center;
-}
-.game-stat table, th, td {
-  border: 1px solid;
-}
-.game-stat table {
-  margin-left: auto;
-  margin-right: auto;
-  text-align: center;
-  border-collapse: collapse;
+th,
+td {
+  border: 1px solid #d1d5db;
+  padding: 0.45rem;
 }

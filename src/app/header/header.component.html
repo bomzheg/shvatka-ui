@@ -21,31 +21,54 @@
     }
   </div>
 }
-<header>
-  <div class="logo">
-    <a routerLink="" routerLinkActive="active" ariaCurrentWhenActive="page" class="home-link">Схватка</a>
-  </div>
-  <nav>
-    <ul>
-      <li><a routerLink="games" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-link">Прошедшие игры</a></li>
-      @if (hasRunningGame()) {
-        <li><a routerLink="games/running" routerLinkActive="active" ariaCurrentWhenActive="page" class="nav-link" >Текущая игра</a></li>
-      }
-    </ul>
+
+<header class="main-header">
+  <a routerLink="/" class="home-link" (click)="onNavClick('/', $event)">Схватка</a>
+
+  <button class="mobile-menu-button" type="button" (click)="openMobileMenu()" aria-label="Open menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <nav class="desktop-nav">
+    <a routerLink="/games" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games', $event)">Прошедшие игры</a>
+    @if (hasRunningGame()) {
+      <a routerLink="/games/running" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
+    }
   </nav>
+
   <div class="user-section">
-    <div class="user-info" [ngClass]="{hidden: !isAuthenticated(), flex: isAuthenticated()}">
-      <a href="#" class="avatar-link">
-        <mat-icon svgIcon="account-circle"/>
-        <p>{{getMe()?.username}}</p>
-      </a>
-      <div class="user-dropdown" >
-        <button class="logout-button" (click)="logout()">Выйти</button>
+    @if (isAuthenticated()) {
+      <div class="user-info">
+        <a href="#" class="avatar-link">
+          <mat-icon svgIcon="account-circle"/>
+          <span>{{ getMe()?.username }}</span>
+        </a>
+        <button class="ghost-button" type="button" (click)="logout()">Выйти</button>
       </div>
-    </div>
-    <div class="login-section"  [ngClass]='{hidden: isAuthenticated(), flex: !isAuthenticated()}' >
-      <button class="login-button" (click)="openLoginForm()">Войти</button>
-    </div>
+    } @else {
+      <button class="solid-button" type="button" (click)="openLoginForm()">Войти</button>
+    }
   </div>
 </header>
+
+<div class="mobile-menu-backdrop" [class.open]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+<aside class="mobile-menu" [class.open]="isMobileMenuOpen">
+  <button class="mobile-close" type="button" (click)="closeMobileMenu()" aria-label="Close menu">
+    <mat-icon>close</mat-icon>
+  </button>
+  <a routerLink="/" class="mobile-link" (click)="onNavClick('/', $event)">Главная</a>
+  <a routerLink="/games" class="mobile-link" (click)="onNavClick('/games', $event)">Прошедшие игры</a>
+  @if (hasRunningGame()) {
+    <a routerLink="/games/running" class="mobile-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
+  }
+  <div class="mobile-auth">
+    @if (isAuthenticated()) {
+      <p class="mobile-username">{{ getMe()?.username }}</p>
+      <button class="ghost-button" type="button" (click)="logout()">Выйти</button>
+    } @else {
+      <button class="solid-button" type="button" (click)="openLoginForm()">Войти</button>
+    }
+  </div>
+</aside>
+
 <app-auth/>

@@ -1,9 +1,9 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {DOCUMENT, NgClass, NgOptimizedImage, NgStyle} from "@angular/common";
+import {DOCUMENT, NgClass, NgStyle} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
 import {UserService} from "../auth/user.service";
-import {RouterLink, RouterLinkActive} from "@angular/router";
+import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {ActiveGame, GamesService} from "../games/games.service";
 
@@ -20,7 +20,6 @@ interface Countdown {
   selector: 'app-header',
   standalone: true,
   imports: [
-    NgOptimizedImage,
     AuthComponent,
     NgClass,
     NgStyle,
@@ -38,12 +37,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
+  isMobileMenuOpen = false;
 
   constructor(
     @Inject(DOCUMENT) private _document: any,
     private authService: AuthService,
     private userService: UserService,
     private gamesService: GamesService,
+    private router: Router,
   ) {
     this.window = this._document.defaultView;
     this.tg = this.window.Telegram;
@@ -52,11 +53,32 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   openLoginForm() {
     this.authService.showLoginForm();
+    this.closeMobileMenu();
   }
 
-
   logout() {
-    this.authService.logout().subscribe(() => this.userService.clearUser())
+    this.authService.logout().subscribe(() => this.userService.clearUser());
+    this.closeMobileMenu();
+  }
+
+  onNavClick(targetUrl: string, event: MouseEvent) {
+    this.closeMobileMenu();
+
+    const normalizedCurrent = this.router.url.split('?')[0].replace(/\/$/, '') || '/';
+    const normalizedTarget = targetUrl.replace(/\/$/, '') || '/';
+
+    if (normalizedCurrent === normalizedTarget) {
+      event.preventDefault();
+      window.location.reload();
+    }
+  }
+
+  openMobileMenu() {
+    this.isMobileMenuOpen = true;
+  }
+
+  closeMobileMenu() {
+    this.isMobileMenuOpen = false;
   }
 
   getMe() {
@@ -74,22 +96,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.setupCountdownTicker();
     });
 
-    if (this.tgWa.initData) {
-      console.debug("let's try to auth with webapp")
+    if (this.tgWa?.initData) {
       this.authService.authenticateWebApp(this.tgWa)
         .subscribe({
           next: async () => {
-            console.debug("success webapp auth, let's load profile")
-            await this.userService.loadMe()
-            this.tgWa.ready()
+            await this.userService.loadMe();
+            this.tgWa.ready();
           },
-          error: async (err) => {
-            console.error("webapp auth error " + err.message);
+          error: async () => {
             await this.userService.loadMe();
           },
         });
     } else {
-      console.debug("no webapp auth data, so try to use cookies if exists")
       await this.userService.loadMe();
     }
   }
@@ -230,5 +248,4 @@ export class HeaderComponent implements OnInit, OnDestroy {
         return "секунд";
     }
   }
-
 }

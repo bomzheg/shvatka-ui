@@ -4,7 +4,7 @@
   <div class="scenario">
     @for (level of getGame().levels; track level.db_id) {
       <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
-      <h4 class="level-keys-header">Ключи: </h4>
+      <h4 class="level-keys-header">Ключи:</h4>
       <ul class="level-keys">
         @for (key of level.scenario.keys; track key) {
           <li class="level-key">{{ key }}</li>
@@ -24,15 +24,17 @@
     }
   </div>
 </details>
+
 <details>
   <summary class="game-keys-spoiler">Ключи</summary>
   <div class="keys-log">
     @for (teamKeys of Object.entries(getKeys()); track teamKeys[0]) {
       @if (teamKeys[1].length > 0) {
         <hr>
-        <h3>Ключи команды {{teamKeys[1][0].team.name}}</h3>
-        <table>
-          <thead class="game-keys-table">
+        <h3>Ключи команды {{ teamKeys[1][0].team.name }}</h3>
+        <div class="table-wrap">
+          <table>
+            <thead class="game-keys-table">
             <tr>
               <th>Тип</th>
               <th>Ключ</th>
@@ -40,80 +42,79 @@
               <th>Время</th>
               <th>Уровень</th>
             </tr>
-          </thead>
-          <tbody>
-            @for (key of teamKeys[1]; track key) {
-              <tr>
-                <!-- {{key.level_number}} -->
-                <td>
-                  @if (key.is_duplicate) {
-                    <span>💤</span>
-                  } @else {
-                    @switch (key.type_) {
-                      @case (KeyType.simple) {
-                        <span>✅</span>
-                      }
-                      @case (KeyType.wrong) {
-                        <span>❌</span>
-                      }
-                      @case (KeyType.bonus) {
-                        <span>💰</span>
-                      }
-                      @default {
-                        <span>❔</span>
+            </thead>
+            <tbody>
+              @for (key of teamKeys[1]; track key) {
+                <tr>
+                  <td>
+                    @if (key.is_duplicate) {
+                      <span>💤</span>
+                    } @else {
+                      @switch (key.type_) {
+                        @case (KeyType.simple) {
+                          <span>✅</span>
+                        }
+                        @case (KeyType.wrong) {
+                          <span>❌</span>
+                        }
+                        @case (KeyType.bonus) {
+                          <span>💰</span>
+                        }
+                        @default {
+                          <span>❔</span>
+                        }
                       }
                     }
-                  }
-                </td>
-                <td>{{key.text}}</td>
-                <td>{{key.player.name_mention}}</td>
-                <td>{{toLocal(key.at)}}</td>
-                <td>{{key.level_number + 1}}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+                  </td>
+                  <td>{{ key.text }}</td>
+                  <td>{{ key.player.name_mention }}</td>
+                  <td>{{ toLocal(key.at) }}</td>
+                  <td>{{ key.level_number + 1 }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
     }
     <hr>
   </div>
 </details>
+
 <details>
   <summary class="game-stat-spoiler">Результаты игры</summary>
   <div class="game-stat">
     @if (Object.keys(getStat()).length > 0) {
-      <table>
-        <thead>
+      <div class="table-wrap">
+        <table>
+          <thead>
           <tr>
             <th>Команда</th>
             @for (level of getLevels(); track level.number_in_game) {
               <th>
-                Уровень {{level.number_in_game! + 1}}
+                Уровень {{ level.number_in_game! + 1 }}
                 <br>
-                {{level.name_id}}
+                {{ level.name_id }}
               </th>
             }
           </tr>
-        </thead>
-        <tbody>
-          @for (results of Object.entries(getStat().level_times); track results[0]) {
-            @if (results[1].length > 0) {
-              <tr>
-                <td>
-                  {{results[1][0].team.name}}
-                </td>
-                @for (lt of results[1]; track lt.id) {
-                  @if (!$first) {
-                    <td>
-                      {{toLocal(lt.start_at)}}
-                    </td>
+          </thead>
+          <tbody>
+            @for (results of Object.entries(getStat().level_times); track results[0]) {
+              @if (results[1].length > 0) {
+                <tr>
+                  <td>{{ results[1][0].team.name }}</td>
+                  @for (lt of results[1]; track lt.id) {
+                    @if (!$first) {
+                      <td>{{ toLocal(lt.start_at) }}</td>
+                    }
                   }
-                }
-              </tr>
+                </tr>
+              }
             }
-          }
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     }
   </div>
 </details>

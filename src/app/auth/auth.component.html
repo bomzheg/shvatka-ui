@@ -1,11 +1,17 @@
-<div [ngClass]="isVisible ? 'visible' : 'hidden'" id="loginFormBackCover">
-  <form class="login-form" id="loginForm">
-    <label for="username">Имя пользователя:</label>
-    <input type="text" id="username" name="username" [(ngModel)]="username">
-    <label for="password">Пароль:</label>
-    <input type="password" id="password" name="password" [(ngModel)]="password">
-    <button (click)="closeLoginForm()">Закрыть</button>
-    <button (click)="login(username, password)">Войти</button>
+<div class="login-overlay" [ngClass]="isVisible ? 'visible' : 'hidden'" id="loginFormBackCover" (click)="closeLoginForm()">
+  <form class="login-form" id="loginForm" (click)="$event.stopPropagation()" (ngSubmit)="login(username, password)">
+    <h3>Авторизация</h3>
+
+    <label for="username">Имя пользователя</label>
+    <input type="text" id="username" name="username" [(ngModel)]="username" autocomplete="username">
+
+    <label for="password">Пароль</label>
+    <input type="password" id="password" name="password" [(ngModel)]="password" autocomplete="current-password">
+
+    <div class="actions">
+      <button type="button" class="secondary" (click)="closeLoginForm()">Закрыть</button>
+      <button type="submit" class="primary">Войти</button>
+    </div>
 
     <div class="tg-login-widget">
       <div #script style='{display: none}'>
@@ -13,5 +19,4 @@
       </div>
     </div>
   </form>
-
 </div>
