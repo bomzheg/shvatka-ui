@@ -1,0 +1,33 @@
+<section class="profile-page">
+  <h1>Профиль</h1>
+
+  @if (isAuthenticated) {
+    <p class="username">Пользователь: <strong>{{ username }}</strong></p>
+
+    <form class="password-form" (ngSubmit)="changePassword()">
+      <label for="newPassword">Новый пароль</label>
+      <input
+        id="newPassword"
+        name="newPassword"
+        type="password"
+        [(ngModel)]="newPassword"
+        autocomplete="new-password"
+      />
+
+      <label for="confirmPassword">Повторите пароль</label>
+      <input
+        id="confirmPassword"
+        name="confirmPassword"
+        type="password"
+        [(ngModel)]="confirmPassword"
+        autocomplete="new-password"
+      />
+
+      <button class="primary" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Сохраняем...' : 'Изменить пароль' }}
+      </button>
+    </form>
+  } @else {
+    <p>Авторизуйтесь, чтобы изменить пароль.</p>
+  }
+</section>
