@@ -32,6 +32,17 @@ export class HttpAdapter {
     );
   }
 
+  put<T>(url: string, body: any): Observable<T> {
+    return this.http.put<T>(
+      this.config.apiUrl + url,
+      body,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "application/json"},
+      },
+    );
+  }
+
   getFileUrl(gameId: number, fileId: string): string {
     return `${this.config.apiUrl}/games/${gameId}/files/${fileId}`
   }

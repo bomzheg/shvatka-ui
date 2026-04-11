@@ -1,6 +1,7 @@
 import {Injectable} from "@angular/core";
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
+import {Observable} from "rxjs";
 
 export class UserData {
   db_id: number | undefined;
@@ -41,5 +42,9 @@ export class UserService {
 
   public clearUser() {
     this.me = undefined;
+  }
+
+  public changePassword(newPassword: string): Observable<void> {
+    return this.http.put<void>("/users/me/password", JSON.stringify(newPassword));
   }
 }

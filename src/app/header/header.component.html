@@ -39,7 +39,7 @@
   <div class="user-section">
     @if (isAuthenticated()) {
       <div class="user-info">
-        <a href="#" class="avatar-link">
+        <a routerLink="/profile" class="avatar-link" (click)="onNavClick('/profile', $event)">
           <mat-icon svgIcon="account-circle"/>
           <span>{{ getMe()?.username }}</span>
         </a>
@@ -66,6 +66,9 @@
   </div>
   <a routerLink="/" class="mobile-link" (click)="onNavClick('/', $event)">Главная</a>
   <a routerLink="/games" class="mobile-link" (click)="onNavClick('/games', $event)">Прошедшие игры</a>
+  @if (isAuthenticated()) {
+    <a routerLink="/profile" class="mobile-link" (click)="onNavClick('/profile', $event)">Профиль</a>
+  }
   @if (hasRunningGame()) {
     <a routerLink="/games/running" class="mobile-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
   }
