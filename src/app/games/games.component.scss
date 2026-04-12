@@ -11,7 +11,7 @@
 .games-list-item {
   border: 1px solid #d1e7d7;
   border-radius: 12px;
-  background: #fff;
+  background: var(--tg-theme-secondary-bg-color, #fff);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 

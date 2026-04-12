@@ -44,17 +44,26 @@ export class TypedKeyResult {
 })
 export class GamePlayService {
   private currentHints: CurrentHints | undefined;
+  private isHintsLoading = false;
+  private authRequired = false;
 
   constructor(private http: HttpAdapter, private snackBar: MatSnackBar) { }
 
   loadHints() {
+    this.isHintsLoading = true;
+    this.authRequired = false;
     this.http.get<CurrentHints>(`/games/running/level/current/hints`)
       .subscribe({
         next: h => {
           this.currentHints = h;
+          this.isHintsLoading = false;
         },
         error: error => {
+          this.isHintsLoading = false;
+          this.currentHints = undefined;
+
           if (error instanceof HttpErrorResponse && error.status === 401) {
+            this.authRequired = true;
             console.log("current hint 401 response: " + JSON.stringify(error));
             this.snackBar.open("Играть можно только авторизованным пользователям в составе команд", 'Закрыть', {duration: 3000});
           } else {
@@ -64,8 +73,16 @@ export class GamePlayService {
       })
   }
 
-  getCurrentHints(): CurrentHints {
-    return this.currentHints!;
+  getCurrentHints(): CurrentHints | undefined {
+    return this.currentHints;
+  }
+
+  hintsLoading(): boolean {
+    return this.isHintsLoading;
+  }
+
+  isAuthRequired(): boolean {
+    return this.authRequired;
   }
 
   submitKey(text: string): Observable<TypedKeyResult> {
