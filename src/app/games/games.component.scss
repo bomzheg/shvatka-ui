@@ -11,7 +11,7 @@
 .games-list-item {
   border: 1px solid #d1e7d7;
   border-radius: 12px;
-  background: var(--tg-theme-secondary-bg-color, #fff);
+  background: var(--app-surface);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -22,7 +22,7 @@
 
 .games-list-item a {
   text-decoration: none;
-  color: var(--tg-theme-text-color, #111827);
+  color: var(--app-text);
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 0.75rem;

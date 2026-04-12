@@ -18,6 +18,26 @@ $shvatka_green: #2f8f4e;
   box-sizing: border-box;
 }
 
+:root {
+  --app-bg: linear-gradient(180deg, #f1f6f3 0%, #eef2ff 100%);
+  --app-surface: #ffffff;
+  --app-text: #1f2937;
+  --app-muted-text: #4b5563;
+  --app-border: #d1d5db;
+  --app-header-bg: #205d35;
+  --app-header-text: #f6fff8;
+}
+
+:root[data-theme='dark'] {
+  --app-bg: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+  --app-surface: #1f2937;
+  --app-text: #f3f4f6;
+  --app-muted-text: #cbd5e1;
+  --app-border: #374151;
+  --app-header-bg: #123b24;
+  --app-header-text: #ecfdf3;
+}
+
 html, body { height: 100%; }
 
 body {
@@ -25,8 +45,8 @@ body {
   font-family: Inter, Roboto, "Helvetica Neue", sans-serif;
   overflow-x: hidden;
 
-  color: var(--tg-theme-text-color, #1f2937);
-  background: var(--tg-theme-bg-color, linear-gradient(180deg, #f1f6f3 0%, #eef2ff 100%));
+  color: var(--app-text);
+  background: var(--app-bg);
 }
 
 app-root {

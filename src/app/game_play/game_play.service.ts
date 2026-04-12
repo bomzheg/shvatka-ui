@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {TimeHint} from "../game/game.service";
+import {TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
 
 export class CurrentHints {

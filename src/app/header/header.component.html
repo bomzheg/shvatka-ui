@@ -36,6 +36,21 @@
     }
   </nav>
 
+
+  <div class="theme-picker">
+    <label for="theme-mode" class="theme-label">Тема</label>
+    <select
+      id="theme-mode"
+      class="theme-select"
+      [ngModel]="selectedThemeMode"
+      (ngModelChange)="setThemeMode($event)"
+    >
+      @for (mode of themeModes; track mode) {
+        <option [ngValue]="mode">{{ getThemeModeLabel(mode) }}</option>
+      }
+    </select>
+  </div>
+
   <div class="user-section">
     @if (isAuthenticated()) {
       <div class="user-info">
@@ -57,6 +72,21 @@
     <mat-icon>close</mat-icon>
   </button>
   <div class="mobile-auth">
+
+  <div class="theme-picker mobile-theme-picker">
+    <label for="theme-mode-mobile" class="theme-label">Тема</label>
+    <select
+      id="theme-mode-mobile"
+      class="theme-select"
+      [ngModel]="selectedThemeMode"
+      (ngModelChange)="setThemeMode($event)"
+    >
+      @for (mode of themeModes; track mode) {
+        <option [ngValue]="mode">{{ getThemeModeLabel(mode) }}</option>
+      }
+    </select>
+  </div>
+
     @if (isAuthenticated()) {
       <p class="mobile-username">{{ getMe()?.username }}</p>
       <button class="ghost-button" type="button" (click)="logout()">Выйти</button>

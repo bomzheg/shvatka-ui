@@ -1,4 +1,5 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {FormsModule} from "@angular/forms";
 import {DOCUMENT, NgClass, NgStyle} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
@@ -6,6 +7,7 @@ import {UserService} from "../auth/user.service";
 import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {ActiveGame, GamesService} from "../games/games.service";
+import {THEME_MODES, ThemeMode, ThemeService} from "../theme/theme.service";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
 
@@ -26,6 +28,7 @@ interface Countdown {
     RouterLink,
     RouterLinkActive,
     MatIcon,
+    FormsModule,
   ],
   templateUrl: 'header.component.html',
   styleUrl: './header.component.scss',
@@ -38,6 +41,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
   isMobileMenuOpen = false;
+  readonly themeModes = THEME_MODES;
+  selectedThemeMode: ThemeMode = "system";
 
   constructor(
     @Inject(DOCUMENT) private _document: any,
@@ -45,10 +50,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private gamesService: GamesService,
     private router: Router,
+    private themeService: ThemeService,
   ) {
     this.window = this._document.defaultView;
-    this.tg = this.window.Telegram;
-    this.tgWa = this.tg.WebApp;
+    this.tg = this.window?.Telegram;
+    this.tgWa = this.tg?.WebApp;
   }
 
   openLoginForm() {
@@ -81,6 +87,22 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isMobileMenuOpen = false;
   }
 
+  setThemeMode(mode: ThemeMode) {
+    this.selectedThemeMode = mode;
+    this.themeService.setMode(mode);
+  }
+
+  getThemeModeLabel(mode: ThemeMode): string {
+    switch (mode) {
+      case "system":
+        return "Системная";
+      case "light":
+        return "Светлая";
+      case "dark":
+        return "Тёмная";
+    }
+  }
+
   getMe() {
     return this.userService.getMe();
   }
@@ -90,6 +112,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
+    this.selectedThemeMode = this.themeService.getMode();
     this.gamesService.getActiveGame().subscribe(game => {
       this.activeGame = game;
       this.countdown = this.getCountdown();
