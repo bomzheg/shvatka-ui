@@ -41,7 +41,7 @@
 details {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
-  background: #fff;
+  background: var(--tg-theme-secondary-bg-color, #fff);
   padding: 0.75rem;
   margin-bottom: 0.85rem;
 }

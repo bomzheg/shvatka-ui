@@ -1,23 +1,33 @@
-<div class="scenario">
-  <div class="level-keys">
-    <label for="key-input">Ключ:</label>
-    <input id="key-input" type="text" [ngModel]="keyText" (ngModelChange)="onKeyTextChange($event)" (keyup.enter)="submitKey()" />
-    <button type="button" (click)="submitKey()">Отправить</button>
-    @if (keyResult) {
-      <p class="key-result">Результат: {{ keyResult }}</p>
-    }
-  </div>
+@if (isLoading()) {
+  <p class="status-message">Загрузка текущей игры...</p>
+}
 
-  <h3 class="level-header">Уровень №{{ getCurrentHints().level_number! + 1 }}</h3>
-  <p>начался {{toLocal(getCurrentHints().started_at)}}</p>
-  <ul class="hints">
-    @for (timeHint of getCurrentHints().hints; track timeHint.time) {
-      <li>
-        <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
-        @for (hint of timeHint.hint; track hint) {
-          <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
-        }
-      </li>
-    }
-  </ul>
-</div>
+@if (!isLoading() && isAuthRequired()) {
+  <p class="status-message">Для просмотра текущей игры нужно войти в аккаунт.</p>
+}
+
+@if (hasHints()) {
+  <div class="scenario">
+    <div class="level-keys">
+      <label for="key-input">Ключ:</label>
+      <input id="key-input" type="text" [ngModel]="keyText" (ngModelChange)="onKeyTextChange($event)" (keyup.enter)="submitKey()" />
+      <button type="button" (click)="submitKey()">Отправить</button>
+      @if (keyResult) {
+        <p class="key-result">Результат: {{ keyResult }}</p>
+      }
+    </div>
+
+    <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }}</h3>
+    <p>начался {{toLocal(getCurrentHints()!.started_at)}}</p>
+    <ul class="hints">
+      @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
+        <li>
+          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
+          @for (hint of timeHint.hint; track hint) {
+            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+}

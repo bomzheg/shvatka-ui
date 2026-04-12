@@ -9,7 +9,8 @@
 }
 
 .app-content {
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.9));
+  color: var(--tg-theme-text-color, #1f2937);
   border-radius: 16px;
   padding: clamp(1rem, 2vw, 1.5rem);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);

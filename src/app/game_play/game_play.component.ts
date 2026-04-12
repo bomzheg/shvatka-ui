@@ -28,15 +28,27 @@ export class GamePlayComponent implements OnInit {
     this.gameService.loadHints();
   }
 
-  getCurrentHints(): CurrentHints {
+  getCurrentHints(): CurrentHints | undefined {
     return this.gameService.getCurrentHints()
+  }
+
+  isLoading(): boolean {
+    return this.gameService.hintsLoading();
+  }
+
+  isAuthRequired(): boolean {
+    return this.gameService.isAuthRequired();
+  }
+
+  hasHints(): boolean {
+    return this.getCurrentHints() !== undefined;
   }
 
   getFileUrl(hint: HintPart) {
     if (hint.file_guid === undefined) {
       return undefined;
     }
-    return this.http.getFileUrl(this.getCurrentHints().game_id, hint.file_guid)
+    return this.http.getFileUrl(this.getCurrentHints()!.game_id, hint.file_guid)
   }
 
   toLocal(dt: string): any {
@@ -48,6 +60,10 @@ export class GamePlayComponent implements OnInit {
   }
 
   submitKey() {
+    if (!this.hasHints()) {
+      return;
+    }
+
     const key = this.keyText.trim();
     if (!key) {
       return;
