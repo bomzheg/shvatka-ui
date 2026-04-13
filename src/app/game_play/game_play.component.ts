@@ -1,5 +1,5 @@
-import {Component, OnInit} from '@angular/core';
-import {GamePlayService, CurrentHints, TypedKeyResult} from "./game_play.service";
+import {Component, OnDestroy, OnInit} from '@angular/core';
+import {GamePlayService, CurrentHints, TypedKeyResult, KeyEffect} from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {HintPart} from "../domain/game.models";
@@ -15,9 +15,11 @@ import {FormsModule} from "@angular/forms";
   templateUrl: './game_play.component.html',
   styleUrl: './game_play.component.scss'
 })
-export class GamePlayComponent implements OnInit {
+export class GamePlayComponent implements OnInit, OnDestroy {
   keyText: string = "";
   keyResult: string | undefined;
+  keyResultData: TypedKeyResult | undefined;
+  private keyResultTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     private gameService: GamePlayService,
@@ -26,6 +28,10 @@ export class GamePlayComponent implements OnInit {
   }
   ngOnInit(): void {
     this.gameService.loadHints();
+  }
+
+  ngOnDestroy(): void {
+    this.clearResultTimer();
   }
 
   getCurrentHints(): CurrentHints | undefined {
@@ -71,8 +77,50 @@ export class GamePlayComponent implements OnInit {
 
     this.gameService.submitKey(key).subscribe(result => {
       this.keyResult = this.mapResult(result);
+      this.keyResultData = result;
+      this.startResultTimer();
       this.keyText = "";
     });
+  }
+
+  isLevelCompleted(result: TypedKeyResult): boolean {
+    return result.effects?.some(effect => effect.level_up) ?? false;
+  }
+
+  getEffectTags(effect: KeyEffect): string[] {
+    const tags: string[] = [];
+
+    if (effect.bonus_minutes) {
+      tags.push(`bonus +${effect.bonus_minutes} min`);
+    }
+    if (effect.level_up) {
+      tags.push('level up');
+    }
+    if (effect.next_level) {
+      tags.push(`next level: ${effect.next_level}`);
+    }
+
+    if (Array.isArray(effect.hints_) && effect.hints_.length > 0) {
+      tags.push(`bonus hints: ${effect.hints_.length}`);
+    }
+
+    return tags;
+  }
+
+  getTypedKeyEffects(typedKey: any): string[] {
+    const effects = typedKey?.effects;
+    if (!Array.isArray(effects)) {
+      return [];
+    }
+
+    return effects
+      .flatMap((effect: KeyEffect) => this.getEffectTags(effect))
+      .filter((tag, idx, arr) => arr.indexOf(tag) === idx);
+  }
+
+  hasAnyTypedKeys(): boolean {
+    const typedKeys = this.getCurrentHints()?.typed_keys;
+    return Array.isArray(typedKeys) && typedKeys.length > 0;
   }
 
   private mapResult(result: TypedKeyResult): string {
@@ -86,6 +134,21 @@ export class GamePlayComponent implements OnInit {
       return "wrong";
     }
     return "ok";
+  }
+
+  private startResultTimer() {
+    this.clearResultTimer();
+    this.keyResultTimer = setTimeout(() => {
+      this.keyResult = undefined;
+      this.keyResultData = undefined;
+    }, 60_000);
+  }
+
+  private clearResultTimer() {
+    if (this.keyResultTimer) {
+      clearTimeout(this.keyResultTimer);
+      this.keyResultTimer = undefined;
+    }
   }
 
   protected readonly Object = Object;

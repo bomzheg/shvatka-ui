@@ -12,10 +12,68 @@
       <label for="key-input">Ключ:</label>
       <input id="key-input" type="text" [ngModel]="keyText" (ngModelChange)="onKeyTextChange($event)" (keyup.enter)="submitKey()" />
       <button type="button" (click)="submitKey()">Отправить</button>
-      @if (keyResult) {
-        <p class="key-result">Результат: {{ keyResult }}</p>
-      }
     </div>
+
+    @if (keyResultData) {
+      <div class="key-result-panel"
+           [class.key-result-ok]="!keyResultData.wrong"
+           [class.key-result-wrong]="keyResultData.wrong"
+           [class.key-result-duplicate]="keyResultData.is_duplicate">
+        <p><strong>Результат:</strong> {{ keyResult }}</p>
+        <p><strong>Ключ:</strong> {{ keyResultData.text }}</p>
+        <p><strong>Эффекты:</strong></p>
+        <ul>
+          @if (keyResultData.effects.length === 0) {
+            <li>Нет эффектов</li>
+          }
+          @for (effect of keyResultData.effects; track effect.id) {
+            <li>
+              @for (tag of getEffectTags(effect); track tag) {
+                <span class="effect-tag">{{ tag }}</span>
+              }
+              @if (effect.hints_.length > 0) {
+                <ul>
+                  @for (hint of effect.hints_; track hint) {
+                    <li>{{ hint }}</li>
+                  }
+                </ul>
+              }
+            </li>
+          }
+        </ul>
+        <p><strong>Уровень пройден:</strong> {{ isLevelCompleted(keyResultData) ? 'Да' : 'Нет' }}</p>
+        <p><strong>Игра завершена:</strong> {{ keyResultData.game_finished ? 'Да' : 'Нет' }}</p>
+      </div>
+    }
+
+    @if (hasAnyTypedKeys()) {
+      <details class="typed-keys-spoiler">
+        <summary>Введённые ключи и эффекты</summary>
+        <ul>
+          @for (typedKey of getCurrentHints()!.typed_keys; track typedKey.at + typedKey.text) {
+            <li>
+              <strong>{{ typedKey.text }}</strong>
+              @if (typedKey.at) {
+                <span> ({{ toLocal(typedKey.at) }})</span>
+              }
+              @if (typedKey.wrong !== undefined) {
+                <span> — {{ typedKey.wrong ? 'ошибка' : 'ок' }}</span>
+              }
+              @if (typedKey.is_duplicate) {
+                <span> — duplicate</span>
+              }
+              @if (getTypedKeyEffects(typedKey).length > 0) {
+                <div class="typed-effects">
+                  @for (tag of getTypedKeyEffects(typedKey); track tag) {
+                    <span class="effect-tag">{{ tag }}</span>
+                  }
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      </details>
+    }
 
     <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }}</h3>
     <p>начался {{toLocal(getCurrentHints()!.started_at)}}</p>
