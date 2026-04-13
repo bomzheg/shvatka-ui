@@ -1,5 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {GameService, GameStat, HintPart, KeyType, Keys, Level, FullGame} from "./game.service";
+import {GameService} from "./game.service";
+import {FullGame, GameStat, HintPart, KeyType, Keys, Level} from "../domain/game.models";
 import {ActivatedRoute, ParamMap} from "@angular/router";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";

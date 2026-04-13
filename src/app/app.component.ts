@@ -5,6 +5,7 @@ import {RouterOutlet} from '@angular/router';
 import {HeaderComponent} from "./header/header.component";
 import {environment} from "../environments/environment";
 import {DomSanitizer} from "@angular/platform-browser";
+import {ThemeService} from "./theme/theme.service";
 
 @Component({
   selector: 'app-root',
@@ -21,11 +22,13 @@ export class AppComponent {
   constructor(
     private matIconRegistry: MatIconRegistry,
     domSanitizer:DomSanitizer,
+    private themeService: ThemeService,
   ) {
     this.matIconRegistry.addSvgIcon(
       "account-circle",
       domSanitizer.bypassSecurityTrustResourceUrl('/assets/account_circle.svg')
-    )
+    );
+    this.themeService.getMode();
   }
 
 }

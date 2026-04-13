@@ -2,7 +2,7 @@ import {Component, OnInit} from '@angular/core';
 import {GamePlayService, CurrentHints, TypedKeyResult} from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {HintPart} from "../game/game.service";
+import {HintPart} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 
 @Component({
