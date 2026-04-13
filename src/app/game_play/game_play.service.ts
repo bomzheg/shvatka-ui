@@ -2,13 +2,17 @@ import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {TimeHint} from "../domain/game.models";
+import {KeyTime, TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
+
+export type TypedKeyLog = KeyTime & {
+  effects?: KeyEffect[];
+};
 
 export class CurrentHints {
   constructor(
     public hints: TimeHint[],
-    public typed_keys: any[],
+    public typed_keys: TypedKeyLog[],
     public level_number: number,
     public started_at: string,
     public game_id: number,

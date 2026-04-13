@@ -1,8 +1,8 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {GamePlayService, CurrentHints, TypedKeyResult, KeyEffect} from "./game_play.service";
+import {GamePlayService, CurrentHints, TypedKeyResult, KeyEffect, TypedKeyLog} from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {HintPart} from "../domain/game.models";
+import {HintPart, KeyType} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize} from "rxjs";
 
@@ -140,7 +140,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return tags;
   }
 
-  getTypedKeyEffects(typedKey: any): string[] {
+  getTypedKeyEffects(typedKey: TypedKeyLog): string[] {
     const effects = typedKey?.effects;
     if (!Array.isArray(effects)) {
       return [];
@@ -156,11 +156,12 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return Array.isArray(typedKeys) && typedKeys.length > 0;
   }
 
-  typedKeyStatusClass(typedKey: any): string {
-    if (typedKey?.wrong && typedKey?.is_duplicate) {
+  typedKeyStatusClass(typedKey: TypedKeyLog): string {
+    const isWrong = this.isWrongTypedKey(typedKey);
+    if (isWrong && typedKey?.is_duplicate) {
       return 'typed-key-bad-duplicate';
     }
-    if (typedKey?.wrong) {
+    if (isWrong) {
       return 'typed-key-wrong';
     }
     if (typedKey?.is_duplicate) {
@@ -169,11 +170,12 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return 'typed-key-ok';
   }
 
-  typedKeyEmoji(typedKey: any): string {
-    if (typedKey?.wrong && typedKey?.is_duplicate) {
+  typedKeyEmoji(typedKey: TypedKeyLog): string {
+    const isWrong = this.isWrongTypedKey(typedKey);
+    if (isWrong && typedKey?.is_duplicate) {
       return '⚠️🔁';
     }
-    if (typedKey?.wrong) {
+    if (isWrong) {
       return '❌';
     }
     if (typedKey?.is_duplicate) {
@@ -182,11 +184,12 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return '✅';
   }
 
-  typedKeyStatusText(typedKey: any): string {
-    if (typedKey?.wrong && typedKey?.is_duplicate) {
+  typedKeyStatusText(typedKey: TypedKeyLog): string {
+    const isWrong = this.isWrongTypedKey(typedKey);
+    if (isWrong && typedKey?.is_duplicate) {
       return 'дубликат + ошибка';
     }
-    if (typedKey?.wrong) {
+    if (isWrong) {
       return 'ошибка';
     }
     if (typedKey?.is_duplicate) {
@@ -206,6 +209,10 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       return "wrong";
     }
     return "ok";
+  }
+
+  private isWrongTypedKey(typedKey: TypedKeyLog): boolean {
+    return typedKey?.type_ === KeyType.wrong;
   }
 
   private startResultTimer() {
