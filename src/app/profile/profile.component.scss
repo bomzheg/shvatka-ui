@@ -1,13 +1,9 @@
-@import '../../styles.scss';
+@use '../../styles/component-mixins' as cm;
 
 .profile-page {
   max-width: 560px;
   margin: 0 auto;
-  background: var(--app-surface);
-  color: var(--app-text);
-  border: 1px solid var(--app-border);
-  border-radius: 16px;
-  padding: 1.25rem;
+  @include cm.surface-card(16px, 1.25rem);
 }
 
 h1 {
@@ -32,23 +28,14 @@ label {
 }
 
 input {
-  border: 1px solid var(--app-border);
-  border-radius: 10px;
-  padding: 0.65rem 0.75rem;
-  font-size: 0.95rem;
-  color: var(--app-text);
-  background: var(--app-surface);
+  @include cm.input-control();
 }
 
 .primary {
   margin-top: 0.75rem;
-  border: none;
-  border-radius: 10px;
-  padding: 0.6rem 0.9rem;
-  cursor: pointer;
-  font-weight: 600;
-  background: var(--tg-theme-button-color, $shvatka_green);
-  color: var(--tg-theme-button-text-color, #ffffff);
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
 }
 
 .primary:disabled {

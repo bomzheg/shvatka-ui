@@ -1,4 +1,4 @@
-@import '../../styles.scss';
+@use '../../styles/component-mixins' as cm;
 
 .login-overlay {
   position: fixed;
@@ -11,11 +11,7 @@
 .login-form {
   width: min(440px, 100%);
   margin: 9vh auto 0;
-  background: var(--app-surface);
-  color: var(--app-text);
-  border: 1px solid #d1d5db;
-  border-radius: 16px;
-  padding: 1.25rem;
+  @include cm.surface-card(16px, 1.25rem);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -38,7 +34,6 @@
   padding: 0;
 }
 
-
 h3 {
   margin: 0 0 0.4rem;
 }
@@ -49,12 +44,7 @@ label {
 }
 
 input {
-  border: 1px solid #cbd5e1;
-  border-radius: 10px;
-  padding: 0.65rem 0.75rem;
-  font-size: 0.95rem;
-  color: var(--app-text);
-  background: var(--app-surface);
+  @include cm.input-control();
 }
 
 .actions {
@@ -64,16 +54,12 @@ input {
 }
 
 button {
-  border: none;
-  border-radius: 10px;
-  padding: 0.6rem 0.9rem;
-  cursor: pointer;
-  font-weight: 600;
+  @include cm.button-base();
 }
 
 .primary {
-  background: $shvatka_green;
-  color: #fff;
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
 }
 
 .secondary {

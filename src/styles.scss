@@ -26,6 +26,8 @@ $shvatka_green: #2f8f4e;
   --app-border: #d1d5db;
   --app-header-bg: #205d35;
   --app-header-text: #f6fff8;
+  --app-accent: #2f8f4e;
+  --app-accent-contrast: #ffffff;
 }
 
 :root[data-theme='dark'] {
@@ -36,6 +38,8 @@ $shvatka_green: #2f8f4e;
   --app-border: #374151;
   --app-header-bg: #123b24;
   --app-header-text: #ecfdf3;
+  --app-accent: #3fb269;
+  --app-accent-contrast: #06110a;
 }
 
 html, body { height: 100%; }
@@ -60,4 +64,31 @@ table,
 video,
 pre {
   max-width: 100%;
+}
+
+
+.loading-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-surface) 75%, #818cf8);
+  color: var(--app-text);
+  margin: 0.5rem 0 1rem;
+}
+
+.loading-spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--app-border) 65%, #c7d2fe);
+  border-top-color: #4f46e5;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

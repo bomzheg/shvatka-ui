@@ -1,5 +1,3 @@
-@import "../../styles";
-
 .active-game-banner {
   background-color: var(--app-header-bg);
   color: var(--app-header-text);
@@ -195,7 +193,7 @@
   }
 
   .mobile-auth .ghost-button {
-    color: #fff;
-    background: $shvatka_green;
+    color: var(--app-accent-contrast);
+    background: var(--app-accent);
   }
 }
