@@ -51,7 +51,9 @@
                 @if (effect.hints.length > 0) {
                   <ul>
                     @for (hint of effect.hints; track hint) {
-                      <li>{{ hint }}</li>
+                      <li>
+                        <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
+                      </li>
                     }
                   </ul>
                 }

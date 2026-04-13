@@ -1,8 +1,8 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {GamePlayService, CurrentHints, TypedKeyResult, KeyEffect} from "./game_play.service";
+import {GamePlayService, CurrentHints, TypedKeyResult, KeyEffect, TypedKeyLog} from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {HintPart} from "../domain/game.models";
+import {HintPart, KeyType} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize} from "rxjs";
 
@@ -123,24 +123,27 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   getEffectTags(effect: KeyEffect): string[] {
     const tags: string[] = [];
 
-    if (effect.bonus_minutes) {
-      tags.push(`bonus +${effect.bonus_minutes} min`);
+    if (effect.bonus_minutes > 0) {
+      tags.push(`бонус ${effect.bonus_minutes} мин.`);
+    } else if (effect.bonus_minutes < 0) {
+      tags.push(`штраф ${-effect.bonus_minutes} мин.`);
     }
     if (effect.level_up) {
-      tags.push('level up');
-    }
-    if (effect.next_level) {
-      tags.push(`next level: ${effect.next_level}`);
+      if (effect.next_level) {
+        tags.push(`переход на ${effect.next_level}`);
+      } else {
+        tags.push('переход на следующий уровень');
+      }
     }
 
     if (Array.isArray(effect.hints_) && effect.hints_.length > 0) {
-      tags.push(`bonus hints: ${effect.hints_.length}`);
+      tags.push(`бонусные подсказки: ${effect.hints_.length}`);
     }
 
     return tags;
   }
 
-  getTypedKeyEffects(typedKey: any): string[] {
+  getTypedKeyEffects(typedKey: TypedKeyLog): string[] {
     const effects = typedKey?.effects;
     if (!Array.isArray(effects)) {
       return [];
@@ -156,11 +159,12 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return Array.isArray(typedKeys) && typedKeys.length > 0;
   }
 
-  typedKeyStatusClass(typedKey: any): string {
-    if (typedKey?.wrong && typedKey?.is_duplicate) {
+  typedKeyStatusClass(typedKey: TypedKeyLog): string {
+    const isWrong = this.isWrongTypedKey(typedKey);
+    if (isWrong && typedKey?.is_duplicate) {
       return 'typed-key-bad-duplicate';
     }
-    if (typedKey?.wrong) {
+    if (isWrong) {
       return 'typed-key-wrong';
     }
     if (typedKey?.is_duplicate) {
@@ -169,11 +173,12 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return 'typed-key-ok';
   }
 
-  typedKeyEmoji(typedKey: any): string {
-    if (typedKey?.wrong && typedKey?.is_duplicate) {
+  typedKeyEmoji(typedKey: TypedKeyLog): string {
+    const isWrong = this.isWrongTypedKey(typedKey);
+    if (isWrong && typedKey?.is_duplicate) {
       return '⚠️🔁';
     }
-    if (typedKey?.wrong) {
+    if (isWrong) {
       return '❌';
     }
     if (typedKey?.is_duplicate) {
@@ -182,30 +187,35 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return '✅';
   }
 
-  typedKeyStatusText(typedKey: any): string {
-    if (typedKey?.wrong && typedKey?.is_duplicate) {
+  typedKeyStatusText(typedKey: TypedKeyLog): string {
+    const isWrong = this.isWrongTypedKey(typedKey);
+    if (isWrong && typedKey?.is_duplicate) {
       return 'дубликат + ошибка';
     }
-    if (typedKey?.wrong) {
+    if (isWrong) {
       return 'ошибка';
     }
     if (typedKey?.is_duplicate) {
       return 'дубликат';
     }
-    return 'принят';
+    return 'корректный';
   }
 
   private mapResult(result: TypedKeyResult): string {
     if (result.is_duplicate && result.wrong) {
-      return "duplicate (and wrong)";
+      return "дубликат + ошибка";
     }
     if (result.is_duplicate) {
-      return "duplicate (but ok)";
+      return "дубликат";
     }
     if (result.wrong) {
-      return "wrong";
+      return "ошибка";
     }
-    return "ok";
+    return "корректный";
+  }
+
+  private isWrongTypedKey(typedKey: TypedKeyLog): boolean {
+    return typedKey?.type_ === KeyType.wrong;
   }
 
   private startResultTimer() {
