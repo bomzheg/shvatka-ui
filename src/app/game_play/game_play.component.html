@@ -10,12 +10,94 @@
   <div class="scenario">
     <div class="level-keys">
       <label for="key-input">Ключ:</label>
-      <input id="key-input" type="text" [ngModel]="keyText" (ngModelChange)="onKeyTextChange($event)" (keyup.enter)="submitKey()" />
-      <button type="button" (click)="submitKey()">Отправить</button>
-      @if (keyResult) {
-        <p class="key-result">Результат: {{ keyResult }}</p>
-      }
+      <input
+        id="key-input"
+        type="text"
+        [disabled]="isSubmitting"
+        [ngModel]="keyText"
+        (ngModelChange)="onKeyTextChange($event)"
+        (keyup.enter)="submitKey()"
+      />
+      <button type="button" [disabled]="isSubmitting" (click)="submitKey()">
+        @if (isSubmitting) {
+          <span class="button-loader"></span>
+          Отправка...
+        } @else {
+          Отправить
+        }
+      </button>
     </div>
+
+    @if (keySubmitError) {
+      <div class="key-submit-error">{{ keySubmitError }}</div>
+    }
+
+    @if (keyResultData) {
+      <div class="key-result-panel"
+           [class.key-result-ok]="!keyResultData.wrong"
+           [class.key-result-wrong]="keyResultData.wrong"
+           [class.key-result-duplicate]="keyResultData.is_duplicate">
+        <p><strong>Результат:</strong> {{ keyResult }}</p>
+        <p><strong>Ключ:</strong> {{ keyResultData.text }}</p>
+
+        @if (hasVisibleEffects(keyResultData)) {
+          <p><strong>Эффекты:</strong></p>
+          <ul>
+            @for (effect of getVisibleEffects(keyResultData); track effect.tags.join('-') + effect.hints.length) {
+              <li>
+                @for (tag of effect.tags; track tag) {
+                  <span class="effect-tag">{{ tag }}</span>
+                }
+                @if (effect.hints.length > 0) {
+                  <ul>
+                    @for (hint of effect.hints; track hint) {
+                      <li>{{ hint }}</li>
+                    }
+                  </ul>
+                }
+              </li>
+            }
+          </ul>
+        }
+
+        @if (isLevelCompleted(keyResultData)) {
+          <p><strong>Уровень пройден</strong></p>
+        }
+
+        @if (keyResultData.game_finished) {
+          <p><strong>Игра завершена</strong></p>
+        }
+      </div>
+    }
+
+    @if (hasAnyTypedKeys()) {
+      <details class="typed-keys-spoiler">
+        <summary>Введённые ключи и эффекты</summary>
+        <ul>
+          @for (typedKey of getCurrentHints()!.typed_keys; track typedKey.at + typedKey.text) {
+            <li class="typed-key-entry"
+                [class.typed-key-ok]="typedKeyStatusClass(typedKey) === 'typed-key-ok'"
+                [class.typed-key-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-duplicate'"
+                [class.typed-key-wrong]="typedKeyStatusClass(typedKey) === 'typed-key-wrong'"
+                [class.typed-key-bad-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-bad-duplicate'">
+              <span class="typed-key-status">{{ typedKeyEmoji(typedKey) }} {{ typedKeyStatusText(typedKey) }}</span>
+              <strong>{{ typedKey.text }}</strong>
+              @if (typedKey.at) {
+                <span> ({{ toLocal(typedKey.at) }})</span>
+              }
+
+              @if (getTypedKeyEffects(typedKey).length > 0) {
+                <div class="typed-effects">
+                  @for (tag of getTypedKeyEffects(typedKey); track tag) {
+                    <span class="effect-tag">{{ tag }}</span>
+                  }
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      </details>
+    }
 
     <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }}</h3>
     <p>начался {{toLocal(getCurrentHints()!.started_at)}}</p>

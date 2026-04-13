@@ -9,6 +9,7 @@
 .level-header {
   text-align: center;
 }
+
 .level-header::before {
   display: inline-block;
   content: "";
@@ -40,10 +41,129 @@ button {
   padding: 0.45rem 0.8rem;
   background: #2f8f4e;
   color: var(--tg-theme-button-text-color, #fff);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.key-result {
-  margin-left: 8px;
+button:disabled,
+#key-input:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+.button-loader {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.key-submit-error {
+  margin: 0 auto 12px;
+  max-width: 640px;
+  text-align: center;
+  color: #b91c1c;
+}
+
+.key-result-panel {
+  margin: 0 auto 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #94a3b8;
+  max-width: 640px;
+  text-align: center;
+}
+
+.key-result-panel ul {
+  margin: 0.4rem auto;
+  width: fit-content;
+  text-align: left;
+}
+
+.key-result-panel p {
+  margin: 0.2rem 0;
+}
+
+.key-result-ok {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.key-result-wrong {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.key-result-duplicate {
+  background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(234, 179, 8, 0.5) 0,
+      rgba(234, 179, 8, 0.5) 14px,
+      rgba(34, 197, 94, 0.5) 14px,
+      rgba(34, 197, 94, 0.5) 28px
+  );
+}
+
+.key-result-duplicate.key-result-wrong {
+  background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(234, 179, 8, 0.5) 0,
+      rgba(234, 179, 8, 0.5) 14px,
+      rgba(239, 68, 68, 0.5) 14px,
+      rgba(239, 68, 68, 0.5) 28px
+  );
+}
+
+.effect-tag {
+  display: inline-block;
+  margin: 0 4px 4px 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  font-size: 0.85rem;
+}
+
+.typed-keys-spoiler {
+  margin: 0 0 18px;
+}
+
+.typed-keys-spoiler summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.typed-key-entry {
+  margin-bottom: 8px;
+}
+
+.typed-key-status {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.typed-key-ok .typed-key-status {
+  color: #15803d;
+}
+
+.typed-key-duplicate .typed-key-status {
+  color: #a16207;
+}
+
+.typed-key-wrong .typed-key-status,
+.typed-key-bad-duplicate .typed-key-status {
+  color: #b91c1c;
+}
+
+.typed-effects {
+  margin-top: 4px;
 }
 
 .hints {
