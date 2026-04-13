@@ -20,12 +20,12 @@ export class ThemeService implements OnDestroy {
     this.currentMode = this.readMode();
     this.applyMode(this.currentMode);
 
-    this.mediaQuery?.addEventListener("change", this.handleSystemThemeChange);
+    this.mediaQuery?.addEventListener?.("change", this.handleSystemThemeChange);
     this.tgWebApp?.onEvent?.("themeChanged", this.handleTelegramThemeChange);
   }
 
   ngOnDestroy(): void {
-    this.mediaQuery?.removeEventListener("change", this.handleSystemThemeChange);
+    this.mediaQuery?.removeEventListener?.("change", this.handleSystemThemeChange);
     this.tgWebApp?.offEvent?.("themeChanged", this.handleTelegramThemeChange);
   }
 
@@ -46,7 +46,7 @@ export class ThemeService implements OnDestroy {
   };
 
   private handleTelegramThemeChange = () => {
-    if (this.currentMode === "system") {
+    if (this.currentMode === "system" && this.isTelegramMiniApp()) {
       this.applyMode(this.currentMode);
     }
   };
@@ -79,16 +79,24 @@ export class ThemeService implements OnDestroy {
       return "light";
     }
 
-    const tgScheme = this.tgWebApp?.colorScheme;
+    if (this.mediaQuery) {
+      return this.mediaQuery.matches ? "dark" : "light";
+    }
+
+    const tgScheme = this.isTelegramMiniApp() ? this.tgWebApp?.colorScheme : undefined;
     if (tgScheme === "dark" || tgScheme === "light") {
       return tgScheme;
     }
 
-    return this.mediaQuery?.matches ? "dark" : "light";
+    return "light";
+  }
+
+  private isTelegramMiniApp(): boolean {
+    return !!this.tgWebApp?.initData;
   }
 
   private syncTelegramChrome(resolvedTheme: "light" | "dark"): void {
-    if (!this.tgWebApp) {
+    if (!this.isTelegramMiniApp()) {
       return;
     }
 
