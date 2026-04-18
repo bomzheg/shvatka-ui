@@ -55,7 +55,11 @@ export class GamesService {
     })
   }
 
-  getActiveGame(): Observable<ActiveGame | undefined> {
+  getActiveGame(forceRefresh: boolean = false): Observable<ActiveGame | undefined> {
+    if (forceRefresh) {
+      this.activeGame$ = undefined;
+    }
+
     if (!this.activeGame$) {
       this.activeGame$ = this.http.get<ActiveGame>("/games/active").pipe(
         map(game => game?.id !== undefined ? game : undefined),

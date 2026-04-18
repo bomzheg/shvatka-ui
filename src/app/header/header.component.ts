@@ -151,6 +151,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return this.isStartTimeReached();
   }
 
+  hasCurrentGameTab() {
+    return this.hasRunningGame() || this.isGettingWaiversStatus();
+  }
+
   isGettingWaiversStatus() {
     return this.activeGame?.status === "getting_waivers";
   }

@@ -24,14 +24,14 @@
 
 <header class="main-header">
   <button class="mobile-menu-button" type="button" (click)="openMobileMenu()" aria-label="Open menu">
-    <mat-icon>menu</mat-icon>
+    <span aria-hidden="true">☰</span>
   </button>
 
   <a routerLink="/" class="home-link" (click)="onNavClick('/', $event)">Схватка</a>
 
   <nav class="desktop-nav">
     <a routerLink="/games" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games', $event)">Прошедшие игры</a>
-    @if (hasRunningGame()) {
+    @if (hasCurrentGameTab()) {
       <a routerLink="/games/running" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
     }
   </nav>
@@ -69,7 +69,7 @@
 <div class="mobile-menu-backdrop" [class.open]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
 <aside class="mobile-menu" [class.open]="isMobileMenuOpen">
   <button class="mobile-close" type="button" (click)="closeMobileMenu()" aria-label="Close menu">
-    <mat-icon>close</mat-icon>
+    <span aria-hidden="true">✕</span>
   </button>
   <div class="mobile-auth">
 
@@ -99,7 +99,7 @@
   @if (isAuthenticated()) {
     <a routerLink="/profile" class="mobile-link" (click)="onNavClick('/profile', $event)">Профиль</a>
   }
-  @if (hasRunningGame()) {
+  @if (hasCurrentGameTab()) {
     <a routerLink="/games/running" class="mobile-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
   }
 </aside>
