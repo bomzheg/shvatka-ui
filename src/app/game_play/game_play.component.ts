@@ -16,6 +16,7 @@ import {GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize, Subscription} from "rxjs";
 import {ActiveGame} from "../games/games.service";
+import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 
 @Component({
   selector: 'app-game-play',
@@ -23,6 +24,7 @@ import {ActiveGame} from "../games/games.service";
   imports: [
     HintPartComponent,
     FormsModule,
+    GameLogPartComponent,
   ],
   templateUrl: './game_play.component.html',
   styleUrl: './game_play.component.scss'
@@ -419,7 +421,4 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
     return `${minutes} мин. ${seconds} сек.`;
   }
-
-  protected readonly KeyType = KeyType;
-  protected readonly Object = Object;
 }

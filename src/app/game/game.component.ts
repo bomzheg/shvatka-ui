@@ -1,16 +1,18 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {GameService} from "./game.service";
-import {FullGame, GameStat, HintPart, KeyType, Keys, Level} from "../domain/game.models";
+import {FullGame, GameStat, HintPart, Keys, Level} from "../domain/game.models";
 import {ActivatedRoute, ParamMap} from "@angular/router";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {Subscription} from "rxjs";
+import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 
 @Component({
   selector: 'app-game',
   standalone: true,
   imports: [
-    HintPartComponent
+    HintPartComponent,
+    GameLogPartComponent,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
@@ -72,10 +74,4 @@ export class GameComponent implements OnInit, OnDestroy {
     return this.http.getFileUrl(this.getGame()!.id, hint.file_guid);
   }
 
-  toLocal(dt: string): any {
-    return new Date(Date.parse(dt)).toLocaleTimeString();
-  }
-
-  protected readonly KeyType = KeyType;
-  protected readonly Object = Object;
 }
