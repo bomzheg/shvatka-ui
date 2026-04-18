@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {KeyTime, TimeHint} from "../domain/game.models";
+import {GameStat, KeyTime, Keys, TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
 import {ActiveGame, GamesService} from "../games/games.service";
 
@@ -76,12 +76,67 @@ export class CurrentWaivers {
   }
 }
 
+export enum Played {
+  yes = "yes",
+  no = "no",
+  think = "think",
+  revoked = "revoked",
+  not_allowed = "not_allowed",
+}
+
+export class RolePlayer {
+  constructor(
+    public id: number,
+    public can_be_author: boolean,
+    public name_mention: string,
+  ) {
+  }
+}
+
+export class RoleTeam {
+  constructor(
+    public id: number,
+    public name: string,
+    public captain: RolePlayer | null,
+    public description: string | null,
+  ) {
+  }
+}
+
+export class OrganizerDto {
+  constructor(
+    public player: RolePlayer,
+    public can_spy: boolean,
+    public can_see_log_keys: boolean,
+    public can_validate_waivers: boolean,
+    public deleted: boolean,
+  ) {
+  }
+}
+
+export class MyRoleDto {
+  constructor(
+    public waiver_vote: Played | null,
+    public team: RoleTeam | null,
+    public org: OrganizerDto | null,
+  ) {
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class GamePlayService {
   private currentHints: CurrentHints | undefined;
   private currentWaivers: CurrentWaivers | undefined;
+  private myRole: MyRoleDto | undefined;
+  private myRoleGameId: number | undefined;
+  private myRoleCacheUntil: number | undefined;
+  private spyGameId: number | undefined;
+  private spyKeys: Keys | undefined;
+  private spyStat: GameStat | undefined;
+  private spyLoadingRequests = 0;
+  private isSpyLoading = false;
   private isHintsLoading = false;
   private authRequired = false;
 
@@ -99,9 +154,15 @@ export class GamePlayService {
       if (!game) {
         this.currentHints = undefined;
         this.currentWaivers = undefined;
+        this.myRole = undefined;
+        this.spyGameId = undefined;
+        this.spyKeys = undefined;
+        this.spyStat = undefined;
         this.isHintsLoading = false;
         return;
       }
+
+      this.loadMyRole(game);
 
       if (game.status === "getting_waivers") {
         this.loadWaivers();
@@ -157,12 +218,122 @@ export class GamePlayService {
       });
   }
 
+  private loadMyRole(game: ActiveGame, forceRefresh = false) {
+    const cacheValid = !forceRefresh
+      && this.myRole !== undefined
+      && this.myRoleGameId === game.id
+      && (this.myRoleCacheUntil === undefined || this.myRoleCacheUntil > Date.now());
+
+    if (cacheValid) {
+      return;
+    }
+
+    this.http.get<MyRoleDto>(`/games/active/me`)
+      .subscribe({
+        next: role => {
+          this.myRole = role;
+          this.myRoleGameId = game.id;
+          this.myRoleCacheUntil = this.resolveRoleCacheUntil(game);
+          if (game.status === "running" && role.org?.can_spy) {
+            this.loadSpyData(game.id);
+          }
+        },
+        error: error => {
+          if (error instanceof HttpErrorResponse && error.status === 401) {
+            this.myRole = undefined;
+            this.myRoleGameId = undefined;
+            this.myRoleCacheUntil = undefined;
+            return;
+          }
+
+          throw error;
+        }
+      });
+  }
+
+  private resolveRoleCacheUntil(game: ActiveGame): number | undefined {
+    if (game.status === "getting_waivers") {
+      const fiveMinutesFromNow = Date.now() + 5 * 60 * 1000;
+      if (!game.start_at) {
+        return fiveMinutesFromNow;
+      }
+
+      const gameStartAtMs = Date.parse(game.start_at);
+      return Math.min(fiveMinutesFromNow, gameStartAtMs);
+    }
+
+    return undefined;
+  }
+
+  loadSpyData(gameId: number, forceRefresh: boolean = false) {
+    if (this.spyGameId !== gameId) {
+      this.spyGameId = gameId;
+      this.spyKeys = undefined;
+      this.spyStat = undefined;
+    }
+
+    if (!forceRefresh && this.spyKeys && this.spyStat) {
+      return;
+    }
+
+    this.spyLoadingRequests = 2;
+    this.isSpyLoading = true;
+    this.http.get<Keys>(`/games/${gameId}/keys`)
+      .subscribe({
+        next: k => {
+          this.spyKeys = k;
+          this.completeSpyLoadRequest();
+        },
+        error: error => {
+          this.completeSpyLoadRequest();
+          if (!(error instanceof HttpErrorResponse && error.status === 401)) {
+            throw error;
+          }
+        }
+      });
+
+    this.http.get<GameStat>(`/games/${gameId}/stat`)
+      .subscribe({
+        next: s => {
+          this.spyStat = s;
+          this.completeSpyLoadRequest();
+        },
+        error: error => {
+          this.completeSpyLoadRequest();
+          if (!(error instanceof HttpErrorResponse && error.status === 401)) {
+            throw error;
+          }
+        }
+      });
+  }
+
+  private completeSpyLoadRequest() {
+    this.spyLoadingRequests = Math.max(this.spyLoadingRequests - 1, 0);
+    this.isSpyLoading = this.spyLoadingRequests > 0;
+  }
+
   getCurrentHints(): CurrentHints | undefined {
     return this.currentHints;
   }
 
   getCurrentWaivers(): CurrentWaivers | undefined {
     return this.currentWaivers;
+  }
+
+  getMyRole(): MyRoleDto | undefined {
+    return this.myRole;
+  }
+
+  getSpyKeys(): Keys | undefined {
+    return this.spyKeys;
+  }
+
+  getSpyStat(): GameStat | undefined {
+    return this.spyStat;
+  }
+
+  isSpyDataLoading(): boolean {
+    return this.isSpyLoading;
   }
 
   hintsLoading(): boolean {

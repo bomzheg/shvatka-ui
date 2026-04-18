@@ -6,11 +6,13 @@ import {
   KeyEffect,
   TypedKeyLog,
   CurrentWaivers,
-  WaiversTeam
+  WaiversTeam,
+  WaiverEntry,
+  Played
 } from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {HintPart, KeyType} from "../domain/game.models";
+import {GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize, Subscription} from "rxjs";
 import {ActiveGame} from "../games/games.service";
@@ -77,6 +79,44 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.getCurrentWaivers() !== undefined;
   }
 
+  hasMyRole(): boolean {
+    return !!this.gameService.getMyRole();
+  }
+
+  hasOrgRole(): boolean {
+    return !!this.gameService.getMyRole()?.org;
+  }
+
+  hasTeamRole(): boolean {
+    return !!this.gameService.getMyRole()?.team;
+  }
+
+  getMyTeamName(): string | undefined {
+    return this.gameService.getMyRole()?.team?.name ?? undefined;
+  }
+
+  getMyOrgName(): string | undefined {
+    return this.gameService.getMyRole()?.org?.player.name_mention ?? undefined;
+  }
+
+  getMyRoleVoteText(): string {
+    const vote = this.gameService.getMyRole()?.waiver_vote;
+    switch (vote) {
+      case Played.yes:
+        return "Подтверждён";
+      case Played.no:
+        return "Отклонён";
+      case Played.think:
+        return "Ожидание решения";
+      case Played.revoked:
+        return "Не допущен капитаном";
+      case Played.not_allowed:
+        return "Не допущен организаторами";
+      default:
+        return "Нет данных";
+    }
+  }
+
   getActiveGameName(): string {
     return this.activeGame?.name ?? "Текущая игра";
   }
@@ -89,14 +129,13 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.gameService.getCurrentWaivers();
   }
 
-  getTeamWaivers(teamId: number): string[] {
+  getTeamWaivers(teamId: number): WaiverEntry[] {
     const waiversMap = this.getCurrentWaivers()?.waivers;
     if (!waiversMap) {
       return [];
     }
 
-    const waivers = waiversMap[String(teamId)] ?? [];
-    return waivers.map(waiver => waiver.player.name_mention);
+    return waiversMap[String(teamId)] ?? [];
   }
 
   hasTeamWaivers(team: WaiversTeam): boolean {
@@ -105,6 +144,41 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   getTeamWaiversCount(team: WaiversTeam): number {
     return this.getTeamWaivers(team.id).length;
+  }
+
+  isCurrentUserWaiver(entry: WaiverEntry): boolean {
+    const myRole = this.gameService.getMyRole();
+    if (!myRole) {
+      return false;
+    }
+
+    const teamCaptainId = myRole.team?.captain?.id;
+    const myOrgId = myRole.org?.player.id;
+    return entry.player.id === teamCaptainId || entry.player.id === myOrgId;
+  }
+
+  canOpenSpyTab(): boolean {
+    return this.activeGame?.status === "running" && !!this.gameService.getMyRole()?.org?.can_spy;
+  }
+
+  loadSpyData(forceRefresh: boolean = false) {
+    if (!this.activeGame?.id || !this.canOpenSpyTab()) {
+      return;
+    }
+
+    this.gameService.loadSpyData(this.activeGame.id, forceRefresh);
+  }
+
+  isSpyDataLoading(): boolean {
+    return this.gameService.isSpyDataLoading();
+  }
+
+  getSpyKeys(): Keys | undefined {
+    return this.gameService.getSpyKeys();
+  }
+
+  getSpyStat(): GameStat | undefined {
+    return this.gameService.getSpyStat();
   }
 
   getFileUrl(hint: HintPart) {
@@ -345,4 +419,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
     return `${minutes} мин. ${seconds} сек.`;
   }
+
+  protected readonly KeyType = KeyType;
+  protected readonly Object = Object;
 }
