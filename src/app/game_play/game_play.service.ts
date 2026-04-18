@@ -114,7 +114,7 @@ export class GamePlayService {
 
   private loadRunningHints() {
     this.currentWaivers = undefined;
-    this.http.get<CurrentHints>(`/games/running/level/current/hints`)
+    this.http.get<CurrentHints>(`/games/running/level/current`)
     .subscribe({
       next: h => {
         this.currentHints = h;
