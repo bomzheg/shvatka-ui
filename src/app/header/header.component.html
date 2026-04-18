@@ -24,7 +24,7 @@
 
 <header class="main-header">
   <button class="mobile-menu-button" type="button" (click)="openMobileMenu()" aria-label="Open menu">
-    <mat-icon>menu</mat-icon>
+    <span aria-hidden="true">☰</span>
   </button>
 
   <a routerLink="/" class="home-link" (click)="onNavClick('/', $event)">Схватка</a>
@@ -69,7 +69,7 @@
 <div class="mobile-menu-backdrop" [class.open]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
 <aside class="mobile-menu" [class.open]="isMobileMenuOpen">
   <button class="mobile-close" type="button" (click)="closeMobileMenu()" aria-label="Close menu">
-    <mat-icon>close</mat-icon>
+    <span aria-hidden="true">✕</span>
   </button>
   <div class="mobile-auth">
 

@@ -126,7 +126,10 @@
     <ul class="waivers-teams">
       @for (team of getCurrentWaivers()!.teams; track team.id) {
         <li class="waivers-team-card">
-          <h5 class="waivers-team-name">{{ team.name }}</h5>
+          <h5 class="waivers-team-name">
+            {{ team.name }}
+            <span class="waivers-team-count">{{ getTeamWaiversCount(team) }}</span>
+          </h5>
           @if (hasTeamWaivers(team)) {
             <ul class="waivers-players">
               @for (player of getTeamWaivers(team.id); track player) {

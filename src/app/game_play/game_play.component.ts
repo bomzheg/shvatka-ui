@@ -103,6 +103,10 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.getTeamWaivers(team.id).length > 0;
   }
 
+  getTeamWaiversCount(team: WaiversTeam): number {
+    return this.getTeamWaivers(team.id).length;
+  }
+
   getFileUrl(hint: HintPart) {
     if (hint.file_guid === undefined) {
       return undefined;

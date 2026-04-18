@@ -1,5 +1,3 @@
-/* Importing Roboto font for Material Design */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 $shvatka_green: #2f8f4e;
 
 .hidden {
@@ -46,7 +44,7 @@ html, body { height: 100%; }
 
 body {
   margin: 0;
-  font-family: Inter, Roboto, "Helvetica Neue", sans-serif;
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
 
   color: var(--app-text);
