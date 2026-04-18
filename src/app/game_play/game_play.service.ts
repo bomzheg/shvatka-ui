@@ -95,7 +95,7 @@ export class GamePlayService {
   loadHints() {
     this.isHintsLoading = true;
     this.authRequired = false;
-    this.gamesService.getActiveGame().subscribe(game => {
+    this.gamesService.getActiveGame(true).subscribe(game => {
       if (!game) {
         this.currentHints = undefined;
         this.currentWaivers = undefined;
@@ -173,8 +173,8 @@ export class GamePlayService {
     return this.authRequired;
   }
 
-  getActiveGame(): Observable<ActiveGame | undefined> {
-    return this.gamesService.getActiveGame();
+  getActiveGame(forceRefresh: boolean = false): Observable<ActiveGame | undefined> {
+    return this.gamesService.getActiveGame(forceRefresh);
   }
 
   submitKey(text: string): Observable<TypedKeyResult> {

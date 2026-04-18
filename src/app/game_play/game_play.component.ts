@@ -44,7 +44,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.activeGameSubscription = this.gameService.getActiveGame().subscribe(game => {
+    this.activeGameSubscription = this.gameService.getActiveGame(true).subscribe(game => {
       this.activeGame = game;
       this.startCountdownTicker();
     });
