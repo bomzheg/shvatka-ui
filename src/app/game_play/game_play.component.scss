@@ -186,3 +186,78 @@ td {
   border: 1px solid #d1d5db;
   padding: 0.4rem;
 }
+
+.waivers-panel {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+}
+
+.waivers-title {
+  margin-bottom: 0.2rem;
+}
+
+.waivers-subtitle {
+  margin: 0 0 0.4rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.waivers-countdown {
+  margin: 0 0 1rem;
+  font-weight: 600;
+}
+
+.waivers-teams {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.waivers-team-card {
+  list-style: none;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 0.8rem;
+  background: rgba(59, 130, 246, 0.07);
+}
+
+.waivers-team-name {
+  margin: 0 0 0.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.waivers-team-count {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+.waivers-players {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.waivers-player {
+  background: rgba(15, 23, 42, 0.05);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+}
+
+.waivers-empty {
+  margin: 0;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
