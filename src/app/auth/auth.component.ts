@@ -66,7 +66,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
   convertToScript() {
     const element = this.script?.nativeElement;
     const script = document.createElement('script');
-    script.src = 'https://telegram.org/js/telegram-widget.js?22';
+    script.src = 'https://telegram.org/js/telegram-widget.js?23';
     script.setAttribute('data-telegram-login', this.config.botUsername);
     script.setAttribute('data-size', 'large');
     script.setAttribute('data-request-access', 'write');
