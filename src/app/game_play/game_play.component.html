@@ -117,20 +117,24 @@
 }
 
 @if (hasWaivers()) {
-  <div class="scenario">
-    <h3 class="level-header">Вейверы текущей игры</h3>
-    <ul class="hints">
+  <div class="waivers-panel">
+    <h2 class="waivers-title">{{ getActiveGameName() }}</h2>
+    <p class="waivers-subtitle">Сбор вейверов</p>
+    @if (getCountdownToStart()) {
+      <p class="waivers-countdown">До старта: {{ getCountdownToStart() }}</p>
+    }
+    <ul class="waivers-teams">
       @for (team of getCurrentWaivers()!.teams; track team.id) {
-        <li>
-          <h5 class="hint-header">Команда: {{ team.name }}</h5>
+        <li class="waivers-team-card">
+          <h5 class="waivers-team-name">{{ team.name }}</h5>
           @if (hasTeamWaivers(team)) {
-            <ul>
+            <ul class="waivers-players">
               @for (player of getTeamWaivers(team.id); track player) {
-                <li>{{ player }}</li>
+                <li class="waivers-player">{{ player }}</li>
               }
             </ul>
           } @else {
-            <p>Нет вейверов</p>
+            <p class="waivers-empty">Нет вейверов</p>
           }
         </li>
       }

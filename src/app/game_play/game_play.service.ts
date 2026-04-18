@@ -4,7 +4,7 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {KeyTime, TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
-import {GamesService} from "../games/games.service";
+import {ActiveGame, GamesService} from "../games/games.service";
 
 export type TypedKeyLog = KeyTime & {
   effects?: KeyEffect[];
@@ -171,6 +171,10 @@ export class GamePlayService {
 
   isAuthRequired(): boolean {
     return this.authRequired;
+  }
+
+  getActiveGame(): Observable<ActiveGame | undefined> {
+    return this.gamesService.getActiveGame();
   }
 
   submitKey(text: string): Observable<TypedKeyResult> {

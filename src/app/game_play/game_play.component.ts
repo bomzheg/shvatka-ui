@@ -12,7 +12,8 @@ import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {HintPart, KeyType} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
-import {finalize} from "rxjs";
+import {finalize, Subscription} from "rxjs";
+import {ActiveGame} from "../games/games.service";
 
 @Component({
   selector: 'app-game-play',
@@ -25,11 +26,15 @@ import {finalize} from "rxjs";
   styleUrl: './game_play.component.scss'
 })
 export class GamePlayComponent implements OnInit, OnDestroy {
+  activeGame: ActiveGame | undefined;
+  countdownToStart: string | undefined;
   keyText: string = "";
   keyResult: string | undefined;
   keyResultData: TypedKeyResult | undefined;
   keySubmitError: string | undefined;
   isSubmitting = false;
+  private activeGameSubscription: Subscription | undefined;
+  private countdownInterval: ReturnType<typeof setInterval> | undefined;
   private keyResultTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
@@ -39,11 +44,17 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.activeGameSubscription = this.gameService.getActiveGame().subscribe(game => {
+      this.activeGame = game;
+      this.startCountdownTicker();
+    });
     this.gameService.loadHints();
   }
 
   ngOnDestroy(): void {
     this.clearResultTimer();
+    this.activeGameSubscription?.unsubscribe();
+    this.clearCountdownTicker();
   }
 
   getCurrentHints(): CurrentHints | undefined {
@@ -64,6 +75,14 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   hasWaivers(): boolean {
     return this.getCurrentWaivers() !== undefined;
+  }
+
+  getActiveGameName(): string {
+    return this.activeGame?.name ?? "Текущая игра";
+  }
+
+  getCountdownToStart(): string | undefined {
+    return this.countdownToStart;
   }
 
   getCurrentWaivers(): CurrentWaivers | undefined {
@@ -262,5 +281,64 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       clearTimeout(this.keyResultTimer);
       this.keyResultTimer = undefined;
     }
+  }
+
+  private startCountdownTicker() {
+    this.clearCountdownTicker();
+    this.countdownToStart = this.buildCountdown();
+
+    if (!this.activeGame?.start_at || this.isStartTimeReached()) {
+      return;
+    }
+
+    this.countdownInterval = setInterval(() => {
+      this.countdownToStart = this.buildCountdown();
+      if (!this.countdownToStart) {
+        this.clearCountdownTicker();
+      }
+    }, 1000);
+  }
+
+  private clearCountdownTicker() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = undefined;
+    }
+  }
+
+  private isStartTimeReached(): boolean {
+    if (!this.activeGame?.start_at) {
+      return true;
+    }
+
+    return Date.parse(this.activeGame.start_at) <= Date.now();
+  }
+
+  private buildCountdown(): string | undefined {
+    if (!this.activeGame?.start_at) {
+      return undefined;
+    }
+
+    const startAtMs = Date.parse(this.activeGame.start_at);
+    const totalSeconds = Math.floor(Math.max(startAtMs - Date.now(), 0) / 1000);
+
+    if (totalSeconds <= 0) {
+      return undefined;
+    }
+
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (days > 0) {
+      return `${days} дн. ${hours} ч.`;
+    }
+
+    if (hours > 0) {
+      return `${hours} ч. ${minutes} мин.`;
+    }
+
+    return `${minutes} мин. ${seconds} сек.`;
   }
 }
