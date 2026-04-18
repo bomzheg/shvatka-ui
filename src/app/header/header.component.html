@@ -31,7 +31,7 @@
 
   <nav class="desktop-nav">
     <a routerLink="/games" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games', $event)">Прошедшие игры</a>
-    @if (hasRunningGame()) {
+    @if (hasCurrentGameTab()) {
       <a routerLink="/games/running" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
     }
   </nav>
@@ -99,7 +99,7 @@
   @if (isAuthenticated()) {
     <a routerLink="/profile" class="mobile-link" (click)="onNavClick('/profile', $event)">Профиль</a>
   }
-  @if (hasRunningGame()) {
+  @if (hasCurrentGameTab()) {
     <a routerLink="/games/running" class="mobile-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
   }
 </aside>

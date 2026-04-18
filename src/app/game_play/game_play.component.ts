@@ -1,5 +1,13 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {GamePlayService, CurrentHints, TypedKeyResult, KeyEffect, TypedKeyLog} from "./game_play.service";
+import {
+  GamePlayService,
+  CurrentHints,
+  TypedKeyResult,
+  KeyEffect,
+  TypedKeyLog,
+  CurrentWaivers,
+  WaiversTeam
+} from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {HintPart, KeyType} from "../domain/game.models";
@@ -52,6 +60,28 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   hasHints(): boolean {
     return this.getCurrentHints() !== undefined;
+  }
+
+  hasWaivers(): boolean {
+    return this.getCurrentWaivers() !== undefined;
+  }
+
+  getCurrentWaivers(): CurrentWaivers | undefined {
+    return this.gameService.getCurrentWaivers();
+  }
+
+  getTeamWaivers(teamId: number): string[] {
+    const waiversMap = this.getCurrentWaivers()?.waivers;
+    if (!waiversMap) {
+      return [];
+    }
+
+    const waivers = waiversMap[String(teamId)] ?? [];
+    return waivers.map(waiver => waiver.player.name_mention);
+  }
+
+  hasTeamWaivers(team: WaiversTeam): boolean {
+    return this.getTeamWaivers(team.id).length > 0;
   }
 
   getFileUrl(hint: HintPart) {

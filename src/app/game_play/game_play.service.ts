@@ -4,6 +4,7 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
 import {KeyTime, TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
+import {GamesService} from "../games/games.service";
 
 export type TypedKeyLog = KeyTime & {
   effects?: KeyEffect[];
@@ -43,42 +44,125 @@ export class TypedKeyResult {
   }
 }
 
+export class WaiversTeam {
+  constructor(
+    public id: number,
+    public name: string,
+  ) {
+  }
+}
+
+export class WaiverPlayer {
+  constructor(
+    public id: number,
+    public can_be_author: boolean,
+    public name_mention: string,
+  ) {
+  }
+}
+
+export class WaiverEntry {
+  constructor(
+    public player: WaiverPlayer,
+  ) {
+  }
+}
+
+export class CurrentWaivers {
+  constructor(
+    public teams: WaiversTeam[],
+    public waivers: Record<string, WaiverEntry[]>,
+  ) {
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class GamePlayService {
   private currentHints: CurrentHints | undefined;
+  private currentWaivers: CurrentWaivers | undefined;
   private isHintsLoading = false;
   private authRequired = false;
 
-  constructor(private http: HttpAdapter, private snackBar: MatSnackBar) { }
+  constructor(
+    private http: HttpAdapter,
+    private snackBar: MatSnackBar,
+    private gamesService: GamesService,
+  ) {
+  }
 
   loadHints() {
     this.isHintsLoading = true;
     this.authRequired = false;
+    this.gamesService.getActiveGame().subscribe(game => {
+      if (!game) {
+        this.currentHints = undefined;
+        this.currentWaivers = undefined;
+        this.isHintsLoading = false;
+        return;
+      }
+
+      if (game.status === "getting_waivers") {
+        this.loadWaivers();
+        return;
+      }
+
+      this.loadRunningHints();
+    });
+  }
+
+  private loadRunningHints() {
+    this.currentWaivers = undefined;
     this.http.get<CurrentHints>(`/games/running/level/current/hints`)
+    .subscribe({
+      next: h => {
+        this.currentHints = h;
+        this.isHintsLoading = false;
+      },
+      error: error => {
+        this.isHintsLoading = false;
+        this.currentHints = undefined;
+
+        if (error instanceof HttpErrorResponse && error.status === 401) {
+          this.authRequired = true;
+          console.log("current hint 401 response: " + JSON.stringify(error));
+          this.snackBar.open("Играть можно только авторизованным пользователям в составе команд", 'Закрыть', {duration: 3000});
+        } else {
+          throw error;
+        }
+      }
+    })
+  }
+
+  private loadWaivers() {
+    this.currentHints = undefined;
+    this.http.get<CurrentWaivers>(`/waivers/game/current`)
       .subscribe({
-        next: h => {
-          this.currentHints = h;
+        next: waivers => {
+          this.currentWaivers = waivers;
           this.isHintsLoading = false;
         },
         error: error => {
           this.isHintsLoading = false;
-          this.currentHints = undefined;
+          this.currentWaivers = undefined;
 
           if (error instanceof HttpErrorResponse && error.status === 401) {
             this.authRequired = true;
-            console.log("current hint 401 response: " + JSON.stringify(error));
-            this.snackBar.open("Играть можно только авторизованным пользователям в составе команд", 'Закрыть', {duration: 3000});
+            this.snackBar.open("Просмотр вейверов доступен только авторизованным пользователям", 'Закрыть', {duration: 3000});
           } else {
             throw error;
           }
         }
-      })
+      });
   }
 
   getCurrentHints(): CurrentHints | undefined {
     return this.currentHints;
+  }
+
+  getCurrentWaivers(): CurrentWaivers | undefined {
+    return this.currentWaivers;
   }
 
   hintsLoading(): boolean {

@@ -115,3 +115,25 @@
     </ul>
   </div>
 }
+
+@if (hasWaivers()) {
+  <div class="scenario">
+    <h3 class="level-header">Вейверы текущей игры</h3>
+    <ul class="hints">
+      @for (team of getCurrentWaivers()!.teams; track team.id) {
+        <li>
+          <h5 class="hint-header">Команда: {{ team.name }}</h5>
+          @if (hasTeamWaivers(team)) {
+            <ul>
+              @for (player of getTeamWaivers(team.id); track player) {
+                <li>{{ player }}</li>
+              }
+            </ul>
+          } @else {
+            <p>Нет вейверов</p>
+          }
+        </li>
+      }
+    </ul>
+  </div>
+}
