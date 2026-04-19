@@ -17,26 +17,24 @@
       @for (level of getGame()!.levels; track level.db_id) {
         <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
         @if (getScenarioConditions(level).length > 0) {
-          <h4 class="level-keys-header">Условия:</h4>
-
           @if (getWinKeyCondition(level); as winCondition) {
-            <h5 class="hint-header">Ключ на прохождение:</h5>
+            <h4 class="level-keys-header">Ключи:</h4>
             <ul class="level-keys">
               @for (key of getConditionKeys(winCondition); track key) {
-                <li class="level-key">{{ key }}</li>
+                <li class="level-key">🔑 {{ key }}</li>
               }
             </ul>
           }
 
           @if (getEffectsKeyConditions(level).length > 0) {
-            <h5 class="hint-header">Ключи с эффектами:</h5>
+            <h4 class="level-keys-header">Ключи с эффектами:</h4>
             <ul class="level-keys">
               @for (condition of getEffectsKeyConditions(level); track 'effects-key:' + $index) {
                 <li class="level-key">
                   @if (getConditionKeys(condition).length > 0) {
                     <ul>
                       @for (key of getConditionKeys(condition); track key) {
-                        <li>{{ key }}</li>
+                        <li>🔑 {{ key }}</li>
                       }
                     </ul>
                   }
@@ -53,7 +51,7 @@
           }
 
           @if (getEffectsTimerConditions(level).length > 0) {
-            <h5 class="hint-header">Таймерные эффекты:</h5>
+            <h4 class="level-keys-header">Таймерные эффекты:</h4>
             <ul class="level-keys">
               @for (condition of getEffectsTimerConditions(level); track 'effects-timer:' + $index) {
                 <li class="level-key">
@@ -63,7 +61,7 @@
                   @if (getConditionKeys(condition).length > 0) {
                     <ul>
                       @for (key of getConditionKeys(condition); track key) {
-                        <li>{{ key }}</li>
+                        <li>🔑 {{ key }}</li>
                       }
                     </ul>
                   }
