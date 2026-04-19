@@ -112,12 +112,38 @@ export class TimeHint {
   }
 }
 
+export enum ScenarioConditionType {
+  winKey = "WIN_KEY",
+  effectsKey = "EFFECTS_KEY",
+  effectsTimer = "EFFECTS_TIMER",
+}
+
+export class Effect {
+  constructor(
+    public id: string,
+    public hints_: HintPart[] = [],
+    public bonus_minutes: number = 0,
+    public level_up: boolean = false,
+    public next_level: string | null = null,
+  ) {
+  }
+}
+
+export class ScenarioCondition {
+  constructor(
+    public type: ScenarioConditionType,
+    public keys: string[] | undefined = undefined,
+    public effects: Effect[] | Effect | undefined = undefined,
+    public action_time: number | undefined = undefined,
+  ) {
+  }
+}
+
 export class Scenario {
   constructor(
     public id: string,
     public time_hints: TimeHint[],
-    public keys: string[],
-    public bonus_keys: any[],
+    public conditions: ScenarioCondition[],
   ) {
   }
 }
