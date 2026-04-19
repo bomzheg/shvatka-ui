@@ -1,0 +1,37 @@
+.game-keys-spoiler,
+.game-stat-spoiler,
+.keys-log h3 {
+  text-align: center;
+}
+
+details {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: var(--app-surface);
+  padding: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  text-align: center;
+}
+
+th,
+td {
+  border: 1px solid #d1d5db;
+  padding: 0.45rem;
+}

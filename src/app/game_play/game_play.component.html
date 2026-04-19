@@ -120,6 +120,17 @@
   <div class="waivers-panel">
     <h2 class="waivers-title">{{ getActiveGameName() }}</h2>
     <p class="waivers-subtitle">Сбор вейверов</p>
+    @if (hasMyRole()) {
+      <div class="my-role-card">
+        @if (hasTeamRole()) {
+          <p><strong>Команда:</strong> {{ getMyTeamName() }}</p>
+        }
+        <p><strong>Мой вейвер:</strong> {{ getMyRoleVoteText() }}</p>
+        @if (hasOrgRole()) {
+          <p><strong>Организатор:</strong> {{ getMyOrgName() }}</p>
+        }
+      </div>
+    }
     @if (getCountdownToStart()) {
       <p class="waivers-countdown">До старта: {{ getCountdownToStart() }}</p>
     }
@@ -132,8 +143,10 @@
           </h5>
           @if (hasTeamWaivers(team)) {
             <ul class="waivers-players">
-              @for (player of getTeamWaivers(team.id); track player) {
-                <li class="waivers-player">{{ player }}</li>
+              @for (entry of getTeamWaivers(team.id); track entry.player.id) {
+                <li class="waivers-player" [class.waivers-player-me]="isCurrentUserWaiver(entry)">
+                  {{ entry.player.name_mention }}
+                </li>
               }
             </ul>
           } @else {
@@ -142,5 +155,22 @@
         </li>
       }
     </ul>
+  </div>
+}
+
+@if (canOpenSpyTab()) {
+  <div class="spy-panel">
+    <div class="spy-panel-header">
+      <h3>Spy</h3>
+      <button type="button" (click)="loadSpyData(true)">Обновить</button>
+    </div>
+
+    @if (isSpyDataLoading()) {
+      <p class="status-message">Загрузка spy-данных...</p>
+    }
+
+    @if (getSpyKeys() || getSpyStat()) {
+      <app-game-log-part [keys]="getSpyKeys()" [stat]="getSpyStat()"></app-game-log-part>
+    }
   </div>
 }
