@@ -1,5 +1,19 @@
+.scenario {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.level-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 0.55rem 0.6rem;
+  background: color-mix(in srgb, var(--app-surface) 92%, #ffffff);
+}
+
 .level-header {
   text-align: center;
+  margin: 0.15rem 0 0.55rem;
+  font-size: 1rem;
 }
 
 .level-header::before {
@@ -8,10 +22,63 @@
   border-top: .1rem solid #9ca3af;
   width: 100%;
   margin: 0;
-  transform: translateY(-1rem);
+  transform: translateY(-0.55rem);
 }
 
 .level-keys,
 .hints {
-  padding-left: 1.1rem;
+  margin: 0;
+  padding-left: 1.05rem;
+}
+
+.level-keys {
+  list-style: disc;
+}
+
+.level-key::marker {
+  content: "🔑 ";
+  font-size: 0.95rem;
+}
+
+.nested-level-keys {
+  margin-top: 0.35rem;
+}
+
+.level-keys-header,
+.hints-header {
+  margin: 0.45rem 0 0.35rem;
+  font-size: 0.92rem;
+}
+
+.level-effects-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.level-effect-item {
+  border: 1px solid #dbe3ed;
+  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.08);
+  padding: 0.35rem 0.45rem;
+}
+
+.hints {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.hint-item {
+  list-style: none;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 8px;
+  padding: 0.35rem 0.45rem;
+}
+
+.hint-header {
+  margin: 0 0 0.3rem;
 }

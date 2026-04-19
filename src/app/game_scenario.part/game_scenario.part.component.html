@@ -1,25 +1,26 @@
 <div class="scenario">
   @for (level of game.levels; track level.db_id) {
-    <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
+    <section class="level-card">
+      <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
     @if (getScenarioConditions(level).length > 0) {
       @if (getWinKeyCondition(level); as winCondition) {
         <h4 class="level-keys-header">Ключи:</h4>
         <ul class="level-keys">
           @for (key of getConditionKeys(winCondition); track key) {
-            <li class="level-key">🔑 {{ key }}</li>
+            <li class="level-key">{{ key }}</li>
           }
         </ul>
       }
 
       @if (getEffectsKeyConditions(level).length > 0) {
         <h4 class="level-keys-header">Ключи с эффектами:</h4>
-        <ul class="level-keys">
+        <ul class="level-effects-list">
           @for (condition of getEffectsKeyConditions(level); track 'effects-key:' + $index) {
-            <li class="level-key">
+            <li class="level-effect-item">
               @if (getConditionKeys(condition).length > 0) {
-                <ul>
+                <ul class="level-keys nested-level-keys">
                   @for (key of getConditionKeys(condition); track key) {
-                    <li>🔑 {{ key }}</li>
+                    <li class="level-key">{{ key }}</li>
                   }
                 </ul>
               }
@@ -33,16 +34,16 @@
 
       @if (getEffectsTimerConditions(level).length > 0) {
         <h4 class="level-keys-header">Таймерные эффекты:</h4>
-        <ul class="level-keys">
+        <ul class="level-effects-list">
           @for (condition of getEffectsTimerConditions(level); track 'effects-timer:' + $index) {
-            <li class="level-key">
+            <li class="level-effect-item">
               @if (getTimerActionTime(condition); as actionTime) {
                 <strong>{{ actionTime }} мин.</strong>
               }
               @if (getConditionKeys(condition).length > 0) {
-                <ul>
+                <ul class="level-keys nested-level-keys">
                   @for (key of getConditionKeys(condition); track key) {
-                    <li>🔑 {{ key }}</li>
+                    <li class="level-key">{{ key }}</li>
                   }
                 </ul>
               }
@@ -57,7 +58,7 @@
     <h4 class="hints-header">Подсказки:</h4>
     <ul class="hints">
       @for (timeHint of level.scenario.time_hints; track timeHint.time) {
-        <li>
+        <li class="hint-item">
           <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
           @for (hint of timeHint.hint; track hint) {
             <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
@@ -65,5 +66,6 @@
         </li>
       }
     </ul>
+    </section>
   }
 </div>
