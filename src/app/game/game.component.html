@@ -16,10 +16,29 @@
     <div class="scenario">
       @for (level of getGame()!.levels; track level.db_id) {
         <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
-        <h4 class="level-keys-header">Ключи:</h4>
+        <h4 class="level-keys-header">Условия:</h4>
         <ul class="level-keys">
-          @for (key of level.scenario.keys; track key) {
-            <li class="level-key">{{ key }}</li>
+          @for (condition of getScenarioConditions(level); track condition.type + ':' + $index) {
+            <li class="level-key">
+              <strong>{{ getConditionTitle(condition) }}</strong>
+              @if (condition.type === ScenarioConditionType.effectsTimer && condition.action_time !== null) {
+                <span> ({{ condition.action_time }} мин.)</span>
+              }
+              @if (condition.keys.length > 0) {
+                <ul>
+                  @for (key of condition.keys; track key) {
+                    <li>{{ key }}</li>
+                  }
+                </ul>
+              }
+              @if (getConditionEffectsSummary(condition).length > 0) {
+                <ul>
+                  @for (effectSummary of getConditionEffectsSummary(condition); track effectSummary + ':' + $index) {
+                    <li>{{ effectSummary }}</li>
+                  }
+                </ul>
+              }
+            </li>
           }
         </ul>
         <h4 class="hints-header">Подсказки:</h4>
