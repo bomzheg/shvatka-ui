@@ -63,21 +63,25 @@ export class GameComponent implements OnInit, OnDestroy {
     return level.scenario.conditions ?? [];
   }
 
-  getConditionTitle(condition: ScenarioCondition): string {
-    switch (condition.type) {
-      case ScenarioConditionType.winKey:
-        return "Ключ на прохождение";
-      case ScenarioConditionType.effectsKey:
-        return "Ключ с эффектом";
-      case ScenarioConditionType.effectsTimer:
-        return "Таймерный эффект";
-      default:
-        return condition.type;
-    }
+  getWinKeyCondition(level: Level): ScenarioCondition | undefined {
+    return this.getScenarioConditions(level).find(condition => condition.type === ScenarioConditionType.winKey);
+  }
+
+  getEffectsKeyConditions(level: Level): ScenarioCondition[] {
+    return this.getScenarioConditions(level).filter(condition => condition.type === ScenarioConditionType.effectsKey);
+  }
+
+  getEffectsTimerConditions(level: Level): ScenarioCondition[] {
+    return this.getScenarioConditions(level).filter(condition => condition.type === ScenarioConditionType.effectsTimer);
+  }
+
+  getConditionKeys(condition: ScenarioCondition): string[] {
+    return Array.isArray(condition.keys) ? condition.keys : [];
   }
 
   getConditionEffectsSummary(condition: ScenarioCondition): string[] {
-    return condition.effects.flatMap(effect => {
+    const effects = Array.isArray(condition.effects) ? condition.effects : [];
+    return effects.flatMap(effect => {
       const tags: string[] = [];
       if (effect.bonus_minutes > 0) {
         tags.push(`бонус ${effect.bonus_minutes} мин.`);
@@ -95,6 +99,14 @@ export class GameComponent implements OnInit, OnDestroy {
 
       return tags;
     });
+  }
+
+  getTimerActionTime(condition: ScenarioCondition): number | undefined {
+    if (condition.type !== ScenarioConditionType.effectsTimer) {
+      return undefined;
+    }
+
+    return typeof condition.action_time === "number" ? condition.action_time : undefined;
   }
 
   isLoading(): boolean {

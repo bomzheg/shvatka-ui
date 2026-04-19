@@ -132,9 +132,9 @@ export class Effect {
 export class ScenarioCondition {
   constructor(
     public type: ScenarioConditionType,
-    public keys: string[] = [],
-    public effects: Effect[] = [],
-    public action_time: number | null = null,
+    public keys: string[] | undefined = undefined,
+    public effects: Effect[] | undefined = undefined,
+    public action_time: number | undefined = undefined,
   ) {
   }
 }
