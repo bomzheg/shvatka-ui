@@ -1,0 +1,17 @@
+.level-header {
+  text-align: center;
+}
+
+.level-header::before {
+  display: inline-block;
+  content: "";
+  border-top: .1rem solid #9ca3af;
+  width: 100%;
+  margin: 0;
+  transform: translateY(-1rem);
+}
+
+.level-keys,
+.hints {
+  padding-left: 1.1rem;
+}
