@@ -6,6 +6,7 @@ import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {Subscription} from "rxjs";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
+import {EffectsPartComponent} from "../effects.part/effects.part.component";
 
 @Component({
   selector: 'app-game',
@@ -13,6 +14,7 @@ import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
   imports: [
     HintPartComponent,
     GameLogPartComponent,
+    EffectsPartComponent,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
@@ -80,7 +82,9 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   getConditionEffectsSummary(condition: ScenarioCondition): string[] {
-    const effects = Array.isArray(condition.effects) ? condition.effects : [];
+    const effects = Array.isArray(condition.effects)
+      ? condition.effects
+      : (condition.effects ? [condition.effects] : []);
     return effects.flatMap(effect => {
       const tags: string[] = [];
       if (effect.bonus_minutes > 0) {

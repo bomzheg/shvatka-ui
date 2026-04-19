@@ -18,6 +18,7 @@ import {FormsModule} from "@angular/forms";
 import {finalize, Subscription} from "rxjs";
 import {ActiveGame} from "../games/games.service";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
+import {EffectsPartComponent} from "../effects.part/effects.part.component";
 
 @Component({
   selector: 'app-game-play',
@@ -26,6 +27,7 @@ import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
     HintPartComponent,
     FormsModule,
     GameLogPartComponent,
+    EffectsPartComponent,
   ],
   templateUrl: './game_play.component.html',
   styleUrl: './game_play.component.scss'
@@ -231,23 +233,6 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   isLevelCompleted(result: TypedKeyResult): boolean {
     return result.effects?.some(effect => effect.level_up) ?? false;
-  }
-
-  hasVisibleEffects(result: TypedKeyResult): boolean {
-    return this.getVisibleEffects(result).length > 0;
-  }
-
-  getVisibleEffects(result: TypedKeyResult): Array<{tags: string[], hints: any[]}> {
-    if (!Array.isArray(result.effects)) {
-      return [];
-    }
-
-    return result.effects
-      .map(effect => ({
-        tags: this.getEffectTags(effect),
-        hints: Array.isArray(effect.hints_) ? effect.hints_ : [],
-      }))
-      .filter(effect => effect.tags.length > 0 || effect.hints.length > 0);
   }
 
   getEffectTags(effect: KeyEffect): string[] {

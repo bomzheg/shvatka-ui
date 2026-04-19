@@ -39,11 +39,7 @@
                     </ul>
                   }
                   @if (getConditionEffectsSummary(condition).length > 0) {
-                    <ul>
-                      @for (effectSummary of getConditionEffectsSummary(condition); track effectSummary + ':' + $index) {
-                        <li>{{ effectSummary }}</li>
-                      }
-                    </ul>
+                    <app-effects-part [effects]="condition.effects" [gameId]="getGame()!.id"></app-effects-part>
                   }
                 </li>
               }
@@ -66,11 +62,7 @@
                     </ul>
                   }
                   @if (getConditionEffectsSummary(condition).length > 0) {
-                    <ul>
-                      @for (effectSummary of getConditionEffectsSummary(condition); track effectSummary + ':' + $index) {
-                        <li>{{ effectSummary }}</li>
-                      }
-                    </ul>
+                    <app-effects-part [effects]="condition.effects" [gameId]="getGame()!.id"></app-effects-part>
                   }
                 </li>
               }

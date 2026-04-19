@@ -1,0 +1,20 @@
+@if (getVisibleEffects().length > 0) {
+  <ul class="effects-list">
+    @for (effect of getVisibleEffects(); track effect.id ?? $index) {
+      <li>
+        @for (tag of getEffectTags(effect); track tag) {
+          <span class="effect-tag">{{ tag }}</span>
+        }
+        @if (getEffectHints(effect).length > 0) {
+          <ul>
+            @for (hint of getEffectHints(effect); track hint) {
+              <li>
+                <app-hint-part [hint]="hint" [fileUrl]="getHintFileUrl(hint)"></app-hint-part>
+              </li>
+            }
+          </ul>
+        }
+      </li>
+    }
+  </ul>
+}
