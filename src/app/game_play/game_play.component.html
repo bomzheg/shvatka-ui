@@ -102,7 +102,7 @@
     }
 
     <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }}</h3>
-    <p>начался {{toLocal(getCurrentHints()!.started_at)}}</p>
+    <p>начался {{ toLocal(getCurrentHints()!.started_at) }}</p>
     <ul class="hints">
       @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
         <li>
@@ -123,11 +123,25 @@
     @if (hasMyRole()) {
       <div class="my-role-card">
         @if (hasTeamRole()) {
-          <p><strong>Команда:</strong> {{ getMyTeamName() }}</p>
+          <p><strong>Моя команда:</strong> {{ getMyTeamName() }}</p>
+          <p><strong>Мой вейвер:</strong> {{ getMyRoleVoteText() }}</p>
         }
-        <p><strong>Мой вейвер:</strong> {{ getMyRoleVoteText() }}</p>
         @if (hasOrgRole()) {
-          <p><strong>Организатор:</strong> {{ getMyOrgName() }}</p>
+          @if (getMyOrg()?.deleted) {
+            <p>Я был организатором, но больше нет. Вероятно главный орг отменил моё участие</p>
+          } @else {
+            <p><strong>Я организатор:</strong></p>
+            @if (getMyOrg()?.can_see_log_keys) {
+              <p><span>✅</span>Могу смотреть лог ключей</p>
+            } @else {
+              <p><span>❌</span>Не могу смотреть лог ключей</p>
+            }
+            @if (getMyOrg()?.can_spy) {
+              <p><span>✅</span>Могу смотреть какая команда на каком уровне</p>
+            } @else {
+              <p><span>❌</span>Не могу смотреть какая команда на каком уровне</p>
+            }
+          }
         }
       </div>
     }

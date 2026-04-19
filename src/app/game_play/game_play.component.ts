@@ -8,7 +8,8 @@ import {
   CurrentWaivers,
   WaiversTeam,
   WaiverEntry,
-  Played
+  Played,
+  OrganizerDto
 } from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
@@ -97,25 +98,25 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.gameService.getMyRole()?.team?.name ?? undefined;
   }
 
-  getMyOrgName(): string | undefined {
-    return this.gameService.getMyRole()?.org?.player.name_mention ?? undefined;
+  getMyOrg(): OrganizerDto | undefined {
+    return this.gameService.getMyRole()?.org ?? undefined;
   }
 
   getMyRoleVoteText(): string {
     const vote = this.gameService.getMyRole()?.waiver_vote;
     switch (vote) {
       case Played.yes:
-        return "Подтверждён";
+        return "Играю";
       case Played.no:
-        return "Отклонён";
+        return "Я отказался";
       case Played.think:
-        return "Ожидание решения";
+        return "Я ещё не решил";
       case Played.revoked:
         return "Не допущен капитаном";
       case Played.not_allowed:
         return "Не допущен организаторами";
       default:
-        return "Нет данных";
+        return "Нет вейвера (не играю)";
     }
   }
 
