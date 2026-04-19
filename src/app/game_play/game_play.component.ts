@@ -13,12 +13,14 @@ import {
 } from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
+import {FullGame, GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize, Subscription} from "rxjs";
 import {ActiveGame} from "../games/games.service";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {EffectsPartComponent} from "../effects.part/effects.part.component";
+import {UserService} from "../auth/user.service";
+import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
 
 @Component({
   selector: 'app-game-play',
@@ -28,6 +30,7 @@ import {EffectsPartComponent} from "../effects.part/effects.part.component";
     FormsModule,
     GameLogPartComponent,
     EffectsPartComponent,
+    GameScenarioPartComponent,
   ],
   templateUrl: './game_play.component.html',
   styleUrl: './game_play.component.scss'
@@ -40,6 +43,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   keyResultData: TypedKeyResult | undefined;
   keySubmitError: string | undefined;
   isSubmitting = false;
+  authorScenario: FullGame | undefined;
+  isAuthorScenarioLoading = false;
   private activeGameSubscription: Subscription | undefined;
   private countdownInterval: ReturnType<typeof setInterval> | undefined;
   private keyResultTimer: ReturnType<typeof setTimeout> | undefined;
@@ -47,6 +52,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   constructor(
     private gameService: GamePlayService,
     private http: HttpAdapter,
+    private userService: UserService,
     ) {
   }
 
@@ -54,6 +60,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     this.activeGameSubscription = this.gameService.getActiveGame(true).subscribe(game => {
       this.activeGame = game;
       this.startCountdownTicker();
+      this.loadAuthorScenario(game);
     });
     this.gameService.loadHints();
   }
@@ -124,6 +131,16 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   getActiveGameName(): string {
     return this.activeGame?.name ?? "Текущая игра";
+  }
+
+  isCurrentUserGameAuthor(): boolean {
+    const myId = this.userService.getMe()?.db_id;
+    const authorId = this.activeGame?.author?.id;
+    return myId !== undefined && authorId !== undefined && myId === authorId;
+  }
+
+  shouldShowAuthorScenario(): boolean {
+    return this.isCurrentUserGameAuthor() && !!this.authorScenario;
   }
 
   getCountdownToStart(): string | undefined {
@@ -406,5 +423,28 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     }
 
     return `${minutes} мин. ${seconds} сек.`;
+  }
+
+  private loadAuthorScenario(game: ActiveGame | undefined) {
+    this.authorScenario = undefined;
+    this.isAuthorScenarioLoading = false;
+
+    if (!game || !this.isCurrentUserGameAuthor()) {
+      return;
+    }
+
+    this.isAuthorScenarioLoading = true;
+    this.http.get<FullGame>(`/games/${game.id}`)
+      .pipe(finalize(() => {
+        this.isAuthorScenarioLoading = false;
+      }))
+      .subscribe({
+        next: fullGame => {
+          this.authorScenario = fullGame;
+        },
+        error: () => {
+          this.authorScenario = undefined;
+        }
+      });
   }
 }

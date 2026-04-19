@@ -171,3 +171,16 @@
     }
   </div>
 }
+
+@if (isCurrentUserGameAuthor()) {
+  <details class="author-scenario-spoiler">
+    <summary>Сценарий текущей игры</summary>
+    @if (isAuthorScenarioLoading) {
+      <p class="status-message">Загрузка сценария...</p>
+    } @else if (shouldShowAuthorScenario()) {
+      <app-game-scenario-part [game]="authorScenario!"></app-game-scenario-part>
+    } @else {
+      <p class="status-message">Не удалось загрузить сценарий.</p>
+    }
+  </details>
+}
