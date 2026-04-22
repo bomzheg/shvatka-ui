@@ -8,11 +8,19 @@ export class TelegramScriptService {
 
   constructor(@Inject(DOCUMENT) private document: Document) {}
 
-  loadWebAppSdk(timeoutMs = 1500): Promise<boolean> {
-    return this.loadScript(this.webAppScriptUrl, timeoutMs);
+  startLoadingWebAppSdk(): Promise<boolean> {
+    return this.loadScript(this.webAppScriptUrl);
   }
 
-  private loadScript(src: string, timeoutMs: number): Promise<boolean> {
+  async waitForWebAppSdk(timeoutMs = 1500): Promise<boolean> {
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+      window.setTimeout(() => resolve(false), timeoutMs);
+    });
+
+    return Promise.race([this.startLoadingWebAppSdk(), timeoutPromise]);
+  }
+
+  private loadScript(src: string): Promise<boolean> {
     const browserWindow = this.document.defaultView as (Window & {Telegram?: any}) | null;
     if (browserWindow?.Telegram?.WebApp) {
       return Promise.resolve(true);
@@ -39,22 +47,14 @@ export class TelegramScriptService {
         return;
       }
 
-      let isFinished = false;
-      const finalize = (value: boolean) => {
-        if (isFinished) {
-          return;
-        }
-
-        isFinished = true;
-        window.clearTimeout(timeoutHandle);
-        script.removeEventListener("load", handleLoad);
+      const handleLoad = () => {
         script.removeEventListener("error", handleError);
-        resolve(value);
+        resolve(!!browserWindow?.Telegram?.WebApp);
       };
-
-      const handleLoad = () => finalize(!!browserWindow?.Telegram?.WebApp);
-      const handleError = () => finalize(false);
-      const timeoutHandle = window.setTimeout(() => finalize(false), timeoutMs);
+      const handleError = () => {
+        script.removeEventListener("load", handleLoad);
+        resolve(false);
+      };
 
       script.addEventListener("load", handleLoad, {once: true});
       script.addEventListener("error", handleError, {once: true});

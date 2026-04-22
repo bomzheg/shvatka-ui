@@ -37,6 +37,7 @@ interface Countdown {
 export class HeaderComponent implements OnInit, OnDestroy {
   private window;
   private countdownInterval: number | undefined;
+  private telegramAuthAttempted = false;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
   isMobileMenuOpen = false;
@@ -117,24 +118,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.setupCountdownTicker();
     });
 
-    await this.telegramScriptService.loadWebAppSdk();
-    const tgWa = (this.window as any)?.Telegram?.WebApp;
-
-    if (tgWa?.initData) {
-      this.authService.authenticateWebApp(tgWa)
-        .subscribe({
-          next: async () => {
-            await this.userService.loadMe();
-            tgWa.ready();
-          },
-          error: async () => {
-            await this.userService.loadMe();
-          },
-        });
+    const sdkReadyWithinTimeout = await this.telegramScriptService.waitForWebAppSdk();
+    if (sdkReadyWithinTimeout && this.tryAuthenticateTelegramWebApp()) {
       return;
     }
 
     await this.userService.loadMe();
+    this.telegramScriptService.startLoadingWebAppSdk()
+      .then(() => this.tryAuthenticateTelegramWebApp());
   }
 
   hasActiveGame() {
@@ -173,6 +164,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.countdownInterval) {
       window.clearInterval(this.countdownInterval);
     }
+  }
+
+  private tryAuthenticateTelegramWebApp(): boolean {
+    const tgWa = (this.window as any)?.Telegram?.WebApp;
+    if (this.telegramAuthAttempted || !tgWa?.initData) {
+      return false;
+    }
+
+    this.telegramAuthAttempted = true;
+    this.authService.authenticateWebApp(tgWa)
+      .subscribe({
+        next: async () => {
+          await this.userService.loadMe();
+          tgWa.ready();
+        },
+        error: async () => {
+          await this.userService.loadMe();
+        },
+      });
+    return true;
   }
 
   private setupCountdownTicker() {

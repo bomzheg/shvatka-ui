@@ -1,5 +1,6 @@
 import {DOCUMENT} from "@angular/common";
 import {Inject, Injectable, OnDestroy} from "@angular/core";
+import {TelegramScriptService} from "../telegram/telegram-script.service";
 
 export type ThemeMode = "system" | "light" | "dark";
 export const THEME_MODES: ThemeMode[] = ["system", "light", "dark"];
@@ -9,24 +10,33 @@ export class ThemeService implements OnDestroy {
   private readonly storageKey = "shvatka.theme.mode";
   private readonly mediaQuery: MediaQueryList | undefined;
   private readonly browserWindow: Window | null;
-  private readonly tgWebApp: any;
+  private tgWebApp: any;
+  private isTelegramThemeListenerBound = false;
   private currentMode: ThemeMode = "system";
 
-  constructor(@Inject(DOCUMENT) private document: Document) {
+  constructor(
+    @Inject(DOCUMENT) private document: Document,
+    private telegramScriptService: TelegramScriptService,
+  ) {
     this.browserWindow = this.document.defaultView;
     this.mediaQuery = this.browserWindow?.matchMedia?.("(prefers-color-scheme: dark)") ?? undefined;
-    this.tgWebApp = (this.browserWindow as any)?.Telegram?.WebApp;
+    this.tgWebApp = this.getTelegramWebApp();
 
     this.currentMode = this.readMode();
     this.applyMode(this.currentMode);
 
     this.mediaQuery?.addEventListener?.("change", this.handleSystemThemeChange);
-    this.tgWebApp?.onEvent?.("themeChanged", this.handleTelegramThemeChange);
+    this.bindTelegramThemeListener();
+    this.telegramScriptService.startLoadingWebAppSdk()
+      .then(() => this.bindTelegramThemeListener());
   }
 
   ngOnDestroy(): void {
     this.mediaQuery?.removeEventListener?.("change", this.handleSystemThemeChange);
-    this.tgWebApp?.offEvent?.("themeChanged", this.handleTelegramThemeChange);
+    if (this.isTelegramThemeListenerBound) {
+      this.tgWebApp?.offEvent?.("themeChanged", this.handleTelegramThemeChange);
+      this.isTelegramThemeListenerBound = false;
+    }
   }
 
   getMode(): ThemeMode {
@@ -83,6 +93,7 @@ export class ThemeService implements OnDestroy {
       return this.mediaQuery.matches ? "dark" : "light";
     }
 
+    this.tgWebApp = this.getTelegramWebApp();
     const tgScheme = this.isTelegramMiniApp() ? this.tgWebApp?.colorScheme : undefined;
     if (tgScheme === "dark" || tgScheme === "light") {
       return tgScheme;
@@ -92,6 +103,7 @@ export class ThemeService implements OnDestroy {
   }
 
   private isTelegramMiniApp(): boolean {
+    this.tgWebApp = this.getTelegramWebApp();
     return !!this.tgWebApp?.initData;
   }
 
@@ -105,5 +117,23 @@ export class ThemeService implements OnDestroy {
 
     this.tgWebApp.setBackgroundColor(backgroundColor);
     this.tgWebApp.setHeaderColor(headerColor);
+  }
+
+  private bindTelegramThemeListener(): void {
+    this.tgWebApp = this.getTelegramWebApp();
+    if (this.isTelegramThemeListenerBound || !this.tgWebApp?.onEvent) {
+      return;
+    }
+
+    this.tgWebApp.onEvent?.("themeChanged", this.handleTelegramThemeChange);
+    this.isTelegramThemeListenerBound = true;
+
+    if (this.currentMode === "system") {
+      this.applyMode(this.currentMode);
+    }
+  }
+
+  private getTelegramWebApp(): any {
+    return (this.browserWindow as any)?.Telegram?.WebApp;
   }
 }
