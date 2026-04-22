@@ -8,6 +8,7 @@ import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {ActiveGame, GamesService} from "../games/games.service";
 import {THEME_MODES, ThemeMode, ThemeService} from "../theme/theme.service";
+import {TelegramScriptService} from "../telegram/telegram-script.service";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
 
@@ -35,8 +36,6 @@ interface Countdown {
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private window;
-  private readonly tg;
-  private readonly tgWa;
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
@@ -51,10 +50,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private gamesService: GamesService,
     private router: Router,
     private themeService: ThemeService,
+    private telegramScriptService: TelegramScriptService,
   ) {
     this.window = this._document.defaultView;
-    this.tg = this.window?.Telegram;
-    this.tgWa = this.tg?.WebApp;
   }
 
   openLoginForm() {
@@ -119,20 +117,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.setupCountdownTicker();
     });
 
-    if (this.tgWa?.initData) {
-      this.authService.authenticateWebApp(this.tgWa)
+    await this.telegramScriptService.loadWebAppSdk();
+    const tgWa = (this.window as any)?.Telegram?.WebApp;
+
+    if (tgWa?.initData) {
+      this.authService.authenticateWebApp(tgWa)
         .subscribe({
           next: async () => {
             await this.userService.loadMe();
-            this.tgWa.ready();
+            tgWa.ready();
           },
           error: async () => {
             await this.userService.loadMe();
           },
         });
-    } else {
-      await this.userService.loadMe();
+      return;
     }
+
+    await this.userService.loadMe();
   }
 
   hasActiveGame() {
