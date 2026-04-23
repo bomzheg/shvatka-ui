@@ -220,26 +220,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }, HeaderComponent.TELEGRAM_AUTH_RETRY_DELAY_MS);
   }
 
-  private tryAuthenticateTelegramWebApp(): boolean {
-    const tgWa = (this.window as any)?.Telegram?.WebApp;
-    if (this.telegramAuthAttempted || !tgWa?.initData) {
-      return false;
-    }
-
-    this.telegramAuthAttempted = true;
-    this.authService.authenticateWebApp(tgWa)
-      .subscribe({
-        next: async () => {
-          await this.userService.loadMe();
-          tgWa.ready();
-        },
-        error: async () => {
-          await this.userService.loadMe();
-        },
-      });
-    return true;
-  }
-
   private setupCountdownTicker() {
     if (this.countdownInterval) {
       window.clearInterval(this.countdownInterval);
