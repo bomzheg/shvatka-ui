@@ -35,8 +35,13 @@ interface Countdown {
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  private static readonly TELEGRAM_AUTH_MAX_TRIES = 5;
+  private static readonly TELEGRAM_AUTH_RETRY_DELAY_MS = 1000;
   private window;
   private countdownInterval: number | undefined;
+  private telegramAuthRetryTimeout: number | undefined;
+  private telegramAuthInFlight = false;
+  private telegramAuthCompleted = false;
   private telegramAuthAttempted = false;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
@@ -118,14 +123,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.setupCountdownTicker();
     });
 
-    const sdkReadyWithinTimeout = await this.telegramScriptService.waitForWebAppSdk();
-    if (sdkReadyWithinTimeout && this.tryAuthenticateTelegramWebApp()) {
-      return;
-    }
-
+    this.telegramScriptService.startLoadingWebAppSdk();
+    this.retryTelegramAuthInBackground();
     await this.userService.loadMe();
-    this.telegramScriptService.startLoadingWebAppSdk()
-      .then(() => this.tryAuthenticateTelegramWebApp());
   }
 
   hasActiveGame() {
@@ -164,6 +164,60 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.countdownInterval) {
       window.clearInterval(this.countdownInterval);
     }
+    if (this.telegramAuthRetryTimeout) {
+      window.clearTimeout(this.telegramAuthRetryTimeout);
+      this.telegramAuthRetryTimeout = undefined;
+    }
+  }
+
+  private tryAuthenticateTelegramWebApp(): boolean {
+    const tgWa = (this.window as any)?.Telegram?.WebApp;
+    if (this.telegramAuthInFlight || this.telegramAuthCompleted || this.userService.isUserLoaded() || !tgWa?.initData) {
+      return false;
+    }
+
+    this.telegramAuthInFlight = true;
+    this.authService.authenticateWebApp(tgWa)
+      .subscribe({
+        next: async () => {
+          this.telegramAuthInFlight = false;
+          this.telegramAuthCompleted = true;
+          await this.userService.loadMe();
+          tgWa.ready();
+        },
+        error: async () => {
+          this.telegramAuthInFlight = false;
+          await this.userService.loadMe();
+          this.retryTelegramAuthInBackground(1);
+        },
+      });
+    return true;
+  }
+
+  private retryTelegramAuthInBackground(
+    triesLeft = HeaderComponent.TELEGRAM_AUTH_MAX_TRIES,
+  ): void {
+    if (this.telegramAuthRetryTimeout) {
+      window.clearTimeout(this.telegramAuthRetryTimeout);
+      this.telegramAuthRetryTimeout = undefined;
+    }
+
+    if (this.telegramAuthCompleted || this.userService.isUserLoaded()) {
+      return;
+    }
+
+    if (this.tryAuthenticateTelegramWebApp()) {
+      return;
+    }
+
+    if (triesLeft <= 1) {
+      console.error("Telegram WebApp auth was not initialized after 5 attempts. Continue without Telegram widgets.");
+      return;
+    }
+
+    this.telegramAuthRetryTimeout = window.setTimeout(() => {
+      this.retryTelegramAuthInBackground(triesLeft - 1);
+    }, HeaderComponent.TELEGRAM_AUTH_RETRY_DELAY_MS);
   }
 
   private tryAuthenticateTelegramWebApp(): boolean {
