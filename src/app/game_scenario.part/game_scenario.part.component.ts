@@ -42,31 +42,6 @@ export class GameScenarioPartComponent {
     return Array.isArray(condition.keys) ? condition.keys : [];
   }
 
-  getConditionEffectsSummary(condition: ScenarioCondition): string[] {
-    const effects = Array.isArray(condition.effects)
-      ? condition.effects
-      : (condition.effects ? [condition.effects] : []);
-
-    return effects.flatMap(effect => {
-      const tags: string[] = [];
-      if (effect.bonus_minutes > 0) {
-        tags.push(`бонус ${effect.bonus_minutes} мин.`);
-      } else if (effect.bonus_minutes < 0) {
-        tags.push(`штраф ${-effect.bonus_minutes} мин.`);
-      }
-
-      if (effect.level_up) {
-        if (effect.next_level) {
-          tags.push(`переход на ${effect.next_level}`);
-        } else {
-          tags.push('переход на следующий уровень');
-        }
-      }
-
-      return tags;
-    });
-  }
-
   getTimerActionTime(condition: ScenarioCondition): number | undefined {
     if (condition.type !== ScenarioConditionType.effectsTimer) {
       return undefined;
