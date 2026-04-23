@@ -17,16 +17,12 @@
         <ul class="level-effects-list">
           @for (condition of getEffectsKeyConditions(level); track 'effects-key:' + $index) {
             <li class="level-effect-item">
-              @if (getConditionKeys(condition).length > 0) {
-                <ul class="level-keys nested-level-keys">
-                  @for (key of getConditionKeys(condition); track key) {
-                    <li class="level-key">{{ key }}</li>
-                  }
-                </ul>
-              }
-              @if (getConditionEffectsSummary(condition).length > 0) {
-                <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
-              }
+              <ul class="level-keys nested-level-keys">
+                @for (key of getConditionKeys(condition); track key) {
+                  <li class="level-key">{{ key }}</li>
+                }
+              </ul>
+              <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
             </li>
           }
         </ul>
@@ -40,16 +36,7 @@
               @if (getTimerActionTime(condition); as actionTime) {
                 <strong>{{ actionTime }} мин.</strong>
               }
-              @if (getConditionKeys(condition).length > 0) {
-                <ul class="level-keys nested-level-keys">
-                  @for (key of getConditionKeys(condition); track key) {
-                    <li class="level-key">{{ key }}</li>
-                  }
-                </ul>
-              }
-              @if (getConditionEffectsSummary(condition).length > 0) {
-                <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
-              }
+              <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
             </li>
           }
         </ul>

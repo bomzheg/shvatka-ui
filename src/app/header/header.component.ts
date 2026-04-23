@@ -40,6 +40,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private telegramAuthRetryTimeout: number | undefined;
   private telegramAuthInFlight = false;
   private telegramAuthCompleted = false;
+  private telegramAuthAttempted = false;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
   isMobileMenuOpen = false;
@@ -218,6 +219,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.telegramAuthRetryTimeout = window.setTimeout(() => {
       this.retryTelegramAuthInBackground(timeoutMs, intervalMs, startedAt);
     }, intervalMs);
+  }
+
+  private tryAuthenticateTelegramWebApp(): boolean {
+    const tgWa = (this.window as any)?.Telegram?.WebApp;
+    if (this.telegramAuthAttempted || !tgWa?.initData) {
+      return false;
+    }
+
+    this.telegramAuthAttempted = true;
+    this.authService.authenticateWebApp(tgWa)
+      .subscribe({
+        next: async () => {
+          await this.userService.loadMe();
+          tgWa.ready();
+        },
+        error: async () => {
+          await this.userService.loadMe();
+        },
+      });
+    return true;
   }
 
   private setupCountdownTicker() {
