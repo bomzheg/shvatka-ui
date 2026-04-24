@@ -67,9 +67,6 @@ export class AuthComponent implements AfterViewInit, OnInit {
     const element = this.script?.nativeElement;
     const script = document.createElement('script');
     script.src = 'https://telegram.org/js/telegram-widget.js?23';
-    script.async = true;
-    script.defer = true;
-    script.onerror = () => console.warn('Telegram widget script is unavailable');
     script.setAttribute('data-telegram-login', this.config.botUsername);
     script.setAttribute('data-size', 'large');
     script.setAttribute('data-request-access', 'write');
