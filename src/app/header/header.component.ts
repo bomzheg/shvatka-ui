@@ -34,9 +34,9 @@ interface Countdown {
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  private window;
-  private readonly tg;
-  private readonly tgWa;
+  private readonly window: (Window & typeof globalThis) | undefined;
+  private telegramSdkLoadPromise: Promise<void> | undefined;
+  private readonly forceTelegramSdkLoad = false;
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
@@ -53,8 +53,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
   ) {
     this.window = this._document.defaultView;
-    this.tg = this.window?.Telegram;
-    this.tgWa = this.tg?.WebApp;
   }
 
   openLoginForm() {
@@ -119,19 +117,39 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.setupCountdownTicker();
     });
 
-    if (this.tgWa?.initData) {
-      this.authService.authenticateWebApp(this.tgWa)
-        .subscribe({
-          next: async () => {
-            await this.userService.loadMe();
-            this.tgWa.ready();
-          },
-          error: async () => {
-            await this.userService.loadMe();
-          },
-        });
-    } else {
-      await this.userService.loadMe();
+    if (!this.window) {
+      return;
+    }
+
+    let authResolved = false;
+    let loadMePromise: Promise<unknown> | undefined;
+    const loadMeOnce = () => {
+      if (!loadMePromise) {
+        loadMePromise = this.userService.loadMe();
+      }
+      return loadMePromise;
+    };
+
+    const normalAuthPromise = loadMeOnce()
+      .then(() => {
+        authResolved = true;
+      });
+
+    const telegramAuthPromise = this.tryTelegramAuthWithTimeout()
+      .then(async (telegramAuthenticated) => {
+        if (!telegramAuthenticated || authResolved) {
+          return;
+        }
+
+        authResolved = true;
+        await loadMeOnce();
+        this.getTelegramWebApp()?.ready?.();
+      });
+
+    await Promise.race([normalAuthPromise, telegramAuthPromise]);
+
+    if (!authResolved) {
+      await normalAuthPromise;
     }
   }
 
@@ -206,7 +224,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private reloadOnceAfterCountdown() {
-    if (!this.activeGame?.start_at) {
+    if (!this.activeGame?.start_at || !this.window) {
       return;
     }
 
@@ -261,6 +279,105 @@ export class HeaderComponent implements OnInit, OnDestroy {
       secondValue: seconds,
       secondUnit: "seconds",
     };
+  }
+
+  private getTelegramWebApp() {
+    return (this.window as any)?.Telegram?.WebApp;
+  }
+
+  private shouldTryTelegramSdkLoad(): boolean {
+    if (!this.window) {
+      return false;
+    }
+
+    const search = this.window.location.search ?? "";
+    const hash = this.window.location.hash ?? "";
+    const userAgent = this.window.navigator?.userAgent ?? "";
+
+    const hasTelegramMarkers = ["tgWebAppData", "hash", "auth_date"]
+      .some(marker => search.includes(marker) || hash.includes(marker));
+    const isTelegramUserAgent = userAgent.includes("Telegram");
+
+    return hasTelegramMarkers || isTelegramUserAgent || this.forceTelegramSdkLoad;
+  }
+
+  private async loadTelegramSDK(timeoutMs = 2500): Promise<void> {
+    if (!this.window) {
+      return;
+    }
+
+    if (this.getTelegramWebApp()) {
+      return;
+    }
+
+    if (this.telegramSdkLoadPromise) {
+      return this.telegramSdkLoadPromise;
+    }
+
+    this.telegramSdkLoadPromise = new Promise<void>((resolve, reject) => {
+      const src = "https://telegram.org/js/telegram-web-app.js";
+      const existingScript = this._document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
+      const script = existingScript ?? this._document.createElement("script");
+      let timeoutId: number | undefined;
+
+      const cleanup = () => {
+        if (timeoutId !== undefined) {
+          this.window?.clearTimeout(timeoutId);
+        }
+        script.onload = null;
+        script.onerror = null;
+      };
+
+      script.onload = () => {
+        cleanup();
+        resolve();
+      };
+
+      script.onerror = () => {
+        cleanup();
+        reject(new Error("Failed to load Telegram WebApp SDK"));
+      };
+
+      timeoutId = this.window?.setTimeout(() => {
+        cleanup();
+        reject(new Error("Telegram WebApp SDK load timeout"));
+      }, timeoutMs);
+
+      if (!existingScript) {
+        script.src = src;
+        script.async = true;
+        this._document.head.appendChild(script);
+      }
+    }).catch((error: unknown) => {
+      this.telegramSdkLoadPromise = undefined;
+      throw error;
+    });
+
+    return this.telegramSdkLoadPromise;
+  }
+
+  private async tryTelegramAuthWithTimeout(): Promise<boolean> {
+    if (!this.shouldTryTelegramSdkLoad()) {
+      return false;
+    }
+
+    try {
+      await this.loadTelegramSDK();
+      const tgWa = this.getTelegramWebApp();
+      if (!tgWa?.initData) {
+        return false;
+      }
+
+      return await new Promise<boolean>((resolve) => {
+        this.authService.authenticateWebApp(tgWa)
+          .subscribe({
+            next: () => resolve(true),
+            error: () => resolve(false),
+          });
+      });
+    } catch {
+      return false;
+    }
   }
 
   countdownUnitLabel(unit: CountdownUnit): string {
