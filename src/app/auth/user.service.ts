@@ -19,14 +19,17 @@ export class UserService {
   constructor(private http: HttpAdapter) {
   }
   public loadMe(){
-    return new Promise<UserData>(resolve =>
+    return new Promise<UserData | undefined>(resolve =>
       this.http.get<UserData>('/users/me')
         .subscribe({
           next: u => {this.me = u; resolve(u)},
           error: err => {
             if (err instanceof HttpErrorResponse && err.status === 401) {
               console.log("no saved user credentials")
+              resolve(undefined);
+              return;
             }
+            resolve(undefined);
           }
         })
     );
