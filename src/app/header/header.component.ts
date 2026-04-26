@@ -364,31 +364,82 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private authenticateTelegramWebApp(tgWa: any): Promise<boolean> {
-    const payload = this.buildTelegramWebAppPayload(tgWa);
+    const payloads = this.buildTelegramWebAppPayloads(tgWa);
+    return this.authenticateTelegramWebAppRecursive(payloads, 0);
+  }
+
+  private authenticateTelegramWebAppRecursive(payloads: any[], index: number): Promise<boolean> {
+    if (index >= payloads.length) {
+      return Promise.resolve(false);
+    }
+
+    const currentPayload = payloads[index];
+    const payloadKeys = Object.keys(currentPayload).join(",");
+    this.logTelegramAuthDebug(`attempt: authenticateWebApp payload#${index + 1} keys=[${payloadKeys}]`);
+
     return new Promise<boolean>((resolve) => {
-      this.authService.authenticateWebApp(payload)
+      this.authService.authenticateWebApp(currentPayload)
         .subscribe({
           next: () => {
-            this.logTelegramAuthDebug("success: authenticateWebApp");
+            this.logTelegramAuthDebug(`success: authenticateWebApp payload#${index + 1}`);
             resolve(true);
           },
-          error: (error) => {
+          error: async (error) => {
             const status = typeof error?.status === "number" ? error.status : "unknown";
-            this.logTelegramAuthDebug(`failed: authenticateWebApp status=${status}`);
+            this.logTelegramAuthDebug(`failed: authenticateWebApp payload#${index + 1} status=${status}`);
+
+            if (status === 422) {
+              const nextResult = await this.authenticateTelegramWebAppRecursive(payloads, index + 1);
+              resolve(nextResult);
+              return;
+            }
+
             resolve(false);
           },
         });
     });
   }
 
-  private buildTelegramWebAppPayload(tgWa: any) {
-    return {
+  private buildTelegramWebAppPayloads(tgWa: any): any[] {
+    const normalizedPayload = {
       initData: tgWa?.initData,
       initDataUnsafe: tgWa?.initDataUnsafe,
       version: tgWa?.version,
       platform: tgWa?.platform,
       ...tgWa?.initDataUnsafe,
     };
+
+    const initData = typeof tgWa?.initData === "string" ? tgWa.initData : "";
+    const normalizedInitData = initData.length > 16 ? initData : this.serializeInitDataUnsafe(tgWa?.initDataUnsafe);
+    const initDataUnsafe = tgWa?.initDataUnsafe ?? {};
+
+    return [
+      normalizedPayload,
+      {initData: normalizedInitData},
+      {init_data: normalizedInitData},
+      {tgWebAppData: normalizedInitData},
+      initDataUnsafe,
+    ].filter((payload) => Object.keys(payload).length > 0);
+  }
+
+  private serializeInitDataUnsafe(initDataUnsafe: any): string {
+    if (!initDataUnsafe || typeof initDataUnsafe !== "object") {
+      return "";
+    }
+
+    return Object.keys(initDataUnsafe)
+      .sort()
+      .map((key) => {
+        const value = initDataUnsafe[key];
+        if (value === undefined || value === null) {
+          return "";
+        }
+
+        const serialized = typeof value === "object" ? JSON.stringify(value) : String(value);
+        return `${encodeURIComponent(key)}=${encodeURIComponent(serialized)}`;
+      })
+      .filter(Boolean)
+      .join("&");
   }
 
   private logTelegramAuthDebug(message: string) {
