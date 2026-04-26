@@ -17,7 +17,7 @@ RUN set -eux; \
     vcs_name="${VCS_NAME:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')}"; \
     commit_at="${COMMIT_AT:-$(git show -s --format=%cI HEAD 2>/dev/null || echo '')}"; \
     build_at="${BUILD_AT:-$(date -u +"%Y-%m-%dT%H:%M:%S%z")}"; \
-    printf '{\n  "vcs_hash": "%s",\n  "vcs_ref": "%s",\n  "vcs_name": "%s",\n  "commit_at": "%s",\n  "build_at": "%s"\n}\n' \
+    printf '{\n  "vcs_hash": "%s",\n  "vcs_name": "%s",\n  "commit_at": "%s",\n  "build_at": "%s"\n}\n' \
       "$vcs_hash" "$vcs_name" "$commit_at" "$build_at" > src/assets/frontend-version.json
 RUN npm run build
 
