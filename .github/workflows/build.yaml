@@ -11,11 +11,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Get current date
-        id: date
+      - name: Prepare build metadata
+        id: meta
         run: |
-          echo "BUILD_AT=$(date +'%Y-%m-%dT%H:%M:%S%z')" >> "$GITHUB_OUTPUT"
-          echo "VCS_SHA=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "BUILD_AT=$(date -u +'%Y-%m-%dT%H:%M:%S%z')" >> "$GITHUB_OUTPUT"
+          echo "VCS_HASH=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+          echo "COMMIT_AT=$(git show -s --format=%cI ${GITHUB_SHA})" >> "$GITHUB_OUTPUT"
+
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "VCS_TAG=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+            echo "VCS_BRANCH=" >> "$GITHUB_OUTPUT"
+          else
+            echo "VCS_TAG=" >> "$GITHUB_OUTPUT"
+            echo "VCS_BRANCH=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
       - uses: mr-smithers-excellent/docker-build-push@v6.2
         with:
           image: bomzheg/shvatka-ui
@@ -23,4 +32,4 @@ jobs:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-          buildArgs: "BUILD_AT=${{steps.date.outputs.BUILD_AT}},VCS_SHA=${{steps.date.outputs.VCS_SHA}}"
+          buildArgs: "BUILD_AT=${{ steps.meta.outputs.BUILD_AT }},VCS_HASH=${{ steps.meta.outputs.VCS_HASH }},VCS_BRANCH=${{ steps.meta.outputs.VCS_BRANCH }},VCS_TAG=${{ steps.meta.outputs.VCS_TAG }},COMMIT_AT=${{ steps.meta.outputs.COMMIT_AT }}"
