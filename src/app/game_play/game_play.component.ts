@@ -48,6 +48,9 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private activeGameSubscription: Subscription | undefined;
   private countdownInterval: ReturnType<typeof setInterval> | undefined;
   private keyResultTimer: ReturnType<typeof setTimeout> | undefined;
+  private autoRefreshTicker: ReturnType<typeof setInterval> | undefined;
+  private lastAutoRefreshMark: number | undefined;
+  private waiversStartReloadedGameId: number | undefined;
 
   constructor(
     private gameService: GamePlayService,
@@ -63,12 +66,14 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       this.loadAuthorScenario(game);
     });
     this.gameService.loadHints();
+    this.startAutoRefreshTicker();
   }
 
   ngOnDestroy(): void {
     this.clearResultTimer();
     this.activeGameSubscription?.unsubscribe();
     this.clearCountdownTicker();
+    this.clearAutoRefreshTicker();
   }
 
   getCurrentHints(): CurrentHints | undefined {
@@ -366,9 +371,64 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     }
   }
 
+
+  private startAutoRefreshTicker() {
+    this.clearAutoRefreshTicker();
+    this.autoRefreshTicker = setInterval(() => {
+      this.tryAutoRefreshCurrentGame();
+    }, 1000);
+  }
+
+  private clearAutoRefreshTicker() {
+    if (this.autoRefreshTicker) {
+      clearInterval(this.autoRefreshTicker);
+      this.autoRefreshTicker = undefined;
+    }
+
+    this.lastAutoRefreshMark = undefined;
+  }
+
+  private tryAutoRefreshCurrentGame() {
+    if (this.activeGame?.status !== "running") {
+      this.lastAutoRefreshMark = undefined;
+      return;
+    }
+
+    const hints = this.getCurrentHints();
+    if (!hints?.started_at) {
+      this.lastAutoRefreshMark = undefined;
+      return;
+    }
+
+    const startedAtMs = Date.parse(hints.started_at);
+    if (Number.isNaN(startedAtMs)) {
+      this.lastAutoRefreshMark = undefined;
+      return;
+    }
+
+    const elapsedSeconds = Math.floor((Date.now() - startedAtMs) / 1000);
+    if (elapsedSeconds < 61) {
+      this.lastAutoRefreshMark = undefined;
+      return;
+    }
+
+    const refreshMark = Math.floor((elapsedSeconds - 1) / 60);
+    if (this.lastAutoRefreshMark === refreshMark) {
+      return;
+    }
+
+    this.lastAutoRefreshMark = refreshMark;
+    this.gameService.loadHints();
+
+    if (this.activeGame?.id && this.canOpenSpyTab()) {
+      this.gameService.loadSpyData(this.activeGame.id, true);
+    }
+  }
+
   private startCountdownTicker() {
     this.clearCountdownTicker();
     this.countdownToStart = this.buildCountdown();
+    this.reloadAfterWaiversStartReached();
 
     if (!this.activeGame?.start_at || this.isStartTimeReached()) {
       return;
@@ -376,10 +436,26 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
     this.countdownInterval = setInterval(() => {
       this.countdownToStart = this.buildCountdown();
+      this.reloadAfterWaiversStartReached();
       if (!this.countdownToStart) {
         this.clearCountdownTicker();
       }
     }, 1000);
+  }
+
+  private reloadAfterWaiversStartReached() {
+    if (
+      this.activeGame?.status !== "getting_waivers"
+      || !this.activeGame.id
+      || this.waiversStartReloadedGameId === this.activeGame.id
+      || !this.activeGame.start_at
+      || Date.parse(this.activeGame.start_at) > Date.now()
+    ) {
+      return;
+    }
+
+    this.waiversStartReloadedGameId = this.activeGame.id;
+    this.gameService.loadHints();
   }
 
   private clearCountdownTicker() {
