@@ -261,8 +261,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private authenticateTelegramWebApp(tgWa: any): Promise<boolean> {
-    const payloadKeys = Object.keys(tgWa).join(",");
-    this.logTelegramAuthDebug(`attempt: authenticateWebApp keys=[${payloadKeys}] body=${this.stringifyForDebug(tgWa)}`);
+    this.logTelegramAuthDebug(`attempt: authenticateWebApp ${this.stringifyForDebug(tgWa)}`);
 
     return new Promise<boolean>((resolve) => {
       this.authService.authenticateWebApp(tgWa)
@@ -281,11 +280,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private stringifyForDebug(payload: any): string {
-    try {
-      return JSON.stringify(payload);
-    } catch {
-      return "[unserializable]";
-    }
+    return "disabled debug"
   }
 
   private logTelegramAuthDebug(message: string) {
