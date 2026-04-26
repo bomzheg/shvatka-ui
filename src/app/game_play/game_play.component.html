@@ -158,12 +158,11 @@
 @if (canOpenSpyTab()) {
   <div class="spy-panel">
     <div class="spy-panel-header">
-      <h3>Лог текущей игры (организатор)</h3>
+      <h3>Шпион (организатор)</h3>
       <button
         type="button"
         [disabled]="isSpyDataLoading()"
         (click)="loadSpyData(true)"
-        style="background:none;border:none;color:#2563eb;padding:0;border-radius:0;text-decoration:underline;"
         [style.cursor]="isSpyDataLoading() ? 'not-allowed' : 'pointer'"
         [style.opacity]="isSpyDataLoading() ? '0.7' : '1'"
       >
@@ -176,7 +175,7 @@
     </div>
 
     @if (isSpyDataLoading() && !isSpyKeysDataLoading() && !isSpyStatDataLoading()) {
-      <p class="status-message">Загрузка spy-данных...</p>
+      <p class="status-message">Загрузка данных шпиона...</p>
     }
 
     @if (canSeeSpyKeys()) {
