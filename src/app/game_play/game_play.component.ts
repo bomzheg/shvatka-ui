@@ -48,6 +48,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private activeGameSubscription: Subscription | undefined;
   private countdownInterval: ReturnType<typeof setInterval> | undefined;
   private keyResultTimer: ReturnType<typeof setTimeout> | undefined;
+  private autoRefreshTicker: ReturnType<typeof setInterval> | undefined;
+  private lastAutoRefreshMark: number | undefined;
 
   constructor(
     private gameService: GamePlayService,
@@ -63,12 +65,14 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       this.loadAuthorScenario(game);
     });
     this.gameService.loadHints();
+    this.startAutoRefreshTicker();
   }
 
   ngOnDestroy(): void {
     this.clearResultTimer();
     this.activeGameSubscription?.unsubscribe();
     this.clearCountdownTicker();
+    this.clearAutoRefreshTicker();
   }
 
   getCurrentHints(): CurrentHints | undefined {
@@ -363,6 +367,60 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     if (this.keyResultTimer) {
       clearTimeout(this.keyResultTimer);
       this.keyResultTimer = undefined;
+    }
+  }
+
+
+  private startAutoRefreshTicker() {
+    this.clearAutoRefreshTicker();
+    this.autoRefreshTicker = setInterval(() => {
+      this.tryAutoRefreshCurrentGame();
+    }, 1000);
+  }
+
+  private clearAutoRefreshTicker() {
+    if (this.autoRefreshTicker) {
+      clearInterval(this.autoRefreshTicker);
+      this.autoRefreshTicker = undefined;
+    }
+
+    this.lastAutoRefreshMark = undefined;
+  }
+
+  private tryAutoRefreshCurrentGame() {
+    if (this.activeGame?.status !== "running") {
+      this.lastAutoRefreshMark = undefined;
+      return;
+    }
+
+    const hints = this.getCurrentHints();
+    if (!hints?.started_at) {
+      this.lastAutoRefreshMark = undefined;
+      return;
+    }
+
+    const startedAtMs = Date.parse(hints.started_at);
+    if (Number.isNaN(startedAtMs)) {
+      this.lastAutoRefreshMark = undefined;
+      return;
+    }
+
+    const elapsedSeconds = Math.floor((Date.now() - startedAtMs) / 1000);
+    if (elapsedSeconds < 61) {
+      this.lastAutoRefreshMark = undefined;
+      return;
+    }
+
+    const refreshMark = Math.floor((elapsedSeconds - 1) / 60);
+    if (this.lastAutoRefreshMark === refreshMark) {
+      return;
+    }
+
+    this.lastAutoRefreshMark = refreshMark;
+    this.gameService.loadHints();
+
+    if (this.activeGame?.id && this.canOpenSpyTab()) {
+      this.gameService.loadSpyData(this.activeGame.id, true);
     }
   }
 
