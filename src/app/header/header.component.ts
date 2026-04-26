@@ -33,8 +33,8 @@ interface Countdown {
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private readonly window: (Window & typeof globalThis) | undefined;
-  private telegramSdkLoadPromise: Promise<void> | undefined;
-  private readonly forceTelegramSdkLoad = false;
+  private readonly tg: any;
+  private readonly tgWa: any;
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
@@ -51,6 +51,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
   ) {
     this.window = this._document.defaultView;
+    this.tg = (this.window as any)?.Telegram;
+    this.tgWa = this.tg?.WebApp;
   }
 
   openLoginForm() {
@@ -108,105 +110,27 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    const telegramAuthResult = await this.tryTelegramAuthWithTimeout();
-    if (telegramAuthResult) {
-      await this.userService.loadMe();
-      this.getTelegramWebApp()?.ready?.();
-      return;
-    }
-
-    await this.userService.loadMe();
     this.selectedThemeMode = this.themeService.getMode();
     this.gamesService.getActiveGame().subscribe(game => {
       this.activeGame = game;
       this.countdown = this.getCountdown();
       this.setupCountdownTicker();
     });
-  }
 
-  private async tryTelegramAuthWithTimeout(): Promise<boolean> {
-    const existingWebApp = this.getTelegramWebApp();
-    if (existingWebApp?.initData) {
-      this.logTelegramAuthDebug(`attempt: authenticate existing webapp (initDataLength=${existingWebApp.initData.length})`);
-      return this.authenticateTelegramWebApp(existingWebApp);
-    }
-
-    try {
-      await this.loadTelegramSDK();
-      const tgWa = this.getTelegramWebApp();
-      if (!tgWa?.initData) {
-        this.logTelegramAuthDebug("skip: telegram sdk loaded but initData is empty");
-        return false;
+    if (this.tgWa?.initData) {
+      this.logTelegramAuthDebug(`attempt: authenticate blocking webapp (initDataLength=${this.tgWa.initData.length})`);
+      const telegramAuthResult = await this.authenticateTelegramWebApp(this.tgWa);
+      if (telegramAuthResult) {
+        await this.userService.loadMe();
+        this.tgWa?.ready?.();
+        return;
       }
-
-      this.logTelegramAuthDebug(`attempt: authenticate webapp (initDataLength=${tgWa.initData.length})`);
-      return this.authenticateTelegramWebApp(tgWa);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "unknown error";
-      this.logTelegramAuthDebug(`failed: telegram sdk load error (${message})`);
-      return false;
+    } else {
+      this.logTelegramAuthDebug("skip: blocking webapp is missing initData");
     }
+
+    await this.userService.loadMe();
   }
-
-  private async loadTelegramSDK(timeoutMs = 2500): Promise<void> {
-    if (!this.window) {
-      return;
-    }
-
-    if (this.getTelegramWebApp()) {
-      return;
-    }
-
-    if (this.telegramSdkLoadPromise) {
-      return this.telegramSdkLoadPromise;
-    }
-
-    this.telegramSdkLoadPromise = new Promise<void>((resolve, reject) => {
-      const src = "https://telegram.org/js/telegram-web-app.js";
-      const existingScript = this._document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
-      const script = existingScript ?? this._document.createElement("script");
-      let timeoutId: number | undefined;
-
-      const cleanup = () => {
-        if (timeoutId !== undefined) {
-          this.window?.clearTimeout(timeoutId);
-        }
-        script.onload = null;
-        script.onerror = null;
-      };
-
-      script.onload = () => {
-        cleanup();
-        resolve();
-      };
-
-      script.onerror = () => {
-        cleanup();
-        reject(new Error("Failed to load Telegram WebApp SDK"));
-      };
-
-      timeoutId = this.window?.setTimeout(() => {
-        cleanup();
-        reject(new Error("Telegram WebApp SDK load timeout"));
-      }, timeoutMs);
-
-      if (!existingScript) {
-        script.src = src;
-        script.async = true;
-        this._document.head.appendChild(script);
-      }
-    }).catch((error: unknown) => {
-      this.telegramSdkLoadPromise = undefined;
-      throw error;
-    });
-
-    return this.telegramSdkLoadPromise;
-  }
-
-  private getTelegramWebApp() {
-    return (this.window as any)?.Telegram?.WebApp;
-  }
-
 
   hasActiveGame() {
     return this.activeGame !== undefined;
