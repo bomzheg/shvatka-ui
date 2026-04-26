@@ -1,11 +1,12 @@
-import {Component} from '@angular/core';
+import {Component, Inject, OnInit} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
-import {APP_BASE_HREF, CommonModule} from '@angular/common';
+import {APP_BASE_HREF, CommonModule, DOCUMENT} from '@angular/common';
 import {RouterOutlet} from '@angular/router';
 import {HeaderComponent} from "./header/header.component";
 import {environment} from "../environments/environment";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ThemeService} from "./theme/theme.service";
+import {VersionInfo, VersionService} from "./version/version.service";
 
 @Component({
   selector: 'app-root',
@@ -17,18 +18,55 @@ import {ThemeService} from "./theme/theme.service";
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'shvatka';
+  frontendVersion: VersionInfo | undefined;
+  backendVersion: VersionInfo | undefined;
+  showDebugInfo = false;
+  telegramAuthDebugInfo = "";
+  private readonly window: (Window & typeof globalThis) | undefined;
+
   constructor(
     private matIconRegistry: MatIconRegistry,
     domSanitizer:DomSanitizer,
     private themeService: ThemeService,
+    private versionService: VersionService,
+    @Inject(DOCUMENT) private document: Document,
   ) {
     this.matIconRegistry.addSvgIcon(
       "account-circle",
       domSanitizer.bypassSecurityTrustResourceUrl('/assets/account_circle.svg')
     );
     this.themeService.getMode();
+    this.window = this.document.defaultView ?? undefined;
   }
 
+  ngOnInit() {
+    this.versionService.getFrontendVersion().subscribe(version => this.frontendVersion = version);
+    this.versionService.getBackendVersion().subscribe(version => this.backendVersion = version);
+    this.telegramAuthDebugInfo = this.window?.sessionStorage.getItem("tg-auth-debug-log") ?? "";
+  }
+
+  toggleDebugInfo() {
+    this.showDebugInfo = !this.showDebugInfo;
+    this.telegramAuthDebugInfo = this.window?.sessionStorage.getItem("tg-auth-debug-log") ?? "";
+  }
+
+  formatVersionShort(version: VersionInfo | undefined): string {
+    if (!version) {
+      return "n/a";
+    }
+
+    const ref = version.vcs_tag || version.vcs_branch || version.vcs_ref;
+    const hash = version.vcs_hash ? version.vcs_hash.slice(0, 8) : "unknown";
+    return ref ? `${ref}@${hash}` : hash;
+  }
+
+  formatVersionTime(version: VersionInfo | undefined): string {
+    if (!version) {
+      return "";
+    }
+
+    return version.build_at || version.commit_at || "";
+  }
 }

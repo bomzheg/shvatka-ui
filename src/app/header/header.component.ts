@@ -335,6 +335,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private async tryTelegramAuthWithTimeout(): Promise<boolean> {
+    const existingWebApp = this.getTelegramWebApp();
+    if (existingWebApp?.initData) {
+      this.logTelegramAuthDebug(`attempt: authenticate existing webapp (initDataLength=${existingWebApp.initData.length})`);
+      return this.authenticateTelegramWebApp(existingWebApp);
+    }
+
     if (!this.shouldTryTelegramSdkLoad()) {
       this.logTelegramAuthDebug("skip: no telegram markers in url/userAgent");
       return false;
@@ -349,25 +355,40 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }
 
       this.logTelegramAuthDebug(`attempt: authenticate webapp (initDataLength=${tgWa.initData.length})`);
-      return await new Promise<boolean>((resolve) => {
-        this.authService.authenticateWebApp(tgWa)
-          .subscribe({
-            next: () => {
-              this.logTelegramAuthDebug("success: authenticateWebApp");
-              resolve(true);
-            },
-            error: (error) => {
-              const status = typeof error?.status === "number" ? error.status : "unknown";
-              this.logTelegramAuthDebug(`failed: authenticateWebApp status=${status}`);
-              resolve(false);
-            },
-          });
-      });
+      return this.authenticateTelegramWebApp(tgWa);
     } catch (error) {
       const message = error instanceof Error ? error.message : "unknown error";
       this.logTelegramAuthDebug(`failed: telegram sdk load error (${message})`);
       return false;
     }
+  }
+
+  private authenticateTelegramWebApp(tgWa: any): Promise<boolean> {
+    const payload = this.buildTelegramWebAppPayload(tgWa);
+    return new Promise<boolean>((resolve) => {
+      this.authService.authenticateWebApp(payload)
+        .subscribe({
+          next: () => {
+            this.logTelegramAuthDebug("success: authenticateWebApp");
+            resolve(true);
+          },
+          error: (error) => {
+            const status = typeof error?.status === "number" ? error.status : "unknown";
+            this.logTelegramAuthDebug(`failed: authenticateWebApp status=${status}`);
+            resolve(false);
+          },
+        });
+    });
+  }
+
+  private buildTelegramWebAppPayload(tgWa: any) {
+    return {
+      initData: tgWa?.initData,
+      initDataUnsafe: tgWa?.initDataUnsafe,
+      version: tgWa?.version,
+      platform: tgWa?.platform,
+      ...tgWa?.initDataUnsafe,
+    };
   }
 
   private logTelegramAuthDebug(message: string) {

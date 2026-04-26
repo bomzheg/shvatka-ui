@@ -1,6 +1,7 @@
 :host {
   display: block;
   min-height: 100dvh;
+  padding-bottom: 1rem;
 }
 
 .app-shell {
@@ -14,6 +15,34 @@
   border-radius: 16px;
   padding: clamp(1rem, 2vw, 1.5rem);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.version-footer {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto 1rem;
+  color: color-mix(in srgb, var(--app-text) 75%, transparent);
+}
+
+.version-button {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+.debug-panel {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  max-height: 180px;
+  overflow: auto;
+  background: color-mix(in srgb, var(--app-surface) 90%, black 10%);
+  color: var(--app-text);
 }
 
 @media (max-width: 768px) {
