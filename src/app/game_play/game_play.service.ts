@@ -162,14 +162,21 @@ export class GamePlayService {
         return;
       }
 
-      this.loadMyRole(game);
-
       if (game.status === "getting_waivers") {
+        this.loadMyRole(game);
         this.loadWaivers();
         return;
       }
 
-      this.loadRunningHints();
+      this.loadMyRole(game, false, role => {
+        if (role?.waiver_vote === Played.yes) {
+          this.loadRunningHints();
+          return;
+        }
+
+        this.currentHints = undefined;
+        this.isHintsLoading = false;
+      });
     });
   }
 
@@ -218,13 +225,15 @@ export class GamePlayService {
       });
   }
 
-  private loadMyRole(game: ActiveGame, forceRefresh = false) {
+  private loadMyRole(game: ActiveGame, forceRefresh = false, onLoaded?: (role: MyRoleDto | undefined) => void) {
     const cacheValid = !forceRefresh
       && this.myRole !== undefined
       && this.myRoleGameId === game.id
       && (this.myRoleCacheUntil === undefined || this.myRoleCacheUntil > Date.now());
 
     if (cacheValid) {
+      this.maybeLoadSpyData(game.id, this.myRole);
+      onLoaded?.(this.myRole);
       return;
     }
 
@@ -234,21 +243,31 @@ export class GamePlayService {
           this.myRole = role;
           this.myRoleGameId = game.id;
           this.myRoleCacheUntil = this.resolveRoleCacheUntil(game);
-          if (game.status === "running" && role.org?.can_spy) {
-            this.loadSpyData(game.id);
-          }
+          this.maybeLoadSpyData(game.id, role);
+          onLoaded?.(role);
         },
         error: error => {
           if (error instanceof HttpErrorResponse && error.status === 401) {
             this.myRole = undefined;
             this.myRoleGameId = undefined;
             this.myRoleCacheUntil = undefined;
+            onLoaded?.(undefined);
             return;
           }
 
           throw error;
         }
       });
+  }
+
+  private maybeLoadSpyData(gameId: number, role: MyRoleDto | undefined) {
+    if (!role?.org || role.org.deleted) {
+      return;
+    }
+
+    if (role.org.can_spy || role.org.can_see_log_keys) {
+      this.loadSpyData(gameId);
+    }
   }
 
   private resolveRoleCacheUntil(game: ActiveGame): number | undefined {
@@ -266,45 +285,66 @@ export class GamePlayService {
   }
 
   loadSpyData(gameId: number, forceRefresh: boolean = false) {
+    const org = this.myRole?.org;
+    const canLoadStat = !!org && !org.deleted && org.can_spy;
+    const canLoadKeys = !!org && !org.deleted && org.can_see_log_keys;
+
+    if (!canLoadStat && !canLoadKeys) {
+      this.spyGameId = gameId;
+      this.spyKeys = undefined;
+      this.spyStat = undefined;
+      this.isSpyLoading = false;
+      this.spyLoadingRequests = 0;
+      return;
+    }
+
     if (this.spyGameId !== gameId) {
       this.spyGameId = gameId;
       this.spyKeys = undefined;
       this.spyStat = undefined;
     }
 
-    if (!forceRefresh && this.spyKeys && this.spyStat) {
+    if (!forceRefresh && (!canLoadKeys || this.spyKeys) && (!canLoadStat || this.spyStat)) {
       return;
     }
 
-    this.spyLoadingRequests = 2;
+    this.spyLoadingRequests = Number(canLoadKeys) + Number(canLoadStat);
     this.isSpyLoading = true;
-    this.http.get<Keys>(`/games/${gameId}/keys`)
-      .subscribe({
-        next: k => {
-          this.spyKeys = k;
-          this.completeSpyLoadRequest();
-        },
-        error: error => {
-          this.completeSpyLoadRequest();
-          if (!(error instanceof HttpErrorResponse && error.status === 401)) {
-            throw error;
+    if (canLoadKeys) {
+      this.http.get<Keys>(`/games/${gameId}/keys`)
+        .subscribe({
+          next: k => {
+            this.spyKeys = k;
+            this.completeSpyLoadRequest();
+          },
+          error: error => {
+            this.completeSpyLoadRequest();
+            if (!(error instanceof HttpErrorResponse && error.status === 401)) {
+              throw error;
+            }
           }
-        }
-      });
+        });
+    } else {
+      this.spyKeys = undefined;
+    }
 
-    this.http.get<GameStat>(`/games/${gameId}/stat`)
-      .subscribe({
-        next: s => {
-          this.spyStat = s;
-          this.completeSpyLoadRequest();
-        },
-        error: error => {
-          this.completeSpyLoadRequest();
-          if (!(error instanceof HttpErrorResponse && error.status === 401)) {
-            throw error;
+    if (canLoadStat) {
+      this.http.get<GameStat>(`/games/${gameId}/stat`)
+        .subscribe({
+          next: s => {
+            this.spyStat = s;
+            this.completeSpyLoadRequest();
+          },
+          error: error => {
+            this.completeSpyLoadRequest();
+            if (!(error instanceof HttpErrorResponse && error.status === 401)) {
+              throw error;
+            }
           }
-        }
-      });
+        });
+    } else {
+      this.spyStat = undefined;
+    }
   }
 
   private completeSpyLoadRequest() {
