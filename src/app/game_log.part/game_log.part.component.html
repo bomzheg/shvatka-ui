@@ -66,15 +66,8 @@
             <thead>
             <tr>
               <th>Команда</th>
-              @for (header of getLevelHeaders(); track header.number) {
-                <th>
-                  Уровень {{ header.number }}
-                  @if (header.name) {
-                    <br>
-                    {{ header.name }}
-                  }
-                </th>
-              }
+              <th>Текущий уровень</th>
+              <th>Время на уровне</th>
             </tr>
             </thead>
             <tbody>
@@ -82,11 +75,8 @@
                 @if (results[1].length > 0) {
                   <tr>
                     <td>{{ results[1][0].team.name }}</td>
-                    @for (lt of results[1]; track lt.id) {
-                      @if (!$first) {
-                        <td>{{ toLocal(lt.start_at) }}</td>
-                      }
-                    }
+                    <td>{{ getCurrentLevelNumber(results[1]) }}</td>
+                    <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
                   </tr>
                 }
               }
