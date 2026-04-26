@@ -121,34 +121,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return;
     }
 
-    let authResolved = false;
-
-    const normalAuthPromise = this.userService.loadMe();
-    const telegramAuthPromise = this.tryTelegramAuthWithTimeout();
-
-    const winner = await Promise.race([
-      normalAuthPromise.then(() => "normal" as const),
-      telegramAuthPromise.then((telegramAuthenticated) => telegramAuthenticated ? "telegram" as const : "telegram-failed" as const),
-    ]);
-
-    if (winner === "normal") {
-      authResolved = true;
-      return;
-    }
-
-    if (winner === "telegram") {
-      if (authResolved) {
-        return;
-      }
-
-      authResolved = true;
+    const telegramAuthResult = await this.tryTelegramAuthWithTimeout();
+    if (telegramAuthResult) {
       await this.userService.loadMe();
       this.getTelegramWebApp()?.ready?.();
       return;
     }
 
-    await normalAuthPromise;
-    authResolved = true;
+    await this.userService.loadMe();
   }
 
   hasActiveGame() {
@@ -356,6 +336,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private async tryTelegramAuthWithTimeout(): Promise<boolean> {
     if (!this.shouldTryTelegramSdkLoad()) {
+      this.logTelegramAuthDebug("skip: no telegram markers in url/userAgent");
       return false;
     }
 
@@ -363,19 +344,47 @@ export class HeaderComponent implements OnInit, OnDestroy {
       await this.loadTelegramSDK();
       const tgWa = this.getTelegramWebApp();
       if (!tgWa?.initData) {
+        this.logTelegramAuthDebug("skip: telegram sdk loaded but initData is empty");
         return false;
       }
 
+      this.logTelegramAuthDebug(`attempt: authenticate webapp (initDataLength=${tgWa.initData.length})`);
       return await new Promise<boolean>((resolve) => {
         this.authService.authenticateWebApp(tgWa)
           .subscribe({
-            next: () => resolve(true),
-            error: () => resolve(false),
+            next: () => {
+              this.logTelegramAuthDebug("success: authenticateWebApp");
+              resolve(true);
+            },
+            error: (error) => {
+              const status = typeof error?.status === "number" ? error.status : "unknown";
+              this.logTelegramAuthDebug(`failed: authenticateWebApp status=${status}`);
+              resolve(false);
+            },
           });
       });
-    } catch {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "unknown error";
+      this.logTelegramAuthDebug(`failed: telegram sdk load error (${message})`);
       return false;
     }
+  }
+
+  private logTelegramAuthDebug(message: string) {
+    const timestamp = new Date().toISOString();
+    const line = `[tg-auth][${timestamp}] ${message}`;
+    console.info(line);
+
+    if (!this.window) {
+      return;
+    }
+
+    const key = "tg-auth-debug-log";
+    const existing = this.window.sessionStorage.getItem(key);
+    const currentLines = existing ? existing.split("\n").filter(Boolean) : [];
+    currentLines.push(line);
+    const tail = currentLines.slice(-40);
+    this.window.sessionStorage.setItem(key, tail.join("\n"));
   }
 
   countdownUnitLabel(unit: CountdownUnit): string {
