@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
   frontendVersion: VersionInfo | undefined;
   backendVersion: VersionInfo | undefined;
   showDebugInfo = false;
-  telegramAuthDebugInfo = "";
+  debugInfo = "";
   private readonly window: (Window & typeof globalThis) | undefined;
 
   constructor(
@@ -44,12 +44,12 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.versionService.getFrontendVersion().subscribe(version => this.frontendVersion = version);
     this.versionService.getBackendVersion().subscribe(version => this.backendVersion = version);
-    this.telegramAuthDebugInfo = this.window?.sessionStorage.getItem("tg-auth-debug-log") ?? "";
+    this.debugInfo = this.window?.sessionStorage.getItem("debug-log") ?? "";
   }
 
   toggleDebugInfo() {
     this.showDebugInfo = !this.showDebugInfo;
-    this.telegramAuthDebugInfo = this.window?.sessionStorage.getItem("tg-auth-debug-log") ?? "";
+    this.debugInfo = this.window?.sessionStorage.getItem("debug-log") ?? "";
   }
 
   formatVersionShort(version: VersionInfo | undefined): string {

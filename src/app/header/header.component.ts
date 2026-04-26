@@ -118,7 +118,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
 
     if (this.tgWa?.initData) {
-      this.logTelegramAuthDebug(`attempt: authenticate blocking webapp (initDataLength=${this.tgWa.initData.length})`);
+      this.logDebugInfo(`attempt: authenticate blocking webapp (initDataLength=${this.tgWa.initData.length})`);
       const telegramAuthResult = await this.authenticateTelegramWebApp(this.tgWa);
       if (telegramAuthResult) {
         await this.userService.loadMe();
@@ -126,7 +126,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         return;
       }
     } else {
-      this.logTelegramAuthDebug("skip: blocking webapp is missing initData");
+      this.logDebugInfo("skip: blocking webapp is missing initData");
     }
 
     await this.userService.loadMe();
@@ -261,18 +261,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private authenticateTelegramWebApp(tgWa: any): Promise<boolean> {
-    this.logTelegramAuthDebug(`attempt: authenticateWebApp ${this.stringifyForDebug(tgWa)}`);
+    this.logDebugInfo(`attempt: authenticateWebApp ${this.stringifyForDebug(tgWa)}`);
 
     return new Promise<boolean>((resolve) => {
       this.authService.authenticateWebApp(tgWa)
         .subscribe({
           next: () => {
-            this.logTelegramAuthDebug("success: authenticateWebApp");
+            this.logDebugInfo("success: authenticateWebApp");
             resolve(true);
           },
           error: (error) => {
             const status = typeof error?.status === "number" ? error.status : "unknown";
-            this.logTelegramAuthDebug(`failed: authenticateWebApp status=${status}`);
+            this.logDebugInfo(`failed: authenticateWebApp status=${status}`);
             resolve(false);
           },
         });
@@ -283,16 +283,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return "disabled debug"
   }
 
-  private logTelegramAuthDebug(message: string) {
+  private logDebugInfo(message: string) {
     const timestamp = new Date().toISOString();
-    const line = `[tg-auth][${timestamp}] ${message}`;
+    const line = `[debug-info][${timestamp}] ${message}`;
     console.info(line);
 
     if (!this.window) {
       return;
     }
 
-    const key = "tg-auth-debug-log";
+    const key = "debug-log";
     const existing = this.window.sessionStorage.getItem(key);
     const currentLines = existing ? existing.split("\n").filter(Boolean) : [];
     currentLines.push(line);
