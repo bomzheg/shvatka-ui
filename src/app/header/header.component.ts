@@ -122,35 +122,33 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
 
     let authResolved = false;
-    let loadMePromise: Promise<unknown> | undefined;
-    const loadMeOnce = () => {
-      if (!loadMePromise) {
-        loadMePromise = this.userService.loadMe();
-      }
-      return loadMePromise;
-    };
 
-    const normalAuthPromise = loadMeOnce()
-      .then(() => {
-        authResolved = true;
-      });
+    const normalAuthPromise = this.userService.loadMe();
+    const telegramAuthPromise = this.tryTelegramAuthWithTimeout();
 
-    const telegramAuthPromise = this.tryTelegramAuthWithTimeout()
-      .then(async (telegramAuthenticated) => {
-        if (!telegramAuthenticated || authResolved) {
-          return;
-        }
+    const winner = await Promise.race([
+      normalAuthPromise.then(() => "normal" as const),
+      telegramAuthPromise.then((telegramAuthenticated) => telegramAuthenticated ? "telegram" as const : "telegram-failed" as const),
+    ]);
 
-        authResolved = true;
-        await loadMeOnce();
-        this.getTelegramWebApp()?.ready?.();
-      });
-
-    await Promise.race([normalAuthPromise, telegramAuthPromise]);
-
-    if (!authResolved) {
-      await normalAuthPromise;
+    if (winner === "normal") {
+      authResolved = true;
+      return;
     }
+
+    if (winner === "telegram") {
+      if (authResolved) {
+        return;
+      }
+
+      authResolved = true;
+      await this.userService.loadMe();
+      this.getTelegramWebApp()?.ready?.();
+      return;
+    }
+
+    await normalAuthPromise;
+    authResolved = true;
   }
 
   hasActiveGame() {
