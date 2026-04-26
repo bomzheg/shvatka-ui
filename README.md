@@ -15,6 +15,28 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
+### Docker/CI build metadata
+
+Docker image build writes frontend metadata into `src/assets/frontend-version.json` (shown in UI footer):
+- `vcs_hash`
+- `vcs_ref` (`tag` if present, otherwise `branch`)
+- `vcs_branch`
+- `vcs_tag`
+- `commit_at`
+- `build_at`
+
+You can pass explicit values from pipeline:
+
+```bash
+docker build \
+  --build-arg VCS_HASH="$CI_COMMIT_SHA" \
+  --build-arg VCS_BRANCH="$CI_COMMIT_BRANCH" \
+  --build-arg VCS_TAG="$CI_COMMIT_TAG" \
+  --build-arg COMMIT_AT="$CI_COMMIT_TIMESTAMP" \
+  --build-arg BUILD_AT="$(date -u +"%Y-%m-%dT%H:%M:%S%z")" \
+  -t shvatka-ui:latest .
+```
+
 ## Running unit tests
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).

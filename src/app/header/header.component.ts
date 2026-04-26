@@ -1,6 +1,6 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from "@angular/forms";
-import {DOCUMENT, NgClass, NgStyle} from "@angular/common";
+import {DOCUMENT} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
 import {UserService} from "../auth/user.service";
@@ -23,8 +23,6 @@ interface Countdown {
   standalone: true,
   imports: [
     AuthComponent,
-    NgClass,
-    NgStyle,
     RouterLink,
     RouterLinkActive,
     MatIcon,
@@ -35,8 +33,8 @@ interface Countdown {
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private readonly window: (Window & typeof globalThis) | undefined;
-  private telegramSdkLoadPromise: Promise<void> | undefined;
-  private readonly forceTelegramSdkLoad = false;
+  private readonly tg: any;
+  private readonly tgWa: any;
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
@@ -53,6 +51,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
   ) {
     this.window = this._document.defaultView;
+    this.tg = (this.window as any)?.Telegram;
+    this.tgWa = this.tg?.WebApp;
   }
 
   openLoginForm() {
@@ -117,38 +117,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.setupCountdownTicker();
     });
 
-    if (!this.window) {
-      return;
-    }
-
-    let authResolved = false;
-
-    const normalAuthPromise = this.userService.loadMe();
-    const telegramAuthPromise = this.tryTelegramAuthWithTimeout();
-
-    const winner = await Promise.race([
-      normalAuthPromise.then(() => "normal" as const),
-      telegramAuthPromise.then((telegramAuthenticated) => telegramAuthenticated ? "telegram" as const : "telegram-failed" as const),
-    ]);
-
-    if (winner === "normal") {
-      authResolved = true;
-      return;
-    }
-
-    if (winner === "telegram") {
-      if (authResolved) {
+    if (this.tgWa?.initData) {
+      this.logTelegramAuthDebug(`attempt: authenticate blocking webapp (initDataLength=${this.tgWa.initData.length})`);
+      const telegramAuthResult = await this.authenticateTelegramWebApp(this.tgWa);
+      if (telegramAuthResult) {
+        await this.userService.loadMe();
+        this.tgWa?.ready?.();
         return;
       }
-
-      authResolved = true;
-      await this.userService.loadMe();
-      this.getTelegramWebApp()?.ready?.();
-      return;
+    } else {
+      this.logTelegramAuthDebug("skip: blocking webapp is missing initData");
     }
 
-    await normalAuthPromise;
-    authResolved = true;
+    await this.userService.loadMe();
   }
 
   hasActiveGame() {
@@ -279,103 +260,44 @@ export class HeaderComponent implements OnInit, OnDestroy {
     };
   }
 
-  private getTelegramWebApp() {
-    return (this.window as any)?.Telegram?.WebApp;
-  }
+  private authenticateTelegramWebApp(tgWa: any): Promise<boolean> {
+    this.logTelegramAuthDebug(`attempt: authenticateWebApp ${this.stringifyForDebug(tgWa)}`);
 
-  private shouldTryTelegramSdkLoad(): boolean {
-    if (!this.window) {
-      return false;
-    }
-
-    const search = this.window.location.search ?? "";
-    const hash = this.window.location.hash ?? "";
-    const userAgent = this.window.navigator?.userAgent ?? "";
-
-    const hasTelegramMarkers = ["tgWebAppData", "hash", "auth_date"]
-      .some(marker => search.includes(marker) || hash.includes(marker));
-    const isTelegramUserAgent = userAgent.includes("Telegram");
-
-    return hasTelegramMarkers || isTelegramUserAgent || this.forceTelegramSdkLoad;
-  }
-
-  private async loadTelegramSDK(timeoutMs = 2500): Promise<void> {
-    if (!this.window) {
-      return;
-    }
-
-    if (this.getTelegramWebApp()) {
-      return;
-    }
-
-    if (this.telegramSdkLoadPromise) {
-      return this.telegramSdkLoadPromise;
-    }
-
-    this.telegramSdkLoadPromise = new Promise<void>((resolve, reject) => {
-      const src = "https://telegram.org/js/telegram-web-app.js";
-      const existingScript = this._document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
-      const script = existingScript ?? this._document.createElement("script");
-      let timeoutId: number | undefined;
-
-      const cleanup = () => {
-        if (timeoutId !== undefined) {
-          this.window?.clearTimeout(timeoutId);
-        }
-        script.onload = null;
-        script.onerror = null;
-      };
-
-      script.onload = () => {
-        cleanup();
-        resolve();
-      };
-
-      script.onerror = () => {
-        cleanup();
-        reject(new Error("Failed to load Telegram WebApp SDK"));
-      };
-
-      timeoutId = this.window?.setTimeout(() => {
-        cleanup();
-        reject(new Error("Telegram WebApp SDK load timeout"));
-      }, timeoutMs);
-
-      if (!existingScript) {
-        script.src = src;
-        script.async = true;
-        this._document.head.appendChild(script);
-      }
-    }).catch((error: unknown) => {
-      this.telegramSdkLoadPromise = undefined;
-      throw error;
+    return new Promise<boolean>((resolve) => {
+      this.authService.authenticateWebApp(tgWa)
+        .subscribe({
+          next: () => {
+            this.logTelegramAuthDebug("success: authenticateWebApp");
+            resolve(true);
+          },
+          error: (error) => {
+            const status = typeof error?.status === "number" ? error.status : "unknown";
+            this.logTelegramAuthDebug(`failed: authenticateWebApp status=${status}`);
+            resolve(false);
+          },
+        });
     });
-
-    return this.telegramSdkLoadPromise;
   }
 
-  private async tryTelegramAuthWithTimeout(): Promise<boolean> {
-    if (!this.shouldTryTelegramSdkLoad()) {
-      return false;
+  private stringifyForDebug(payload: any): string {
+    return "disabled debug"
+  }
+
+  private logTelegramAuthDebug(message: string) {
+    const timestamp = new Date().toISOString();
+    const line = `[tg-auth][${timestamp}] ${message}`;
+    console.info(line);
+
+    if (!this.window) {
+      return;
     }
 
-    try {
-      await this.loadTelegramSDK();
-      const tgWa = this.getTelegramWebApp();
-      if (!tgWa?.initData) {
-        return false;
-      }
-
-      return await new Promise<boolean>((resolve) => {
-        this.authService.authenticateWebApp(tgWa)
-          .subscribe({
-            next: () => resolve(true),
-            error: () => resolve(false),
-          });
-      });
-    } catch {
-      return false;
-    }
+    const key = "tg-auth-debug-log";
+    const existing = this.window.sessionStorage.getItem(key);
+    const currentLines = existing ? existing.split("\n").filter(Boolean) : [];
+    currentLines.push(line);
+    const tail = currentLines.slice(-40);
+    this.window.sessionStorage.setItem(key, tail.join("\n"));
   }
 
   countdownUnitLabel(unit: CountdownUnit): string {
