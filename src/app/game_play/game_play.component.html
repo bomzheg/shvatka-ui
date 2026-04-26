@@ -202,7 +202,7 @@
 
 @if (isCurrentUserGameAuthor()) {
   <details class="author-scenario-spoiler">
-    <summary>Сценарий текущей игры</summary>
+    <summary class="game-scn-spoiler">Сценарий текущей игры</summary>
     @if (isAuthorScenarioLoading) {
       <p class="status-message">Загрузка сценария...</p>
     } @else if (shouldShowAuthorScenario()) {
