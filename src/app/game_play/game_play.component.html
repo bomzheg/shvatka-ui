@@ -158,7 +158,7 @@
 @if (canOpenSpyTab()) {
   <div class="spy-panel">
     <div class="spy-panel-header">
-      <h3>Spy</h3>
+      <h3>Лог текущей игры (организатор)</h3>
       <button type="button" (click)="loadSpyData(true)">Обновить</button>
     </div>
 
@@ -170,7 +170,7 @@
       @if (isSpyKeysDataLoading()) {
         <p class="status-message">Загрузка ключей...</p>
       } @else if (getSpyKeys()) {
-        <app-game-log-part [keys]="getSpyKeys()"></app-game-log-part>
+        <app-game-log-part [keys]="getSpyKeys()" [openKeys]="true"></app-game-log-part>
       } @else {
         <p class="status-message">Ключи пока недоступны.</p>
       }
@@ -180,7 +180,7 @@
       @if (isSpyStatDataLoading()) {
         <p class="status-message">Загрузка статистики...</p>
       } @else if (getSpyStat()) {
-        <app-game-log-part [stat]="getSpyStat()"></app-game-log-part>
+        <app-game-log-part [stat]="getSpyStat()" [openStat]="true"></app-game-log-part>
       } @else {
         <p class="status-message">Статистика пока недоступна.</p>
       }

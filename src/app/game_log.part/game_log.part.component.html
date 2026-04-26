@@ -1,5 +1,5 @@
 @if (keys) {
-  <details>
+  <details [attr.open]="openKeys ? '' : null">
     <summary class="game-keys-spoiler">Ключи</summary>
     <div class="keys-log">
       @for (teamKeys of Object.entries(keys); track teamKeys[0]) {
@@ -57,7 +57,7 @@
 }
 
 @if (stat) {
-  <details>
+  <details [attr.open]="openStat ? '' : null">
     <summary class="game-stat-spoiler">Результаты игры</summary>
     <div class="game-stat">
       @if (Object.keys(stat).length > 0) {

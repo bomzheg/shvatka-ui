@@ -16,6 +16,8 @@ export class GameLogPartComponent {
   @Input() keys: Keys | undefined;
   @Input() stat: GameStat | undefined;
   @Input() levels: Level[] = [];
+  @Input() openKeys = false;
+  @Input() openStat = false;
 
   toLocal(dt: string): string {
     return new Date(Date.parse(dt)).toLocaleTimeString();
