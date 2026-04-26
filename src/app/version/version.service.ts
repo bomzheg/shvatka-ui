@@ -6,9 +6,7 @@ import {ShvatkaConfig} from "../app.config";
 
 export interface VersionInfo {
   vcs_hash?: string;
-  vcs_ref?: string;
-  vcs_branch?: string;
-  vcs_tag?: string;
+  vcs_name?: string;
   commit_at?: string;
   build_at?: string;
 }

@@ -14,13 +14,11 @@ RUN npm ci
 COPY . .
 RUN set -eux; \
     vcs_hash="${VCS_HASH:-$(git rev-parse HEAD 2>/dev/null || echo unknown)}"; \
-    vcs_branch="${VCS_BRANCH:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')}"; \
-    vcs_tag="${VCS_TAG:-$(git describe --tags --exact-match 2>/dev/null || echo '')}"; \
+    vcs_name="${VCS_NAME:-$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')}"; \
     commit_at="${COMMIT_AT:-$(git show -s --format=%cI HEAD 2>/dev/null || echo '')}"; \
     build_at="${BUILD_AT:-$(date -u +"%Y-%m-%dT%H:%M:%S%z")}"; \
-    vcs_ref="${vcs_tag:-$vcs_branch}"; \
-    printf '{\n  "vcs_hash": "%s",\n  "vcs_ref": "%s",\n  "vcs_branch": "%s",\n  "vcs_tag": "%s",\n  "commit_at": "%s",\n  "build_at": "%s"\n}\n' \
-      "$vcs_hash" "$vcs_ref" "$vcs_branch" "$vcs_tag" "$commit_at" "$build_at" > src/assets/frontend-version.json
+    printf '{\n  "vcs_hash": "%s",\n  "vcs_ref": "%s",\n  "vcs_name": "%s",\n  "commit_at": "%s",\n  "build_at": "%s"\n}\n' \
+      "$vcs_hash" "$vcs_name" "$commit_at" "$build_at" > src/assets/frontend-version.json
 RUN npm run build
 
 
