@@ -57,7 +57,7 @@ export class AppComponent implements OnInit {
       return "n/a";
     }
 
-    const ref = version.vcs_tag || version.vcs_branch || version.vcs_ref;
+    const ref = version.vcs_name;
     const hash = version.vcs_hash ? version.vcs_hash.slice(0, 8) : "unknown";
     return ref ? `${ref}@${hash}` : hash;
   }
