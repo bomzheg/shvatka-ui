@@ -48,7 +48,7 @@
         <li class="hint-item">
           <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
           @for (hint of timeHint.hint; track hint) {
-            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
+            <app-hint-part [hint]="hint" [gameId]="game.id"></app-hint-part>
           }
         </li>
       }

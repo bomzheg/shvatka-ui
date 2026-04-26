@@ -1,7 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {HintPart} from "../domain/game.models";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {HttpAdapter} from "../http/http.adapter";
 
 export interface RenderableEffect {
   id?: string;
@@ -25,7 +24,7 @@ export class EffectsPartComponent {
   @Input() effects: RenderableEffect[] | RenderableEffect | undefined;
   @Input() gameId: number | undefined;
 
-  constructor(private http: HttpAdapter) {
+  constructor() {
   }
 
   getVisibleEffects(): RenderableEffect[] {
@@ -72,14 +71,6 @@ export class EffectsPartComponent {
     }
 
     return [];
-  }
-
-  getHintFileUrl(hint: HintPart): string | undefined {
-    if (hint.file_guid === undefined || this.gameId === undefined) {
-      return undefined;
-    }
-
-    return this.http.getFileUrl(this.gameId, hint.file_guid);
   }
 
   private normalizeEffects(effects: RenderableEffect[] | RenderableEffect | undefined): RenderableEffect[] {

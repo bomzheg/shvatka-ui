@@ -1,8 +1,7 @@
 import {Component, Input} from '@angular/core';
-import {FullGame, HintPart, Level, ScenarioCondition, ScenarioConditionType} from "../domain/game.models";
+import {FullGame, Level, ScenarioCondition, ScenarioConditionType} from "../domain/game.models";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {EffectsPartComponent} from "../effects.part/effects.part.component";
-import {HttpAdapter} from "../http/http.adapter";
 
 @Component({
   selector: 'app-game-scenario-part',
@@ -19,7 +18,7 @@ export class GameScenarioPartComponent {
 
   @Input({required: true}) game!: FullGame;
 
-  constructor(private http: HttpAdapter) {
+  constructor() {
   }
 
   getScenarioConditions(level: Level): ScenarioCondition[] {
@@ -48,13 +47,5 @@ export class GameScenarioPartComponent {
     }
 
     return typeof condition.action_time === 'number' ? condition.action_time : undefined;
-  }
-
-  getFileUrl(hint: HintPart) {
-    if (hint.file_guid === undefined) {
-      return undefined;
-    }
-
-    return this.http.getFileUrl(this.game.id, hint.file_guid);
   }
 }

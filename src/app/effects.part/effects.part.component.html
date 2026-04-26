@@ -9,7 +9,7 @@
           <ul>
             @for (hint of getEffectHints(effect); track $index) {
               <li class="effect-hint">
-                <app-hint-part [hint]="hint" [fileUrl]="getHintFileUrl(hint)"></app-hint-part>
+                <app-hint-part [hint]="hint" [gameId]="gameId"></app-hint-part>
               </li>
             }
           </ul>

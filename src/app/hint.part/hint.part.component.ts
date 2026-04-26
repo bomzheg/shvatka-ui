@@ -1,5 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {HintPart, HintType} from "../domain/game.models";
+import {HttpAdapter} from "../http/http.adapter";
 
 
 @Component({
@@ -13,7 +14,18 @@ export class HintPartComponent {
   @Input()
   hint!: HintPart;
   @Input()
-  fileUrl: string | undefined;
+  gameId: number | undefined;
+  
+  constructor(private http: HttpAdapter) {
+  }
+
+  getFileUrl(): string | undefined {
+    if (this.hint.file_guid === undefined || this.gameId === undefined) {
+      return undefined;
+    }
+
+    return this.http.getFileUrl(this.gameId, this.hint.file_guid);
+  }
 
     protected readonly HintType = HintType;
     protected readonly JSON = JSON;

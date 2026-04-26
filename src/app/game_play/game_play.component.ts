@@ -13,7 +13,7 @@ import {
 } from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {FullGame, GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
+import {FullGame, GameStat, KeyType, Keys} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize, Subscription} from "rxjs";
 import {ActiveGame} from "../games/games.service";
@@ -225,13 +225,6 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   getSpyStat(): GameStat | undefined {
     return this.gameService.getSpyStat();
-  }
-
-  getFileUrl(hint: HintPart) {
-    if (hint.file_guid === undefined) {
-      return undefined;
-    }
-    return this.http.getFileUrl(this.getCurrentHints()!.game_id, hint.file_guid)
   }
 
   toLocal(dt: string): string {
