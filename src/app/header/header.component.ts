@@ -160,7 +160,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return false;
     }
 
-    if (this.activeGame.status === "running") {
+    if (this.activeGame.status === "started") {
       return true;
     }
 
@@ -176,7 +176,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   isFinishedStatus() {
-    return this.activeGame?.status === "finished";
+    return this.activeGame?.status === "finished" || this.activeGame?.status === "complete";
   }
 
   isOtherPreStartStatus() {
@@ -195,7 +195,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.countdownInterval = undefined;
     }
 
-    if (!this.activeGame?.start_at || this.activeGame.status === "running" || this.activeGame.status === "finished") {
+    if (!this.activeGame?.start_at || this.activeGame.status === "started" || this.isFinishedStatus()) {
       return;
     }
 
@@ -236,7 +236,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private getCountdown(): Countdown | undefined {
-    if (!this.activeGame?.start_at || this.activeGame.status === "running" || this.activeGame.status === "finished") {
+    if (!this.activeGame?.start_at || this.activeGame.status === "started" || this.isFinishedStatus()) {
       return undefined;
     }
 

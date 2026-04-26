@@ -408,7 +408,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   private tryAutoRefreshCurrentGame() {
-    if (this.activeGame?.status !== "running") {
+    if (this.activeGame?.status !== "started") {
       this.lastAutoRefreshMark = undefined;
       return;
     }
