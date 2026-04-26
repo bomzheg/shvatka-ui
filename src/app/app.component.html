@@ -7,8 +7,8 @@
 <footer class="version-footer">
   <button class="version-button" type="button" (click)="toggleDebugInfo()">
     FE {{ formatVersionShort(frontendVersion) }} {{ formatVersionTime(frontendVersion) }}
-    ·
+    <br/>
     BE {{ formatVersionShort(backendVersion) }} {{ formatVersionTime(backendVersion) }}
   </button>
-  <pre *ngIf="showDebugInfo" class="debug-panel">{{ telegramAuthDebugInfo || "No tg auth debug logs yet." }}</pre>
+  <pre *ngIf="showDebugInfo" class="debug-panel">{{ debugInfo || "No tg auth debug logs yet." }}</pre>
 </footer>
