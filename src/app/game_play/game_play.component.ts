@@ -50,6 +50,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private keyResultTimer: ReturnType<typeof setTimeout> | undefined;
   private autoRefreshTicker: ReturnType<typeof setInterval> | undefined;
   private lastAutoRefreshMark: number | undefined;
+  private waiversStartReloadedGameId: number | undefined;
 
   constructor(
     private gameService: GamePlayService,
@@ -427,6 +428,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private startCountdownTicker() {
     this.clearCountdownTicker();
     this.countdownToStart = this.buildCountdown();
+    this.reloadAfterWaiversStartReached();
 
     if (!this.activeGame?.start_at || this.isStartTimeReached()) {
       return;
@@ -434,10 +436,26 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
     this.countdownInterval = setInterval(() => {
       this.countdownToStart = this.buildCountdown();
+      this.reloadAfterWaiversStartReached();
       if (!this.countdownToStart) {
         this.clearCountdownTicker();
       }
     }, 1000);
+  }
+
+  private reloadAfterWaiversStartReached() {
+    if (
+      this.activeGame?.status !== "getting_waivers"
+      || !this.activeGame.id
+      || this.waiversStartReloadedGameId === this.activeGame.id
+      || !this.activeGame.start_at
+      || Date.parse(this.activeGame.start_at) > Date.now()
+    ) {
+      return;
+    }
+
+    this.waiversStartReloadedGameId = this.activeGame.id;
+    this.gameService.loadHints();
   }
 
   private clearCountdownTicker() {
