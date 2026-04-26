@@ -137,6 +137,8 @@ export class GamePlayService {
   private spyStat: GameStat | undefined;
   private spyLoadingRequests = 0;
   private isSpyLoading = false;
+  private isSpyKeysLoading = false;
+  private isSpyStatLoading = false;
   private isHintsLoading = false;
   private authRequired = false;
 
@@ -294,6 +296,8 @@ export class GamePlayService {
       this.spyKeys = undefined;
       this.spyStat = undefined;
       this.isSpyLoading = false;
+      this.isSpyKeysLoading = false;
+      this.isSpyStatLoading = false;
       this.spyLoadingRequests = 0;
       return;
     }
@@ -310,14 +314,18 @@ export class GamePlayService {
 
     this.spyLoadingRequests = Number(canLoadKeys) + Number(canLoadStat);
     this.isSpyLoading = true;
+    this.isSpyKeysLoading = canLoadKeys;
+    this.isSpyStatLoading = canLoadStat;
     if (canLoadKeys) {
       this.http.get<Keys>(`/games/${gameId}/keys`)
         .subscribe({
           next: k => {
             this.spyKeys = k;
+            this.isSpyKeysLoading = false;
             this.completeSpyLoadRequest();
           },
           error: error => {
+            this.isSpyKeysLoading = false;
             this.completeSpyLoadRequest();
             if (!(error instanceof HttpErrorResponse && error.status === 401)) {
               throw error;
@@ -325,6 +333,7 @@ export class GamePlayService {
           }
         });
     } else {
+      this.isSpyKeysLoading = false;
       this.spyKeys = undefined;
     }
 
@@ -333,9 +342,11 @@ export class GamePlayService {
         .subscribe({
           next: s => {
             this.spyStat = s;
+            this.isSpyStatLoading = false;
             this.completeSpyLoadRequest();
           },
           error: error => {
+            this.isSpyStatLoading = false;
             this.completeSpyLoadRequest();
             if (!(error instanceof HttpErrorResponse && error.status === 401)) {
               throw error;
@@ -343,6 +354,7 @@ export class GamePlayService {
           }
         });
     } else {
+      this.isSpyStatLoading = false;
       this.spyStat = undefined;
     }
   }
@@ -374,6 +386,14 @@ export class GamePlayService {
 
   isSpyDataLoading(): boolean {
     return this.isSpyLoading;
+  }
+
+  isSpyKeysDataLoading(): boolean {
+    return this.isSpyKeysLoading;
+  }
+
+  isSpyStatDataLoading(): boolean {
+    return this.isSpyStatLoading;
   }
 
   hintsLoading(): boolean {

@@ -201,6 +201,24 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.gameService.isSpyDataLoading();
   }
 
+  isSpyKeysDataLoading(): boolean {
+    return this.gameService.isSpyKeysDataLoading();
+  }
+
+  isSpyStatDataLoading(): boolean {
+    return this.gameService.isSpyStatDataLoading();
+  }
+
+  canSeeSpyKeys(): boolean {
+    const org = this.gameService.getMyRole()?.org;
+    return !!org && !org.deleted && org.can_see_log_keys;
+  }
+
+  canSeeSpyStat(): boolean {
+    const org = this.gameService.getMyRole()?.org;
+    return !!org && !org.deleted && org.can_spy;
+  }
+
   getSpyKeys(): Keys | undefined {
     return this.gameService.getSpyKeys();
   }
