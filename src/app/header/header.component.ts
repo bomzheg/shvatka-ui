@@ -364,82 +364,66 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private authenticateTelegramWebApp(tgWa: any): Promise<boolean> {
-    const payloads = this.buildTelegramWebAppPayloads(tgWa);
-    return this.authenticateTelegramWebAppRecursive(payloads, 0);
-  }
-
-  private authenticateTelegramWebAppRecursive(payloads: any[], index: number): Promise<boolean> {
-    if (index >= payloads.length) {
-      return Promise.resolve(false);
-    }
-
-    const currentPayload = payloads[index];
-    const payloadKeys = Object.keys(currentPayload).join(",");
-    this.logTelegramAuthDebug(`attempt: authenticateWebApp payload#${index + 1} keys=[${payloadKeys}]`);
+    const payload = this.buildTelegramWebAppPayload(tgWa);
+    const payloadKeys = Object.keys(payload).join(",");
+    this.logTelegramAuthDebug(`attempt: authenticateWebApp keys=[${payloadKeys}] body=${this.stringifyForDebug(payload)}`);
 
     return new Promise<boolean>((resolve) => {
-      this.authService.authenticateWebApp(currentPayload)
+      this.authService.authenticateWebApp(payload)
         .subscribe({
           next: () => {
-            this.logTelegramAuthDebug(`success: authenticateWebApp payload#${index + 1}`);
+            this.logTelegramAuthDebug("success: authenticateWebApp");
             resolve(true);
           },
-          error: async (error) => {
+          error: (error) => {
             const status = typeof error?.status === "number" ? error.status : "unknown";
-            this.logTelegramAuthDebug(`failed: authenticateWebApp payload#${index + 1} status=${status}`);
-
-            if (status === 422) {
-              const nextResult = await this.authenticateTelegramWebAppRecursive(payloads, index + 1);
-              resolve(nextResult);
-              return;
-            }
-
+            this.logTelegramAuthDebug(`failed: authenticateWebApp status=${status}`);
             resolve(false);
           },
         });
     });
   }
 
-  private buildTelegramWebAppPayloads(tgWa: any): any[] {
-    const normalizedPayload = {
-      initData: tgWa?.initData,
+  private buildTelegramWebAppPayload(tgWa: any): any {
+    const resolvedInitData = this.resolveTelegramInitData(tgWa);
+    return {
+      initData: resolvedInitData,
+      initDataRaw: tgWa?.initData,
       initDataUnsafe: tgWa?.initDataUnsafe,
       version: tgWa?.version,
       platform: tgWa?.platform,
       ...tgWa?.initDataUnsafe,
     };
-
-    const initData = typeof tgWa?.initData === "string" ? tgWa.initData : "";
-    const normalizedInitData = initData.length > 16 ? initData : this.serializeInitDataUnsafe(tgWa?.initDataUnsafe);
-    const initDataUnsafe = tgWa?.initDataUnsafe ?? {};
-
-    return [
-      normalizedPayload,
-      {initData: normalizedInitData},
-      {init_data: normalizedInitData},
-      {tgWebAppData: normalizedInitData},
-      initDataUnsafe,
-    ].filter((payload) => Object.keys(payload).length > 0);
   }
 
-  private serializeInitDataUnsafe(initDataUnsafe: any): string {
-    if (!initDataUnsafe || typeof initDataUnsafe !== "object") {
-      return "";
+  private resolveTelegramInitData(tgWa: any): string {
+    const rawInitData = typeof tgWa?.initData === "string" ? tgWa.initData : "";
+    if (rawInitData.length > 16) {
+      return rawInitData;
     }
 
-    return Object.keys(initDataUnsafe)
-      .sort()
-      .map((key) => {
-        const value = initDataUnsafe[key];
-        if (value === undefined || value === null) {
-          return "";
-        }
+    const search = this.window?.location?.search ?? "";
+    const hash = this.window?.location?.hash ?? "";
+    const searchParams = new URLSearchParams(search);
+    const hashParams = new URLSearchParams(hash.startsWith("#") ? hash.slice(1) : hash);
 
-        const serialized = typeof value === "object" ? JSON.stringify(value) : String(value);
-        return `${encodeURIComponent(key)}=${encodeURIComponent(serialized)}`;
-      })
-      .filter(Boolean)
-      .join("&");
+    const fromSearch = searchParams.get("tgWebAppData");
+    const fromHash = hashParams.get("tgWebAppData");
+    const candidate = fromSearch || fromHash;
+    if (candidate) {
+      this.logTelegramAuthDebug(`info: using tgWebAppData from url (length=${candidate.length})`);
+      return decodeURIComponent(candidate);
+    }
+
+    return rawInitData;
+  }
+
+  private stringifyForDebug(payload: any): string {
+    try {
+      return JSON.stringify(payload);
+    } catch {
+      return "[unserializable]";
+    }
   }
 
   private logTelegramAuthDebug(message: string) {
