@@ -186,7 +186,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   canOpenSpyTab(): boolean {
     const org = this.gameService.getMyRole()?.org;
-    return this.activeGame?.status === "running" && !!org && !org.deleted && (org.can_spy || org.can_see_log_keys);
+    return !!org && !org.deleted && (org.can_spy || org.can_see_log_keys);
   }
 
   loadSpyData(forceRefresh: boolean = false) {
