@@ -185,7 +185,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   canOpenSpyTab(): boolean {
-    return this.activeGame?.status === "running" && !!this.gameService.getMyRole()?.org?.can_spy;
+    const org = this.gameService.getMyRole()?.org;
+    return !!org && !org.deleted && (org.can_spy || org.can_see_log_keys);
   }
 
   loadSpyData(forceRefresh: boolean = false) {
@@ -198,6 +199,24 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   isSpyDataLoading(): boolean {
     return this.gameService.isSpyDataLoading();
+  }
+
+  isSpyKeysDataLoading(): boolean {
+    return this.gameService.isSpyKeysDataLoading();
+  }
+
+  isSpyStatDataLoading(): boolean {
+    return this.gameService.isSpyStatDataLoading();
+  }
+
+  canSeeSpyKeys(): boolean {
+    const org = this.gameService.getMyRole()?.org;
+    return !!org && !org.deleted && org.can_see_log_keys;
+  }
+
+  canSeeSpyStat(): boolean {
+    const org = this.gameService.getMyRole()?.org;
+    return !!org && !org.deleted && org.can_spy;
   }
 
   getSpyKeys(): Keys | undefined {
@@ -389,7 +408,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   private tryAutoRefreshCurrentGame() {
-    if (this.activeGame?.status !== "running") {
+    if (this.activeGame?.status !== "started") {
       this.lastAutoRefreshMark = undefined;
       return;
     }

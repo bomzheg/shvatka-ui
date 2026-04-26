@@ -1,11 +1,6 @@
 import {Component, Input} from '@angular/core';
 import {GameStat, Keys, KeyType, Level, LevelTime} from "../domain/game.models";
 
-interface LevelHeader {
-  number: number;
-  name: string | undefined;
-}
-
 @Component({
   selector: 'app-game-log-part',
   standalone: true,
@@ -16,32 +11,54 @@ export class GameLogPartComponent {
   @Input() keys: Keys | undefined;
   @Input() stat: GameStat | undefined;
   @Input() levels: Level[] = [];
+  @Input() openKeys = false;
+  @Input() openStat = false;
 
   toLocal(dt: string): string {
     return new Date(Date.parse(dt)).toLocaleTimeString();
   }
 
-  getLevelHeaders(): LevelHeader[] {
-    if (this.levels.length > 0) {
-      return this.levels.map(level => ({
-        number: (level.number_in_game ?? 0) + 1,
-        name: level.name_id,
-      }));
+  getCurrentLevelNumber(teamLevelTimes: LevelTime[]): number {
+    const currentLevel = teamLevelTimes[teamLevelTimes.length - 1];
+    return (currentLevel?.level_number ?? 0) + 1;
+  }
+
+  getCurrentLevelDuration(teamLevelTimes: LevelTime[]): string {
+    const currentLevel = teamLevelTimes[teamLevelTimes.length - 1];
+    const startedAtMs = this.parseDate(currentLevel?.start_at);
+    if (startedAtMs === undefined) {
+      return "—";
     }
 
-    const firstTeamWithResults = Object.values(this.stat?.level_times ?? {})
-      .find(teamLevelTimes => teamLevelTimes.length > 1);
+    const totalSeconds = Math.max(Math.floor((Date.now() - startedAtMs) / 1000), 0);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
-    if (!firstTeamWithResults) {
-      return [];
+    if (hours > 0) {
+      return `${hours}ч ${minutes}м ${seconds}с`;
     }
 
-    return firstTeamWithResults
-      .slice(1)
-      .map((lt: LevelTime) => ({
-        number: lt.level_number + 1,
-        name: undefined,
-      }));
+    return `${minutes}м ${seconds}с`;
+  }
+
+  getLevelStartedAtTitle(teamLevelTimes: LevelTime[]): string {
+    const currentLevel = teamLevelTimes[teamLevelTimes.length - 1];
+    const startedAtMs = this.parseDate(currentLevel?.start_at);
+    if (startedAtMs === undefined) {
+      return "";
+    }
+
+    return `Уровень начался: ${new Date(startedAtMs).toLocaleTimeString()}`;
+  }
+
+  private parseDate(value: string | Date | undefined): number | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const parsed = Date.parse(String(value));
+    return Number.isNaN(parsed) ? undefined : parsed;
   }
 
   protected readonly KeyType = KeyType;

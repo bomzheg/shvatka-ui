@@ -158,16 +158,44 @@
 @if (canOpenSpyTab()) {
   <div class="spy-panel">
     <div class="spy-panel-header">
-      <h3>Spy</h3>
-      <button type="button" (click)="loadSpyData(true)">Обновить</button>
+      <h3>Шпион (организатор)</h3>
+      <button
+        type="button"
+        [disabled]="isSpyDataLoading()"
+        (click)="loadSpyData(true)"
+        [style.cursor]="isSpyDataLoading() ? 'not-allowed' : 'pointer'"
+        [style.opacity]="isSpyDataLoading() ? '0.7' : '1'"
+      >
+        @if (isSpyDataLoading()) {
+          Обновление...
+        } @else {
+          Обновить
+        }
+      </button>
     </div>
 
-    @if (isSpyDataLoading()) {
-      <p class="status-message">Загрузка spy-данных...</p>
+    @if (isSpyDataLoading() && !isSpyKeysDataLoading() && !isSpyStatDataLoading()) {
+      <p class="status-message">Загрузка данных шпиона...</p>
     }
 
-    @if (getSpyKeys() || getSpyStat()) {
-      <app-game-log-part [keys]="getSpyKeys()" [stat]="getSpyStat()"></app-game-log-part>
+    @if (canSeeSpyKeys()) {
+      @if (isSpyKeysDataLoading()) {
+        <p class="status-message">Загрузка ключей...</p>
+      } @else if (getSpyKeys()) {
+        <app-game-log-part [keys]="getSpyKeys()"></app-game-log-part>
+      } @else {
+        <p class="status-message">Ключи пока недоступны.</p>
+      }
+    }
+
+    @if (canSeeSpyStat()) {
+      @if (isSpyStatDataLoading()) {
+        <p class="status-message">Загрузка статистики...</p>
+      } @else if (getSpyStat()) {
+        <app-game-log-part [stat]="getSpyStat()"></app-game-log-part>
+      } @else {
+        <p class="status-message">Статистика пока недоступна.</p>
+      }
     }
   </div>
 }
