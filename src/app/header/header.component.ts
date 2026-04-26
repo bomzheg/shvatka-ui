@@ -411,11 +411,55 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const fromHash = hashParams.get("tgWebAppData");
     const candidate = fromSearch || fromHash;
     if (candidate) {
-      this.logTelegramAuthDebug(`info: using tgWebAppData from url (length=${candidate.length})`);
-      return decodeURIComponent(candidate);
+      const reconstructed = this.reconstructTelegramInitData(searchParams, hashParams, candidate);
+      this.logTelegramAuthDebug(`info: using tgWebAppData from url (rawLength=${candidate.length}, reconstructedLength=${reconstructed.length})`);
+      return reconstructed;
     }
 
     return rawInitData;
+  }
+
+  private reconstructTelegramInitData(searchParams: URLSearchParams, hashParams: URLSearchParams, base: string): string {
+    const merged = new URLSearchParams();
+    const baseParams = new URLSearchParams(base);
+
+    baseParams.forEach((value, key) => merged.set(key, value));
+
+    const knownKeys = [
+      "query_id",
+      "user",
+      "receiver",
+      "chat",
+      "chat_type",
+      "chat_instance",
+      "start_param",
+      "can_send_after",
+      "auth_date",
+      "signature",
+      "hash",
+    ];
+
+    const mergedFrom = [searchParams, hashParams];
+    for (const key of knownKeys) {
+      const existing = merged.get(key);
+      if (existing) {
+        continue;
+      }
+
+      for (const source of mergedFrom) {
+        const value = source.get(key);
+        if (value) {
+          merged.set(key, value);
+          break;
+        }
+      }
+    }
+
+    const keysSet = new Set<string>();
+    merged.forEach((_, key) => keysSet.add(key));
+    const keys = Array.from(keysSet).sort();
+    this.logTelegramAuthDebug(`info: reconstructed initData keys=[${keys.join(",")}]`);
+    return merged.toString();
   }
 
   private stringifyForDebug(payload: any): string {
