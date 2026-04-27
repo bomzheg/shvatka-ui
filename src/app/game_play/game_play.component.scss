@@ -36,6 +36,14 @@
   padding: 0.45rem 0.6rem;
 }
 
+.right-top-panel {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  background: #f3f4f6;
+  color: #111827;
+}
+
 button {
   border: 0;
   border-radius: 8px;
@@ -77,6 +85,7 @@ button:disabled,
 }
 
 .key-result-panel {
+  position: relative;
   margin: 0 auto 16px;
   padding: 10px 12px;
   border-radius: 10px;
@@ -95,31 +104,39 @@ button:disabled,
   margin: 0.2rem 0;
 }
 
+$key-success: rgba(34, 197, 94, 0.2);
+$key-wrong: rgba(239, 68, 68, 0.2);
+$key-duplicate: rgba(234, 179, 8, 0.2);
+
+$key-success-description: rgba(34, 197, 94, 1);
+$key-wrong-description: rgba(239, 68, 68, 1);
+$key-duplicate-description: rgba(234, 179, 8, 1);
+
 .key-result-ok {
-  background: rgba(34, 197, 94, 0.2);
+  background: $key-success;
 }
 
 .key-result-wrong {
-  background: rgba(239, 68, 68, 0.2);
+  background: $key-wrong;
 }
 
 .key-result-duplicate {
   background-image: repeating-linear-gradient(
       -45deg,
-      rgba(234, 179, 8, 0.5) 0,
-      rgba(234, 179, 8, 0.5) 14px,
-      rgba(34, 197, 94, 0.5) 14px,
-      rgba(34, 197, 94, 0.5) 28px
+      $key-duplicate 0,
+      $key-duplicate 14px,
+      $key-success 14px,
+      $key-success 28px
   );
 }
 
 .key-result-duplicate.key-result-wrong {
   background-image: repeating-linear-gradient(
       -45deg,
-      rgba(234, 179, 8, 0.5) 0,
-      rgba(234, 179, 8, 0.5) 14px,
-      rgba(239, 68, 68, 0.5) 14px,
-      rgba(239, 68, 68, 0.5) 28px
+      $key-duplicate 0,
+      $key-duplicate 14px,
+      $key-wrong 14px,
+      $key-wrong 28px
   );
 }
 
@@ -151,16 +168,16 @@ button:disabled,
 }
 
 .typed-key-ok .typed-key-status {
-  color: #15803d;
+  color: $key-success-description;
 }
 
 .typed-key-duplicate .typed-key-status {
-  color: #a16207;
+  color: $key-duplicate-description;
 }
 
 .typed-key-wrong .typed-key-status,
 .typed-key-bad-duplicate .typed-key-status {
-  color: #b91c1c;
+  color: $key-wrong-description;
 }
 
 .typed-effects {

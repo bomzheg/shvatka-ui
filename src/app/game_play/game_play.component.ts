@@ -377,9 +377,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private startResultTimer() {
     this.clearResultTimer();
     this.keyResultTimer = setTimeout(() => {
-      this.keyResult = undefined;
-      this.keyResultData = undefined;
-      this.keySubmitError = undefined;
+      this.closeResultKeyPanel()
     }, 60_000);
   }
 
@@ -388,6 +386,14 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       clearTimeout(this.keyResultTimer);
       this.keyResultTimer = undefined;
     }
+  }
+
+
+  public closeResultKeyPanel() {
+    this.clearResultTimer();
+    this.keyResult = undefined;
+    this.keyResultData = undefined;
+    this.keySubmitError = undefined;
   }
 
 

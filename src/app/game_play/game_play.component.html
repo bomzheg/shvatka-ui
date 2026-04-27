@@ -37,6 +37,7 @@
            [class.key-result-ok]="!keyResultData.wrong"
            [class.key-result-wrong]="keyResultData.wrong"
            [class.key-result-duplicate]="keyResultData.is_duplicate">
+        <button type="button" class="icon-close right-top-panel" (click)="closeResultKeyPanel()" aria-label="Закрыть">✕</button>
         <p><strong>Результат:</strong> {{ keyResult }}</p>
         <p><strong>Ключ:</strong> {{ keyResultData.text }}</p>
 
