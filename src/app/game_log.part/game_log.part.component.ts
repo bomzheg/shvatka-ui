@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {GameStat, Keys, KeyType, Level, LevelTime} from "../domain/game.models";
+import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game.models";
 
 @Component({
   selector: 'app-game-log-part',
@@ -13,6 +13,44 @@ export class GameLogPartComponent {
   @Input() levels: Level[] = [];
   @Input() openKeys = false;
   @Input() openStat = false;
+
+  getSortedTeamKeysEntries(): [string, KeyTime[]][] {
+    if (!this.keys) {
+      return [];
+    }
+
+    const entries = Object.entries(this.keys as unknown as Record<string, KeyTime[]>);
+    return entries
+      .map(([teamId, teamKeys]) => [
+        teamId,
+        [...teamKeys].sort((a, b) => (this.parseDate(b.at) ?? 0) - (this.parseDate(a.at) ?? 0)),
+      ]);
+  }
+
+  getSortedStatEntries(): [string, LevelTime[]][] {
+    if (!this.stat?.level_times) {
+      return [];
+    }
+
+    return Object.entries(this.stat.level_times as unknown as Record<string, LevelTime[]>)
+      .map(([teamId, levelTimes]) => [teamId, [...levelTimes]] as [string, LevelTime[]])
+      .sort((a, b) => {
+        const aTimes = a[1];
+        const bTimes = b[1];
+        const levelsDiff = bTimes.length - aTimes.length;
+        if (levelsDiff !== 0) {
+          return levelsDiff;
+        }
+
+        const aStartedAt = this.parseDate(aTimes[0]?.start_at) ?? Number.MAX_SAFE_INTEGER;
+        const bStartedAt = this.parseDate(bTimes[0]?.start_at) ?? Number.MAX_SAFE_INTEGER;
+        return aStartedAt - bStartedAt;
+      });
+  }
+
+  shouldOpenTeamKeys(teamKeysCount: number): boolean {
+    return teamKeysCount <= 10;
+  }
 
   toLocal(dt: string): string {
     return new Date(Date.parse(dt)).toLocaleTimeString();
