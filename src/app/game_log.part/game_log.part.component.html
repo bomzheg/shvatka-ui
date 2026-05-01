@@ -4,7 +4,6 @@
     <div class="keys-log">
       @for (teamKeys of sortedTeamKeysEntries; track teamKeys[0]) {
         @if (teamKeys[1].length > 0) {
-          <hr>
           <details [attr.open]="shouldOpenTeamKeys(teamKeys[1].length) ? '' : null">
             <summary>{{ teamKeys[1][0].team.name }} ({{ teamKeys[1].length }})</summary>
             <div class="table-wrap">
