@@ -11,41 +11,26 @@
               <table>
                 <thead class="game-keys-table">
                 <tr>
-                  <th>Тип</th>
+                  <th>Время</th>
                   <th>Ключ</th>
                   <th>Игрок</th>
-                  <th>Время</th>
-                  <th class="level-column">№</th>
                 </tr>
                 </thead>
                 <tbody>
                   @for (key of teamKeys[1]; track key) {
                     <tr>
+                      <td class="key-time">{{ toLocalHm(key.at) }}</td>
                       <td>
-                        @if (key.is_duplicate) {
-                          <span>💤</span>
-                        } @else {
-                          @switch (key.type_) {
-                            @case (KeyType.simple) {
-                              <span>✅</span>
-                            }
-                            @case (KeyType.wrong) {
-                              <span>❌</span>
-                            }
-                            @case (KeyType.bonus) {
-                              <span>💰</span>
-                            }
-                            @default {
-                              <span>❔</span>
-                            }
-                          }
-                        }
+                        <span class="key-type-inline">{{ keyTypeEmoji(key) }}</span>{{ key.text }}
                       </td>
-                      <td>{{ key.text }}</td>
                       <td>{{ key.player.name_mention }}</td>
-                      <td>{{ toLocal(key.at) }}</td>
-                      <td class="level-column">{{ key.level_number + 1 }}</td>
                     </tr>
+
+                    @if (isLevelChanged(teamKeys[1], $index)) {
+                      <tr class="level-break-row">
+                        <td colspan="3">уровень {{ key.level_number + 1 }} завершён</td>
+                      </tr>
+                    }
                   }
                 </tbody>
               </table>

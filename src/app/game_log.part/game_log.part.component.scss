@@ -42,6 +42,23 @@ td {
   white-space: nowrap;
 }
 
+.key-time {
+  width: 3.7rem;
+  min-width: 3.7rem;
+  white-space: nowrap;
+}
+
+.key-type-inline {
+  margin-right: 0.25rem;
+}
+
+.level-break-row td {
+  font-style: italic;
+  opacity: 0.85;
+  text-align: left;
+  padding-left: 0.6rem;
+}
+
 .stat-level-column {
   width: 2.3rem;
   min-width: 2.3rem;
@@ -75,5 +92,10 @@ td {
   .keys-log th:nth-child(3) {
     word-break: break-word;
     overflow-wrap: anywhere;
+  }
+
+  .key-time {
+    width: 3.2rem;
+    min-width: 3.2rem;
   }
 }

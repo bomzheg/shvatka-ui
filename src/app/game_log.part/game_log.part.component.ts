@@ -80,6 +80,35 @@ export class GameLogPartComponent {
     return new Date(Date.parse(dt)).toLocaleTimeString();
   }
 
+  toLocalHm(dt: string): string {
+    return new Date(Date.parse(dt)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+  }
+
+  keyTypeEmoji(key: KeyTime): string {
+    if (key.is_duplicate) {
+      return "💤";
+    }
+
+    switch (key.type_) {
+      case KeyType.simple:
+        return "✅";
+      case KeyType.wrong:
+        return "❌";
+      case KeyType.bonus:
+        return "💰";
+      default:
+        return "❔";
+    }
+  }
+
+  isLevelChanged(keys: KeyTime[], index: number): boolean {
+    if (index >= keys.length - 1) {
+      return false;
+    }
+
+    return keys[index].level_number !== keys[index + 1].level_number;
+  }
+
   getCurrentLevelNumber(teamLevelTimes: LevelTime[]): number {
     const currentLevel = teamLevelTimes[teamLevelTimes.length - 1];
     return (currentLevel?.level_number ?? 0) + 1;
