@@ -25,9 +25,9 @@ summary {
 
 table {
   width: 100%;
-  min-width: 620px;
   border-collapse: collapse;
   text-align: center;
+  table-layout: fixed;
 }
 
 th,
@@ -46,4 +46,34 @@ td {
   width: 2.3rem;
   min-width: 2.3rem;
   white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  table {
+    min-width: 0;
+    font-size: 0.86rem;
+  }
+
+  th,
+  td {
+    padding: 0.3rem;
+  }
+
+  .level-column {
+    width: 2.4rem;
+    min-width: 2.4rem;
+  }
+
+  .stat-level-column {
+    width: 2rem;
+    min-width: 2rem;
+  }
+
+  .keys-log td:nth-child(2),
+  .keys-log td:nth-child(3),
+  .keys-log th:nth-child(2),
+  .keys-log th:nth-child(3) {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
 }
