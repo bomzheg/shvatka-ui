@@ -67,8 +67,8 @@
           <table>
             <thead>
             <tr>
+              <th class="stat-level-column">№</th>
               <th>Команда</th>
-              <th>Текущий уровень</th>
               <th>Время на уровне</th>
             </tr>
             </thead>
@@ -76,8 +76,8 @@
               @for (results of getSortedStatEntries(); track results[0]) {
                 @if (results[1].length > 0) {
                   <tr>
+                    <td class="stat-level-column">{{ getCurrentLevelNumber(results[1]) }}</td>
                     <td>{{ results[1][0].team.name }}</td>
-                    <td>{{ getCurrentLevelNumber(results[1]) }}</td>
                     <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
                   </tr>
                 }
