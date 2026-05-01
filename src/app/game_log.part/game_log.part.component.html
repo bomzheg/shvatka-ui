@@ -2,53 +2,40 @@
   <details [attr.open]="openKeys ? '' : null">
     <summary class="game-keys-spoiler">Ключи</summary>
     <div class="keys-log">
-      @for (teamKeys of Object.entries(keys); track teamKeys[0]) {
+      @for (teamKeys of sortedTeamKeysEntries; track teamKeys[0]) {
         @if (teamKeys[1].length > 0) {
           <hr>
-          <h3>Ключи команды {{ teamKeys[1][0].team.name }}</h3>
-          <div class="table-wrap">
-            <table>
-              <thead class="game-keys-table">
-              <tr>
-                <th>Тип</th>
-                <th>Ключ</th>
-                <th>Игрок</th>
-                <th>Время</th>
-                <th>Уровень</th>
-              </tr>
-              </thead>
-              <tbody>
-                @for (key of teamKeys[1]; track key) {
-                  <tr>
-                    <td>
-                      @if (key.is_duplicate) {
-                        <span>💤</span>
-                      } @else {
-                        @switch (key.type_) {
-                          @case (KeyType.simple) {
-                            <span>✅</span>
-                          }
-                          @case (KeyType.wrong) {
-                            <span>❌</span>
-                          }
-                          @case (KeyType.bonus) {
-                            <span>💰</span>
-                          }
-                          @default {
-                            <span>❔</span>
-                          }
-                        }
-                      }
-                    </td>
-                    <td>{{ key.text }}</td>
-                    <td>{{ key.player.name_mention }}</td>
-                    <td>{{ toLocal(key.at) }}</td>
-                    <td>{{ key.level_number + 1 }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+          <details [attr.open]="shouldOpenTeamKeys(teamKeys[1].length) ? '' : null">
+            <summary>Ключи команды {{ teamKeys[1][0].team.name }} ({{ teamKeys[1].length }})</summary>
+            <div class="table-wrap">
+              <table>
+                <thead class="game-keys-table">
+                <tr>
+                  <th>Время</th>
+                  <th>Ключ</th>
+                  <th>Игрок</th>
+                </tr>
+                </thead>
+                <tbody>
+                  @for (key of teamKeys[1]; track key) {
+                    <tr>
+                      <td class="key-time">{{ toLocalHm(key.at) }}</td>
+                      <td>
+                        <span class="key-type-inline">{{ keyTypeEmoji(key) }}</span>{{ key.text }}
+                      </td>
+                      <td>{{ key.player.name_mention }}</td>
+                    </tr>
+
+                    @if (isLevelChanged(teamKeys[1], $index)) {
+                      <tr class="level-break-row">
+                        <td colspan="3">достигнут уровень {{ key.level_number + 1 }}</td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          </details>
         }
       }
       <hr>
@@ -65,17 +52,17 @@
           <table>
             <thead>
             <tr>
+              <th class="stat-level-column">№</th>
               <th>Команда</th>
-              <th>Текущий уровень</th>
               <th>Время на уровне</th>
             </tr>
             </thead>
             <tbody>
-              @for (results of Object.entries(stat.level_times); track results[0]) {
+              @for (results of sortedStatEntries; track results[0]) {
                 @if (results[1].length > 0) {
                   <tr>
+                    <td class="stat-level-column">{{ getCurrentLevelNumber(results[1]) }}</td>
                     <td>{{ results[1][0].team.name }}</td>
-                    <td>{{ getCurrentLevelNumber(results[1]) }}</td>
                     <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
                   </tr>
                 }

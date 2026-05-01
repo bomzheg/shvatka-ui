@@ -85,8 +85,7 @@
       </details>
     }
 
-    <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }}</h3>
-    <p>начался {{ toLocal(getCurrentHints()!.started_at) }}</p>
+    <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }} начался {{ toLocal(getCurrentHints()!.started_at) }} ({{ getLevelElapsed(getCurrentHints()!.started_at) }})</h3>
     <ul class="hints">
       @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
         <li>
