@@ -8,18 +8,42 @@ import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game
   styleUrl: './game_log.part.component.scss',
 })
 export class GameLogPartComponent {
-  @Input() keys: Keys | undefined;
-  @Input() stat: GameStat | undefined;
+  private _keys: Keys | undefined;
+  private _stat: GameStat | undefined;
+
+  @Input()
+  set keys(value: Keys | undefined) {
+    this._keys = value;
+    this.sortedTeamKeysEntries = this.buildSortedTeamKeysEntries(value);
+  }
+
+  get keys(): Keys | undefined {
+    return this._keys;
+  }
+
+  @Input()
+  set stat(value: GameStat | undefined) {
+    this._stat = value;
+    this.sortedStatEntries = this.buildSortedStatEntries(value);
+  }
+
+  get stat(): GameStat | undefined {
+    return this._stat;
+  }
+
   @Input() levels: Level[] = [];
   @Input() openKeys = false;
   @Input() openStat = false;
 
-  getSortedTeamKeysEntries(): [string, KeyTime[]][] {
-    if (!this.keys) {
+  sortedTeamKeysEntries: [string, KeyTime[]][] = [];
+  sortedStatEntries: [string, LevelTime[]][] = [];
+
+  private buildSortedTeamKeysEntries(keys: Keys | undefined): [string, KeyTime[]][] {
+    if (!keys) {
       return [];
     }
 
-    const entries = Object.entries(this.keys as unknown as Record<string, KeyTime[]>);
+    const entries = Object.entries(keys as unknown as Record<string, KeyTime[]>);
     return entries
       .map(([teamId, teamKeys]) => [
         teamId,
@@ -27,12 +51,12 @@ export class GameLogPartComponent {
       ]);
   }
 
-  getSortedStatEntries(): [string, LevelTime[]][] {
-    if (!this.stat?.level_times) {
+  private buildSortedStatEntries(stat: GameStat | undefined): [string, LevelTime[]][] {
+    if (!stat?.level_times) {
       return [];
     }
 
-    return Object.entries(this.stat.level_times as unknown as Record<string, LevelTime[]>)
+    return Object.entries(stat.level_times as unknown as Record<string, LevelTime[]>)
       .map(([teamId, levelTimes]) => [teamId, [...levelTimes]] as [string, LevelTime[]])
       .sort((a, b) => {
         const aTimes = a[1];

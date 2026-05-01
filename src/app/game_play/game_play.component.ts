@@ -238,6 +238,28 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return new Date(Date.parse(dt)).toLocaleTimeString();
   }
 
+  getLevelElapsed(startedAt: string | undefined): string {
+    if (!startedAt) {
+      return "—";
+    }
+
+    const startedAtMs = Date.parse(startedAt);
+    if (Number.isNaN(startedAtMs)) {
+      return "—";
+    }
+
+    const totalSeconds = Math.max(Math.floor((Date.now() - startedAtMs) / 1000), 0);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}ч ${minutes}м ${seconds}с`;
+    }
+
+    return `${minutes}м ${seconds}с`;
+  }
+
   onKeyTextChange(text: string) {
     this.keyText = text.toUpperCase();
   }
