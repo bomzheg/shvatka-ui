@@ -34,7 +34,7 @@ export class ProfileComponent implements OnInit {
   }
 
   get username(): string {
-    return this.userService.getMe()?.username || '';
+    return this.userService.getMe()?.name_mention || '';
   }
 
   changePassword() {

@@ -4,11 +4,8 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {Observable} from "rxjs";
 
 export class UserData {
-  db_id: number | undefined;
-  tg_id: number | undefined;
-  username: string | undefined;
-  first_name: string | undefined;
-  last_name: string | undefined;
+  id: number | undefined;
+  name_mention: string | undefined;
 }
 
 @Injectable({

@@ -56,7 +56,7 @@
       <div class="user-info">
         <a routerLink="/profile" class="avatar-link" (click)="onNavClick('/profile', $event)">
           <mat-icon svgIcon="account-circle"/>
-          <span>{{ getMe()?.username }}</span>
+          <span>{{ getMe()?.name_mention }}</span>
         </a>
         <button class="ghost-button" type="button" (click)="logout()">Выйти</button>
       </div>
@@ -88,7 +88,7 @@
   </div>
 
     @if (isAuthenticated()) {
-      <p class="mobile-username">{{ getMe()?.username }}</p>
+      <p class="mobile-username">{{ getMe()?.name_mention }}</p>
       <button class="ghost-button" type="button" (click)="logout()">Выйти</button>
     } @else {
       <button class="solid-button" type="button" (click)="openLoginForm()">Войти</button>

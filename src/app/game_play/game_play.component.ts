@@ -139,7 +139,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   isCurrentUserGameAuthor(): boolean {
-    const myId = this.userService.getMe()?.db_id;
+    const myId = this.userService.getMe()?.id;
     const authorId = this.activeGame?.author?.id;
     return myId !== undefined && authorId !== undefined && myId === authorId;
   }
