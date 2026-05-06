@@ -96,6 +96,37 @@
         </li>
       }
     </ul>
+
+    @if (hasAnyEvents()) {
+      <details class="events-spoiler">
+        <summary>Последние игровые события</summary>
+
+        @if (getCurrentLevelEvents().length > 0) {
+          <ul class="events-list">
+            @for (event of getCurrentLevelEvents(); track event.id) {
+              <li class="event-entry">
+                <strong>{{ toLocal(event.at) }}</strong>
+                <app-effects-part [effects]="event.effects" [gameId]="getCurrentHints()!.game_id"></app-effects-part>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (getPreviousLevelEvents().length > 0) {
+          <details class="events-spoiler events-spoiler-nested">
+            <summary>События прошлых уровней</summary>
+            <ul class="events-list">
+              @for (event of getPreviousLevelEvents(); track event.id) {
+                <li class="event-entry">
+                  <strong>{{ toLocal(event.at) }}</strong>
+                  <app-effects-part [effects]="event.effects" [gameId]="getCurrentHints()!.game_id"></app-effects-part>
+                </li>
+              }
+            </ul>
+          </details>
+        }
+      </details>
+    }
   </div>
 }
 

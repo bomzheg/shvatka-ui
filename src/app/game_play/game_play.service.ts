@@ -10,11 +10,21 @@ export type TypedKeyLog = KeyTime & {
   effects?: KeyEffect[];
 };
 
+export type GameEvent = {
+  id: number;
+  team_id: number;
+  level_time_id: number;
+  at: string;
+  effects?: KeyEffect[] | KeyEffect;
+};
+
 export class CurrentHints {
   constructor(
     public hints: TimeHint[],
     public typed_keys: TypedKeyLog[],
+    public events: GameEvent[],
     public level_number: number,
+    public level_time_id: number,
     public started_at: string,
     public game_id: number,
   ) {
