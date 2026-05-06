@@ -175,6 +175,7 @@ export enum KeyType {
   wrong = "wrong",
   simple = "simple",
   bonus = "bonus",
+  effects = "effects"
 }
 
 export class KeyTime {

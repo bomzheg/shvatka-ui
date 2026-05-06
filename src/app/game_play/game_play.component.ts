@@ -379,30 +379,17 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   typedKeyEmoji(typedKey: TypedKeyLog): string {
     const isWrong = this.isWrongTypedKey(typedKey);
     if (isWrong && typedKey?.is_duplicate) {
-      return '⚠️🔁';
+      return '💤❌';
     }
     if (isWrong) {
       return '❌';
     }
     if (typedKey?.is_duplicate) {
-      return '🔁';
+      return '💤';
     }
     return '✅';
   }
 
-  typedKeyStatusText(typedKey: TypedKeyLog): string {
-    const isWrong = this.isWrongTypedKey(typedKey);
-    if (isWrong && typedKey?.is_duplicate) {
-      return 'дубликат + ошибка';
-    }
-    if (isWrong) {
-      return 'ошибка';
-    }
-    if (typedKey?.is_duplicate) {
-      return 'дубликат';
-    }
-    return 'корректный';
-  }
 
   private mapResult(result: TypedKeyResult): string {
     if (result.is_duplicate && result.wrong) {

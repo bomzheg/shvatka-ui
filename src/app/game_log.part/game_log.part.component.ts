@@ -96,6 +96,8 @@ export class GameLogPartComponent {
         return "❌";
       case KeyType.bonus:
         return "💰";
+      case KeyType.effects:
+        return "✨"
       default:
         return "❔";
     }

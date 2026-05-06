@@ -66,7 +66,7 @@
                 [class.typed-key-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-duplicate'"
                 [class.typed-key-wrong]="typedKeyStatusClass(typedKey) === 'typed-key-wrong'"
                 [class.typed-key-bad-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-bad-duplicate'">
-              <span class="typed-key-status">{{ typedKeyEmoji(typedKey) }} {{ typedKeyStatusText(typedKey) }}</span>
+              <span class="typed-key-status">{{ typedKeyEmoji(typedKey) }}</span>
               <strong>{{ typedKey.text }}</strong>
               @if (typedKey.at) {
                 <span> ({{ toLocal(typedKey.at) }})</span>
