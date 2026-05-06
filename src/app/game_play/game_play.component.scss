@@ -324,3 +324,26 @@ td {
   justify-content: space-between;
   align-items: center;
 }
+
+.events-spoiler {
+  margin: 14px 0;
+}
+
+.events-spoiler summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.events-spoiler-nested {
+  margin-top: 10px;
+  margin-left: 16px;
+}
+
+.events-list {
+  margin: 8px 0 0;
+  padding-left: 1.1rem;
+}
+
+.event-entry {
+  margin-bottom: 10px;
+}

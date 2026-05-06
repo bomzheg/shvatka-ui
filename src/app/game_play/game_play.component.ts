@@ -5,6 +5,7 @@ import {
   TypedKeyResult,
   KeyEffect,
   TypedKeyLog,
+  GameEvent,
   CurrentWaivers,
   WaiversTeam,
   WaiverEntry,
@@ -330,6 +331,30 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return effects
       .flatMap((effect: KeyEffect) => this.getEffectTags(effect))
       .filter((tag, idx, arr) => arr.indexOf(tag) === idx);
+  }
+
+
+
+  getCurrentLevelEvents(): GameEvent[] {
+    const hints = this.getCurrentHints();
+    if (!hints?.events) {
+      return [];
+    }
+
+    return hints.events.filter(event => event.level_time_id === hints.level_time_id);
+  }
+
+  getPreviousLevelEvents(): GameEvent[] {
+    const hints = this.getCurrentHints();
+    if (!hints?.events) {
+      return [];
+    }
+
+    return hints.events.filter(event => event.level_time_id !== hints.level_time_id);
+  }
+
+  hasAnyEvents(): boolean {
+    return this.getCurrentLevelEvents().length > 0 || this.getPreviousLevelEvents().length > 0;
   }
 
   hasAnyTypedKeys(): boolean {
