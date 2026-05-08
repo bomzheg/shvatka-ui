@@ -1,11 +1,12 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
 import {APP_BASE_HREF, CommonModule, DOCUMENT} from '@angular/common';
-import {RouterOutlet} from '@angular/router';
+import {NavigationEnd, Router, RouterOutlet} from '@angular/router';
 import {HeaderComponent} from "./header/header.component";
 import {environment} from "../environments/environment";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ThemeService} from "./theme/theme.service";
+import {filter} from "rxjs";
 import {VersionInfo, VersionService} from "./version/version.service";
 
 @Component({
@@ -24,6 +25,7 @@ export class AppComponent implements OnInit {
   backendVersion: VersionInfo | undefined;
   showDebugInfo = false;
   debugInfo = "";
+  isOneTimeTokenRoute = false;
   private readonly window: (Window & typeof globalThis) | undefined;
 
   constructor(
@@ -31,6 +33,7 @@ export class AppComponent implements OnInit {
     domSanitizer:DomSanitizer,
     private themeService: ThemeService,
     private versionService: VersionService,
+    private router: Router,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.matIconRegistry.addSvgIcon(
@@ -42,6 +45,9 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.updateOneTimeTokenRouteFlag();
+    this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => this.updateOneTimeTokenRouteFlag());
+
     this.versionService.getFrontendVersion().subscribe(version => this.frontendVersion = version);
     this.versionService.getBackendVersion().subscribe(version => this.backendVersion = version);
     this.debugInfo = this.window?.sessionStorage.getItem("debug-log") ?? "";
@@ -50,6 +56,13 @@ export class AppComponent implements OnInit {
   toggleDebugInfo() {
     this.showDebugInfo = !this.showDebugInfo;
     this.debugInfo = this.window?.sessionStorage.getItem("debug-log") ?? "";
+  }
+
+
+
+  private updateOneTimeTokenRouteFlag() {
+    const pathname = this.window?.location?.pathname ?? this.router.url.split('?')[0];
+    this.isOneTimeTokenRoute = pathname.endsWith('/auth/one-time-token');
   }
 
   formatVersionShort(version: VersionInfo | undefined): string {

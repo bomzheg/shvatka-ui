@@ -117,10 +117,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.setupCountdownTicker();
     });
 
-    const currentPath = this.router.url.split('?')[0];
-    if (currentPath === '/auth/one-time-token') {
-      return;
-    }
 
     if (this.tgWa?.initData) {
       this.logDebugInfo(`attempt: authenticate blocking webapp (initDataLength=${this.tgWa.initData.length})`);
@@ -174,6 +170,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       window.clearInterval(this.countdownInterval);
     }
   }
+
 
   private setupCountdownTicker() {
     if (this.countdownInterval) {
