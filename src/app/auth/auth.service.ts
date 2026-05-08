@@ -24,7 +24,7 @@ export class AuthService {
 
 
   loginWithOneTimeToken(token: string) {
-    return this.http.postWithoutCookies<any>(
+    return this.http.post<any>(
       '/auth/one-time-token',
       {token},
     );
