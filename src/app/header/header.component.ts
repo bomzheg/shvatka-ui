@@ -117,6 +117,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.setupCountdownTicker();
     });
 
+    if (this.isOneTimeTokenCallbackRoute()) {
+      return;
+    }
+
     if (this.tgWa?.initData) {
       this.logDebugInfo(`attempt: authenticate blocking webapp (initDataLength=${this.tgWa.initData.length})`);
       const telegramAuthResult = await this.authenticateTelegramWebApp(this.tgWa);
@@ -168,6 +172,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.countdownInterval) {
       window.clearInterval(this.countdownInterval);
     }
+  }
+
+
+  private isOneTimeTokenCallbackRoute(): boolean {
+    const pathname = this.window?.location?.pathname ?? '';
+    if (pathname.endsWith('/auth/one-time-token')) {
+      return true;
+    }
+
+    const routerPath = this.router.url.split('?')[0];
+    return routerPath === '/auth/one-time-token';
   }
 
   private setupCountdownTicker() {
