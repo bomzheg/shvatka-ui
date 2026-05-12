@@ -46,10 +46,6 @@ export class GamesComponent implements OnInit {
   }
 
   onGameClick(event: MouseEvent) {
-    if (this.canOpenGame()) {
-      return;
-    }
-
     event.preventDefault();
     event.stopPropagation();
     this.snackBar.open("Для просмотра деталей игры нужно авторизоваться", "OK", {duration: 3000});

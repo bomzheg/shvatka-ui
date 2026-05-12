@@ -186,6 +186,12 @@ export class GamePlayService {
           return;
         }
 
+        if (!role) {
+          this.authRequired = true;
+          this.loadWaivers();
+          return;
+        }
+
         this.currentHints = undefined;
         this.isHintsLoading = false;
       });
@@ -263,6 +269,7 @@ export class GamePlayService {
             this.myRole = undefined;
             this.myRoleGameId = undefined;
             this.myRoleCacheUntil = undefined;
+            this.authRequired = true;
             onLoaded?.(undefined);
             return;
           }

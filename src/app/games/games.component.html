@@ -1,8 +1,17 @@
 <ul class="games-list">
   @for (game of getGames(); track game.id) {
-    <li class="games-list-item"><a routerLink="{{game.id}}" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="onGameClick($event)">
-      <div class="game-number"><span>{{game.number}}</span></div>
-      <div class="game-name"><span>{{game.name}}</span></div>
-    </a></li>
+    <li class="games-list-item" [class.games-list-item-disabled]="!canOpenGame()">
+      @if (canOpenGame()) {
+        <a routerLink="{{game.id}}" routerLinkActive="active" ariaCurrentWhenActive="page">
+          <div class="game-number"><span>{{game.number}}</span></div>
+          <div class="game-name"><span>{{game.name}}</span></div>
+        </a>
+      } @else {
+        <button type="button" class="disabled-game-link" (click)="onGameClick($event)">
+          <div class="game-number"><span>{{game.number}}</span></div>
+          <div class="game-name"><span>{{game.name}}</span></div>
+        </button>
+      }
+    </li>
   }
 </ul>
