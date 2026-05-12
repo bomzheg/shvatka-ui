@@ -37,7 +37,12 @@ export class AuthComponent implements AfterViewInit, OnInit {
   login(username: string | undefined, password: string | undefined) {
       this.authService.login(username!, password!)
         .subscribe({
-          next: () => {this.updateUser().then(() => this.closeLoginForm())},
+          next: () => {
+            this.updateUser().then(() => {
+              this.closeLoginForm();
+              window.location.reload();
+            })
+          },
           error: (err) => {
             if (err instanceof HttpErrorResponse && err.status === 401) {
               console.error("auth error " + err.message);
