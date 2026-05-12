@@ -1,6 +1,6 @@
 <ul class="games-list">
   @for (game of getGames(); track game.id) {
-    <li class="games-list-item"><a routerLink="{{game.id}}" routerLinkActive="active" ariaCurrentWhenActive="page">
+    <li class="games-list-item"><a routerLink="{{game.id}}" routerLinkActive="active" ariaCurrentWhenActive="page" (click)="onGameClick($event)">
       <div class="game-number"><span>{{game.number}}</span></div>
       <div class="game-name"><span>{{game.name}}</span></div>
     </a></li>
