@@ -7,6 +7,9 @@ import {AuthService} from "../auth/auth.service";
   providedIn: 'root'
 })
 export class GlobalErrorHandler implements ErrorHandler {
+  private readonly knownErrorTranslations: Record<string, string> = {
+    InvalidKey: "Неверный ключ",
+  };
   constructor(
     private _snackBar: MatSnackBar,
     private _zone: NgZone,
@@ -25,6 +28,17 @@ export class GlobalErrorHandler implements ErrorHandler {
         this.authService.showLoginForm();
       } else {
         console.error(error);
+        const backendError = error.error;
+        if (backendError && typeof backendError === "object") {
+          const type = String(backendError.type ?? "UnknownError");
+          const typeText = this.knownErrorTranslations[type] ?? type;
+          const text = String(backendError.text ?? "");
+          const description = String(backendError.description ?? "");
+          const message = [typeText, text, description].filter(v => v.length > 0).join(": ");
+          this._snackBar.open(message || "Ошибка запроса", 'Закрыть', {duration: 5000});
+          return;
+        }
+
         this._snackBar.open("Какая-то сетевая(?) ошибка=(", 'Закрыть', {duration: 3000});
       }
     });
