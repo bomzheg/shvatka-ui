@@ -1,10 +1,10 @@
 @if (keys) {
-  <details [attr.open]="openKeys ? '' : null">
+  <details [open]="keysDetailsOpen" (toggle)="onKeysDetailsToggle($any($event.target).open)">
     <summary class="game-keys-spoiler">Ключи</summary>
     <div class="keys-log">
       @for (teamKeys of sortedTeamKeysEntries; track teamKeys[0]) {
         @if (teamKeys[1].length > 0) {
-          <details [attr.open]="shouldOpenTeamKeys(teamKeys[1].length) ? '' : null">
+          <details [open]="isTeamKeysOpen(teamKeys[0], teamKeys[1].length)" (toggle)="onTeamKeysToggle(teamKeys[0], $any($event.target).open)">
             <summary>{{ teamKeys[1][0].team.name }} ({{ teamKeys[1].length }})</summary>
             <div class="table-wrap">
               <table>
@@ -42,7 +42,7 @@
 }
 
 @if (stat) {
-  <details [attr.open]="openStat ? '' : null">
+  <details [open]="statDetailsOpen" (toggle)="onStatDetailsToggle($any($event.target).open)">
     <summary class="game-stat-spoiler">Результаты игры</summary>
     <div class="game-stat">
       @if (Object.keys(stat).length > 0) {

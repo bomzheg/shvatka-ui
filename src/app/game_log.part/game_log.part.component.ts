@@ -15,6 +15,9 @@ export class GameLogPartComponent {
   set keys(value: Keys | undefined) {
     this._keys = value;
     this.sortedTeamKeysEntries = this.buildSortedTeamKeysEntries(value);
+    if (value) {
+      this.keysDetailsOpen = this.keysDetailsOpen || this.openKeys;
+    }
   }
 
   get keys(): Keys | undefined {
@@ -25,6 +28,9 @@ export class GameLogPartComponent {
   set stat(value: GameStat | undefined) {
     this._stat = value;
     this.sortedStatEntries = this.buildSortedStatEntries(value);
+    if (value) {
+      this.statDetailsOpen = this.statDetailsOpen || this.openStat;
+    }
   }
 
   get stat(): GameStat | undefined {
@@ -37,6 +43,10 @@ export class GameLogPartComponent {
 
   sortedTeamKeysEntries: [string, KeyTime[]][] = [];
   sortedStatEntries: [string, LevelTime[]][] = [];
+
+  keysDetailsOpen = false;
+  statDetailsOpen = false;
+  private teamKeysOpenState: Record<string, boolean> = {};
 
   private buildSortedTeamKeysEntries(keys: Keys | undefined): [string, KeyTime[]][] {
     if (!keys) {
@@ -152,6 +162,30 @@ export class GameLogPartComponent {
 
     const parsed = Date.parse(String(value));
     return Number.isNaN(parsed) ? undefined : parsed;
+  }
+
+
+
+  onKeysDetailsToggle(isOpen: boolean) {
+    this.keysDetailsOpen = isOpen;
+  }
+
+  onStatDetailsToggle(isOpen: boolean) {
+    this.statDetailsOpen = isOpen;
+  }
+
+  onTeamKeysToggle(teamId: string, isOpen: boolean) {
+    this.teamKeysOpenState[teamId] = isOpen;
+  }
+
+  isTeamKeysOpen(teamId: string, teamKeysCount: number): boolean {
+    if (this.teamKeysOpenState[teamId] !== undefined) {
+      return this.teamKeysOpenState[teamId];
+    }
+
+    const shouldOpen = this.shouldOpenTeamKeys(teamKeysCount);
+    this.teamKeysOpenState[teamId] = shouldOpen;
+    return shouldOpen;
   }
 
   protected readonly KeyType = KeyType;
