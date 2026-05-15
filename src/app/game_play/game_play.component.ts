@@ -52,6 +52,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private autoRefreshTicker: ReturnType<typeof setInterval> | undefined;
   private lastAutoRefreshMark: number | undefined;
   private waiversStartReloadedGameId: number | undefined;
+  private visibilityChangeHandler: (() => void) | undefined;
 
   constructor(
     private gameService: GamePlayService,
@@ -68,6 +69,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     });
     this.gameService.loadHints();
     this.startAutoRefreshTicker();
+    this.startVisibilityWatcher();
   }
 
   ngOnDestroy(): void {
@@ -75,6 +77,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     this.activeGameSubscription?.unsubscribe();
     this.clearCountdownTicker();
     this.clearAutoRefreshTicker();
+    this.stopVisibilityWatcher();
   }
 
   getCurrentHints(): CurrentHints | undefined {
@@ -581,5 +584,30 @@ export class GamePlayComponent implements OnInit, OnDestroy {
           this.authorScenario = undefined;
         }
       });
+  }
+
+  private startVisibilityWatcher() {
+    this.stopVisibilityWatcher();
+    this.visibilityChangeHandler = () => {
+      if (document.visibilityState !== 'visible') {
+        return;
+      }
+
+      this.gameService.loadHints();
+      if (this.activeGame?.id && this.canOpenSpyTab()) {
+        this.gameService.loadSpyData(this.activeGame.id, true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+  }
+
+  private stopVisibilityWatcher() {
+    if (!this.visibilityChangeHandler) {
+      return;
+    }
+
+    document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
+    this.visibilityChangeHandler = undefined;
   }
 }
