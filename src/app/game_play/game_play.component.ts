@@ -52,6 +52,9 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private autoRefreshTicker: ReturnType<typeof setInterval> | undefined;
   private lastAutoRefreshMark: number | undefined;
   private waiversStartReloadedGameId: number | undefined;
+  private visibilityChangeHandler: (() => void) | undefined;
+  private pageShowHandler: (() => void) | undefined;
+  private windowFocusHandler: (() => void) | undefined;
 
   constructor(
     private gameService: GamePlayService,
@@ -68,6 +71,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     });
     this.gameService.loadHints();
     this.startAutoRefreshTicker();
+    this.startVisibilityWatcher();
   }
 
   ngOnDestroy(): void {
@@ -75,6 +79,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     this.activeGameSubscription?.unsubscribe();
     this.clearCountdownTicker();
     this.clearAutoRefreshTicker();
+    this.stopVisibilityWatcher();
   }
 
   getCurrentHints(): CurrentHints | undefined {
@@ -581,5 +586,59 @@ export class GamePlayComponent implements OnInit, OnDestroy {
           this.authorScenario = undefined;
         }
       });
+  }
+
+  private startVisibilityWatcher() {
+    this.stopVisibilityWatcher();
+
+    const refresh = (source: string) => {
+      this.logDebugInfo(`resume-refresh source=${source} visibility=${document.visibilityState} activeGame=${this.activeGame?.id ?? 'none'} status=${this.activeGame?.status ?? 'none'}`);
+      this.gameService.loadHints();
+      if (this.activeGame?.id && this.canOpenSpyTab()) {
+        this.gameService.loadSpyData(this.activeGame.id, true);
+      }
+    };
+
+    this.visibilityChangeHandler = () => {
+      this.logDebugInfo(`event: visibilitychange -> ${document.visibilityState}`);
+      if (document.visibilityState === 'visible') {
+        refresh('visibilitychange');
+      }
+    };
+
+    this.pageShowHandler = () => refresh('pageshow');
+    this.windowFocusHandler = () => refresh('focus');
+
+    document.addEventListener('visibilitychange', this.visibilityChangeHandler);
+    window.addEventListener('pageshow', this.pageShowHandler);
+    window.addEventListener('focus', this.windowFocusHandler);
+  }
+
+  private logDebugInfo(message: string) {
+    const line = `[game-play][${new Date().toISOString()}] ${message}`;
+    console.info(line);
+
+    const key = 'debug-log';
+    const existing = window.sessionStorage.getItem(key);
+    const currentLines = existing ? existing.split('\n').filter(Boolean) : [];
+    currentLines.push(line);
+    window.sessionStorage.setItem(key, currentLines.slice(-80).join('\n'));
+  }
+
+  private stopVisibilityWatcher() {
+    if (this.visibilityChangeHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
+      this.visibilityChangeHandler = undefined;
+    }
+
+    if (this.pageShowHandler) {
+      window.removeEventListener('pageshow', this.pageShowHandler);
+      this.pageShowHandler = undefined;
+    }
+
+    if (this.windowFocusHandler) {
+      window.removeEventListener('focus', this.windowFocusHandler);
+      this.windowFocusHandler = undefined;
+    }
   }
 }

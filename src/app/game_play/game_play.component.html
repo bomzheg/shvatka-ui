@@ -210,9 +210,14 @@
     }
 
     @if (canSeeSpyKeys()) {
-      @if (isSpyKeysDataLoading()) {
+      @if (isSpyKeysDataLoading() && !getSpyKeys()) {
         <p class="status-message">Загрузка ключей...</p>
-      } @else if (getSpyKeys()) {
+      }
+
+      @if (getSpyKeys()) {
+        @if (isSpyKeysDataLoading()) {
+          <p class="status-message">Обновление ключей...</p>
+        }
         <app-game-log-part [keys]="getSpyKeys()"></app-game-log-part>
       } @else {
         <p class="status-message">Ключи пока недоступны.</p>
@@ -220,9 +225,14 @@
     }
 
     @if (canSeeSpyStat()) {
-      @if (isSpyStatDataLoading()) {
+      @if (isSpyStatDataLoading() && !getSpyStat()) {
         <p class="status-message">Загрузка статистики...</p>
-      } @else if (getSpyStat()) {
+      }
+
+      @if (getSpyStat()) {
+        @if (isSpyStatDataLoading()) {
+          <p class="status-message">Обновление статистики...</p>
+        }
         <app-game-log-part [stat]="getSpyStat()"></app-game-log-part>
       } @else {
         <p class="status-message">Статистика пока недоступна.</p>

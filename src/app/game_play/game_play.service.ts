@@ -337,7 +337,7 @@ export class GamePlayService {
       this.http.get<Keys>(`/games/${gameId}/keys`)
         .subscribe({
           next: k => {
-            this.spyKeys = k;
+            this.spyKeys = this.mergeSpyKeys(this.spyKeys, k);
             this.isSpyKeysLoading = false;
             this.completeSpyLoadRequest();
           },
@@ -434,5 +434,44 @@ export class GamePlayService {
         }
       }),
     );
+  }
+
+  private mergeSpyKeys(previous: Keys | undefined, incoming: Keys): Keys {
+    if (!previous) {
+      return incoming;
+    }
+
+    const merged: Record<string, KeyTime[]> = {};
+    const teamIds = new Set<string>([
+      ...Object.keys(previous as unknown as Record<string, KeyTime[]>),
+      ...Object.keys(incoming as unknown as Record<string, KeyTime[]>),
+    ]);
+
+    for (const teamId of teamIds) {
+      const prevRows = (previous as unknown as Record<string, KeyTime[]>)[teamId] ?? [];
+      const nextRows = (incoming as unknown as Record<string, KeyTime[]>)[teamId] ?? [];
+      const uniqById = new Map<string, KeyTime>();
+
+      for (const row of [...prevRows, ...nextRows]) {
+        uniqById.set(this.buildSpyKeyId(row), row);
+      }
+
+      merged[teamId] = Array.from(uniqById.values())
+        .sort((a, b) => (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0));
+    }
+
+    return merged as unknown as Keys;
+  }
+
+  private buildSpyKeyId(key: KeyTime): string {
+    return [
+      key.at,
+      key.text,
+      key.player?.id,
+      key.team?.id,
+      key.level_number,
+      key.type_,
+      key.is_duplicate,
+    ].join('|');
   }
 }
