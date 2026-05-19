@@ -55,6 +55,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private visibilityChangeHandler: (() => void) | undefined;
   private pageShowHandler: (() => void) | undefined;
   private windowFocusHandler: (() => void) | undefined;
+  private openedTypedKeyEffects = new Set<string>();
 
   constructor(
     private gameService: GamePlayService,
@@ -339,6 +340,29 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
 
+  isTypedKeyTappable(typedKey: TypedKeyLog): boolean {
+    return this.getTypedKeyEffects(typedKey).length > 0;
+  }
+
+  isTypedKeyEffectsOpened(typedKey: TypedKeyLog): boolean {
+    return this.openedTypedKeyEffects.has(this.getTypedKeyId(typedKey));
+  }
+
+  toggleTypedKeyEffects(typedKey: TypedKeyLog): void {
+    if (!this.isTypedKeyTappable(typedKey)) {
+      return;
+    }
+
+    const id = this.getTypedKeyId(typedKey);
+    if (this.openedTypedKeyEffects.has(id)) {
+      this.openedTypedKeyEffects.delete(id);
+      return;
+    }
+
+    this.openedTypedKeyEffects.add(id);
+  }
+
+
 
   getCurrentLevelEvents(): GameEvent[] {
     const hints = this.getCurrentHints();
@@ -411,6 +435,10 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   private isWrongTypedKey(typedKey: TypedKeyLog): boolean {
     return typedKey?.type_ === KeyType.wrong;
+  }
+
+  private getTypedKeyId(typedKey: TypedKeyLog): string {
+    return `${typedKey?.at ?? ''}:${typedKey?.text ?? ''}`;
   }
 
   private startResultTimer() {

@@ -167,6 +167,20 @@ $key-duplicate-description: rgba(234, 179, 8, 1);
   margin-right: 6px;
 }
 
+.typed-key-toggle {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.typed-key-label {
+  cursor: default;
+}
+
 .typed-key-ok .typed-key-status {
   color: $key-success-description;
 }
