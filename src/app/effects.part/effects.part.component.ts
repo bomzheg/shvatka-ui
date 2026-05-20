@@ -1,16 +1,7 @@
 import {Component, Input} from '@angular/core';
-import {HintPart} from "../domain/game.models";
+import {EffectLike, Effects, HintPart} from "../domain/game.models";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {HttpAdapter} from "../http/http.adapter";
-
-export interface RenderableEffect {
-  id?: string;
-  hints_?: HintPart[];
-  hints?: HintPart[];
-  bonus_minutes?: number;
-  level_up?: boolean;
-  next_level?: string | null;
-}
 
 @Component({
   selector: 'app-effects-part',
@@ -22,21 +13,17 @@ export interface RenderableEffect {
   styleUrl: './effects.part.component.scss'
 })
 export class EffectsPartComponent {
-  @Input() effects: RenderableEffect[] | RenderableEffect | undefined;
+  @Input() effects: EffectLike[] | EffectLike | undefined;
   @Input() gameId: number | undefined;
 
   constructor(private http: HttpAdapter) {
   }
 
-  getVisibleEffects(): RenderableEffect[] {
-    const normalizedEffects = this.normalizeEffects(this.effects);
-
-    return normalizedEffects.filter(effect => {
-      return this.getEffectTags(effect).length > 0 || this.getEffectHints(effect).length > 0;
-    });
+  getVisibleEffects(): EffectLike[] {
+    return Effects.normalize(this.effects).filter(effect => Effects.hasVisiblePayload(effect));
   }
 
-  getEffectTags(effect: RenderableEffect): string[] {
+  getEffectTags(effect: EffectLike): string[] {
     const tags: string[] = [];
     const bonusMinutes = typeof effect.bonus_minutes === 'number' ? effect.bonus_minutes : 0;
 
@@ -54,7 +41,7 @@ export class EffectsPartComponent {
       }
     }
 
-    const hintsCount = this.getEffectHints(effect).length;
+    const hintsCount = Effects.hints(effect).length;
     if (hintsCount > 0) {
       tags.push(`💡бонусные подсказки (${hintsCount}):`);
     }
@@ -62,16 +49,8 @@ export class EffectsPartComponent {
     return tags;
   }
 
-  getEffectHints(effect: RenderableEffect): HintPart[] {
-    if (Array.isArray(effect.hints_)) {
-      return effect.hints_;
-    }
-
-    if (Array.isArray(effect.hints)) {
-      return effect.hints;
-    }
-
-    return [];
+  getEffectHints(effect: EffectLike): HintPart[] {
+    return Effects.hints(effect);
   }
 
   getHintFileUrl(hint: HintPart): string | undefined {
@@ -82,15 +61,4 @@ export class EffectsPartComponent {
     return this.http.getFileUrl(this.gameId, hint.file_guid);
   }
 
-  private normalizeEffects(effects: RenderableEffect[] | RenderableEffect | undefined): RenderableEffect[] {
-    if (Array.isArray(effects)) {
-      return effects;
-    }
-
-    if (effects === undefined || effects === null) {
-      return [];
-    }
-
-    return [effects];
-  }
 }

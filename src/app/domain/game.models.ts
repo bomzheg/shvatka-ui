@@ -127,6 +127,66 @@ export class Effect {
     public next_level: string | null = null,
   ) {
   }
+
+  getHints(): HintPart[] {
+    return Array.isArray(this.hints_) ? this.hints_ : [];
+  }
+
+  hasBonusMinutes(): boolean {
+    return this.bonus_minutes !== 0;
+  }
+
+  hasLevelUp(): boolean {
+    return this.level_up === true;
+  }
+
+  hasHints(): boolean {
+    return this.getHints().length > 0;
+  }
+
+  hasVisiblePayload(): boolean {
+    return this.hasBonusMinutes() || this.hasLevelUp() || this.hasHints();
+  }
+}
+
+export type EffectLike = {
+  id?: string;
+  hints_?: HintPart[];
+  hints?: HintPart[];
+  bonus_minutes?: number;
+  level_up?: boolean;
+  next_level?: string | null;
+};
+
+export class Effects {
+  static normalize(input: EffectLike[] | EffectLike | undefined): EffectLike[] {
+    if (Array.isArray(input)) {
+      return input;
+    }
+
+    if (!input) {
+      return [];
+    }
+
+    return [input];
+  }
+
+  static hints(effect: EffectLike): HintPart[] {
+    if (Array.isArray(effect.hints_)) {
+      return effect.hints_;
+    }
+
+    if (Array.isArray(effect.hints)) {
+      return effect.hints;
+    }
+
+    return [];
+  }
+
+  static hasVisiblePayload(effect: EffectLike): boolean {
+    const bonusMinutes = typeof effect.bonus_minutes === 'number' ? effect.bonus_minutes : 0;
+    return bonusMinutes !== 0 || effect.level_up === true || this.hints(effect).length > 0;
+  }
 }
 
 export class ScenarioCondition {

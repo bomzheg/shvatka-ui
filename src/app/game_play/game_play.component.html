@@ -67,15 +67,37 @@
                 [class.typed-key-wrong]="typedKeyStatusClass(typedKey) === 'typed-key-wrong'"
                 [class.typed-key-bad-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-bad-duplicate'">
               <span class="typed-key-status">{{ typedKeyEmoji(typedKey) }}</span>
-              <strong>{{ typedKey.text }}</strong>
+              @if (isTypedKeyTappable(typedKey)) {
+                <button
+                  type="button"
+                  class="typed-key-toggle"
+                  (click)="toggleTypedKeyEffects(typedKey)"
+                  [attr.aria-expanded]="isTypedKeyEffectsOpened(typedKey)">
+                  <strong>{{ typedKey.text }}</strong>
+                  <span class="typed-key-hint-pill" aria-hidden="true">✨ эффект</span>
+                </button>
+              } @else {
+                <strong class="typed-key-label">{{ typedKey.text }}</strong>
+              }
+
               @if (typedKey.at) {
                 <span> ({{ toLocal(typedKey.at) }})</span>
               }
 
-              @if (getTypedKeyEffects(typedKey).length > 0) {
+              @if (isTypedKeyEffectsOpened(typedKey)) {
                 <div class="typed-effects">
                   @for (tag of getTypedKeyEffects(typedKey); track tag) {
                     <span class="effect-tag">{{ tag }}</span>
+                  }
+
+                  @if (getTypedKeyHints(typedKey).length > 0) {
+                    <ul class="typed-key-hints">
+                      @for (hint of getTypedKeyHints(typedKey); track hint) {
+                        <li>
+                          <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
+                        </li>
+                      }
+                    </ul>
                   }
                 </div>
               }
