@@ -3,7 +3,6 @@ import {
   GamePlayService,
   CurrentHints,
   TypedKeyResult,
-  KeyEffect,
   TypedKeyLog,
   GameEvent,
   CurrentWaivers,
@@ -14,7 +13,7 @@ import {
 } from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {FullGame, GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
+import {Effect, EffectLike, Effects, FullGame, GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize, Subscription} from "rxjs";
 import {ActiveGame} from "../games/games.service";
@@ -302,16 +301,17 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   isLevelCompleted(result: TypedKeyResult): boolean {
-    return result.effects?.some(effect => effect.level_up) ?? false;
+    return Effects.normalize(result.effects).some(effect => effect.level_up);
   }
 
-  getEffectTags(effect: KeyEffect): string[] {
+  getEffectTags(effect: EffectLike): string[] {
     const tags: string[] = [];
 
-    if (effect.bonus_minutes > 0) {
-      tags.push(`бонус ${effect.bonus_minutes} мин.`);
-    } else if (effect.bonus_minutes < 0) {
-      tags.push(`штраф ${-effect.bonus_minutes} мин.`);
+    const bonusMinutes = typeof effect.bonus_minutes === 'number' ? effect.bonus_minutes : 0;
+    if (bonusMinutes > 0) {
+      tags.push(`бонус ${bonusMinutes} мин.`);
+    } else if (bonusMinutes < 0) {
+      tags.push(`штраф ${-bonusMinutes} мин.`);
     }
     if (effect.level_up) {
       if (effect.next_level) {
@@ -321,27 +321,23 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       }
     }
 
-    if (Array.isArray(effect.hints_) && effect.hints_.length > 0) {
-      tags.push(`бонусные подсказки: ${effect.hints_.length}`);
+    const hintsCount = Effects.hints(effect).length;
+    if (hintsCount > 0) {
+      tags.push(`бонусные подсказки: ${hintsCount}`);
     }
 
     return tags;
   }
 
   getTypedKeyEffects(typedKey: TypedKeyLog): string[] {
-    const effects = typedKey?.effects;
-    if (!Array.isArray(effects)) {
-      return [];
-    }
-
-    return effects
-      .flatMap((effect: KeyEffect) => this.getEffectTags(effect))
+    return Effects.normalize(typedKey?.effects)
+      .flatMap((effect: EffectLike) => this.getEffectTags(effect))
       .filter((tag, idx, arr) => arr.indexOf(tag) === idx);
   }
 
 
   isTypedKeyTappable(typedKey: TypedKeyLog): boolean {
-    return this.getTypedKeyEffects(typedKey).length > 0;
+    return Effects.normalize(typedKey.effects).some(effect => Effects.hasVisiblePayload(effect));
   }
 
   isTypedKeyEffectsOpened(typedKey: TypedKeyLog): boolean {

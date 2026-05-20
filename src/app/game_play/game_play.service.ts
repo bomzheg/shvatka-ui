@@ -2,12 +2,12 @@ import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {MatSnackBar} from "@angular/material/snack-bar";
-import {GameStat, KeyTime, Keys, TimeHint} from "../domain/game.models";
+import {Effect, Effects, GameStat, KeyTime, Keys, TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
 import {ActiveGame, GamesService} from "../games/games.service";
 
 export type TypedKeyLog = KeyTime & {
-  effects?: KeyEffect[];
+  effects?: Effect[];
 };
 
 export type GameEvent = {
@@ -15,7 +15,7 @@ export type GameEvent = {
   team_id: number;
   level_time_id: number;
   at: string;
-  effects?: KeyEffect[] | KeyEffect;
+  effects?: Effect[] | Effect;
 };
 
 export class CurrentHints {
@@ -31,16 +31,6 @@ export class CurrentHints {
   }
 }
 
-export class KeyEffect {
-  constructor(
-    public id: string,
-    public hints_: any[],
-    public bonus_minutes: number,
-    public level_up: boolean,
-    public next_level: string,
-  ) {
-  }
-}
 
 export class TypedKeyResult {
   constructor(
@@ -48,7 +38,7 @@ export class TypedKeyResult {
     public is_duplicate: boolean,
     public wrong: boolean,
     public at: string,
-    public effects: KeyEffect[],
+    public effects: Effect[],
     public game_finished: boolean,
   ) {
   }
@@ -428,7 +418,7 @@ export class GamePlayService {
   submitKey(text: string): Observable<TypedKeyResult> {
     return this.http.post<TypedKeyResult>(`/games/running/key`, {text}).pipe(
       tap(result => {
-        if (result.effects?.some(effect => effect.level_up)) {
+        if (Effects.normalize(result.effects).some(effect => effect.level_up)) {
           this.snackBar.open("Уровень пройден! Загружаем следующий уровень.", 'Закрыть', {duration: 3000});
           this.loadHints();
         }
