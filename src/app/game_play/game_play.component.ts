@@ -336,6 +336,12 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
 
+
+  getTypedKeyHints(typedKey: TypedKeyLog): HintPart[] {
+    return Effects.normalize(typedKey?.effects)
+      .flatMap((effect: EffectLike) => Effects.hints(effect));
+  }
+
   isTypedKeyTappable(typedKey: TypedKeyLog): boolean {
     return Effects.normalize(typedKey.effects).some(effect => Effects.hasVisiblePayload(effect));
   }
@@ -402,6 +408,10 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   typedKeyEmoji(typedKey: TypedKeyLog): string {
+    if (this.isTypedKeyTappable(typedKey)) {
+      return '✨';
+    }
+
     const isWrong = this.isWrongTypedKey(typedKey);
     if (isWrong && typedKey?.is_duplicate) {
       return '💤❌';

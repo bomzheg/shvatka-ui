@@ -198,6 +198,21 @@ $key-duplicate-description: rgba(234, 179, 8, 1);
   margin-top: 4px;
 }
 
+.typed-key-hint-pill {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: rgba(168, 85, 247, 0.15);
+  color: #7e22ce;
+}
+
+.typed-key-hints {
+  margin: 6px 0 0;
+  padding-left: 1.1rem;
+}
+
 .hints {
   padding-left: 1.1rem;
 }
