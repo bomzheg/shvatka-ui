@@ -128,6 +128,8 @@
             @for (event of getCurrentLevelEvents(); track event.id) {
               <li class="event-entry">
                 <strong>{{ toLocal(event.at) }}</strong>
+                @if(event.key) {<span>🔑{{event.key}}</span>}
+                @if(event.is_timer) {<span>🕑</span>}
                 <app-effects-part [effects]="event.effects" [gameId]="getCurrentHints()!.game_id"></app-effects-part>
               </li>
             }
@@ -141,6 +143,8 @@
               @for (event of getPreviousLevelEvents(); track event.id) {
                 <li class="event-entry">
                   <strong>{{ toLocal(event.at) }}</strong>
+                  @if(event.key) {<span>🔑{{event.key}}</span>}
+                  @if(event.is_timer) {<span>🕑</span>}
                   <app-effects-part [effects]="event.effects" [gameId]="getCurrentHints()!.game_id"></app-effects-part>
                 </li>
               }

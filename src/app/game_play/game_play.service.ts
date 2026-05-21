@@ -12,10 +12,11 @@ export type TypedKeyLog = KeyTime & {
 
 export type GameEvent = {
   id: number;
-  team_id: number;
   level_time_id: number;
   at: string;
   effects?: Effect[] | Effect;
+  key?: string;
+  is_timer: boolean;
 };
 
 export class CurrentHints {
