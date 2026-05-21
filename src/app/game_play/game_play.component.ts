@@ -55,6 +55,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private pageShowHandler: (() => void) | undefined;
   private windowFocusHandler: (() => void) | undefined;
   private openedTypedKeyEffects = new Set<string>();
+  private openedEventEffects = new Set<number>();
 
   constructor(
     private gameService: GamePlayService,
@@ -330,16 +331,11 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   getTypedKeyEffects(typedKey: TypedKeyLog): string[] {
-    return Effects.normalize(typedKey?.effects)
-      .flatMap((effect: EffectLike) => this.getEffectTags(effect))
-      .filter((tag, idx, arr) => arr.indexOf(tag) === idx);
+    return this.getEffectsTags(typedKey?.effects);
   }
 
-
-
   getTypedKeyHints(typedKey: TypedKeyLog): HintPart[] {
-    return Effects.normalize(typedKey?.effects)
-      .flatMap((effect: EffectLike) => Effects.hints(effect));
+    return this.getEffectsHints(typedKey?.effects);
   }
 
   isTypedKeyTappable(typedKey: TypedKeyLog): boolean {
@@ -362,6 +358,35 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     }
 
     this.openedTypedKeyEffects.add(id);
+  }
+
+  hasEventVisibleEffects(event: GameEvent): boolean {
+    return Effects.normalize(event.effects).some(effect => Effects.hasVisiblePayload(effect));
+  }
+
+  getEventEffects(event: GameEvent): string[] {
+    return this.getEffectsTags(event.effects);
+  }
+
+  getEventHints(event: GameEvent): HintPart[] {
+    return this.getEffectsHints(event.effects);
+  }
+
+  isEventEffectsOpened(event: GameEvent): boolean {
+    return this.openedEventEffects.has(event.id);
+  }
+
+  toggleEventEffects(event: GameEvent): void {
+    if (!this.hasEventVisibleEffects(event)) {
+      return;
+    }
+
+    if (this.openedEventEffects.has(event.id)) {
+      this.openedEventEffects.delete(event.id);
+      return;
+    }
+
+    this.openedEventEffects.add(event.id);
   }
 
 
@@ -423,6 +448,17 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       return '💤';
     }
     return '✅';
+  }
+
+  private getEffectsTags(effects: EffectLike[] | EffectLike | undefined): string[] {
+    return Effects.normalize(effects)
+      .flatMap((effect: EffectLike) => this.getEffectTags(effect))
+      .filter((tag, idx, arr) => arr.indexOf(tag) === idx);
+  }
+
+  private getEffectsHints(effects: EffectLike[] | EffectLike | undefined): HintPart[] {
+    return Effects.normalize(effects)
+      .flatMap((effect: EffectLike) => Effects.hints(effect));
   }
 
 
