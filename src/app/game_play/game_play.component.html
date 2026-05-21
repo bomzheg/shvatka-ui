@@ -130,7 +130,31 @@
                 <strong>{{ toLocal(event.at) }}</strong>
                 @if(event.key) {<span>🔑{{event.key}}</span>}
                 @if(event.is_timer) {<span>🕑</span>}
-                <app-effects-part [effects]="event.effects" [gameId]="getCurrentHints()!.game_id"></app-effects-part>
+                @if (hasEventVisibleEffects(event)) {
+                  <button
+                    type="button"
+                    class="typed-key-toggle"
+                    (click)="toggleEventEffects(event)"
+                    [attr.aria-expanded]="isEventEffectsOpened(event)">
+                    <span class="typed-key-hint-pill" aria-hidden="true">✨ эффект</span>
+                  </button>
+                }
+                @if (isEventEffectsOpened(event)) {
+                  <div class="typed-effects">
+                    @for (tag of getEventEffects(event); track tag) {
+                      <span class="effect-tag">{{ tag }}</span>
+                    }
+                    @if (getEventHints(event).length > 0) {
+                      <ul class="typed-key-hints">
+                        @for (hint of getEventHints(event); track hint) {
+                          <li>
+                            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                }
               </li>
             }
           </ul>
@@ -145,7 +169,31 @@
                   <strong>{{ toLocal(event.at) }}</strong>
                   @if(event.key) {<span>🔑{{event.key}}</span>}
                   @if(event.is_timer) {<span>🕑</span>}
-                  <app-effects-part [effects]="event.effects" [gameId]="getCurrentHints()!.game_id"></app-effects-part>
+                  @if (hasEventVisibleEffects(event)) {
+                    <button
+                      type="button"
+                      class="typed-key-toggle"
+                      (click)="toggleEventEffects(event)"
+                      [attr.aria-expanded]="isEventEffectsOpened(event)">
+                      <span class="typed-key-hint-pill" aria-hidden="true">✨ эффект</span>
+                    </button>
+                  }
+                  @if (isEventEffectsOpened(event)) {
+                    <div class="typed-effects">
+                      @for (tag of getEventEffects(event); track tag) {
+                        <span class="effect-tag">{{ tag }}</span>
+                      }
+                      @if (getEventHints(event).length > 0) {
+                        <ul class="typed-key-hints">
+                          @for (hint of getEventHints(event); track hint) {
+                            <li>
+                              <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
+                            </li>
+                          }
+                        </ul>
+                      }
+                    </div>
+                  }
                 </li>
               }
             </ul>
