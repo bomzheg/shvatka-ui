@@ -376,3 +376,7 @@ td {
 .event-entry {
   margin-bottom: 10px;
 }
+
+ul.hints > li::marker {
+  content: '💡';
+}
