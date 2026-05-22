@@ -310,21 +310,21 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
     const bonusMinutes = typeof effect.bonus_minutes === 'number' ? effect.bonus_minutes : 0;
     if (bonusMinutes > 0) {
-      tags.push(`бонус ${bonusMinutes} мин.`);
+      tags.push(`+💰бонус ${bonusMinutes} мин.`);
     } else if (bonusMinutes < 0) {
-      tags.push(`штраф ${-bonusMinutes} мин.`);
+      tags.push(`-💸штраф ${-bonusMinutes} мин.`);
     }
     if (effect.level_up) {
       if (effect.next_level) {
-        tags.push(`переход на ${effect.next_level}`);
+        tags.push(`🔀переход на ${effect.next_level}`);
       } else {
-        tags.push('переход на следующий уровень');
+        tags.push('✅переход на следующий уровень');
       }
     }
 
     const hintsCount = Effects.hints(effect).length;
     if (hintsCount > 0) {
-      tags.push(`бонусные подсказки: ${hintsCount}`);
+      tags.push(`💡бонусные подсказки: ${hintsCount}`);
     }
 
     return tags;
