@@ -21,10 +21,12 @@ export const appConfig: ApplicationConfig = {
 })
 export class ShvatkaConfig {
   apiUrl: string;
+  cdnUrl: string;
   botUsername: string;
   mainUrl: string;
   constructor() {
     this.apiUrl = environment.apiUrl
+    this.cdnUrl = environment.cdnUrl
     this.botUsername = environment.botUsername
     this.mainUrl = environment.mainUrl
   }

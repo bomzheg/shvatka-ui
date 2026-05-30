@@ -56,7 +56,7 @@ export class HttpAdapter {
   }
 
   getFileUrl(gameId: number, fileId: string): string {
-    return `${this.config.apiUrl}/games/${gameId}/files/${fileId}`
+    return `${this.config.cdnUrl}/games/${gameId}/files/${fileId}`
   }
 
   private shouldBlockProtectedRequest(url: string): boolean {
