@@ -1,7 +1,7 @@
 <div class="hint-part">
   @switch (hint.type) {
     @case (HintType.text) {
-      <p class="hint-text">{{ hint.text }}</p>
+      <p class="hint-text" [innerHTML]="hint.text"></p>
     }
     @case (HintType.gps) {
       <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
@@ -57,6 +57,6 @@
     }
   }
   @if (hint.caption) {
-    <p>{{ hint.caption }}</p>
+    <p [innerHTML]="hint.caption"></p>
   }
 </div>
