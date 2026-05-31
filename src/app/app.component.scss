@@ -6,10 +6,13 @@
 
 .app-shell {
   width: min(1100px, calc(100% - 2rem));
+  min-width: 0;
   margin: 1rem auto 2rem;
 }
 
 .app-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
   background: color-mix(in srgb, var(--app-surface) 92%, transparent);
   color: var(--app-text);
   border-radius: 16px;
