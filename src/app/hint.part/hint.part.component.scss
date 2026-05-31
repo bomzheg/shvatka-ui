@@ -1,7 +1,19 @@
-.hint-part img {
+.hint-part {
   max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
+.hint-part img,
 .hint-part video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.hint-part audio {
+  display: block;
+  width: 100%;
   max-width: 100%;
 }

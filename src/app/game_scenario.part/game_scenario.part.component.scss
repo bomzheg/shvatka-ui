@@ -1,9 +1,12 @@
 .scenario {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.6rem;
+  min-width: 0;
 }
 
 .level-card {
+  min-width: 0;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 0.55rem 0.6rem;
@@ -73,6 +76,7 @@
 }
 
 .hint-item {
+  min-width: 0;
   list-style: none;
   border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 8px;
