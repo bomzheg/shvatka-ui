@@ -1,0 +1,47 @@
+@switch (push.state()) {
+  @case ('unsupported') {
+    <span class="push-note push-note-muted">
+      Уведомления не поддерживаются этим браузером
+    </span>
+  }
+  @case ('disabled') {
+    <span class="push-note push-note-muted">
+      Push-уведомления отключены на сервере
+    </span>
+  }
+  @case ('denied') {
+    <span class="push-note push-note-warn">
+      Уведомления заблокированы. Разрешите их в настройках браузера
+    </span>
+  }
+  @case ('granted') {
+    <button
+      type="button"
+      class="push-button push-button-on"
+      [disabled]="push.busy()"
+      (click)="disable()"
+    >
+      <svg class="push-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor"
+              d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22m8-5v-1l-1.5-1.5V10a6.5 6.5 0 0 0-5-6.32V3a1.5 1.5 0 0 0-3 0v.68A6.5 6.5 0 0 0 5.5 10v4.5L4 16v1z"/>
+        <path fill="currentColor"
+              d="m20.7 19.3-16-16-1.4 1.4 16 16z" opacity="0.9"/>
+      </svg>
+      {{ push.busy() ? 'Отключаем…' : 'Отключить уведомления' }}
+    </button>
+  }
+  @default {
+    <button
+      type="button"
+      class="push-button"
+      [disabled]="push.busy()"
+      (click)="enable()"
+    >
+      <svg class="push-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor"
+              d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22m6.5-6V10a6.5 6.5 0 0 0-5-6.32V3a1.5 1.5 0 0 0-3 0v.68A6.5 6.5 0 0 0 5.5 10v6l-1.5 1.5V18h16v-.5z"/>
+      </svg>
+      {{ push.busy() ? 'Включаем…' : 'Включить уведомления' }}
+    </button>
+  }
+}

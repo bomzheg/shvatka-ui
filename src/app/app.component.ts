@@ -8,6 +8,7 @@ import {DomSanitizer} from "@angular/platform-browser";
 import {ThemeService} from "./theme/theme.service";
 import {filter} from "rxjs";
 import {VersionInfo, VersionService} from "./version/version.service";
+import {PushService} from "./push/push.service";
 
 @Component({
   selector: 'app-root',
@@ -34,6 +35,7 @@ export class AppComponent implements OnInit {
     private themeService: ThemeService,
     private versionService: VersionService,
     private router: Router,
+    private pushService: PushService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.matIconRegistry.addSvgIcon(
@@ -51,6 +53,10 @@ export class AppComponent implements OnInit {
     this.versionService.getFrontendVersion().subscribe(version => this.frontendVersion = version);
     this.versionService.getBackendVersion().subscribe(version => this.backendVersion = version);
     this.debugInfo = this.window?.sessionStorage.getItem("debug-log") ?? "";
+
+    // Registers the push service worker and, if permission is already granted,
+    // refreshes the saved subscription. Never prompts for permission on load.
+    this.pushService.init();
   }
 
   toggleDebugInfo() {

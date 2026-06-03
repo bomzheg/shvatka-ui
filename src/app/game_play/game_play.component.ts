@@ -21,6 +21,7 @@ import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {EffectsPartComponent} from "../effects.part/effects.part.component";
 import {UserService} from "../auth/user.service";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
+import {PushToggleComponent} from "../push/push-toggle.component";
 
 @Component({
   selector: 'app-game-play',
@@ -31,6 +32,7 @@ import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.par
     GameLogPartComponent,
     EffectsPartComponent,
     GameScenarioPartComponent,
+    PushToggleComponent,
   ],
   templateUrl: './game_play.component.html',
   styleUrl: './game_play.component.scss'
