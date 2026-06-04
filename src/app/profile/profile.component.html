@@ -4,6 +4,11 @@
   @if (isAuthenticated) {
     <p class="username">Пользователь: <strong>{{ username }}</strong></p>
 
+    <div class="notifications-block">
+      <h2 class="notifications-title">Уведомления</h2>
+      <app-push-toggle></app-push-toggle>
+    </div>
+
     <form class="password-form" (ngSubmit)="changePassword()">
       <label for="newPassword">Новый пароль</label>
       <input

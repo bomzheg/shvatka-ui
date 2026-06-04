@@ -8,6 +8,7 @@ import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {ActiveGame, GamesService} from "../games/games.service";
 import {THEME_MODES, ThemeMode, ThemeService} from "../theme/theme.service";
+import {PushService} from "../push/push.service";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
 
@@ -49,6 +50,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private gamesService: GamesService,
     private router: Router,
     private themeService: ThemeService,
+    private pushService: PushService,
   ) {
     this.window = this._document.defaultView;
     this.tg = (this.window as any)?.Telegram;
@@ -61,7 +63,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.authService.logout().subscribe(() => this.userService.clearUser());
+    this.pushService.onLogout().finally(() => {
+      this.authService.logout().subscribe(() => this.userService.clearUser());
+    });
     this.closeMobileMenu();
   }
 
@@ -123,6 +127,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
       const telegramAuthResult = await this.authenticateTelegramWebApp(this.tgWa);
       if (telegramAuthResult) {
         await this.userService.loadMe();
+        this.pushService.refresh();
         this.tgWa?.ready?.();
         return;
       }

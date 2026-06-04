@@ -4,11 +4,12 @@ import {NgIf} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {UserService} from '../auth/user.service';
+import {PushToggleComponent} from '../push/push-toggle.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [FormsModule, NgIf],
+  imports: [FormsModule, NgIf, PushToggleComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })

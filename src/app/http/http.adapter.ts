@@ -55,6 +55,20 @@ export class HttpAdapter {
     );
   }
 
+  delete<T>(url: string, body?: any): Observable<T> {
+    if (this.shouldBlockProtectedRequest(url)) {
+      return this.unauthorizedError(url);
+    }
+    return this.http.delete<T>(
+      this.config.apiUrl + url,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "application/json"},
+        body,
+      },
+    );
+  }
+
   getFileUrl(gameId: number, fileId: string): string {
     return `${this.config.cdnUrl}/games/${gameId}/files/${fileId}`
   }

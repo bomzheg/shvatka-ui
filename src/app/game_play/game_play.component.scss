@@ -2,6 +2,12 @@
   text-align: center;
 }
 
+.push-toggle-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
 .status-message {
   color: var(--tg-theme-hint-color, #6b7280);
 }
