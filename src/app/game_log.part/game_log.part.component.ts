@@ -128,7 +128,7 @@ export class GameLogPartComponent {
         if (i < sorted.length - 1) {
           const nextMs = this.parseDate(sorted[i + 1].start_at);
           if (nextMs !== undefined) {
-            absoluteTimes.set(lt.level_number, this.toLocalHm(String(sorted[i + 1].start_at)));
+            absoluteTimes.set(lt.level_number, this.toLocalHms(String(sorted[i + 1].start_at)));
             absoluteTimeMs.set(lt.level_number, nextMs);
           }
           if (ms !== undefined && nextMs !== undefined) {
@@ -148,7 +148,10 @@ export class GameLogPartComponent {
       });
     }
 
-    this.allLevelNumbers = [...allLevels].sort((a, b) => a - b);
+    const sortedLevels = [...allLevels].sort((a, b) => a - b);
+    this.allLevelNumbers = this.levels.length > 0
+      ? sortedLevels.filter(lvl => lvl < this.levels.length)
+      : sortedLevels;
     this.pivotData = pivotRows;
 
     const minDurations = new Map<number, number>();
@@ -189,11 +192,16 @@ export class GameLogPartComponent {
     return new Date(Date.parse(dt)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
   }
 
+  toLocalHms(dt: string): string {
+    return new Date(Date.parse(dt)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+  }
+
   formatDuration(ms: number): string {
-    const totalMinutes = Math.max(Math.floor(ms / 60000), 0);
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+    const totalSeconds = Math.max(Math.floor(ms / 1000), 0);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
 
   isMinDuration(levelNumber: number, durationMs: number | undefined): boolean {
