@@ -94,7 +94,7 @@
                 <tr>
                   <td class="team-name-cell">{{ row.teamName }}</td>
                   @for (lvl of allLevelNumbers; track lvl) {
-                    <td>{{ row.absoluteTimes.get(lvl) ?? '—' }}</td>
+                    <td [class.min-duration]="isMinAbsoluteTime(lvl, row.absoluteTimeMs.get(lvl))">{{ row.absoluteTimes.get(lvl) ?? '—' }}</td>
                   }
                 </tr>
               }

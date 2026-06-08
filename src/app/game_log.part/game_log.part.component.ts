@@ -4,6 +4,7 @@ import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game
 interface TeamPivotData {
   teamName: string;
   absoluteTimes: Map<number, string>;
+  absoluteTimeMs: Map<number, number>;
   durations: Map<number, string>;
   durationMs: Map<number, number>;
 }
@@ -56,6 +57,7 @@ export class GameLogPartComponent {
   pivotData: TeamPivotData[] = [];
   allLevelNumbers: number[] = [];
   minDurationPerLevel: Map<number, number> = new Map();
+  minAbsoluteTimePerLevel: Map<number, number> = new Map();
 
   keysDetailsOpen = false;
   statDetailsOpen = false;
@@ -101,6 +103,7 @@ export class GameLogPartComponent {
       this.pivotData = [];
       this.allLevelNumbers = [];
       this.minDurationPerLevel = new Map();
+      this.minAbsoluteTimePerLevel = new Map();
       return;
     }
 
@@ -112,6 +115,7 @@ export class GameLogPartComponent {
 
       const sorted = [...teamLevelTimes].sort((a, b) => a.level_number - b.level_number);
       const absoluteTimes = new Map<number, string>();
+      const absoluteTimeMs = new Map<number, number>();
       const durations = new Map<number, string>();
       const durationMs = new Map<number, number>();
 
@@ -120,12 +124,13 @@ export class GameLogPartComponent {
         allLevels.add(lt.level_number);
 
         const ms = this.parseDate(lt.start_at);
-        if (ms !== undefined) {
-          absoluteTimes.set(lt.level_number, this.toLocalHm(String(lt.start_at)));
-        }
 
         if (i < sorted.length - 1) {
           const nextMs = this.parseDate(sorted[i + 1].start_at);
+          if (nextMs !== undefined) {
+            absoluteTimes.set(lt.level_number, this.toLocalHm(String(sorted[i + 1].start_at)));
+            absoluteTimeMs.set(lt.level_number, nextMs);
+          }
           if (ms !== undefined && nextMs !== undefined) {
             const diffMs = nextMs - ms;
             durationMs.set(lt.level_number, diffMs);
@@ -137,6 +142,7 @@ export class GameLogPartComponent {
       pivotRows.push({
         teamName: sorted[0].team.name,
         absoluteTimes,
+        absoluteTimeMs,
         durations,
         durationMs,
       });
@@ -146,19 +152,29 @@ export class GameLogPartComponent {
     this.pivotData = pivotRows;
 
     const minDurations = new Map<number, number>();
+    const minAbsTimes = new Map<number, number>();
     for (const lvl of this.allLevelNumbers) {
-      let min = Number.MAX_SAFE_INTEGER;
+      let minDur = Number.MAX_SAFE_INTEGER;
+      let minAbs = Number.MAX_SAFE_INTEGER;
       for (const row of pivotRows) {
         const d = row.durationMs.get(lvl);
-        if (d !== undefined && d < min) {
-          min = d;
+        if (d !== undefined && d < minDur) {
+          minDur = d;
+        }
+        const a = row.absoluteTimeMs.get(lvl);
+        if (a !== undefined && a < minAbs) {
+          minAbs = a;
         }
       }
-      if (min < Number.MAX_SAFE_INTEGER) {
-        minDurations.set(lvl, min);
+      if (minDur < Number.MAX_SAFE_INTEGER) {
+        minDurations.set(lvl, minDur);
+      }
+      if (minAbs < Number.MAX_SAFE_INTEGER) {
+        minAbsTimes.set(lvl, minAbs);
       }
     }
     this.minDurationPerLevel = minDurations;
+    this.minAbsoluteTimePerLevel = minAbsTimes;
   }
 
   shouldOpenTeamKeys(teamKeysCount: number): boolean {
@@ -183,6 +199,11 @@ export class GameLogPartComponent {
   isMinDuration(levelNumber: number, durationMs: number | undefined): boolean {
     if (durationMs === undefined) return false;
     return this.minDurationPerLevel.get(levelNumber) === durationMs;
+  }
+
+  isMinAbsoluteTime(levelNumber: number, timeMs: number | undefined): boolean {
+    if (timeMs === undefined) return false;
+    return this.minAbsoluteTimePerLevel.get(levelNumber) === timeMs;
   }
 
   keyTypeEmoji(key: KeyTime): string {
