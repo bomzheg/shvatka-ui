@@ -149,9 +149,10 @@ export class GameLogPartComponent {
     }
 
     const sortedLevels = [...allLevels].sort((a, b) => a - b);
-    this.allLevelNumbers = this.levels.length > 0
-      ? sortedLevels.filter(lvl => lvl < this.levels.length)
-      : sortedLevels;
+    const hasData = (lvl: number) => pivotRows.some(
+      row => row.absoluteTimes.has(lvl) || row.durations.has(lvl)
+    );
+    this.allLevelNumbers = sortedLevels.filter(hasData);
     this.pivotData = pivotRows;
 
     const minDurations = new Map<number, number>();
