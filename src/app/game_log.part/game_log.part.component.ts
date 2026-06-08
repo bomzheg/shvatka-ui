@@ -1,6 +1,13 @@
 import {Component, Input} from '@angular/core';
 import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game.models";
 
+interface TeamPivotData {
+  teamName: string;
+  absoluteTimes: Map<number, string>;
+  durations: Map<number, string>;
+  durationMs: Map<number, number>;
+}
+
 @Component({
   selector: 'app-game-log-part',
   standalone: true,
@@ -28,8 +35,10 @@ export class GameLogPartComponent {
   set stat(value: GameStat | undefined) {
     this._stat = value;
     this.sortedStatEntries = this.buildSortedStatEntries(value);
+    this.buildPivotData();
     if (value) {
       this.statDetailsOpen = this.statDetailsOpen || this.openStat;
+      this.pivotDetailsOpen = this.pivotDetailsOpen || this.openStat;
     }
   }
 
@@ -40,12 +49,17 @@ export class GameLogPartComponent {
   @Input() levels: Level[] = [];
   @Input() openKeys = false;
   @Input() openStat = false;
+  @Input() isCompleted = false;
 
   sortedTeamKeysEntries: [string, KeyTime[]][] = [];
   sortedStatEntries: [string, LevelTime[]][] = [];
+  pivotData: TeamPivotData[] = [];
+  allLevelNumbers: number[] = [];
+  minDurationPerLevel: Map<number, number> = new Map();
 
   keysDetailsOpen = false;
   statDetailsOpen = false;
+  pivotDetailsOpen = false;
   private teamKeysOpenState: Record<string, boolean> = {};
 
   private buildSortedTeamKeysEntries(keys: Keys | undefined): [string, KeyTime[]][] {
@@ -82,6 +96,71 @@ export class GameLogPartComponent {
       });
   }
 
+  private buildPivotData(): void {
+    if (!this.sortedStatEntries.length) {
+      this.pivotData = [];
+      this.allLevelNumbers = [];
+      this.minDurationPerLevel = new Map();
+      return;
+    }
+
+    const allLevels = new Set<number>();
+    const pivotRows: TeamPivotData[] = [];
+
+    for (const [, teamLevelTimes] of this.sortedStatEntries) {
+      if (teamLevelTimes.length === 0) continue;
+
+      const sorted = [...teamLevelTimes].sort((a, b) => a.level_number - b.level_number);
+      const absoluteTimes = new Map<number, string>();
+      const durations = new Map<number, string>();
+      const durationMs = new Map<number, number>();
+
+      for (let i = 0; i < sorted.length; i++) {
+        const lt = sorted[i];
+        allLevels.add(lt.level_number);
+
+        const ms = this.parseDate(lt.start_at);
+        if (ms !== undefined) {
+          absoluteTimes.set(lt.level_number, this.toLocalHm(String(lt.start_at)));
+        }
+
+        if (i < sorted.length - 1) {
+          const nextMs = this.parseDate(sorted[i + 1].start_at);
+          if (ms !== undefined && nextMs !== undefined) {
+            const diffMs = nextMs - ms;
+            durationMs.set(lt.level_number, diffMs);
+            durations.set(lt.level_number, this.formatDuration(diffMs));
+          }
+        }
+      }
+
+      pivotRows.push({
+        teamName: sorted[0].team.name,
+        absoluteTimes,
+        durations,
+        durationMs,
+      });
+    }
+
+    this.allLevelNumbers = [...allLevels].sort((a, b) => a - b);
+    this.pivotData = pivotRows;
+
+    const minDurations = new Map<number, number>();
+    for (const lvl of this.allLevelNumbers) {
+      let min = Number.MAX_SAFE_INTEGER;
+      for (const row of pivotRows) {
+        const d = row.durationMs.get(lvl);
+        if (d !== undefined && d < min) {
+          min = d;
+        }
+      }
+      if (min < Number.MAX_SAFE_INTEGER) {
+        minDurations.set(lvl, min);
+      }
+    }
+    this.minDurationPerLevel = minDurations;
+  }
+
   shouldOpenTeamKeys(teamKeysCount: number): boolean {
     return teamKeysCount <= 10;
   }
@@ -92,6 +171,18 @@ export class GameLogPartComponent {
 
   toLocalHm(dt: string): string {
     return new Date(Date.parse(dt)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+  }
+
+  formatDuration(ms: number): string {
+    const totalMinutes = Math.max(Math.floor(ms / 60000), 0);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  }
+
+  isMinDuration(levelNumber: number, durationMs: number | undefined): boolean {
+    if (durationMs === undefined) return false;
+    return this.minDurationPerLevel.get(levelNumber) === durationMs;
   }
 
   keyTypeEmoji(key: KeyTime): string {
@@ -164,14 +255,16 @@ export class GameLogPartComponent {
     return Number.isNaN(parsed) ? undefined : parsed;
   }
 
-
-
   onKeysDetailsToggle(isOpen: boolean) {
     this.keysDetailsOpen = isOpen;
   }
 
   onStatDetailsToggle(isOpen: boolean) {
     this.statDetailsOpen = isOpen;
+  }
+
+  onPivotDetailsToggle(isOpen: boolean) {
+    this.pivotDetailsOpen = isOpen;
   }
 
   onTeamKeysToggle(teamId: string, isOpen: boolean) {
