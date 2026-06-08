@@ -42,33 +42,92 @@
 }
 
 @if (stat) {
-  <details [open]="statDetailsOpen" (toggle)="onStatDetailsToggle($any($event.target).open)">
-    <summary class="game-stat-spoiler">Результаты игры</summary>
-    <div class="game-stat">
-      @if (Object.keys(stat).length > 0) {
+  @if (!isCompleted) {
+    <details [open]="statDetailsOpen" (toggle)="onStatDetailsToggle($any($event.target).open)">
+      <summary class="game-stat-spoiler">Результаты игры</summary>
+      <div class="game-stat">
+        @if (sortedStatEntries.length > 0) {
+          <div class="table-wrap">
+            <table>
+              <thead>
+              <tr>
+                <th class="stat-level-column">№</th>
+                <th>Команда</th>
+                <th>Время на уровне</th>
+              </tr>
+              </thead>
+              <tbody>
+                @for (results of sortedStatEntries; track results[0]) {
+                  @if (results[1].length > 0) {
+                    <tr>
+                      <td class="stat-level-column">{{ getCurrentLevelNumber(results[1]) }}</td>
+                      <td>{{ results[1][0].team.name }}</td>
+                      <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </details>
+  }
+
+  @if (pivotData.length > 0) {
+    <details [open]="pivotDetailsOpen" (toggle)="onPivotDetailsToggle($any($event.target).open)">
+      <summary class="game-stat-spoiler">{{ isCompleted ? 'Результаты игры' : 'Статистика по уровням' }}</summary>
+      <div class="game-stat">
+        <h4 class="pivot-title">Время прохождения</h4>
         <div class="table-wrap">
-          <table>
+          <table class="pivot-table">
             <thead>
             <tr>
-              <th class="stat-level-column">№</th>
-              <th>Команда</th>
-              <th>Время на уровне</th>
+              <th class="team-name-cell">Команда</th>
+              @for (lvl of allLevelNumbers; track lvl) {
+                <th>{{ lvl + 1 }}</th>
+              }
             </tr>
             </thead>
             <tbody>
-              @for (results of sortedStatEntries; track results[0]) {
-                @if (results[1].length > 0) {
-                  <tr>
-                    <td class="stat-level-column">{{ getCurrentLevelNumber(results[1]) }}</td>
-                    <td>{{ results[1][0].team.name }}</td>
-                    <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
-                  </tr>
-                }
+              @for (row of pivotData; track row.teamName) {
+                <tr>
+                  <td class="team-name-cell">{{ row.teamName }}</td>
+                  @for (lvl of allLevelNumbers; track lvl) {
+                    <td [class.min-duration]="isMinAbsoluteTime(lvl, row.absoluteTimeMs.get(lvl))">{{ row.absoluteTimes.get(lvl) ?? '—' }}</td>
+                  }
+                </tr>
               }
             </tbody>
           </table>
         </div>
-      }
-    </div>
-  </details>
+
+        <h4 class="pivot-title">Время на уровне</h4>
+        <div class="table-wrap">
+          <table class="pivot-table">
+            <thead>
+            <tr>
+              <th class="team-name-cell">Команда</th>
+              @for (lvl of allLevelNumbers; track lvl) {
+                <th>{{ lvl + 1 }}</th>
+              }
+            </tr>
+            </thead>
+            <tbody>
+              @for (row of pivotData; track row.teamName) {
+                <tr>
+                  <td class="team-name-cell">{{ row.teamName }}</td>
+                  @for (lvl of allLevelNumbers; track lvl) {
+                    <td [class.min-duration]="isMinDuration(lvl, row.durationMs.get(lvl))">
+                      {{ row.durations.get(lvl) ?? '—' }}
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  }
 }

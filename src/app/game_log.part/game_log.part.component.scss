@@ -65,6 +65,33 @@ td {
   white-space: nowrap;
 }
 
+.pivot-title {
+  text-align: center;
+  margin: 0.75rem 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.pivot-table {
+  table-layout: auto;
+  width: auto;
+  min-width: 100%;
+}
+
+.pivot-table .team-name-cell {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.pivot-table th,
+.pivot-table td {
+  white-space: nowrap;
+}
+
+.min-duration {
+  background-color: rgba(76, 175, 80, 0.2);
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   table {
     min-width: 0;
@@ -97,5 +124,11 @@ td {
   .key-time {
     width: 3.2rem;
     min-width: 3.2rem;
+  }
+
+  .pivot-table .team-name-cell {
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
