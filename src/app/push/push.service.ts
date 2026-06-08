@@ -1,8 +1,8 @@
 import {Injectable, NgZone, signal} from '@angular/core';
 import {Router} from '@angular/router';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {firstValueFrom} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
+import {SnackbarService} from '../snackbar/snackbar.service';
 
 export interface PushConfig {
   enabled: boolean;
@@ -41,7 +41,7 @@ export class PushService {
   constructor(
     private http: HttpAdapter,
     private router: Router,
-    private snackBar: MatSnackBar,
+    private snackbar: SnackbarService,
     private zone: NgZone,
   ) {
   }
@@ -85,7 +85,7 @@ export class PushService {
   async enable(): Promise<void> {
     if (!this.isSupported()) {
       this.state.set('unsupported');
-      this.notify('Этот браузер не поддерживает уведомления');
+      this.snackbar.error('Этот браузер не поддерживает уведомления');
       return;
     }
     if (this.busy()) {
@@ -97,7 +97,7 @@ export class PushService {
       const config = await this.loadConfig();
       if (!config.enabled || !config.public_key) {
         this.state.set('disabled');
-        this.notify('Push-уведомления сейчас отключены на сервере');
+        this.snackbar.info('Push-уведомления сейчас отключены на сервере');
         return;
       }
 
@@ -106,7 +106,7 @@ export class PushService {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
         this.state.set(permission === 'denied' ? 'denied' : 'default');
-        this.notify(
+        this.snackbar.error(
           permission === 'denied'
             ? 'Уведомления заблокированы в настройках браузера'
             : 'Разрешение на уведомления не получено',
@@ -117,10 +117,10 @@ export class PushService {
       const subscription = await this.subscribe(config.public_key);
       await this.sendSubscription(subscription);
       this.state.set('granted');
-      this.notify('Уведомления включены');
+      this.snackbar.success('Уведомления включены');
     } catch (e) {
       console.error('push: enable failed', e);
-      this.notify('Не удалось включить уведомления');
+      this.snackbar.error('Не удалось включить уведомления');
     } finally {
       this.busy.set(false);
     }
@@ -136,10 +136,10 @@ export class PushService {
     try {
       await this.removeSubscription();
       await this.syncState();
-      this.notify('Уведомления отключены');
+      this.snackbar.info('Уведомления отключены');
     } catch (e) {
       console.error('push: disable failed', e);
-      this.notify('Не удалось отключить уведомления');
+      this.snackbar.error('Не удалось отключить уведомления');
     } finally {
       this.busy.set(false);
     }
@@ -280,14 +280,10 @@ export class PushService {
   private showForegroundToast(payload: BackendPushPayload): void {
     const message = payload.body ? `${payload.title}: ${payload.body}` : payload.title;
     const url = payload.url || (payload.data?.['url'] as string | undefined);
-    const ref = this.snackBar.open(message, url ? 'Открыть' : 'OK', {duration: 6000});
+    const ref = this.snackbar.info(message, url ? 'Открыть' : 'OK', 6000);
     if (url) {
       ref.onAction().subscribe(() => this.router.navigateByUrl(url));
     }
-  }
-
-  private notify(message: string): void {
-    this.snackBar.open(message, 'OK', {duration: 4000});
   }
 }
 

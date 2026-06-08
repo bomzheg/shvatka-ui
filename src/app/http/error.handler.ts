@@ -1,7 +1,7 @@
 import {ErrorHandler, Injectable, NgZone} from "@angular/core";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {HttpErrorResponse} from "@angular/common/http";
 import {AuthService} from "../auth/auth.service";
+import {SnackbarService} from "../snackbar/snackbar.service";
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     InvalidKey: "Неверный ключ",
   };
   constructor(
-    private _snackBar: MatSnackBar,
+    private snackbar: SnackbarService,
     private _zone: NgZone,
     private authService: AuthService,
   ) { }
@@ -24,7 +24,7 @@ export class GlobalErrorHandler implements ErrorHandler {
       }
       if (error.status === 401) {
         console.log("401 response: " + JSON.stringify(error));
-        this._snackBar.open("Для выполнения этой операции необходимо залогиниться", 'Закрыть', {duration: 3000});
+        this.snackbar.error("Для выполнения этой операции необходимо залогиниться", 'Закрыть', 3000);
         this.authService.showLoginForm();
       } else {
         console.error(error);
@@ -35,11 +35,11 @@ export class GlobalErrorHandler implements ErrorHandler {
           const text = String(backendError.text ?? "");
           const description = String(backendError.description ?? "");
           const message = [typeText, text, description].filter(v => v.length > 0).join(": ");
-          this._snackBar.open(message || "Ошибка запроса", 'Закрыть', {duration: 5000});
+          this.snackbar.error(message || "Ошибка запроса", 'Закрыть');
           return;
         }
 
-        this._snackBar.open("Какая-то сетевая(?) ошибка=(", 'Закрыть', {duration: 3000});
+        this.snackbar.error("Какая-то сетевая(?) ошибка=(", 'Закрыть', 3000);
       }
     });
   }

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {SnackbarService} from "../snackbar/snackbar.service";
 
 import {FullGame, GameStat, Keys} from "../domain/game.models";
 type GameCacheItem = {
@@ -25,7 +25,7 @@ export class GameService {
   private isKeysLoading = false;
   private isStatLoading = false;
 
-  constructor(private http: HttpAdapter, private snackBar: MatSnackBar) { }
+  constructor(private http: HttpAdapter, private snackbar: SnackbarService) { }
 
   loadGame(id: number) {
     this.currentGameId = id;
@@ -63,7 +63,7 @@ export class GameService {
           }
 
           if (error instanceof HttpErrorResponse && error.status === 401) {
-            this.snackBar.open("Сценарии игр доступны только авторизованным пользователям", 'Закрыть', {duration: 3000});
+            this.snackbar.error("Сценарии игр доступны только авторизованным пользователям", 'Закрыть', 3000);
           } else {
             throw error;
           }

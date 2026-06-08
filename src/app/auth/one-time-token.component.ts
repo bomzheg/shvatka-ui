@@ -2,8 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {firstValueFrom} from 'rxjs';
 import {AuthService} from './auth.service';
 import {UserService} from './user.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {ActivatedRoute, Router} from '@angular/router';
+import {SnackbarService} from '../snackbar/snackbar.service';
 import {HttpErrorResponse} from '@angular/common/http';
 
 @Component({
@@ -18,7 +18,7 @@ export class OneTimeTokenComponent implements OnInit {
     private userService: UserService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackBar: MatSnackBar,
+    private snackbar: SnackbarService,
   ) {
   }
 
@@ -27,7 +27,7 @@ export class OneTimeTokenComponent implements OnInit {
     const next = this.route.snapshot.queryParamMap.get('next') || '/';
 
     if (!token) {
-      this.snackBar.open('Missing one-time token', 'ok');
+      this.snackbar.error('Missing one-time token');
       await this.router.navigateByUrl('/');
       return;
     }
@@ -38,9 +38,9 @@ export class OneTimeTokenComponent implements OnInit {
       await this.router.navigateByUrl(next);
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 401) {
-        this.snackBar.open('Invalid or expired one-time token', 'ok');
+        this.snackbar.error('Invalid or expired one-time token');
       } else {
-        this.snackBar.open('Authentication failed', 'ok');
+        this.snackbar.error('Authentication failed');
       }
       await this.router.navigateByUrl('/');
     }
