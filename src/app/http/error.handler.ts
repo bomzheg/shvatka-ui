@@ -44,10 +44,27 @@ export class GlobalErrorHandler implements ErrorHandler {
         }
 
         this.snackbar.error(
-          `[${error.status}] ${error.statusText || 'Ошибка сети'}`,
+          this.formatUnknownHttpError(error),
           'Закрыть',
         );
       }
     });
+  }
+
+  private formatUnknownHttpError(error: HttpErrorResponse): string {
+    if (error.status === 0) {
+      return `Ошибка сети: сервер недоступен (${this.extractPath(error.url)})`;
+    }
+    const statusText = error.statusText || 'Unknown Error';
+    return `[${error.status}] ${statusText} (${this.extractPath(error.url)})`;
+  }
+
+  private extractPath(url: string | null): string {
+    if (!url) return '';
+    try {
+      return new URL(url).pathname;
+    } catch {
+      return url;
+    }
   }
 }
