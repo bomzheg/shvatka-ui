@@ -1,7 +1,7 @@
 import {ErrorHandler, Injectable, NgZone} from "@angular/core";
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {HttpErrorResponse} from "@angular/common/http";
 import {AuthService} from "../auth/auth.service";
+import {SnackbarService} from "../snackbar/snackbar.service";
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +11,7 @@ export class GlobalErrorHandler implements ErrorHandler {
     InvalidKey: "Неверный ключ",
   };
   constructor(
-    private _snackBar: MatSnackBar,
+    private snackbar: SnackbarService,
     private _zone: NgZone,
     private authService: AuthService,
   ) { }
@@ -19,12 +19,15 @@ export class GlobalErrorHandler implements ErrorHandler {
   handleError(error: any): void {
     this._zone.run(() => {
       if (!(error instanceof HttpErrorResponse)) {
-        console.error(error)
+        console.error(error);
+        const name = error?.name || error?.constructor?.name || 'Error';
+        const text = error?.message || String(error);
+        this.snackbar.error(`${name}: ${text}`, 'Закрыть');
         return
       }
       if (error.status === 401) {
         console.log("401 response: " + JSON.stringify(error));
-        this._snackBar.open("Для выполнения этой операции необходимо залогиниться", 'Закрыть', {duration: 3000});
+        this.snackbar.error("Для выполнения этой операции необходимо залогиниться", 'Закрыть', 3000);
         this.authService.showLoginForm();
       } else {
         console.error(error);
@@ -34,13 +37,34 @@ export class GlobalErrorHandler implements ErrorHandler {
           const typeText = this.knownErrorTranslations[type] ?? type;
           const text = String(backendError.text ?? "");
           const description = String(backendError.description ?? "");
-          const message = [typeText, text, description].filter(v => v.length > 0).join(": ");
-          this._snackBar.open(message || "Ошибка запроса", 'Закрыть', {duration: 5000});
+          const parts = [typeText, text, description].filter(v => v.length > 0).join(": ");
+          const message = `[${error.status}] ${parts || "Ошибка запроса"}`;
+          this.snackbar.error(message, 'Закрыть');
           return;
         }
 
-        this._snackBar.open("Какая-то сетевая(?) ошибка=(", 'Закрыть', {duration: 3000});
+        this.snackbar.error(
+          this.formatUnknownHttpError(error),
+          'Закрыть',
+        );
       }
     });
+  }
+
+  private formatUnknownHttpError(error: HttpErrorResponse): string {
+    if (error.status === 0) {
+      return `Ошибка сети: сервер недоступен (${this.extractPath(error.url)})`;
+    }
+    const statusText = error.statusText || 'Unknown Error';
+    return `[${error.status}] ${statusText} (${this.extractPath(error.url)})`;
+  }
+
+  private extractPath(url: string | null): string {
+    if (!url) return '';
+    try {
+      return new URL(url).pathname;
+    } catch {
+      return url;
+    }
   }
 }

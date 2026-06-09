@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
-import {MatSnackBar} from "@angular/material/snack-bar";
+import {SnackbarService} from "../snackbar/snackbar.service";
 import {Effect, Effects, GameStat, KeyTime, Keys, TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
 import {ActiveGame, GamesService} from "../games/games.service";
@@ -145,7 +145,7 @@ export class GamePlayService {
 
   constructor(
     private http: HttpAdapter,
-    private snackBar: MatSnackBar,
+    private snackbar: SnackbarService,
     private gamesService: GamesService,
   ) {
   }
@@ -204,7 +204,7 @@ export class GamePlayService {
         if (error instanceof HttpErrorResponse && error.status === 401) {
           this.authRequired = true;
           console.log("current hint 401 response: " + JSON.stringify(error));
-          this.snackBar.open("Играть можно только авторизованным пользователям в составе команд", 'Закрыть', {duration: 3000});
+          this.snackbar.error("Играть можно только авторизованным пользователям в составе команд", 'Закрыть', 3000);
         } else {
           throw error;
         }
@@ -226,7 +226,7 @@ export class GamePlayService {
 
           if (error instanceof HttpErrorResponse && error.status === 401) {
             this.authRequired = true;
-            this.snackBar.open("Просмотр вейверов доступен только авторизованным пользователям", 'Закрыть', {duration: 3000});
+            this.snackbar.error("Просмотр вейверов доступен только авторизованным пользователям", 'Закрыть', 3000);
           } else {
             throw error;
           }
@@ -420,7 +420,7 @@ export class GamePlayService {
     return this.http.post<TypedKeyResult>(`/games/running/key`, {text}).pipe(
       tap(result => {
         if (Effects.normalize(result.effects).some(effect => effect.level_up)) {
-          this.snackBar.open("Уровень пройден! Загружаем следующий уровень.", 'Закрыть', {duration: 3000});
+          this.snackbar.success("Уровень пройден! Загружаем следующий уровень.", 'Закрыть', 3000);
           this.loadHints();
         }
       }),

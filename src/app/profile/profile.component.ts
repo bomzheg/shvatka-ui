@@ -2,8 +2,8 @@ import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {NgIf} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
-import {MatSnackBar} from '@angular/material/snack-bar';
 import {UserService} from '../auth/user.service';
+import {SnackbarService} from '../snackbar/snackbar.service';
 import {PushToggleComponent} from '../push/push-toggle.component';
 
 @Component({
@@ -20,7 +20,7 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private snackBar: MatSnackBar,
+    private snackbar: SnackbarService,
   ) {
   }
 
@@ -40,12 +40,12 @@ export class ProfileComponent implements OnInit {
 
   changePassword() {
     if (!this.newPassword || !this.confirmPassword) {
-      this.snackBar.open('Заполните оба поля пароля', 'OK');
+      this.snackbar.error('Заполните оба поля пароля');
       return;
     }
 
     if (this.newPassword !== this.confirmPassword) {
-      this.snackBar.open('Пароли не совпадают', 'OK');
+      this.snackbar.error('Пароли не совпадают');
       return;
     }
 
@@ -56,16 +56,16 @@ export class ProfileComponent implements OnInit {
           this.newPassword = '';
           this.confirmPassword = '';
           this.isSubmitting = false;
-          this.snackBar.open('Пароль успешно изменён', 'OK');
+          this.snackbar.success('Пароль успешно изменён');
         },
         error: (err) => {
           this.isSubmitting = false;
           if (err instanceof HttpErrorResponse && err.status === 401) {
-            this.snackBar.open('Нужно войти в аккаунт', 'OK');
+            this.snackbar.error('Нужно войти в аккаунт');
             return;
           }
 
-          this.snackBar.open('Не удалось изменить пароль', 'OK');
+          this.snackbar.error('Не удалось изменить пароль');
         },
       });
   }

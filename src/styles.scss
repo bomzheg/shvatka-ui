@@ -102,3 +102,27 @@ pre {
     transform: rotate(360deg);
   }
 }
+
+.snackbar-success .mdc-snackbar__surface {
+  background-color: #2e7d32 !important;
+}
+.snackbar-success .mdc-snackbar__label,
+.snackbar-success .mdc-snackbar__surface .mat-mdc-button {
+  color: #fff !important;
+}
+
+.snackbar-error .mdc-snackbar__surface {
+  background-color: #c62828 !important;
+}
+.snackbar-error .mdc-snackbar__label,
+.snackbar-error .mdc-snackbar__surface .mat-mdc-button {
+  color: #fff !important;
+}
+
+.snackbar-info .mdc-snackbar__surface {
+  background-color: #1565c0 !important;
+}
+.snackbar-info .mdc-snackbar__label,
+.snackbar-info .mdc-snackbar__surface .mat-mdc-button {
+  color: #fff !important;
+}

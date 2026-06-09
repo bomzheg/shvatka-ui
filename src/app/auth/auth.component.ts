@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {MatSnackBar} from "@angular/material/snack-bar";
 import {AuthService} from "./auth.service";
+import {SnackbarService} from "../snackbar/snackbar.service";
 import {FormsModule} from "@angular/forms";
 import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {UserService} from "./user.service";
@@ -29,7 +29,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
     public authService: AuthService,
     private userService: UserService,
     private config: ShvatkaConfig,
-    private snackBar: MatSnackBar,
+    private snackbar: SnackbarService,
   ) {
     authService.registerCallback(this);
   }
@@ -47,7 +47,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
             if (err instanceof HttpErrorResponse && err.status === 401) {
               console.error("auth error " + err.message);
               console.log(JSON.stringify(err));
-              this.snackBar.open('Неверные имя пользователя или пароль', "ok");
+              this.snackbar.error('Неверные имя пользователя или пароль');
             } else {
               throw err;
             }
