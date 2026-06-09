@@ -19,7 +19,10 @@ export class GlobalErrorHandler implements ErrorHandler {
   handleError(error: any): void {
     this._zone.run(() => {
       if (!(error instanceof HttpErrorResponse)) {
-        console.error(error)
+        console.error(error);
+        const name = error?.name || error?.constructor?.name || 'Error';
+        const text = error?.message || String(error);
+        this.snackbar.error(`${name}: ${text}`, 'Закрыть');
         return
       }
       if (error.status === 401) {
@@ -34,12 +37,16 @@ export class GlobalErrorHandler implements ErrorHandler {
           const typeText = this.knownErrorTranslations[type] ?? type;
           const text = String(backendError.text ?? "");
           const description = String(backendError.description ?? "");
-          const message = [typeText, text, description].filter(v => v.length > 0).join(": ");
-          this.snackbar.error(message || "Ошибка запроса", 'Закрыть');
+          const parts = [typeText, text, description].filter(v => v.length > 0).join(": ");
+          const message = `[${error.status}] ${parts || "Ошибка запроса"}`;
+          this.snackbar.error(message, 'Закрыть');
           return;
         }
 
-        this.snackbar.error("Какая-то сетевая(?) ошибка=(", 'Закрыть', 3000);
+        this.snackbar.error(
+          `[${error.status}] ${error.statusText || 'Ошибка сети'}`,
+          'Закрыть',
+        );
       }
     });
   }
