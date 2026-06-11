@@ -1,0 +1,67 @@
+@use "../../styles/component-mixins" as cm;
+
+.hint-editor {
+  border: 1px dashed var(--app-border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+}
+
+.hint-head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hint-type {
+  @include cm.input-control();
+  flex: 1;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
+label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: inherit;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  @include cm.input-control();
+  width: 100%;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.ghost-button {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+}
+
+.ghost-button.danger {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+.hint-note {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  margin: 0;
+}

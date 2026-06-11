@@ -1,0 +1,104 @@
+<div class="hint-editor">
+  <div class="hint-head">
+    <select class="hint-type" [(ngModel)]="hint.type" (ngModelChange)="onTypeChange()">
+      @for (t of allTypes; track t) {
+        <option [ngValue]="t">{{ typeLabels[t] }}</option>
+      }
+    </select>
+    <button type="button" class="ghost-button danger" (click)="onRemove()">Удалить</button>
+  </div>
+
+  @switch (hint.type) {
+    @case (HintType.text) {
+      <label>Текст</label>
+      <textarea rows="3" [(ngModel)]="hint.text"></textarea>
+    }
+
+    @case (HintType.gps) {
+      <div class="grid-2">
+        <div>
+          <label>Широта</label>
+          <input type="number" step="any" [(ngModel)]="hint.latitude" />
+        </div>
+        <div>
+          <label>Долгота</label>
+          <input type="number" step="any" [(ngModel)]="hint.longitude" />
+        </div>
+      </div>
+    }
+
+    @case (HintType.venue) {
+      <div class="grid-2">
+        <div>
+          <label>Широта</label>
+          <input type="number" step="any" [(ngModel)]="hint.latitude" />
+        </div>
+        <div>
+          <label>Долгота</label>
+          <input type="number" step="any" [(ngModel)]="hint.longitude" />
+        </div>
+      </div>
+      <label>Название</label>
+      <input type="text" [(ngModel)]="hint.title" />
+      <label>Адрес</label>
+      <input type="text" [(ngModel)]="hint.address" />
+      <div class="grid-2">
+        <div>
+          <label>Foursquare ID</label>
+          <input type="text" [(ngModel)]="hint.foursquare_id" />
+        </div>
+        <div>
+          <label>Foursquare type</label>
+          <input type="text" [(ngModel)]="hint.foursquare_type" />
+        </div>
+      </div>
+    }
+
+    @case (HintType.contact) {
+      <label>Телефон</label>
+      <input type="text" [(ngModel)]="hint.phone_number" />
+      <label>Имя</label>
+      <input type="text" [(ngModel)]="hint.first_name" />
+      <label>Фамилия</label>
+      <input type="text" [(ngModel)]="hint.last_name" />
+      <label>vCard</label>
+      <input type="text" [(ngModel)]="hint.vcard" />
+    }
+  }
+
+  @if (needsFile()) {
+    <label>Файл</label>
+    @if (files.length > 0) {
+      <select [(ngModel)]="hint.file_guid">
+        <option [ngValue]="undefined">— выберите файл —</option>
+        @for (f of files; track f.guid) {
+          <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
+        }
+      </select>
+    } @else {
+      <p class="hint-note">Сначала загрузите файлы в разделе «Файлы» выше.</p>
+    }
+  }
+
+  @if (needsThumb() && files.length > 0) {
+    <label>Превью (thumb)</label>
+    <select [(ngModel)]="hint.thumb_guid">
+      <option [ngValue]="undefined">— нет —</option>
+      @for (f of files; track f.guid) {
+        <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
+      }
+    </select>
+  }
+
+  @if (needsCaption()) {
+    <label>Подпись</label>
+    <input type="text" [(ngModel)]="hint.caption" />
+  }
+
+  @if (needsCaptionAbove()) {
+    <label class="checkbox">
+      <input type="checkbox" [(ngModel)]="hint.show_caption_above_media" />
+      Подпись над медиа
+    </label>
+  }
+</div>

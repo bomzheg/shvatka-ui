@@ -1,0 +1,274 @@
+@use "../../styles/component-mixins" as cm;
+
+.editor-page {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: var(--app-accent);
+  text-decoration: none;
+}
+
+.editor-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+h1 {
+  margin: 0;
+  color: inherit;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+  color: inherit;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 0;
+  color: inherit;
+}
+
+h4 {
+  font-size: 0.95rem;
+  margin: 0 0 0.4rem;
+  color: inherit;
+}
+
+.status-badge {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  background: color-mix(in srgb, var(--app-surface) 70%, var(--app-accent));
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.warn {
+  color: #b26a00;
+  background: color-mix(in srgb, var(--app-surface) 80%, #f0ad4e);
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+}
+
+.block {
+  @include cm.surface-card(14px, 1rem);
+  margin: 1rem 0;
+}
+
+.block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: inherit;
+  margin: 0.4rem 0;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"],
+select {
+  @include cm.input-control();
+  width: 100%;
+}
+
+.primary {
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ghost-button {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+}
+
+.ghost-button.danger {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+.ghost-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.level-card {
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+  background: color-mix(in srgb, var(--app-surface) 96%, transparent);
+}
+
+.level-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.level-id {
+  flex: 1;
+}
+
+.level-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.sub-block {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--app-border);
+}
+
+.time-hint {
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  padding: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.time-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.time-input {
+  width: 6rem;
+}
+
+.hints,
+.effect-hints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.condition {
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  padding: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.condition-head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.effects {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--app-border);
+}
+
+.effect-hints {
+  margin-top: 0.5rem;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.files-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.6rem;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.files-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+}
+
+.file-guid {
+  color: var(--app-muted-text);
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.hint-note {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  margin: 0.3rem 0;
+}
+
+.errors {
+  border-color: #c62828;
+}
+
+.errors ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.errors li {
+  color: #c62828;
+  font-size: 0.9rem;
+}
+
+.actions-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.75rem 0;
+}
+
+.actions-bar .primary {
+  font-size: 1rem;
+  padding: 0.7rem 1.4rem;
+}
+
+.start-row,
+.status-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}

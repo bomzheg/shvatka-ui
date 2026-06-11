@@ -5,12 +5,16 @@ import {GameComponent} from "./game/game.component";
 import {GamePlayComponent} from "./game_play/game_play.component";
 import {ProfileComponent} from "./profile/profile.component";
 import {OneTimeTokenComponent} from "./auth/one-time-token.component";
+import {ConstructorComponent} from "./constructor/constructor.component";
+import {GameEditorComponent} from "./constructor/game-editor.component";
 
 
 export const routes: Routes = [
   {path: "", component: HomeComponent},
   {path: "games", component: GamesComponent},
   {path: "games/running", component: GamePlayComponent},
+  {path: "games/constructor", component: ConstructorComponent},
+  {path: "games/constructor/:id", component: GameEditorComponent},
   {path: "games/:id", component: GameComponent},
   {path: "profile", component: ProfileComponent},
   {path: "auth/one-time-token", component: OneTimeTokenComponent},

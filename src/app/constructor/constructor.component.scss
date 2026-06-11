@@ -1,0 +1,92 @@
+@use "../../styles/component-mixins" as cm;
+
+.constructor-page {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-top: 0;
+  color: inherit;
+}
+
+.create-form {
+  @include cm.surface-card(16px, 1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+label {
+  font-size: 0.9rem;
+  color: inherit;
+}
+
+.create-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.create-row input {
+  @include cm.input-control();
+  flex: 1;
+}
+
+.primary {
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+}
+
+.primary:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.drafts-title {
+  font-size: 1.1rem;
+  color: inherit;
+}
+
+.games-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.games-list-item {
+  @include cm.surface-card(12px, 0);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.games-list-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
+}
+
+.games-list-item a {
+  text-decoration: none;
+  color: var(--app-text);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.8rem 1rem;
+}
+
+.game-status {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  background: color-mix(in srgb, var(--app-surface) 70%, var(--app-accent));
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.empty-state {
+  color: var(--app-muted-text);
+}

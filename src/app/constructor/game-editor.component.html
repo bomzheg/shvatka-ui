@@ -1,0 +1,230 @@
+<section class="editor-page">
+  <a routerLink="/games/constructor" class="back-link">← К списку игр</a>
+
+  @if (isLoading && !game) {
+    <div class="loading-state" aria-live="polite">
+      <span class="loading-spinner"></span>
+      Загрузка игры...
+    </div>
+  }
+
+  @if (game) {
+    <div class="editor-head">
+      <h1>Редактирование игры</h1>
+      <span class="status-badge">{{ statusLabel(status) }}</span>
+    </div>
+
+    @if (!isEditable) {
+      <p class="warn">Игра в статусе «{{ statusLabel(status) }}» — сценарий заморожен и недоступен для редактирования.</p>
+    }
+
+    <!-- Game name -->
+    <div class="block">
+      <label for="gameName">Название игры</label>
+      <input id="gameName" type="text" [(ngModel)]="name" [disabled]="!isEditable" />
+    </div>
+
+    <!-- Files -->
+    <div class="block">
+      <h2>Файлы</h2>
+      <p class="hint-note">Загрузите медиа заранее, затем выбирайте их в подсказках.</p>
+      @if (files.length > 0) {
+        <ul class="files-list">
+          @for (f of files; track f.guid) {
+            <li>
+              <span class="file-name">{{ fileLabel(f) }}</span>
+              <span class="file-guid">{{ f.guid }}</span>
+            </li>
+          }
+        </ul>
+      }
+      @if (isEditable) {
+        <label class="upload-control">
+          <input type="file" (change)="onFileSelected($event)" [disabled]="isUploading" />
+        </label>
+        @if (isUploading) {
+          <span class="hint-note">Загрузка файла...</span>
+        }
+      }
+    </div>
+
+    <!-- Levels -->
+    <div class="block">
+      <div class="block-head">
+        <h2>Уровни</h2>
+        @if (isEditable) {
+          <button type="button" class="primary" (click)="addLevel()">+ Уровень</button>
+        }
+      </div>
+
+      @for (level of levels; track level; let li = $index) {
+        <div class="level-card">
+          <div class="level-head">
+            <div class="level-id">
+              <label>ID уровня #{{ li + 1 }}</label>
+              <input type="text" [(ngModel)]="level.id" [disabled]="!isEditable" />
+            </div>
+            @if (isEditable) {
+              <div class="level-actions">
+                <button type="button" class="ghost-button" (click)="moveLevel(li, -1)" [disabled]="li === 0">↑</button>
+                <button type="button" class="ghost-button" (click)="moveLevel(li, 1)" [disabled]="li === levels.length - 1">↓</button>
+                <button type="button" class="ghost-button danger" (click)="removeLevel(li)">Удалить</button>
+              </div>
+            }
+          </div>
+
+          <!-- Time hints -->
+          <div class="sub-block">
+            <div class="block-head">
+              <h3>Подсказки по времени</h3>
+              @if (isEditable) {
+                <button type="button" class="ghost-button" (click)="addTimeHint(level)">+ Время</button>
+              }
+            </div>
+
+            @for (th of level.time_hints; track th; let ti = $index) {
+              <div class="time-hint">
+                <div class="time-row">
+                  <label>Минута</label>
+                  <input class="time-input" type="number" [(ngModel)]="th.time" [disabled]="!isEditable" />
+                  @if (isEditable) {
+                    <button type="button" class="ghost-button" (click)="addHint(th)">+ Подсказка</button>
+                    <button type="button" class="ghost-button danger" (click)="removeTimeHint(level, ti)">Удалить время</button>
+                  }
+                </div>
+                <div class="hints">
+                  @for (h of th.hint; track h; let hi = $index) {
+                    <app-hint-editor
+                      [hint]="h"
+                      [files]="files"
+                      (remove)="removeHint(th, hi)"
+                    ></app-hint-editor>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Conditions -->
+          <div class="sub-block">
+            <div class="block-head">
+              <h3>Условия</h3>
+              @if (isEditable) {
+                <button type="button" class="ghost-button" (click)="addCondition(level)">+ Условие</button>
+              }
+            </div>
+
+            @for (c of level.conditions; track c; let ci = $index) {
+              <div class="condition">
+                <div class="condition-head">
+                  <select [(ngModel)]="c.type" (ngModelChange)="onConditionTypeChange(c)" [disabled]="!isEditable">
+                    <option [ngValue]="ScenarioConditionType.winKey">Победный ключ (WIN_KEY)</option>
+                    <option [ngValue]="ScenarioConditionType.effectsKey">Ключ с эффектами (EFFECTS_KEY)</option>
+                    <option [ngValue]="ScenarioConditionType.effectsTimer">Таймер с эффектами (EFFECTS_TIMER)</option>
+                  </select>
+                  @if (isEditable) {
+                    <button type="button" class="ghost-button danger" (click)="removeCondition(level, ci)">Удалить</button>
+                  }
+                </div>
+
+                @if (isKeyCondition(c)) {
+                  <label>Ключи (через пробел; формат SH… или СХ…)</label>
+                  <input type="text" [(ngModel)]="c.keysText" [disabled]="!isEditable" placeholder="SH123 SH321" />
+                }
+
+                @if (isTimer(c)) {
+                  <label>Время срабатывания (минуты)</label>
+                  <input type="number" [(ngModel)]="c.action_time" [disabled]="!isEditable" />
+                }
+
+                @if (hasEffects(c)) {
+                  <div class="effects">
+                    <h4>Эффекты</h4>
+                    <div class="grid-2">
+                      <div>
+                        <label>Бонус минут (±)</label>
+                        <input type="number" step="any" [(ngModel)]="c.effects.bonus_minutes" [disabled]="!isEditable" />
+                      </div>
+                      <div>
+                        <label>Переход на уровень (id)</label>
+                        <input type="text" [(ngModel)]="c.effects.next_level" [disabled]="!isEditable" placeholder="напр. level-2" />
+                      </div>
+                    </div>
+                    <label class="checkbox">
+                      <input type="checkbox" [(ngModel)]="c.effects.level_up" [disabled]="!isEditable" />
+                      Победа / переход на уровень
+                    </label>
+
+                    <div class="effect-hints">
+                      <div class="block-head">
+                        <span>Бонусные подсказки</span>
+                        @if (isEditable) {
+                          <button type="button" class="ghost-button" (click)="addEffectHint(c)">+ Подсказка</button>
+                        }
+                      </div>
+                      @for (h of c.effects.hints; track h; let hi = $index) {
+                        <app-hint-editor
+                          [hint]="h"
+                          [files]="files"
+                          (remove)="removeEffectHint(c, hi)"
+                        ></app-hint-editor>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Validation errors -->
+    @if (validationErrors.length > 0) {
+      <div class="block errors">
+        <h3>Ошибки проверки</h3>
+        <ul>
+          @for (err of validationErrors; track err) {
+            <li>{{ err }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Save -->
+    @if (isEditable) {
+      <div class="actions-bar">
+        <button type="button" class="primary" (click)="save()" [disabled]="isSaving">
+          {{ isSaving ? "Сохраняем..." : "Сохранить сценарий" }}
+        </button>
+      </div>
+    }
+
+    <!-- Start time -->
+    <div class="block">
+      <h2>Планируемый старт</h2>
+      <div class="start-row">
+        <input type="datetime-local" [(ngModel)]="startAtLocal" [disabled]="!isEditable" />
+        <button type="button" class="primary" (click)="saveStartAt()" [disabled]="!isEditable">Сохранить</button>
+        <button type="button" class="ghost-button" (click)="clearStartAt()" [disabled]="!isEditable">Отменить старт</button>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="block">
+      <h2>Статус игры</h2>
+      <p>Текущий статус: <strong>{{ statusLabel(status) }}</strong></p>
+      <div class="status-actions">
+        @if (canOpenWaivers) {
+          <button type="button" class="primary" (click)="changeStatus('getting_waivers')">Открыть сбор вейверов</button>
+        }
+        @if (canComplete) {
+          <button type="button" class="primary" (click)="changeStatus('complete')">Опубликовать игру</button>
+        }
+        @if (!canOpenWaivers && !canComplete) {
+          <p class="hint-note">Для текущего статуса нет доступных переходов.</p>
+        }
+      </div>
+    </div>
+  }
+</section>
