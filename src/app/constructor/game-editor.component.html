@@ -33,14 +33,26 @@
         }
       </div>
 
+      <div cdkDropList (cdkDropListDropped)="onLevelDrop($event)">
       @for (level of levels; track level; let li = $index) {
-        <details class="level-card">
+        <details class="level-card" cdkDrag [cdkDragDisabled]="!isEditable">
           <summary class="level-summary">
+            @if (isEditable) {
+              <span class="drag-handle" cdkDragHandle title="Перетащите, чтобы изменить порядок"
+                    (click)="$event.preventDefault(); $event.stopPropagation()">{{ AppEmoji.reorder }}</span>
+            }
             <span class="level-title">#{{ li + 1 }} ({{ level.id }})</span>
             <span class="level-stats">
               {{ AppEmoji.key }} условий: {{ conditionsCount(level) }}
               {{ AppEmoji.bonusHint }} подсказок: {{ hintsCount(level) }}
             </span>
+            @if (isEditable) {
+              <span class="level-actions">
+                <button type="button" class="ghost-button icon" (click)="moveLevel(li, -1); $event.preventDefault(); $event.stopPropagation()" [disabled]="li === 0" title="Вверх">↑</button>
+                <button type="button" class="ghost-button icon" (click)="moveLevel(li, 1); $event.preventDefault(); $event.stopPropagation()" [disabled]="li === levels.length - 1" title="Вниз">↓</button>
+                <button type="button" class="ghost-button icon danger" (click)="removeLevel(li); $event.preventDefault(); $event.stopPropagation()" title="Удалить уровень">{{ AppEmoji.remove }}</button>
+              </span>
+            }
           </summary>
 
           <div class="level-body">
@@ -49,13 +61,6 @@
                 <label>ID уровня</label>
                 <input type="text" [(ngModel)]="level.id" [disabled]="!isEditable" />
               </div>
-              @if (isEditable) {
-                <div class="level-actions">
-                  <button type="button" class="ghost-button" (click)="moveLevel(li, -1)" [disabled]="li === 0">↑</button>
-                  <button type="button" class="ghost-button" (click)="moveLevel(li, 1)" [disabled]="li === levels.length - 1">↓</button>
-                  <button type="button" class="ghost-button danger" (click)="removeLevel(li)">Удалить</button>
-                </div>
-              }
             </div>
 
             <!-- 1. Default win key -->
@@ -92,7 +97,7 @@
                     [gameId]="gameId"
                     [disabled]="!isEditable"
                     [allowLevelUp]="true"
-                    [levelIds]="levelIdsExcept(level)"
+                    [levelIds]="allLevelIds()"
                     (fileUploaded)="onHintFileUploaded($event)"
                   ></app-effects-editor>
                 </div>
@@ -165,6 +170,7 @@
           </div>
         </details>
       }
+      </div>
     </div>
 
     <!-- Files -->
@@ -183,7 +189,7 @@
               </div>
               @switch (filePreviewKind(f)) {
                 @case ("image") {
-                  <img class="file-preview" [src]="fileUrl(f)" alt="превью" loading="lazy" />
+                  <app-image-lightbox [src]="fileUrl(f)"></app-image-lightbox>
                 }
                 @case ("video") {
                   <video class="file-preview" [src]="fileUrl(f)" controls preload="none"></video>

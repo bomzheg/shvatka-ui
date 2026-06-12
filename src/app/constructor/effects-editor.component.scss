@@ -24,6 +24,11 @@
   width: 8rem;
 }
 
+.field-hint {
+  font-size: 0.78rem;
+  color: var(--app-muted-text);
+}
+
 label {
   font-size: 0.85rem;
   color: var(--app-muted-text);
@@ -36,13 +41,65 @@ label {
   flex-wrap: wrap;
 }
 
-label.checkbox {
-  display: flex;
+// Toggle switch
+.toggle {
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  color: inherit;
+  gap: 0.5rem;
   margin: 0;
+  cursor: pointer;
+  color: inherit;
   white-space: nowrap;
+}
+
+.toggle.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-track {
+  position: relative;
+  width: 2.4rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: var(--app-border);
+  transition: background 0.15s ease;
+  flex: none;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.toggle input:checked + .toggle-track {
+  background: var(--app-accent);
+}
+
+.toggle input:checked + .toggle-track .toggle-thumb {
+  transform: translateX(1.05rem);
+}
+
+.toggle input:focus-visible + .toggle-track {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
+
+.toggle-label {
+  font-size: 0.9rem;
 }
 
 .level-up-row select {

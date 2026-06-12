@@ -15,13 +15,14 @@ import {ConstructorService} from "./constructor.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {CONTENT_TYPE_EMOJI, HINT_TYPE_EMOJI} from "../ui/emoji";
+import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 
 type PreviewKind = "image" | "video" | "audio" | "none";
 
 @Component({
   selector: "app-hint-editor",
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ImageLightboxComponent],
   templateUrl: "./hint-editor.component.html",
   styleUrl: "./hint-editor.component.scss",
 })
@@ -52,8 +53,29 @@ export class HintEditorComponent {
     return HINT_TYPE_LABELS[this.hint.type];
   }
 
+  /** Single "lat, lon" field — matches what users paste from map apps. */
+  get coords(): string {
+    const lat = this.hint.latitude;
+    const lon = this.hint.longitude;
+    if (lat === undefined && lon === undefined) {
+      return "";
+    }
+    return `${lat ?? ""}, ${lon ?? ""}`;
+  }
+
+  set coords(value: string) {
+    const parts = value.split(/[,\s]+/).map(p => p.trim()).filter(Boolean);
+    const lat = parts[0] !== undefined ? Number(parts[0]) : NaN;
+    const lon = parts[1] !== undefined ? Number(parts[1]) : NaN;
+    this.hint.latitude = Number.isFinite(lat) ? lat : undefined;
+    this.hint.longitude = Number.isFinite(lon) ? lon : undefined;
+  }
+
   fileLabel(file: UploadedFile): string {
-    const name = `${file.original_filename}${file.extension || ""}`;
+    const hasName = file.original_filename && file.original_filename !== file.guid;
+    const name = hasName
+      ? `${file.original_filename}${file.extension || ""}`
+      : `файл ${file.guid.slice(0, 8)}…`;
     const contentType = file.content_type ? CONTENT_TYPE_LABELS[file.content_type] ?? file.content_type : undefined;
     const emoji = file.content_type ? CONTENT_TYPE_EMOJI[file.content_type] ?? "" : "";
     return contentType ? `${emoji} ${name} (${contentType})` : name;

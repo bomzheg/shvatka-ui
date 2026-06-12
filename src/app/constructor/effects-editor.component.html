@@ -1,15 +1,17 @@
 <div class="effects-editor">
   <div class="effects-row">
     <div class="bonus-field">
-      <label>{{ AppEmoji.bonus }} Бонус минут (±)</label>
-      <input type="number" step="any" [(ngModel)]="effects.bonus_minutes" [disabled]="disabled" />
+      <label>{{ AppEmoji.bonus }} Бонус минут</label>
+      <input type="number" step="any" [(ngModel)]="effects.bonus_minutes" [disabled]="disabled" title="+ бонус, − штраф" />
+      <span class="field-hint">+ бонус, − штраф</span>
     </div>
 
     @if (allowLevelUp) {
       <div class="level-up-row">
-        <label class="checkbox">
+        <label class="toggle" [class.disabled]="disabled">
           <input type="checkbox" [(ngModel)]="effects.level_up" (ngModelChange)="onLevelUpChange()" [disabled]="disabled" />
-          {{ AppEmoji.levelUp }} Завершение уровня
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">{{ AppEmoji.levelUp }} Завершение уровня</span>
         </label>
         @if (effects.level_up) {
           <select [(ngModel)]="effects.next_level" [disabled]="disabled" title="Переход на уровень">

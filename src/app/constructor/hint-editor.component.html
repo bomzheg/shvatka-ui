@@ -13,29 +13,13 @@
     }
 
     @case (HintType.gps) {
-      <div class="grid-2">
-        <div>
-          <label>Широта</label>
-          <input type="number" step="any" [(ngModel)]="hint.latitude" [disabled]="disabled" />
-        </div>
-        <div>
-          <label>Долгота</label>
-          <input type="number" step="any" [(ngModel)]="hint.longitude" [disabled]="disabled" />
-        </div>
-      </div>
+      <label>Координаты (широта, долгота)</label>
+      <input type="text" [(ngModel)]="coords" [disabled]="disabled" placeholder="55.751244, 37.618423" />
     }
 
     @case (HintType.venue) {
-      <div class="grid-2">
-        <div>
-          <label>Широта</label>
-          <input type="number" step="any" [(ngModel)]="hint.latitude" [disabled]="disabled" />
-        </div>
-        <div>
-          <label>Долгота</label>
-          <input type="number" step="any" [(ngModel)]="hint.longitude" [disabled]="disabled" />
-        </div>
-      </div>
+      <label>Координаты (широта, долгота)</label>
+      <input type="text" [(ngModel)]="coords" [disabled]="disabled" placeholder="55.751244, 37.618423" />
       <label>Название</label>
       <input type="text" [(ngModel)]="hint.title" [disabled]="disabled" />
       <label>Адрес</label>
@@ -83,7 +67,7 @@
 
     @switch (previewKind()) {
       @case ("image") {
-        <img class="preview" [src]="previewUrl()" alt="превью" />
+        <app-image-lightbox [src]="previewUrl()!"></app-image-lightbox>
       }
       @case ("video") {
         <video class="preview" [src]="previewUrl()" controls preload="metadata"></video>

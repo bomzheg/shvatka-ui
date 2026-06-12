@@ -1,6 +1,6 @@
 import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from "@angular/core";
 import {HintType} from "../domain/game.models";
-import {ALL_HINT_TYPES, HINT_TYPE_LABELS} from "./constructor.models";
+import {CREATABLE_HINT_TYPES, HINT_TYPE_LABELS} from "./constructor.models";
 import {HINT_TYPE_EMOJI} from "../ui/emoji";
 
 /**
@@ -21,7 +21,7 @@ export class HintTypePickerComponent {
 
   @ViewChild("menu") menuRef: ElementRef<HTMLDetailsElement> | undefined;
 
-  protected readonly allTypes = ALL_HINT_TYPES;
+  protected readonly allTypes = CREATABLE_HINT_TYPES;
   protected readonly typeLabels = HINT_TYPE_LABELS;
   protected readonly typeEmoji = HINT_TYPE_EMOJI;
 

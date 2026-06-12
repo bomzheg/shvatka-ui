@@ -19,6 +19,8 @@ export enum AppEmoji {
   jump = "🔀",
   levelUp = "✅",
   level = "🧩",
+  reorder = "↕️",
+  remove = "🗑️",
   // files
   files = "📁",
   upload = "📤",

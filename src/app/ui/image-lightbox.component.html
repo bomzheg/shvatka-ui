@@ -1,0 +1,7 @@
+<img class="thumb" [src]="src" [alt]="alt" loading="lazy" (click)="open()" />
+
+@if (isOpen) {
+  <div class="lightbox-overlay" (click)="close()">
+    <img class="lightbox-full" [src]="src" [alt]="alt" />
+  </div>
+}

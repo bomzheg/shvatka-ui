@@ -149,6 +149,23 @@ export const ALL_HINT_TYPES: HintType[] = [
   HintType.sticker,
 ];
 
+/**
+ * Hint types that can be created from the web constructor. Sticker, voice and
+ * video_note are intentionally excluded — we cannot upload those from the web.
+ * Existing hints of those types still render/edit, they just can't be added.
+ */
+export const CREATABLE_HINT_TYPES: HintType[] = [
+  HintType.text,
+  HintType.gps,
+  HintType.venue,
+  HintType.photo,
+  HintType.audio,
+  HintType.video,
+  HintType.document,
+  HintType.animation,
+  HintType.contact,
+];
+
 /** Hint types that carry a main file (`file_guid`). */
 export const FILE_HINT_TYPES: HintType[] = [
   HintType.photo,

@@ -2,10 +2,12 @@ import {Component, OnDestroy, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
+import {CdkDragDrop, DragDropModule, moveItemInArray} from "@angular/cdk/drag-drop";
 import {ConstructorService} from "./constructor.service";
 import {HintEditorComponent} from "./hint-editor.component";
 import {HintTypePickerComponent} from "./hint-type-picker.component";
 import {EffectsEditorComponent} from "./effects-editor.component";
+import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
 import {
   CONTENT_TYPE_LABELS,
@@ -55,7 +57,15 @@ type FilePreviewKind = "image" | "video" | "audio" | "none";
 @Component({
   selector: "app-game-editor",
   standalone: true,
-  imports: [FormsModule, RouterLink, HintEditorComponent, HintTypePickerComponent, EffectsEditorComponent],
+  imports: [
+    FormsModule,
+    RouterLink,
+    DragDropModule,
+    HintEditorComponent,
+    HintTypePickerComponent,
+    EffectsEditorComponent,
+    ImageLightboxComponent,
+  ],
   templateUrl: "./game-editor.component.html",
   styleUrl: "./game-editor.component.scss",
 })
@@ -268,8 +278,11 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     if (target < 0 || target >= this.levels.length) {
       return;
     }
-    const [item] = this.levels.splice(index, 1);
-    this.levels.splice(target, 0, item);
+    moveItemInArray(this.levels, index, target);
+  }
+
+  onLevelDrop(event: CdkDragDrop<EditorLevel[]>) {
+    moveItemInArray(this.levels, event.previousIndex, event.currentIndex);
   }
 
   private uniqueLevelId(): string {
@@ -283,8 +296,8 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     return id;
   }
 
-  levelIdsExcept(level: EditorLevel): string[] {
-    return this.levels.map(l => l.id).filter(id => id !== level.id);
+  allLevelIds(): string[] {
+    return this.levels.map(l => l.id);
   }
 
   conditionsCount(level: EditorLevel): number {
