@@ -241,12 +241,12 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   private uniqueLevelId(): string {
-    let n = this.levels.length + 1;
-    let id = `level-${n}`;
     const existing = new Set(this.levels.map(l => l.id));
+    let n = this.levels.length + 1;
+    let id = `lvl_${this.gameId}_${n}`;
     while (existing.has(id)) {
       n += 1;
-      id = `level-${n}`;
+      id = `lvl_${this.gameId}_${n}`;
     }
     return id;
   }
