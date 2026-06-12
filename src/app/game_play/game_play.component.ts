@@ -22,6 +22,7 @@ import {EffectsPartComponent} from "../effects.part/effects.part.component";
 import {UserService} from "../auth/user.service";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
 import {PushToggleComponent} from "../push/push-toggle.component";
+import {AppEmoji} from "../ui/emoji";
 
 @Component({
   selector: 'app-game-play',
@@ -38,6 +39,7 @@ import {PushToggleComponent} from "../push/push-toggle.component";
   styleUrl: './game_play.component.scss'
 })
 export class GamePlayComponent implements OnInit, OnDestroy {
+  protected readonly AppEmoji = AppEmoji;
   activeGame: ActiveGame | undefined;
   countdownToStart: string | undefined;
   keyText: string = "";
@@ -312,21 +314,21 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
     const bonusMinutes = typeof effect.bonus_minutes === 'number' ? effect.bonus_minutes : 0;
     if (bonusMinutes > 0) {
-      tags.push(`+💰бонус ${bonusMinutes} мин.`);
+      tags.push(`+${AppEmoji.bonus}бонус ${bonusMinutes} мин.`);
     } else if (bonusMinutes < 0) {
-      tags.push(`-💸штраф ${-bonusMinutes} мин.`);
+      tags.push(`-${AppEmoji.penalty}штраф ${-bonusMinutes} мин.`);
     }
     if (effect.level_up) {
       if (effect.next_level) {
-        tags.push(`🔀переход на ${effect.next_level}`);
+        tags.push(`${AppEmoji.jump}переход на ${effect.next_level}`);
       } else {
-        tags.push('✅переход на следующий уровень');
+        tags.push(`${AppEmoji.levelUp}переход на следующий уровень`);
       }
     }
 
     const hintsCount = Effects.hints(effect).length;
     if (hintsCount > 0) {
-      tags.push(`💡бонусные подсказки: ${hintsCount}`);
+      tags.push(`${AppEmoji.bonusHint}бонусные подсказки: ${hintsCount}`);
     }
 
     return tags;

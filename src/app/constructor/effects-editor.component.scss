@@ -1,0 +1,64 @@
+@use "../../styles/component-mixins" as cm;
+
+.effects-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.effects-row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.bonus-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.bonus-field input {
+  @include cm.input-control();
+  width: 8rem;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
+.level-up-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: inherit;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.level-up-row select {
+  @include cm.input-control();
+}
+
+.effect-hints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hints-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}

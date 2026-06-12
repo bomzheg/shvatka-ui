@@ -1,28 +1,26 @@
 <div class="hint-editor">
   <div class="hint-head">
-    <select class="hint-type" [(ngModel)]="hint.type" (ngModelChange)="onTypeChange()">
-      @for (t of allTypes; track t) {
-        <option [ngValue]="t">{{ typeLabels[t] }}</option>
-      }
-    </select>
-    <button type="button" class="ghost-button danger" (click)="onRemove()">Удалить</button>
+    <span class="hint-type">{{ typeEmoji }} {{ typeLabel }}</span>
+    @if (!disabled) {
+      <button type="button" class="ghost-button danger" (click)="onRemove()">Удалить</button>
+    }
   </div>
 
   @switch (hint.type) {
     @case (HintType.text) {
       <label>Текст</label>
-      <textarea rows="3" [(ngModel)]="hint.text"></textarea>
+      <textarea rows="3" [(ngModel)]="hint.text" [disabled]="disabled"></textarea>
     }
 
     @case (HintType.gps) {
       <div class="grid-2">
         <div>
           <label>Широта</label>
-          <input type="number" step="any" [(ngModel)]="hint.latitude" />
+          <input type="number" step="any" [(ngModel)]="hint.latitude" [disabled]="disabled" />
         </div>
         <div>
           <label>Долгота</label>
-          <input type="number" step="any" [(ngModel)]="hint.longitude" />
+          <input type="number" step="any" [(ngModel)]="hint.longitude" [disabled]="disabled" />
         </div>
       </div>
     }
@@ -31,73 +29,97 @@
       <div class="grid-2">
         <div>
           <label>Широта</label>
-          <input type="number" step="any" [(ngModel)]="hint.latitude" />
+          <input type="number" step="any" [(ngModel)]="hint.latitude" [disabled]="disabled" />
         </div>
         <div>
           <label>Долгота</label>
-          <input type="number" step="any" [(ngModel)]="hint.longitude" />
+          <input type="number" step="any" [(ngModel)]="hint.longitude" [disabled]="disabled" />
         </div>
       </div>
       <label>Название</label>
-      <input type="text" [(ngModel)]="hint.title" />
+      <input type="text" [(ngModel)]="hint.title" [disabled]="disabled" />
       <label>Адрес</label>
-      <input type="text" [(ngModel)]="hint.address" />
+      <input type="text" [(ngModel)]="hint.address" [disabled]="disabled" />
       <div class="grid-2">
         <div>
           <label>Foursquare ID</label>
-          <input type="text" [(ngModel)]="hint.foursquare_id" />
+          <input type="text" [(ngModel)]="hint.foursquare_id" [disabled]="disabled" />
         </div>
         <div>
           <label>Foursquare type</label>
-          <input type="text" [(ngModel)]="hint.foursquare_type" />
+          <input type="text" [(ngModel)]="hint.foursquare_type" [disabled]="disabled" />
         </div>
       </div>
     }
 
     @case (HintType.contact) {
       <label>Телефон</label>
-      <input type="text" [(ngModel)]="hint.phone_number" />
+      <input type="text" [(ngModel)]="hint.phone_number" [disabled]="disabled" />
       <label>Имя</label>
-      <input type="text" [(ngModel)]="hint.first_name" />
+      <input type="text" [(ngModel)]="hint.first_name" [disabled]="disabled" />
       <label>Фамилия</label>
-      <input type="text" [(ngModel)]="hint.last_name" />
+      <input type="text" [(ngModel)]="hint.last_name" [disabled]="disabled" />
       <label>vCard</label>
-      <input type="text" [(ngModel)]="hint.vcard" />
+      <input type="text" [(ngModel)]="hint.vcard" [disabled]="disabled" />
     }
   }
 
   @if (needsFile()) {
     <label>Файл</label>
-    @if (files.length > 0) {
-      <select [(ngModel)]="hint.file_guid">
+    <div class="file-row">
+      <select [(ngModel)]="hint.file_guid" [disabled]="disabled">
         <option [ngValue]="undefined">— выберите файл —</option>
         @for (f of files; track f.guid) {
           <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
         }
       </select>
-    } @else {
-      <p class="hint-note">Сначала загрузите файлы в разделе «Файлы» выше.</p>
+      @if (!disabled) {
+        <label class="upload-button" [class.busy]="isUploading">
+          {{ isUploading ? "Загрузка..." : "Загрузить" }}
+          <input type="file" hidden (change)="onUploadSelected($event, 'file')" [disabled]="isUploading" />
+        </label>
+      }
+    </div>
+
+    @switch (previewKind()) {
+      @case ("image") {
+        <img class="preview" [src]="previewUrl()" alt="превью" />
+      }
+      @case ("video") {
+        <video class="preview" [src]="previewUrl()" controls preload="metadata"></video>
+      }
+      @case ("audio") {
+        <audio class="preview-audio" [src]="previewUrl()" controls preload="metadata"></audio>
+      }
     }
   }
 
-  @if (needsThumb() && files.length > 0) {
+  @if (needsThumb()) {
     <label>Превью (thumb)</label>
-    <select [(ngModel)]="hint.thumb_guid">
-      <option [ngValue]="undefined">— нет —</option>
-      @for (f of files; track f.guid) {
-        <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
+    <div class="file-row">
+      <select [(ngModel)]="hint.thumb_guid" [disabled]="disabled">
+        <option [ngValue]="undefined">— нет —</option>
+        @for (f of files; track f.guid) {
+          <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
+        }
+      </select>
+      @if (!disabled) {
+        <label class="upload-button" [class.busy]="isUploading">
+          Загрузить
+          <input type="file" hidden (change)="onUploadSelected($event, 'thumb')" [disabled]="isUploading" />
+        </label>
       }
-    </select>
+    </div>
   }
 
   @if (needsCaption()) {
     <label>Подпись</label>
-    <input type="text" [(ngModel)]="hint.caption" />
+    <input type="text" [(ngModel)]="hint.caption" [disabled]="disabled" />
   }
 
   @if (needsCaptionAbove()) {
     <label class="checkbox">
-      <input type="checkbox" [(ngModel)]="hint.show_caption_above_media" />
+      <input type="checkbox" [(ngModel)]="hint.show_caption_above_media" [disabled]="disabled" />
       Подпись над медиа
     </label>
   }

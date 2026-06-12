@@ -1,0 +1,58 @@
+@use "../../styles/component-mixins" as cm;
+
+.picker {
+  position: relative;
+  display: inline-block;
+}
+
+.picker-button {
+  @include cm.button-base();
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+  list-style: none;
+  user-select: none;
+}
+
+.picker-button::-webkit-details-marker {
+  display: none;
+}
+
+.picker-menu {
+  position: absolute;
+  right: 0;
+  z-index: 20;
+  margin-top: 0.3rem;
+  min-width: 15rem;
+  @include cm.surface-card(10px, 0.3rem);
+  box-shadow: 0 10px 28px rgba(16, 24, 40, 0.18);
+  display: grid;
+  gap: 0.1rem;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.picker-item:hover {
+  background: color-mix(in srgb, var(--app-surface) 70%, var(--app-accent));
+}
+
+.picker-emoji {
+  width: 1.4rem;
+  text-align: center;
+}

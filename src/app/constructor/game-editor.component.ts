@@ -1,13 +1,14 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
-import {RouterLink} from "@angular/router";
-import {ActivatedRoute, ParamMap} from "@angular/router";
+import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
-import {HttpErrorResponse} from "@angular/common/http";
 import {ConstructorService} from "./constructor.service";
 import {HintEditorComponent} from "./hint-editor.component";
+import {HintTypePickerComponent} from "./hint-type-picker.component";
+import {EffectsEditorComponent} from "./effects-editor.component";
 import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
 import {
+  CONTENT_TYPE_LABELS,
   EffectsPayload,
   generateEffectId,
   HintPayload,
@@ -20,20 +21,13 @@ import {
   validateScenario,
 } from "./constructor.models";
 import {SnackbarService} from "../snackbar/snackbar.service";
-
-interface EditorEffects {
-  id: string;
-  hints: HintPayload[];
-  bonus_minutes: number;
-  level_up: boolean;
-  next_level: string | null;
-}
+import {HttpAdapter} from "../http/http.adapter";
+import {AppEmoji, CONTENT_TYPE_EMOJI} from "../ui/emoji";
 
 interface EditorCondition {
-  type: ScenarioConditionType;
-  keysText: string;
-  action_time: number | null;
-  effects: EditorEffects;
+  keysText: string;            // EFFECTS_KEY
+  action_time: number | null;  // EFFECTS_TIMER
+  effects: EffectsPayload;
 }
 
 interface EditorTimeHint {
@@ -43,20 +37,30 @@ interface EditorTimeHint {
 
 interface EditorLevel {
   id: string;
+  /** Keys of the single WIN_KEY condition ("Ключ уровня"). */
+  winKeysText: string;
+  /** action_time of the winning timer ("Время автозавершения уровня"). */
+  autoFinishTime: number | null;
+  /** Preserved effects payload of the winning timer (round-trip safety). */
+  autoFinishEffects: EffectsPayload;
+  /** EFFECTS_KEY conditions. */
+  keyConditions: EditorCondition[];
+  /** Non-winning EFFECTS_TIMER conditions. */
+  timerConditions: EditorCondition[];
   time_hints: EditorTimeHint[];
-  conditions: EditorCondition[];
 }
+
+type FilePreviewKind = "image" | "video" | "audio" | "none";
 
 @Component({
   selector: "app-game-editor",
   standalone: true,
-  imports: [FormsModule, RouterLink, HintEditorComponent],
+  imports: [FormsModule, RouterLink, HintEditorComponent, HintTypePickerComponent, EffectsEditorComponent],
   templateUrl: "./game-editor.component.html",
   styleUrl: "./game-editor.component.scss",
 })
 export class GameEditorComponent implements OnInit, OnDestroy {
-  protected readonly ScenarioConditionType = ScenarioConditionType;
-  protected readonly statusLabels = STATUS_LABELS;
+  protected readonly AppEmoji = AppEmoji;
 
   gameId!: number;
   game: FullGame | undefined;
@@ -77,6 +81,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     private constructorService: ConstructorService,
     private route: ActivatedRoute,
     private snackbar: SnackbarService,
+    private http: HttpAdapter,
   ) {
   }
 
@@ -152,29 +157,58 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
   private toEditorLevel(level: Level): EditorLevel {
     const scenario = level.scenario;
-    return {
+    const editor: EditorLevel = {
       id: scenario?.id ?? level.name_id,
+      winKeysText: "",
+      autoFinishTime: null,
+      autoFinishEffects: this.newEffects(),
+      keyConditions: [],
+      timerConditions: [],
       time_hints: (scenario?.time_hints ?? []).map(th => ({
         time: th.time,
         hint: (th.hint ?? []) as HintPayload[],
       })),
-      conditions: (scenario?.conditions ?? []).map(c => this.toEditorCondition(c)),
     };
+
+    for (const condition of (scenario?.conditions ?? []) as any[]) {
+      const keys: string[] = Array.isArray(condition.keys) ? condition.keys : [];
+      const effects = this.toEffects(condition.effects);
+      const actionTime = typeof condition.action_time === "number" ? condition.action_time : null;
+
+      switch (condition.type) {
+        case ScenarioConditionType.winKey:
+          editor.winKeysText = [editor.winKeysText, keys.join(" ")].filter(Boolean).join(" ");
+          break;
+        case ScenarioConditionType.effectsKey:
+          editor.keyConditions.push({keysText: keys.join(" "), action_time: null, effects});
+          break;
+        case ScenarioConditionType.effectsTimer:
+          if (effects.level_up && editor.autoFinishTime === null) {
+            editor.autoFinishTime = actionTime;
+            editor.autoFinishEffects = effects;
+          } else {
+            // Extra winning timers are invalid per the contract — demote them.
+            editor.timerConditions.push({
+              keysText: "",
+              action_time: actionTime,
+              effects: {...effects, level_up: false, next_level: null},
+            });
+          }
+          break;
+      }
+    }
+
+    return editor;
   }
 
-  private toEditorCondition(condition: any): EditorCondition {
-    const rawEffects = Array.isArray(condition.effects) ? condition.effects[0] : condition.effects;
+  private toEffects(raw: any): EffectsPayload {
+    const effects = Array.isArray(raw) ? raw[0] : raw;
     return {
-      type: condition.type,
-      keysText: Array.isArray(condition.keys) ? condition.keys.join(" ") : "",
-      action_time: typeof condition.action_time === "number" ? condition.action_time : null,
-      effects: {
-        id: rawEffects?.id ?? generateEffectId(),
-        hints: (rawEffects?.hints ?? rawEffects?.hints_ ?? []) as HintPayload[],
-        bonus_minutes: typeof rawEffects?.bonus_minutes === "number" ? rawEffects.bonus_minutes : 0,
-        level_up: rawEffects?.level_up === true,
-        next_level: rawEffects?.next_level ?? null,
-      },
+      id: effects?.id ?? generateEffectId(),
+      hints: (effects?.hints ?? effects?.hints_ ?? []) as HintPayload[],
+      bonus_minutes: typeof effects?.bonus_minutes === "number" ? effects.bonus_minutes : 0,
+      level_up: effects?.level_up === true,
+      next_level: effects?.next_level ?? null,
     };
   }
 
@@ -214,16 +248,14 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   // -------------------------------------------------------------------------
 
   addLevel() {
-    const id = this.uniqueLevelId();
     this.levels.push({
-      id,
-      time_hints: [{time: 0, hint: [this.newHint()]}],
-      conditions: [{
-        type: ScenarioConditionType.winKey,
-        keysText: "",
-        action_time: null,
-        effects: this.newEffects(),
-      }],
+      id: this.uniqueLevelId(),
+      winKeysText: "",
+      autoFinishTime: null,
+      autoFinishEffects: this.newEffects(),
+      keyConditions: [],
+      timerConditions: [],
+      time_hints: [{time: 0, hint: []}],
     });
   }
 
@@ -251,21 +283,36 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     return id;
   }
 
+  levelIdsExcept(level: EditorLevel): string[] {
+    return this.levels.map(l => l.id).filter(id => id !== level.id);
+  }
+
+  conditionsCount(level: EditorLevel): number {
+    return (parseKeys(level.winKeysText).length > 0 ? 1 : 0)
+      + (level.autoFinishTime != null ? 1 : 0)
+      + level.keyConditions.length
+      + level.timerConditions.length;
+  }
+
+  hintsCount(level: EditorLevel): number {
+    return level.time_hints.length;
+  }
+
   // -------------------------------------------------------------------------
   // Time hints
   // -------------------------------------------------------------------------
 
   addTimeHint(level: EditorLevel) {
     const maxTime = level.time_hints.reduce((m, th) => Math.max(m, th.time), -1);
-    level.time_hints.push({time: maxTime + 5, hint: [this.newHint()]});
+    level.time_hints.push({time: maxTime + 5, hint: []});
   }
 
   removeTimeHint(level: EditorLevel, index: number) {
     level.time_hints.splice(index, 1);
   }
 
-  addHint(timeHint: EditorTimeHint) {
-    timeHint.hint.push(this.newHint());
+  addHint(timeHint: EditorTimeHint, type: HintType) {
+    timeHint.hint.push({type});
   }
 
   removeHint(timeHint: EditorTimeHint, index: number) {
@@ -276,52 +323,23 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   // Conditions
   // -------------------------------------------------------------------------
 
-  addCondition(level: EditorLevel) {
-    level.conditions.push({
-      type: ScenarioConditionType.effectsKey,
-      keysText: "",
-      action_time: null,
-      effects: this.newEffects(),
-    });
+  addKeyCondition(level: EditorLevel) {
+    level.keyConditions.push({keysText: "", action_time: null, effects: this.newEffects()});
   }
 
-  removeCondition(level: EditorLevel, index: number) {
-    level.conditions.splice(index, 1);
+  removeKeyCondition(level: EditorLevel, index: number) {
+    level.keyConditions.splice(index, 1);
   }
 
-  onConditionTypeChange(condition: EditorCondition) {
-    if (!condition.effects?.id) {
-      condition.effects = this.newEffects();
-    }
+  addTimerCondition(level: EditorLevel) {
+    level.timerConditions.push({keysText: "", action_time: null, effects: this.newEffects()});
   }
 
-  isKeyCondition(condition: EditorCondition): boolean {
-    return condition.type === ScenarioConditionType.winKey
-      || condition.type === ScenarioConditionType.effectsKey;
+  removeTimerCondition(level: EditorLevel, index: number) {
+    level.timerConditions.splice(index, 1);
   }
 
-  hasEffects(condition: EditorCondition): boolean {
-    return condition.type === ScenarioConditionType.effectsKey
-      || condition.type === ScenarioConditionType.effectsTimer;
-  }
-
-  isTimer(condition: EditorCondition): boolean {
-    return condition.type === ScenarioConditionType.effectsTimer;
-  }
-
-  addEffectHint(condition: EditorCondition) {
-    condition.effects.hints.push(this.newHint());
-  }
-
-  removeEffectHint(condition: EditorCondition, index: number) {
-    condition.effects.hints.splice(index, 1);
-  }
-
-  private newHint(): HintPayload {
-    return {type: HintType.text, text: ""};
-  }
-
-  private newEffects(): EditorEffects {
+  private newEffects(): EffectsPayload {
     return {
       id: generateEffectId(),
       hints: [],
@@ -345,7 +363,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.isUploading = true;
     this.constructorService.uploadFile(this.gameId, file).subscribe({
       next: uploaded => {
-        this.files = [...this.files.filter(f => f.guid !== uploaded.guid), uploaded];
+        this.addFile(uploaded);
         this.isUploading = false;
         this.snackbar.success(`Файл загружен: ${uploaded.original_filename}${uploaded.extension}`);
         input.value = "";
@@ -357,8 +375,48 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** A file uploaded from inside a hint editor — register it in the list. */
+  onHintFileUploaded(file: UploadedFile) {
+    this.addFile(file);
+  }
+
+  private addFile(file: UploadedFile) {
+    this.files = [...this.files.filter(f => f.guid !== file.guid), file];
+  }
+
   fileLabel(file: UploadedFile): string {
     return `${file.original_filename}${file.extension || ""}`;
+  }
+
+  fileEmoji(file: UploadedFile): string {
+    if (file.content_type && CONTENT_TYPE_EMOJI[file.content_type]) {
+      return CONTENT_TYPE_EMOJI[file.content_type];
+    }
+    return AppEmoji.files;
+  }
+
+  fileContentTypeLabel(file: UploadedFile): string | undefined {
+    if (!file.content_type) {
+      return undefined;
+    }
+    return CONTENT_TYPE_LABELS[file.content_type] ?? file.content_type;
+  }
+
+  filePreviewKind(file: UploadedFile): FilePreviewKind {
+    switch (file.content_type) {
+      case "photo":
+        return "image";
+      case "video":
+        return "video";
+      case "audio":
+        return "audio";
+      default:
+        return "none";
+    }
+  }
+
+  fileUrl(file: UploadedFile): string {
+    return this.http.getFileUrl(this.gameId, file.guid);
   }
 
   // -------------------------------------------------------------------------
@@ -376,7 +434,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
           time: Number(th.time),
           hint: th.hint.map(h => this.cleanHint(h)),
         })),
-        conditions: level.conditions.map(c => this.buildCondition(c)),
+        conditions: this.buildConditions(level),
       })),
       files: this.files.map(f => ({
         guid: f.guid,
@@ -389,22 +447,42 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     };
   }
 
-  private buildCondition(c: EditorCondition) {
-    if (c.type === ScenarioConditionType.winKey) {
-      return {type: c.type, keys: parseKeys(c.keysText)};
+  private buildConditions(level: EditorLevel) {
+    const conditions: any[] = [];
+
+    const winKeys = parseKeys(level.winKeysText);
+    if (winKeys.length > 0) {
+      conditions.push({type: ScenarioConditionType.winKey, keys: winKeys});
     }
-    if (c.type === ScenarioConditionType.effectsKey) {
-      return {type: c.type, keys: parseKeys(c.keysText), effects: this.buildEffects(c.effects)};
+
+    if (level.autoFinishTime != null) {
+      conditions.push({
+        type: ScenarioConditionType.effectsTimer,
+        action_time: Number(level.autoFinishTime),
+        effects: {...this.buildEffects(level.autoFinishEffects), level_up: true},
+      });
     }
-    // effects timer
-    return {
-      type: c.type,
-      action_time: c.action_time != null ? Number(c.action_time) : undefined,
-      effects: this.buildEffects(c.effects),
-    };
+
+    level.keyConditions.forEach(c => {
+      conditions.push({
+        type: ScenarioConditionType.effectsKey,
+        keys: parseKeys(c.keysText),
+        effects: this.buildEffects(c.effects),
+      });
+    });
+
+    level.timerConditions.forEach(c => {
+      conditions.push({
+        type: ScenarioConditionType.effectsTimer,
+        action_time: c.action_time != null ? Number(c.action_time) : undefined,
+        effects: {...this.buildEffects(c.effects), level_up: false, next_level: null},
+      });
+    });
+
+    return conditions;
   }
 
-  private buildEffects(e: EditorEffects): EffectsPayload {
+  private buildEffects(e: EffectsPayload): EffectsPayload {
     return {
       id: e.id,
       hints: e.hints.map(h => this.cleanHint(h)),
@@ -496,11 +574,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       next: () => {
         this.snackbar.success("Статус изменён");
         this.load();
-      },
-      error: err => {
-        if (err instanceof HttpErrorResponse) {
-          // handled by global error handler
-        }
       },
     });
   }

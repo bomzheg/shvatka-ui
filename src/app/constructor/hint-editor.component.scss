@@ -18,8 +18,7 @@
 }
 
 .hint-type {
-  @include cm.input-control();
-  flex: 1;
+  font-weight: 600;
 }
 
 label {
@@ -46,6 +45,45 @@ select {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
+}
+
+.file-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.file-row select {
+  flex: 1;
+}
+
+.upload-button {
+  @include cm.button-base();
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.upload-button.busy {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.preview {
+  max-width: 240px;
+  max-height: 180px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  object-fit: contain;
+  align-self: flex-start;
+}
+
+.preview-audio {
+  width: 100%;
+  max-width: 320px;
 }
 
 .ghost-button {

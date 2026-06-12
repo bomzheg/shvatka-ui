@@ -186,6 +186,14 @@ export const CAPTION_ABOVE_HINT_TYPES: HintType[] = [
   HintType.animation,
 ];
 
+/** Labels for the CDN `content_type` of an uploaded file. */
+export const CONTENT_TYPE_LABELS: Record<string, string> = {
+  photo: "Фото",
+  video: "Видео",
+  audio: "Аудио",
+  document: "Документ",
+};
+
 export const STATUS_LABELS: Record<string, string> = {
   underconstruction: "В разработке",
   ready: "Готова",
