@@ -15,6 +15,8 @@ import {
   generateEffectId,
   HintPayload,
   isEditableStatus,
+  isValidKey,
+  isValidLevelId,
   parseKeys,
   SCENARIO_MODEL_VERSION,
   ScenarioPayload,
@@ -228,29 +230,54 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       return provided as UploadedFile[];
     }
 
-    const guids = new Set<string>();
+    // The server doesn't return file metadata here, so derive at least the
+    // content type from the hint types referencing each guid (for previews).
+    const kinds = new Map<string, string | undefined>();
+    const note = (h: HintPayload) => {
+      if (h.file_guid && !kinds.has(h.file_guid)) {
+        kinds.set(h.file_guid, this.contentTypeForHintType(h.type));
+      }
+      if (h.thumb_guid && !kinds.has(h.thumb_guid)) {
+        kinds.set(h.thumb_guid, "photo");
+      }
+    };
+
     (game.levels ?? []).forEach(level => {
       (level.scenario?.time_hints ?? []).forEach(th => {
-        (th.hint ?? []).forEach(h => {
-          if (h.file_guid) guids.add(h.file_guid);
-          if (h.thumb_guid) guids.add(h.thumb_guid);
-        });
+        (th.hint ?? []).forEach(note);
       });
       (level.scenario?.conditions ?? []).forEach((c: any) => {
         const eff = Array.isArray(c.effects) ? c.effects[0] : c.effects;
         const hints = eff?.hints ?? eff?.hints_ ?? [];
-        hints.forEach((h: HintPayload) => {
-          if (h.file_guid) guids.add(h.file_guid);
-          if (h.thumb_guid) guids.add(h.thumb_guid);
-        });
+        hints.forEach((h: HintPayload) => note(h));
       });
     });
 
-    return Array.from(guids).map(guid => ({
+    return Array.from(kinds.entries()).map(([guid, contentType]) => ({
       guid,
       original_filename: guid,
       extension: "",
+      content_type: contentType,
     }));
+  }
+
+  private contentTypeForHintType(type: HintType): string | undefined {
+    switch (type) {
+      case HintType.photo:
+      case HintType.sticker:
+        return "photo";
+      case HintType.video:
+      case HintType.animation:
+      case HintType.video_note:
+        return "video";
+      case HintType.audio:
+      case HintType.voice:
+        return "audio";
+      case HintType.document:
+        return "document";
+      default:
+        return undefined;
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -298,6 +325,24 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
   allLevelIds(): string[] {
     return this.levels.map(l => l.id);
+  }
+
+  // -------------------------------------------------------------------------
+  // Live field validation
+  // -------------------------------------------------------------------------
+
+  /** Auto-capitalize keys as the user types. */
+  upperKeys(value: string): string {
+    return value.toUpperCase();
+  }
+
+  /** Empty is fine (no condition emitted); every entered key must match. */
+  areKeysOk(text: string): boolean {
+    return parseKeys(text).every(isValidKey);
+  }
+
+  isLevelIdOk(id: string): boolean {
+    return isValidLevelId(id);
   }
 
   conditionsCount(level: EditorLevel): number {
@@ -398,6 +443,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   fileLabel(file: UploadedFile): string {
+    const hasName = file.original_filename && file.original_filename !== file.guid;
+    if (!hasName) {
+      return `файл ${file.guid.slice(0, 8)}…`;
+    }
     return `${file.original_filename}${file.extension || ""}`;
   }
 

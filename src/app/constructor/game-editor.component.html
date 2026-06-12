@@ -10,13 +10,29 @@
 
   @if (game) {
     <div class="editor-head">
-      <h1>Редактирование игры</h1>
+      <h1>Редактирование игры «{{ name }}»</h1>
       <span class="status-badge">{{ statusLabel(status) }}</span>
+      @if (canOpenWaivers) {
+        <button type="button" class="primary" (click)="changeStatus('getting_waivers')">Открыть сбор вейверов</button>
+      }
+      @if (canComplete) {
+        <button type="button" class="primary" (click)="changeStatus('complete')">Опубликовать игру</button>
+      }
     </div>
 
     @if (!isEditable) {
       <p class="warn">Игра в статусе «{{ statusLabel(status) }}» — сценарий заморожен и недоступен для редактирования.</p>
     }
+
+    <!-- Planned start -->
+    <div class="block">
+      <h2>Планируемый старт</h2>
+      <div class="start-row">
+        <input type="datetime-local" [(ngModel)]="startAtLocal" [disabled]="!isEditable" />
+        <button type="button" class="primary" (click)="saveStartAt()" [disabled]="!isEditable">Сохранить</button>
+        <button type="button" class="ghost-button" (click)="clearStartAt()" [disabled]="!isEditable">Отменить старт</button>
+      </div>
+    </div>
 
     <!-- Game name -->
     <div class="block">
@@ -39,7 +55,7 @@
           <summary class="level-summary">
             @if (isEditable) {
               <span class="drag-handle" cdkDragHandle title="Перетащите, чтобы изменить порядок"
-                    (click)="$event.preventDefault(); $event.stopPropagation()">{{ AppEmoji.reorder }}</span>
+                    (click)="$event.preventDefault(); $event.stopPropagation()"></span>
             }
             <span class="level-title">#{{ li + 1 }} ({{ level.id }})</span>
             <span class="level-stats">
@@ -59,20 +75,34 @@
             <div class="level-head">
               <div class="level-id">
                 <label>ID уровня</label>
-                <input type="text" [(ngModel)]="level.id" [disabled]="!isEditable" />
+                <input type="text" [(ngModel)]="level.id" [disabled]="!isEditable"
+                       [class.invalid]="!isLevelIdOk(level.id)" />
+                @if (!isLevelIdOk(level.id)) {
+                  <span class="field-error">Только латинские буквы, цифры, «_» и «-», без пробелов.</span>
+                }
               </div>
             </div>
 
             <!-- 1. Default win key -->
             <div class="sub-block">
-              <label>{{ AppEmoji.key }} Ключ уровня (через пробел; формат SH… или СХ…)</label>
-              <input type="text" [(ngModel)]="level.winKeysText" [disabled]="!isEditable" placeholder="SH123 SH321" />
+              <label>{{ AppEmoji.key }} Ключ уровня (несколько — через пробел)</label>
+              <input type="text" [ngModel]="level.winKeysText"
+                     (ngModelChange)="level.winKeysText = upperKeys($event)"
+                     [disabled]="!isEditable" placeholder="SH123 SH321"
+                     [class.invalid]="!areKeysOk(level.winKeysText)" />
+              @if (!areKeysOk(level.winKeysText)) {
+                <span class="field-error">Ключ начинается с SH или СХ, дальше только заглавные буквы и цифры (например SH123, СХКЛЮЧ).</span>
+              }
             </div>
 
             <!-- 2. Auto-finish timer -->
             <div class="sub-block">
               <label>{{ AppEmoji.autoFinish }} Время автозавершения уровня (минуты; пусто — нет)</label>
-              <input class="time-input" type="number" [(ngModel)]="level.autoFinishTime" [disabled]="!isEditable" />
+              <input class="time-input" type="number" min="0" [(ngModel)]="level.autoFinishTime" [disabled]="!isEditable"
+                     [class.invalid]="level.autoFinishTime != null && level.autoFinishTime < 0" />
+              @if (level.autoFinishTime != null && level.autoFinishTime < 0) {
+                <span class="field-error">Время не может быть отрицательным.</span>
+              }
             </div>
 
             <!-- 3. Effect keys -->
@@ -86,11 +116,17 @@
               @for (c of level.keyConditions; track c; let ci = $index) {
                 <div class="condition">
                   <div class="condition-head">
-                    <input type="text" [(ngModel)]="c.keysText" [disabled]="!isEditable" placeholder="SHBONUS" />
+                    <input type="text" [ngModel]="c.keysText"
+                           (ngModelChange)="c.keysText = upperKeys($event)"
+                           [disabled]="!isEditable" placeholder="SHBONUS"
+                           [class.invalid]="!areKeysOk(c.keysText)" />
                     @if (isEditable) {
                       <button type="button" class="ghost-button danger" (click)="removeKeyCondition(level, ci)">Удалить</button>
                     }
                   </div>
+                  @if (!areKeysOk(c.keysText)) {
+                    <span class="field-error">Ключ начинается с SH или СХ, дальше только заглавные буквы и цифры (например SH123, СХКЛЮЧ).</span>
+                  }
                   <app-effects-editor
                     [effects]="c.effects"
                     [files]="files"
@@ -116,11 +152,15 @@
                 <div class="condition">
                   <div class="condition-head">
                     <label class="inline-label">Минута</label>
-                    <input class="time-input" type="number" [(ngModel)]="c.action_time" [disabled]="!isEditable" />
+                    <input class="time-input" type="number" min="0" [(ngModel)]="c.action_time" [disabled]="!isEditable"
+                           [class.invalid]="c.action_time != null && c.action_time < 0" />
                     @if (isEditable) {
                       <button type="button" class="ghost-button danger" (click)="removeTimerCondition(level, ci)">Удалить</button>
                     }
                   </div>
+                  @if (c.action_time != null && c.action_time < 0) {
+                    <span class="field-error">Время не может быть отрицательным.</span>
+                  }
                   <app-effects-editor
                     [effects]="c.effects"
                     [files]="files"
@@ -146,12 +186,16 @@
                 <div class="time-hint">
                   <div class="time-row">
                     <label class="inline-label">Минута</label>
-                    <input class="time-input" type="number" [(ngModel)]="th.time" [disabled]="!isEditable" />
+                    <input class="time-input" type="number" min="0" [(ngModel)]="th.time" [disabled]="!isEditable"
+                           [class.invalid]="th.time < 0" />
                     @if (isEditable) {
                       <app-hint-type-picker (picked)="addHint(th, $event)"></app-hint-type-picker>
                       <button type="button" class="ghost-button danger" (click)="removeTimeHint(level, ti)">Удалить время</button>
                     }
                   </div>
+                  @if (th.time < 0) {
+                    <span class="field-error">Время не может быть отрицательным.</span>
+                  }
                   <div class="hints">
                     @for (h of th.hint; track h; let hi = $index) {
                       <app-hint-editor
@@ -230,32 +274,5 @@
         </button>
       </div>
     }
-
-    <!-- Start time -->
-    <div class="block">
-      <h2>Планируемый старт</h2>
-      <div class="start-row">
-        <input type="datetime-local" [(ngModel)]="startAtLocal" [disabled]="!isEditable" />
-        <button type="button" class="primary" (click)="saveStartAt()" [disabled]="!isEditable">Сохранить</button>
-        <button type="button" class="ghost-button" (click)="clearStartAt()" [disabled]="!isEditable">Отменить старт</button>
-      </div>
-    </div>
-
-    <!-- Status -->
-    <div class="block">
-      <h2>Статус игры</h2>
-      <p>Текущий статус: <strong>{{ statusLabel(status) }}</strong></p>
-      <div class="status-actions">
-        @if (canOpenWaivers) {
-          <button type="button" class="primary" (click)="changeStatus('getting_waivers')">Открыть сбор вейверов</button>
-        }
-        @if (canComplete) {
-          <button type="button" class="primary" (click)="changeStatus('complete')">Опубликовать игру</button>
-        }
-        @if (!canOpenWaivers && !canComplete) {
-          <p class="hint-note">Для текущего статуса нет доступных переходов.</p>
-        }
-      </div>
-    </div>
   }
 </section>

@@ -39,6 +39,9 @@ label {
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
+  // Reserve the select's height so the toggle doesn't jump when next_level
+  // appears/disappears.
+  min-height: 2.6rem;
 }
 
 // Toggle switch

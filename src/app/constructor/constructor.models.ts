@@ -321,6 +321,9 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
     // §2 — unique times, non-empty hint lists
     const seenTimes = new Set<number>();
     level.time_hints.forEach(th => {
+      if (th.time < 0) {
+        errors.push(`${label}: время подсказки не может быть отрицательным (${th.time}).`);
+      }
       if (seenTimes.has(th.time)) {
         errors.push(`${label}: время ${th.time} повторяется в подсказках.`);
       }
@@ -384,6 +387,8 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
       if (c.type === ScenarioConditionType.effectsTimer) {
         if (typeof c.action_time !== "number") {
           errors.push(`${cl}: не задано время срабатывания таймера.`);
+        } else if (c.action_time < 0) {
+          errors.push(`${cl}: время таймера не может быть отрицательным (${c.action_time}).`);
         } else if (timerTimes.has(c.action_time)) {
           errors.push(`${cl}: два таймера на одно время (${c.action_time}).`);
         } else {
