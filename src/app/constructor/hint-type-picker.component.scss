@@ -22,10 +22,11 @@
 
 .picker-menu {
   position: absolute;
-  right: 0;
+  left: 0;
   z-index: 1100;
   margin-top: 0.3rem;
-  min-width: 15rem;
+  width: max-content;
+  min-width: 12rem;
   max-width: calc(100vw - 2rem);
   @include cm.surface-card(10px, 0.3rem);
   box-shadow: 0 10px 28px rgba(16, 24, 40, 0.18);
@@ -33,22 +34,6 @@
   gap: 0.1rem;
   max-height: 18rem;
   overflow-y: auto;
-}
-
-// On small screens anchor the menu as a bottom sheet so it can never run off
-// the side of the viewport regardless of where the trigger button sits.
-@media (max-width: 640px) {
-  .picker-menu {
-    position: fixed;
-    left: 0.75rem;
-    right: 0.75rem;
-    bottom: 0.75rem;
-    top: auto;
-    margin-top: 0;
-    min-width: 0;
-    max-width: none;
-    max-height: 60vh;
-  }
 }
 
 .picker-item {

@@ -1,4 +1,5 @@
 import {HintType, ScenarioConditionType} from "../domain/game.models";
+import {HttpErrorResponse} from "@angular/common/http";
 
 // ---------------------------------------------------------------------------
 // Constructor payload model — mirrors the "Game Scenario object" contract (§2).
@@ -250,6 +251,24 @@ export function parseKeys(raw: string): string[] {
     .map(p => p.trim().toUpperCase())
     .filter(p => p.length > 0);
   return Array.from(new Set(parts));
+}
+
+/** Human readable (ru) description of a request error, for snackbars. */
+export function describeError(err: unknown): string {
+  if (err instanceof HttpErrorResponse) {
+    if (err.status === 0) {
+      return "сервер недоступен";
+    }
+    const body = err.error as { type?: unknown; description?: unknown; text?: unknown } | null;
+    if (body && typeof body === "object") {
+      const type = String(body.type ?? "");
+      const description = String(body.description ?? body.text ?? "");
+      const parts = [type, description].filter(s => s.length > 0).join(": ");
+      return `[${err.status}] ${parts || "ошибка запроса"}`;
+    }
+    return `[${err.status}] ${err.statusText || "ошибка запроса"}`;
+  }
+  return "неизвестная ошибка";
 }
 
 export function generateEffectId(): string {

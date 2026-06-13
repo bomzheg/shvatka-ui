@@ -185,12 +185,12 @@
               @for (th of level.time_hints; track th; let ti = $index) {
                 <div class="time-hint">
                   <div class="time-row">
-                    <label class="inline-label">Минута</label>
+                    <span class="inline-label">подсказка в</span>
                     <input class="time-input" type="number" min="0" [(ngModel)]="th.time" [disabled]="!isEditable"
                            [class.invalid]="th.time < 0" />
+                    <span class="inline-label">мин.</span>
                     @if (isEditable) {
-                      <app-hint-type-picker (picked)="addHint(th, $event)"></app-hint-type-picker>
-                      <button type="button" class="ghost-button danger" (click)="removeTimeHint(level, ti)">Удалить время</button>
+                      <button type="button" class="ghost-button icon danger" (click)="removeTimeHint(level, ti)" title="Удалить подсказку">{{ AppEmoji.remove }}</button>
                     }
                   </div>
                   @if (th.time < 0) {
@@ -208,6 +208,9 @@
                       ></app-hint-editor>
                     }
                   </div>
+                  @if (isEditable) {
+                    <app-hint-type-picker label="+ контент" (picked)="addHint(th, $event)"></app-hint-type-picker>
+                  }
                 </div>
               }
             </div>

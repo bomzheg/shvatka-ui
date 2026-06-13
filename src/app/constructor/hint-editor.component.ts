@@ -10,6 +10,7 @@ import {
   HintPayload,
   THUMB_HINT_TYPES,
   UploadedFile,
+  describeError,
 } from "./constructor.models";
 import {ConstructorService} from "./constructor.service";
 import {HttpAdapter} from "../http/http.adapter";
@@ -117,6 +118,10 @@ export class HintEditorComponent {
       next: uploaded => {
         this.isUploading = false;
         input.value = "";
+        if (!uploaded || !uploaded.guid) {
+          this.snackbar.error("Сервер вернул файл без идентификатора");
+          return;
+        }
         this.fileUploaded.emit(uploaded);
         if (target === "file") {
           this.hint.file_guid = uploaded.guid;
@@ -125,9 +130,10 @@ export class HintEditorComponent {
         }
         this.snackbar.success(`Файл загружен: ${uploaded.original_filename}${uploaded.extension}`);
       },
-      error: () => {
+      error: err => {
         this.isUploading = false;
         input.value = "";
+        this.snackbar.error(`Не удалось загрузить файл: ${describeError(err)}`);
       },
     });
   }

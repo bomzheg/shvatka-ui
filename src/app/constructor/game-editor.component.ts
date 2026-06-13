@@ -11,6 +11,7 @@ import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
 import {
   CONTENT_TYPE_LABELS,
+  describeError,
   EffectsPayload,
   generateEffectId,
   HintPayload,
@@ -440,9 +441,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
         this.snackbar.success(`Файл загружен: ${uploaded.original_filename}${uploaded.extension}`);
         input.value = "";
       },
-      error: () => {
+      error: err => {
         this.isUploading = false;
         input.value = "";
+        this.snackbar.error(`Не удалось загрузить файл: ${describeError(err)}`);
       },
     });
   }

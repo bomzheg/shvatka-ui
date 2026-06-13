@@ -8,8 +8,7 @@
 
   @switch (hint.type) {
     @case (HintType.text) {
-      <label>Текст</label>
-      <textarea rows="3" [(ngModel)]="hint.text" [disabled]="disabled"></textarea>
+      <textarea rows="3" [(ngModel)]="hint.text" [disabled]="disabled" placeholder="Текст подсказки"></textarea>
     }
 
     @case (HintType.gps) {
