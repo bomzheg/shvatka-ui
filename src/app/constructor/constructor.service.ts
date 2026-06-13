@@ -1,6 +1,8 @@
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs";
+import {HttpClient} from "@angular/common/http";
 import {HttpAdapter} from "../http/http.adapter";
+import {environment} from "../../environments/environment";
 import {Page} from "../games/games.service";
 import {FullGame} from "../domain/game.models";
 import {MyGame, ScenarioPayload, UploadedFile} from "./constructor.models";
@@ -9,7 +11,7 @@ import {MyGame, ScenarioPayload, UploadedFile} from "./constructor.models";
   providedIn: "root",
 })
 export class ConstructorService {
-  constructor(private http: HttpAdapter) {
+  constructor(private http: HttpAdapter, private httpClient: HttpClient) {
   }
 
   /** §1.1 — list the current author's game drafts (not complete). */
@@ -46,6 +48,10 @@ export class ConstructorService {
   uploadFile(id: number, file: File): Observable<UploadedFile> {
     const formData = new FormData();
     formData.append("file", file);
-    return this.http.postCdnForm<UploadedFile>(`/games/${id}/files`, formData);
+    return this.httpClient.post<UploadedFile>(
+      `${environment.cdnUrl}/games/${id}/files`,
+      formData,
+      {withCredentials: true},
+    );
   }
 }
