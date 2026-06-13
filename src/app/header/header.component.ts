@@ -113,6 +113,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return this.userService.isUserLoaded();
   }
 
+  canBeAuthor() {
+    return this.userService.canBeAuthor();
+  }
+
   async ngOnInit() {
     this.selectedThemeMode = this.themeService.getMode();
     this.gamesService.getActiveGame().subscribe(game => {

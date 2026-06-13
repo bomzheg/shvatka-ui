@@ -73,6 +73,14 @@ export class HttpAdapter {
     return `${this.config.cdnUrl}/games/${gameId}/files/${fileId}`
   }
 
+  postCdnForm<T>(url: string, formData: FormData): Observable<T> {
+    return this.http.post<T>(
+      this.config.cdnUrl + url,
+      formData,
+      {withCredentials: true},
+    );
+  }
+
   private shouldBlockProtectedRequest(url: string): boolean {
     if (!this.authStateService.isUnauthenticated()) {
       return false;
@@ -83,6 +91,7 @@ export class HttpAdapter {
 
   private isProtectedUrl(url: string): boolean {
     return /^\/games\/\d+$/.test(url)
+      || /^\/games\/my(\/.*)?$/.test(url)
       || /^\/games\/\d+\/keys$/.test(url)
       || /^\/games\/\d+\/stat$/.test(url)
       || /^\/games\/\d+\/files\/.+$/.test(url)

@@ -1,0 +1,128 @@
+@use "../../styles/component-mixins" as cm;
+
+.hint-editor {
+  border: 1px dashed var(--app-border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: color-mix(in srgb, var(--app-surface) 92%, transparent);
+}
+
+.hint-head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.hint-type {
+  font-weight: 600;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
+label.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: inherit;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  @include cm.input-control();
+  width: 100%;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.file-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.file-row select {
+  flex: 1;
+}
+
+.upload-button {
+  @include cm.button-base();
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.upload-button.busy {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.file-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--app-accent);
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-bottom: 1px dashed currentColor;
+  line-height: 1.2;
+}
+
+.current-file {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.preview {
+  max-width: 240px;
+  max-height: 180px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  object-fit: contain;
+  align-self: flex-start;
+}
+
+.preview-audio {
+  width: 100%;
+  max-width: 320px;
+}
+
+.ghost-button {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+}
+
+.ghost-button.danger {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+.hint-note {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  margin: 0;
+}

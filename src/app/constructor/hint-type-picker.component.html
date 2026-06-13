@@ -1,0 +1,11 @@
+<details class="picker" #menu>
+  <summary class="picker-button">{{ label }}</summary>
+  <div class="picker-menu">
+    @for (t of allTypes; track t) {
+      <button type="button" class="picker-item" (click)="pick(t)">
+        <span class="picker-emoji">{{ typeEmoji[t] }}</span>
+        <span>{{ typeLabels[t] }}</span>
+      </button>
+    }
+  </div>
+</details>

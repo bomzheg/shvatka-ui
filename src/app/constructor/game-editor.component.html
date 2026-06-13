@@ -1,0 +1,287 @@
+<section class="editor-page">
+  <a routerLink="/games/constructor" class="back-link">← К списку игр</a>
+
+  @if (isLoading && !game) {
+    <div class="loading-state" aria-live="polite">
+      <span class="loading-spinner"></span>
+      Загрузка игры...
+    </div>
+  }
+
+  @if (game) {
+    <div class="editor-head">
+      <h1>Редактирование игры «{{ name }}»</h1>
+      <span class="status-badge">{{ statusLabel(status) }}</span>
+      @if (canOpenWaivers) {
+        <button type="button" class="primary" (click)="changeStatus('getting_waivers')">Начать сбор вейверов</button>
+      }
+      @if (canComplete) {
+        <button type="button" class="primary" (click)="changeStatus('complete')">Опубликовать игру</button>
+      }
+    </div>
+
+    @if (!isEditable) {
+      <p class="warn">Игра в статусе «{{ statusLabel(status) }}» — сценарий заморожен и недоступен для редактирования.</p>
+    }
+
+    <!-- Planned start -->
+    <div class="block">
+      <h2>Планируемый старт</h2>
+      <div class="start-row">
+        <input type="datetime-local" [(ngModel)]="startAtLocal" [disabled]="!isEditable" />
+        <button type="button" class="primary" (click)="saveStartAt()" [disabled]="!isEditable">Сохранить</button>
+        <button type="button" class="ghost-button" (click)="clearStartAt()" [disabled]="!isEditable">Отменить старт</button>
+      </div>
+    </div>
+
+    <!-- Game name -->
+    <div class="block">
+      <label for="gameName">Название игры</label>
+      <input id="gameName" type="text" [(ngModel)]="name" [disabled]="!isEditable" />
+    </div>
+
+    <!-- Levels -->
+    <div class="block">
+      <div class="block-head">
+        <h2>{{ AppEmoji.level }} Уровни</h2>
+        @if (isEditable) {
+          <button type="button" class="primary" (click)="addLevel()">+ Уровень</button>
+        }
+      </div>
+
+      <div cdkDropList (cdkDropListDropped)="onLevelDrop($event)">
+      @for (level of levels; track level; let li = $index) {
+        <details class="level-card" cdkDrag [cdkDragDisabled]="!isEditable || anyLevelExpanded()"
+                 [open]="level.expanded" (toggle)="onLevelToggle(level, $event)">
+          <summary class="level-summary">
+            <span class="level-caption">
+              @if (isEditable && !anyLevelExpanded()) {
+                <span class="drag-handle" cdkDragHandle title="Перетащите, чтобы изменить порядок"
+                      (click)="$event.preventDefault(); $event.stopPropagation()"></span>
+              }
+              <span class="level-title">#{{ li + 1 }} ({{ level.id }})</span>
+            </span>
+            <span class="level-stats">
+              {{ AppEmoji.key }} условий: {{ conditionsCount(level) }}
+              {{ AppEmoji.bonusHint }} подсказок: {{ hintsCount(level) }}
+            </span>
+            @if (isEditable) {
+              <span class="level-actions">
+                <button type="button" class="ghost-button icon" (click)="moveLevel(li, -1); $event.preventDefault(); $event.stopPropagation()" [disabled]="li === 0" title="Вверх">↑</button>
+                <button type="button" class="ghost-button icon" (click)="moveLevel(li, 1); $event.preventDefault(); $event.stopPropagation()" [disabled]="li === levels.length - 1" title="Вниз">↓</button>
+                <button type="button" class="ghost-button icon danger" (click)="removeLevel(li); $event.preventDefault(); $event.stopPropagation()" title="Удалить уровень">{{ AppEmoji.remove }}</button>
+              </span>
+            }
+          </summary>
+
+          <div class="level-body">
+            <div class="level-head">
+              <div class="level-id">
+                <label>ID уровня</label>
+                <input type="text" [(ngModel)]="level.id" [disabled]="!isEditable"
+                       [class.invalid]="!isLevelIdOk(level.id)" />
+                @if (!isLevelIdOk(level.id)) {
+                  <span class="field-error">Только латинские буквы, цифры, «_» и «-», без пробелов.</span>
+                }
+              </div>
+            </div>
+
+            <!-- 1. Default win key -->
+            <div class="sub-block">
+              <label>{{ AppEmoji.key }} Ключ уровня (несколько — через пробел)</label>
+              <input type="text" [ngModel]="level.winKeysText"
+                     (ngModelChange)="level.winKeysText = upperKeys($event)"
+                     [disabled]="!isEditable" placeholder="например: SH123 SH321"
+                     [class.invalid]="!areKeysOk(level.winKeysText)" />
+              @if (!areKeysOk(level.winKeysText)) {
+                <span class="field-error">Ключ начинается с SH или СХ, дальше только заглавные буквы и цифры (например SH123, СХКЛЮЧ).</span>
+              }
+            </div>
+
+            <!-- 2. Auto-finish timer -->
+            <div class="sub-block">
+              <label>{{ AppEmoji.autoFinish }} Время автозавершения уровня (минуты; пусто — нет)</label>
+              <input class="time-input" type="number" min="0" [(ngModel)]="level.autoFinishTime" [disabled]="!isEditable"
+                     [class.invalid]="level.autoFinishTime != null && level.autoFinishTime < 0" />
+              @if (level.autoFinishTime != null && level.autoFinishTime < 0) {
+                <span class="field-error">Время не может быть отрицательным.</span>
+              }
+            </div>
+
+            <!-- 3. Effect keys -->
+            <div class="sub-block">
+              <div class="block-head">
+                <h3>{{ AppEmoji.key }} Ключи с эффектами</h3>
+                @if (isEditable) {
+                  <button type="button" class="ghost-button" (click)="addKeyCondition(level)">+ Ключ</button>
+                }
+              </div>
+              @for (c of level.keyConditions; track c; let ci = $index) {
+                <div class="condition">
+                  <div class="condition-head">
+                    <input type="text" [ngModel]="c.keysText"
+                           (ngModelChange)="c.keysText = upperKeys($event)"
+                           [disabled]="!isEditable" placeholder="например: SHBONUS"
+                           [class.invalid]="!areKeysOk(c.keysText)" />
+                    @if (isEditable) {
+                      <button type="button" class="ghost-button danger" (click)="removeKeyCondition(level, ci)">Удалить</button>
+                    }
+                  </div>
+                  @if (!areKeysOk(c.keysText)) {
+                    <span class="field-error">Ключ начинается с SH или СХ, дальше только заглавные буквы и цифры (например SH123, СХКЛЮЧ).</span>
+                  }
+                  <app-effects-editor
+                    [effects]="c.effects"
+                    [files]="files"
+                    [gameId]="gameId"
+                    [objectUrls]="objectUrls"
+                    [disabled]="!isEditable"
+                    [allowLevelUp]="true"
+                    [levelIds]="allLevelIds()"
+                    (fileUploaded)="onHintFileUploaded($event)"
+                  ></app-effects-editor>
+                </div>
+              }
+            </div>
+
+            <!-- 4. Effect timers -->
+            <div class="sub-block">
+              <div class="block-head">
+                <h3>{{ AppEmoji.timer }} Таймеры с эффектами</h3>
+                @if (isEditable) {
+                  <button type="button" class="ghost-button" (click)="addTimerCondition(level)">+ Таймер</button>
+                }
+              </div>
+              @for (c of level.timerConditions; track c; let ci = $index) {
+                <div class="condition">
+                  <div class="condition-head">
+                    <label class="inline-label">Минута</label>
+                    <input class="time-input" type="number" min="0" [(ngModel)]="c.action_time" [disabled]="!isEditable"
+                           [class.invalid]="c.action_time != null && c.action_time < 0" />
+                    @if (isEditable) {
+                      <button type="button" class="ghost-button danger" (click)="removeTimerCondition(level, ci)">Удалить</button>
+                    }
+                  </div>
+                  @if (c.action_time != null && c.action_time < 0) {
+                    <span class="field-error">Время не может быть отрицательным.</span>
+                  }
+                  <app-effects-editor
+                    [effects]="c.effects"
+                    [files]="files"
+                    [gameId]="gameId"
+                    [objectUrls]="objectUrls"
+                    [disabled]="!isEditable"
+                    [allowLevelUp]="false"
+                    (fileUploaded)="onHintFileUploaded($event)"
+                  ></app-effects-editor>
+                </div>
+              }
+            </div>
+
+            <!-- 5. Time hints -->
+            <div class="sub-block">
+              <div class="block-head">
+                <h3>{{ AppEmoji.bonusHint }} Подсказки по времени</h3>
+                @if (isEditable) {
+                  <button type="button" class="ghost-button" (click)="addTimeHint(level)">+ Время</button>
+                }
+              </div>
+
+              @for (th of level.time_hints; track th; let ti = $index) {
+                <div class="time-hint">
+                  <div class="time-row">
+                    <span class="inline-label">подсказка в</span>
+                    <input class="time-input" type="number" min="0" [(ngModel)]="th.time" [disabled]="!isEditable"
+                           [class.invalid]="th.time < 0" />
+                    <span class="inline-label">мин.</span>
+                    @if (isEditable) {
+                      <button type="button" class="ghost-button icon danger" (click)="removeTimeHint(level, ti)" title="Удалить подсказку">{{ AppEmoji.remove }}</button>
+                    }
+                  </div>
+                  @if (th.time < 0) {
+                    <span class="field-error">Время не может быть отрицательным.</span>
+                  }
+                  <div class="hints">
+                    @for (h of th.hint; track h; let hi = $index) {
+                      <app-hint-editor
+                        [hint]="h"
+                        [files]="files"
+                        [gameId]="gameId"
+                        [objectUrls]="objectUrls"
+                        [disabled]="!isEditable"
+                        (remove)="removeHint(th, hi)"
+                        (fileUploaded)="onHintFileUploaded($event)"
+                      ></app-hint-editor>
+                    }
+                  </div>
+                  @if (isEditable) {
+                    <app-hint-type-picker label="+ контент" (picked)="addHint(th, $event)"></app-hint-type-picker>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </details>
+      }
+      </div>
+    </div>
+
+    <!-- Files -->
+    <div class="block">
+      <h2>{{ AppEmoji.files }} Файлы</h2>
+      <p class="hint-note">Все загруженные файлы игры. Загружать можно и прямо из подсказки.</p>
+      @if (files.length > 0) {
+        <ul class="files-list">
+          @for (f of files; track f.guid) {
+            <li>
+              <div class="file-info">
+                <span class="file-name">{{ fileEmoji(f) }} {{ fileLabel(f) }}</span>
+                @if (fileContentTypeLabel(f)) {
+                  <span class="file-type">{{ fileContentTypeLabel(f) }}</span>
+                }
+              </div>
+              @switch (filePreviewKind(f)) {
+                @case ("image") {
+                  <app-image-lightbox [src]="fileUrl(f)"></app-image-lightbox>
+                }
+                @case ("video") {
+                  <video class="file-preview" [src]="fileUrl(f)" controls preload="none"></video>
+                }
+                @case ("audio") {
+                  <audio class="file-preview-audio" [src]="fileUrl(f)" controls preload="none"></audio>
+                }
+              }
+            </li>
+          }
+        </ul>
+      }
+      @if (isEditable) {
+        <label class="upload-button" [class.busy]="isUploading">
+          {{ AppEmoji.upload }} {{ isUploading ? "Загрузка..." : "Загрузить файл" }}
+          <input type="file" hidden (change)="onFileSelected($event)" [disabled]="isUploading" />
+        </label>
+      }
+    </div>
+
+    <!-- Validation errors -->
+    @if (validationErrors.length > 0) {
+      <div class="block errors">
+        <h3>Ошибки проверки</h3>
+        <ul>
+          @for (err of validationErrors; track err) {
+            <li>{{ err }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <!-- Save -->
+    @if (isEditable) {
+      <div class="actions-bar">
+        <button type="button" class="primary" (click)="save()" [disabled]="isSaving">
+          {{ isSaving ? "Сохраняем..." : "Сохранить сценарий" }}
+        </button>
+      </div>
+    }
+  }
+</section>

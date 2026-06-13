@@ -1,0 +1,393 @@
+@use "../../styles/component-mixins" as cm;
+
+.editor-page {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: var(--app-accent);
+  text-decoration: none;
+}
+
+.editor-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+h1 {
+  margin: 0;
+  color: inherit;
+  font-size: 1.6rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  h1 {
+    flex: 1 1 100%;
+    font-size: 1.3rem;
+  }
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+  color: inherit;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 0;
+  color: inherit;
+}
+
+.status-badge {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  background: color-mix(in srgb, var(--app-surface) 70%, var(--app-accent));
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.warn {
+  color: #b26a00;
+  background: color-mix(in srgb, var(--app-surface) 80%, #f0ad4e);
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+}
+
+.block {
+  @include cm.surface-card(14px, 1rem);
+  margin: 1rem 0;
+}
+
+.block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+label {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.inline-label {
+  display: inline;
+  margin: 0;
+  white-space: nowrap;
+  flex: none;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="datetime-local"],
+select {
+  @include cm.input-control();
+  width: 100%;
+}
+
+input.invalid {
+  border-color: #c62828;
+}
+
+.field-error {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: #c62828;
+}
+
+.primary {
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ghost-button {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+}
+
+.ghost-button.danger {
+  color: #c62828;
+  border-color: #c62828;
+}
+
+.ghost-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+// Collapsible level card
+.level-card {
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  background: color-mix(in srgb, var(--app-surface) 96%, transparent);
+}
+
+.level-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: 0.7rem 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+}
+
+.level-caption {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.level-title {
+  overflow-wrap: anywhere;
+}
+
+.drag-handle {
+  cursor: grab;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.6;
+  width: 1rem;
+  text-align: center;
+  flex: none;
+}
+
+.drag-handle::before {
+  content: "⠿";
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.ghost-button.icon {
+  padding: 0.3rem 0.5rem;
+  line-height: 1;
+}
+
+.level-summary::marker {
+  content: "";
+}
+
+.level-summary::-webkit-details-marker {
+  display: none;
+}
+
+.level-card[open] .level-summary {
+  border-bottom: 1px dashed var(--app-border);
+}
+
+.level-stats {
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  white-space: nowrap;
+}
+
+.level-body {
+  padding: 0.85rem;
+}
+
+.level-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.sub-block {
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--app-border);
+}
+
+.time-hint {
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  padding: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+input.time-input {
+  width: 6rem;
+  max-width: 100%;
+}
+
+.hints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.condition {
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  padding: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.condition-head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.condition-head input[type="text"] {
+  flex: 1;
+  min-width: 8rem;
+}
+
+// Files
+.files-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 0.6rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.files-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.file-name {
+  font-weight: 600;
+}
+
+.file-type {
+  font-size: 0.8rem;
+  color: var(--app-muted-text);
+  background: color-mix(in srgb, var(--app-surface) 70%, var(--app-accent));
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.file-preview {
+  max-width: 240px;
+  max-height: 180px;
+  border-radius: 8px;
+  border: 1px solid var(--app-border);
+  object-fit: contain;
+  align-self: flex-start;
+}
+
+.file-preview-audio {
+  width: 100%;
+  max-width: 320px;
+}
+
+.upload-button {
+  @include cm.button-base();
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+}
+
+.upload-button.busy {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.hint-note {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  margin: 0.3rem 0;
+}
+
+.errors {
+  border-color: #c62828;
+}
+
+.errors ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.errors li {
+  color: #c62828;
+  font-size: 0.9rem;
+}
+
+.actions-bar {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.75rem 0;
+}
+
+.actions-bar .primary {
+  font-size: 1rem;
+  padding: 0.7rem 1.4rem;
+}
+
+.start-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .level-caption {
+    flex-basis: 100%;
+  }
+
+  .start-row input[type="datetime-local"] {
+    flex: 1 1 100%;
+  }
+
+  .actions-bar .primary {
+    flex: 1;
+  }
+}

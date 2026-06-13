@@ -8,6 +8,7 @@ import {AuthStateService} from "./auth-state.service";
 export class UserData {
   id: number | undefined;
   name_mention: string | undefined;
+  can_be_author: boolean | undefined;
 }
 
 @Injectable({
@@ -52,6 +53,11 @@ export class UserService {
 
   public isUserLoaded() {
     return this.me !== undefined;
+  }
+
+  public canBeAuthor() {
+    // Show author tools unless the backend explicitly says the user can't.
+    return this.me !== undefined && this.me.can_be_author !== false;
   }
 
   public clearUser() {

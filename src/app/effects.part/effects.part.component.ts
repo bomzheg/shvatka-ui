@@ -2,6 +2,7 @@ import {Component, Input} from '@angular/core';
 import {EffectLike, Effects, HintPart} from "../domain/game.models";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {HttpAdapter} from "../http/http.adapter";
+import {AppEmoji} from "../ui/emoji";
 
 @Component({
   selector: 'app-effects-part',
@@ -28,22 +29,22 @@ export class EffectsPartComponent {
     const bonusMinutes = typeof effect.bonus_minutes === 'number' ? effect.bonus_minutes : 0;
 
     if (bonusMinutes > 0) {
-      tags.push(`💰бонус ${bonusMinutes} мин.`);
+      tags.push(`${AppEmoji.bonus}бонус ${bonusMinutes} мин.`);
     } else if (bonusMinutes < 0) {
-      tags.push(`💸штраф ${-bonusMinutes} мин.`);
+      tags.push(`${AppEmoji.penalty}штраф ${-bonusMinutes} мин.`);
     }
 
     if (effect.level_up) {
       if (effect.next_level) {
-        tags.push(`🔀переход на ${effect.next_level}`);
+        tags.push(`${AppEmoji.jump}переход на ${effect.next_level}`);
       } else {
-        tags.push('✅переход на следующий уровень');
+        tags.push(`${AppEmoji.levelUp}переход на следующий уровень`);
       }
     }
 
     const hintsCount = Effects.hints(effect).length;
     if (hintsCount > 0) {
-      tags.push(`💡бонусные подсказки (${hintsCount}):`);
+      tags.push(`${AppEmoji.bonusHint}бонусные подсказки (${hintsCount}):`);
     }
 
     return tags;

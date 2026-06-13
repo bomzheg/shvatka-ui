@@ -132,7 +132,7 @@
             @for (event of getCurrentLevelEvents(); track event.id) {
               <li class="event-entry">
                 <strong>{{ toLocal(event.at) }}</strong>
-                @if(event.key) {<span>🔑{{event.key}}</span>}
+                @if(event.key) {<span>{{AppEmoji.key}}{{event.key}}</span>}
                 @if(event.is_timer) {<span>🕑</span>}
                 @if (hasEventVisibleEffects(event)) {
                   <button
@@ -171,7 +171,7 @@
               @for (event of getPreviousLevelEvents(); track event.id) {
                 <li class="event-entry">
                   <strong>{{ toLocal(event.at) }}</strong>
-                  @if(event.key) {<span>🔑{{event.key}}</span>}
+                  @if(event.key) {<span>{{AppEmoji.key}}{{event.key}}</span>}
                   @if(event.is_timer) {<span>🕑</span>}
                   @if (hasEventVisibleEffects(event)) {
                     <button
