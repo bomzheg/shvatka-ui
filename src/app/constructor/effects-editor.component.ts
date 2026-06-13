@@ -17,6 +17,7 @@ export class EffectsEditorComponent {
   @Input({required: true}) effects!: EffectsPayload;
   @Input() files: UploadedFile[] = [];
   @Input() gameId: number | undefined;
+  @Input() objectUrls?: Map<string, string>;
   @Input() disabled = false;
   /** Whether the level-up ("завершение уровня") toggle is shown. */
   @Input() allowLevelUp = true;

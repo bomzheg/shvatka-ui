@@ -13,7 +13,7 @@
       <h1>Редактирование игры «{{ name }}»</h1>
       <span class="status-badge">{{ statusLabel(status) }}</span>
       @if (canOpenWaivers) {
-        <button type="button" class="primary" (click)="changeStatus('getting_waivers')">Открыть сбор вейверов</button>
+        <button type="button" class="primary" (click)="changeStatus('getting_waivers')">Начать сбор вейверов</button>
       }
       @if (canComplete) {
         <button type="button" class="primary" (click)="changeStatus('complete')">Опубликовать игру</button>
@@ -51,9 +51,10 @@
 
       <div cdkDropList (cdkDropListDropped)="onLevelDrop($event)">
       @for (level of levels; track level; let li = $index) {
-        <details class="level-card" cdkDrag [cdkDragDisabled]="!isEditable">
+        <details class="level-card" cdkDrag [cdkDragDisabled]="!isEditable || anyLevelExpanded()"
+                 [open]="level.expanded" (toggle)="onLevelToggle(level, $event)">
           <summary class="level-summary">
-            @if (isEditable) {
+            @if (isEditable && !anyLevelExpanded()) {
               <span class="drag-handle" cdkDragHandle title="Перетащите, чтобы изменить порядок"
                     (click)="$event.preventDefault(); $event.stopPropagation()"></span>
             }
@@ -88,7 +89,7 @@
               <label>{{ AppEmoji.key }} Ключ уровня (несколько — через пробел)</label>
               <input type="text" [ngModel]="level.winKeysText"
                      (ngModelChange)="level.winKeysText = upperKeys($event)"
-                     [disabled]="!isEditable" placeholder="SH123 SH321"
+                     [disabled]="!isEditable" placeholder="например: SH123 SH321"
                      [class.invalid]="!areKeysOk(level.winKeysText)" />
               @if (!areKeysOk(level.winKeysText)) {
                 <span class="field-error">Ключ начинается с SH или СХ, дальше только заглавные буквы и цифры (например SH123, СХКЛЮЧ).</span>
@@ -118,7 +119,7 @@
                   <div class="condition-head">
                     <input type="text" [ngModel]="c.keysText"
                            (ngModelChange)="c.keysText = upperKeys($event)"
-                           [disabled]="!isEditable" placeholder="SHBONUS"
+                           [disabled]="!isEditable" placeholder="например: SHBONUS"
                            [class.invalid]="!areKeysOk(c.keysText)" />
                     @if (isEditable) {
                       <button type="button" class="ghost-button danger" (click)="removeKeyCondition(level, ci)">Удалить</button>
@@ -131,6 +132,7 @@
                     [effects]="c.effects"
                     [files]="files"
                     [gameId]="gameId"
+                    [objectUrls]="objectUrls"
                     [disabled]="!isEditable"
                     [allowLevelUp]="true"
                     [levelIds]="allLevelIds()"
@@ -165,6 +167,7 @@
                     [effects]="c.effects"
                     [files]="files"
                     [gameId]="gameId"
+                    [objectUrls]="objectUrls"
                     [disabled]="!isEditable"
                     [allowLevelUp]="false"
                     (fileUploaded)="onHintFileUploaded($event)"
@@ -202,6 +205,7 @@
                         [hint]="h"
                         [files]="files"
                         [gameId]="gameId"
+                        [objectUrls]="objectUrls"
                         [disabled]="!isEditable"
                         (remove)="removeHint(th, hi)"
                         (fileUploaded)="onHintFileUploaded($event)"

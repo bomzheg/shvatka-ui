@@ -15,7 +15,7 @@ import {
 import {ConstructorService} from "./constructor.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {SnackbarService} from "../snackbar/snackbar.service";
-import {CONTENT_TYPE_EMOJI, HINT_TYPE_EMOJI} from "../ui/emoji";
+import {AppEmoji, CONTENT_TYPE_EMOJI, HINT_TYPE_EMOJI} from "../ui/emoji";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 
 type PreviewKind = "image" | "video" | "audio" | "none";
@@ -31,13 +31,18 @@ export class HintEditorComponent {
   @Input({required: true}) hint!: HintPayload;
   @Input() files: UploadedFile[] = [];
   @Input() gameId: number | undefined;
+  @Input() objectUrls?: Map<string, string>;
   @Input() disabled = false;
   @Output() remove = new EventEmitter<void>();
   @Output() fileUploaded = new EventEmitter<UploadedFile>();
 
   protected readonly HintType = HintType;
+  protected readonly AppEmoji = AppEmoji;
 
   isUploading = false;
+  /** "выбрать из загруженных" toggles the file/thumb picker dropdowns. */
+  showFileBrowser = false;
+  showThumbBrowser = false;
 
   constructor(
     private constructorService: ConstructorService,
@@ -122,11 +127,14 @@ export class HintEditorComponent {
           this.snackbar.error("Сервер вернул файл без идентификатора");
           return;
         }
+        this.objectUrls?.set(uploaded.guid, URL.createObjectURL(file));
         this.fileUploaded.emit(uploaded);
         if (target === "file") {
           this.hint.file_guid = uploaded.guid;
+          this.showFileBrowser = false;
         } else {
           this.hint.thumb_guid = uploaded.guid;
+          this.showThumbBrowser = false;
         }
         this.snackbar.success(`Файл загружен: ${uploaded.original_filename}${uploaded.extension}`);
       },
@@ -163,9 +171,35 @@ export class HintEditorComponent {
   }
 
   previewUrl(): string | undefined {
-    if (!this.hint.file_guid || this.gameId === undefined) {
+    const guid = this.hint.file_guid;
+    if (!guid) {
       return undefined;
     }
-    return this.http.getFileUrl(this.gameId, this.hint.file_guid);
+    const local = this.objectUrls?.get(guid);
+    if (local) {
+      return local;
+    }
+    if (this.gameId === undefined) {
+      return undefined;
+    }
+    return this.http.getFileUrl(this.gameId, guid);
+  }
+
+  toggleFileBrowser() {
+    this.showFileBrowser = !this.showFileBrowser;
+  }
+
+  toggleThumbBrowser() {
+    this.showThumbBrowser = !this.showThumbBrowser;
+  }
+
+  currentFileLabel(): string | undefined {
+    const f = this.files.find(file => file.guid === this.hint.file_guid);
+    return f ? this.fileLabel(f) : undefined;
+  }
+
+  currentThumbLabel(): string | undefined {
+    const f = this.files.find(file => file.guid === this.hint.thumb_guid);
+    return f ? this.fileLabel(f) : undefined;
   }
 }

@@ -41,6 +41,7 @@ interface EditorTimeHint {
 }
 
 interface EditorLevel {
+  expanded: boolean;
   id: string;
   /** Keys of the single WIN_KEY condition ("Ключ уровня"). */
   winKeysText: string;
@@ -88,6 +89,11 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   startAtLocal = "";
   validationErrors: string[] = [];
 
+  /** guid -> local blob URL, for instant previews right after upload
+   *  (the CDN copy may not be readable for a moment). Shared with child
+   *  hint editors so their previews resolve to the local copy too. */
+  objectUrls = new Map<string, string>();
+
   private routeSubscription: Subscription | undefined;
 
   constructor(
@@ -110,6 +116,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.objectUrls.forEach(url => URL.revokeObjectURL(url));
     this.routeSubscription?.unsubscribe();
   }
 
@@ -185,6 +192,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   private toEditorLevel(level: Level): EditorLevel {
     const scenario = level.scenario;
     const editor: EditorLevel = {
+      expanded: false,
       id: scenario?.id ?? level.name_id,
       winKeysText: "",
       autoFinishTime: null,
@@ -301,6 +309,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
   addLevel() {
     this.levels.push({
+      expanded: true,
       id: this.uniqueLevelId(),
       winKeysText: "",
       autoFinishTime: null,
@@ -309,6 +318,14 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       timerConditions: [],
       time_hints: [{time: 0, hint: []}],
     });
+  }
+
+  onLevelToggle(level: EditorLevel, event: Event) {
+    level.expanded = (event.target as HTMLDetailsElement).open;
+  }
+
+  anyLevelExpanded(): boolean {
+    return this.levels.some(l => l.expanded);
   }
 
   removeLevel(index: number) {
@@ -437,6 +454,9 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.constructorService.uploadFile(this.gameId, file).subscribe({
       next: uploaded => {
         this.addFile(uploaded);
+        if (uploaded?.guid) {
+          this.objectUrls.set(uploaded.guid, URL.createObjectURL(file));
+        }
         this.isUploading = false;
         this.snackbar.success(`Файл загружен: ${uploaded.original_filename}${uploaded.extension}`);
         input.value = "";
@@ -498,7 +518,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   fileUrl(file: UploadedFile): string {
-    return this.http.getFileUrl(this.gameId, file.guid);
+    return this.objectUrls.get(file.guid) ?? this.http.getFileUrl(this.gameId, file.guid);
   }
 
   // -------------------------------------------------------------------------

@@ -49,20 +49,28 @@
 
   @if (needsFile()) {
     <label>Файл</label>
-    <div class="file-row">
+    @if (currentFileLabel()) {
+      <span class="current-file">{{ currentFileLabel() }}</span>
+    }
+    @if (!disabled) {
+      <div class="file-actions">
+        <label class="upload-button" [class.busy]="isUploading">
+          {{ AppEmoji.upload }} {{ isUploading ? "Загрузка..." : (hint.file_guid ? "Заменить файл" : "Загрузить файл") }}
+          <input type="file" hidden (change)="onUploadSelected($event, 'file')" [disabled]="isUploading" />
+        </label>
+        @if (files.length > 0) {
+          <button type="button" class="link-button" (click)="toggleFileBrowser()">выбрать из загруженных</button>
+        }
+      </div>
+    }
+    @if (showFileBrowser || disabled) {
       <select [(ngModel)]="hint.file_guid" [disabled]="disabled">
         <option [ngValue]="undefined">— выберите файл —</option>
         @for (f of files; track f.guid) {
           <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
         }
       </select>
-      @if (!disabled) {
-        <label class="upload-button" [class.busy]="isUploading">
-          {{ isUploading ? "Загрузка..." : "Загрузить" }}
-          <input type="file" hidden (change)="onUploadSelected($event, 'file')" [disabled]="isUploading" />
-        </label>
-      }
-    </div>
+    }
 
     @switch (previewKind()) {
       @case ("image") {
@@ -79,20 +87,28 @@
 
   @if (needsThumb()) {
     <label>Превью (thumb)</label>
-    <div class="file-row">
+    @if (currentThumbLabel()) {
+      <span class="current-file">{{ currentThumbLabel() }}</span>
+    }
+    @if (!disabled) {
+      <div class="file-actions">
+        <label class="upload-button" [class.busy]="isUploading">
+          {{ AppEmoji.upload }} {{ hint.thumb_guid ? "Заменить превью" : "Загрузить превью" }}
+          <input type="file" hidden (change)="onUploadSelected($event, 'thumb')" [disabled]="isUploading" />
+        </label>
+        @if (files.length > 0) {
+          <button type="button" class="link-button" (click)="toggleThumbBrowser()">выбрать из загруженных</button>
+        }
+      </div>
+    }
+    @if (showThumbBrowser || disabled) {
       <select [(ngModel)]="hint.thumb_guid" [disabled]="disabled">
         <option [ngValue]="undefined">— нет —</option>
         @for (f of files; track f.guid) {
           <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
         }
       </select>
-      @if (!disabled) {
-        <label class="upload-button" [class.busy]="isUploading">
-          Загрузить
-          <input type="file" hidden (change)="onUploadSelected($event, 'thumb')" [disabled]="isUploading" />
-        </label>
-      }
-    </div>
+    }
   }
 
   @if (needsCaption()) {
