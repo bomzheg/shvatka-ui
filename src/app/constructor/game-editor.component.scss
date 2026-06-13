@@ -156,9 +156,15 @@ input.invalid {
   font-weight: 600;
 }
 
-.level-title {
+.level-caption {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   flex: 1 1 auto;
-  min-width: 6rem;
+  min-width: 0;
+}
+
+.level-title {
   overflow-wrap: anywhere;
 }
 
@@ -373,16 +379,12 @@ input.time-input {
 }
 
 @media (max-width: 640px) {
-  .level-title {
+  .level-caption {
     flex-basis: 100%;
   }
 
   .start-row input[type="datetime-local"] {
     flex: 1 1 100%;
-  }
-
-  .actions-bar {
-    justify-content: stretch;
   }
 
   .actions-bar .primary {

@@ -54,11 +54,13 @@
         <details class="level-card" cdkDrag [cdkDragDisabled]="!isEditable || anyLevelExpanded()"
                  [open]="level.expanded" (toggle)="onLevelToggle(level, $event)">
           <summary class="level-summary">
-            @if (isEditable && !anyLevelExpanded()) {
-              <span class="drag-handle" cdkDragHandle title="Перетащите, чтобы изменить порядок"
-                    (click)="$event.preventDefault(); $event.stopPropagation()"></span>
-            }
-            <span class="level-title">#{{ li + 1 }} ({{ level.id }})</span>
+            <span class="level-caption">
+              @if (isEditable && !anyLevelExpanded()) {
+                <span class="drag-handle" cdkDragHandle title="Перетащите, чтобы изменить порядок"
+                      (click)="$event.preventDefault(); $event.stopPropagation()"></span>
+              }
+              <span class="level-title">#{{ li + 1 }} ({{ level.id }})</span>
+            </span>
             <span class="level-stats">
               {{ AppEmoji.key }} условий: {{ conditionsCount(level) }}
               {{ AppEmoji.bonusHint }} подсказок: {{ hintsCount(level) }}
