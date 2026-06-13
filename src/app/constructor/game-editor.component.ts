@@ -164,7 +164,21 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
     // Reconstruct the files list: prefer a server-provided files array if any,
     // otherwise rebuild best-effort entries from the guids referenced in hints.
-    this.files = this.collectFiles(game);
+    // Keep files already uploaded this session (they may not yet be referenced
+    // by any hint, so they wouldn't be re-derived from the scenario).
+    this.files = this.mergeFiles(this.files, this.collectFiles(game));
+  }
+
+  /** Merge two file lists by guid; entries in `existing` win (richer metadata). */
+  private mergeFiles(existing: UploadedFile[], incoming: UploadedFile[]): UploadedFile[] {
+    const map = new Map<string, UploadedFile>();
+    for (const f of incoming) {
+      map.set(f.guid, f);
+    }
+    for (const f of existing) {
+      map.set(f.guid, f);
+    }
+    return Array.from(map.values());
   }
 
   private toEditorLevel(level: Level): EditorLevel {
@@ -439,6 +453,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   private addFile(file: UploadedFile) {
+    if (!file || !file.guid) {
+      this.snackbar.error("Сервер вернул файл без идентификатора");
+      return;
+    }
     this.files = [...this.files.filter(f => f.guid !== file.guid), file];
   }
 

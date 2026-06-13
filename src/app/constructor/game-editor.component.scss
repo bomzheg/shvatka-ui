@@ -16,11 +16,21 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 h1 {
   margin: 0;
   color: inherit;
+  font-size: 1.6rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  h1 {
+    flex: 1 1 100%;
+    font-size: 1.3rem;
+  }
 }
 
 h2 {
@@ -41,6 +51,7 @@ h3 {
   background: color-mix(in srgb, var(--app-surface) 70%, var(--app-accent));
   padding: 0.2rem 0.6rem;
   border-radius: 999px;
+  white-space: nowrap;
 }
 
 .warn {
@@ -73,6 +84,8 @@ label {
 .inline-label {
   display: inline;
   margin: 0;
+  white-space: nowrap;
+  flex: none;
 }
 
 input[type="text"],
@@ -85,7 +98,6 @@ select {
 
 input.invalid {
   border-color: #c62828;
-  background: color-mix(in srgb, var(--app-surface) 90%, #c62828);
 }
 
 .field-error {
@@ -145,7 +157,9 @@ input.invalid {
 }
 
 .level-title {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 6rem;
+  overflow-wrap: anywhere;
 }
 
 .drag-handle {
@@ -171,20 +185,6 @@ input.invalid {
   line-height: 1;
 }
 
-// CDK drag-drop
-.cdk-drag-preview {
-  @include cm.surface-card(12px, 0);
-  box-shadow: 0 12px 32px rgba(16, 24, 40, 0.25);
-}
-
-.cdk-drag-placeholder {
-  opacity: 0.4;
-}
-
-.cdk-drag-animating {
-  transition: transform 0.2s cubic-bezier(0, 0, 0.2, 1);
-}
-
 .level-summary::marker {
   content: "";
 }
@@ -206,17 +206,6 @@ input.invalid {
 
 .level-body {
   padding: 0.85rem;
-}
-
-.level-head {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.level-id {
-  flex: 1;
 }
 
 .level-actions {
@@ -245,8 +234,9 @@ input.invalid {
   flex-wrap: wrap;
 }
 
-.time-input {
+input.time-input {
   width: 6rem;
+  max-width: 100%;
 }
 
 .hints {
@@ -267,10 +257,12 @@ input.invalid {
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .condition-head input[type="text"] {
   flex: 1;
+  min-width: 8rem;
 }
 
 // Files
@@ -373,10 +365,27 @@ input.invalid {
   padding: 0.7rem 1.4rem;
 }
 
-.start-row,
-.status-actions {
+.start-row {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
   align-items: center;
+}
+
+@media (max-width: 640px) {
+  .level-title {
+    flex-basis: 100%;
+  }
+
+  .start-row input[type="datetime-local"] {
+    flex: 1 1 100%;
+  }
+
+  .actions-bar {
+    justify-content: stretch;
+  }
+
+  .actions-bar .primary {
+    flex: 1;
+  }
 }
