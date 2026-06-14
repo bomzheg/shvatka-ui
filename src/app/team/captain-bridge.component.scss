@@ -85,6 +85,9 @@ h1 {
 .team-captain {
   margin: 0;
   font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 // ── Members ────────────────────────────────────────────────────────────────────
@@ -319,6 +322,22 @@ h1 {
   &:disabled {
     opacity: 0.6;
     cursor: wait;
+  }
+}
+
+.btn-icon {
+  @include cm.button-base();
+  padding: 0.3rem 0.45rem;
+  font-size: 1rem;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: var(--app-text);
+  border-radius: 8px;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba(15, 23, 42, 0.06);
   }
 }
 

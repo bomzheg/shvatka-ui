@@ -29,7 +29,7 @@
             }
           </div>
           @if (canEditTeamName()) {
-            <button type="button" class="btn btn-secondary" (click)="startEditTeam()">Редактировать</button>
+            <button type="button" class="btn btn-icon" title="Редактировать" (click)="startEditTeam()">✏️</button>
           }
         </div>
       } @else {
@@ -91,14 +91,13 @@
                 </div>
 
                 <div class="member-actions">
-                  @if (canManagePlayers() && !isSelf(member)) {
+                  @if (canManagePlayers()) {
                     <button
                       type="button"
-                      class="btn btn-secondary btn-sm"
+                      class="btn btn-icon"
+                      title="Изменить"
                       (click)="startEditMember(member)"
-                    >
-                      Изменить
-                    </button>
+                    >✏️</button>
                   }
                   @if (canRemoveMember(member)) {
                     <button
@@ -158,7 +157,7 @@
                   </div>
                 </div>
 
-                @if (canManagePlayers()) {
+                @if (canManagePlayers() && !isSelf(member)) {
                   <fieldset class="permissions-fieldset">
                     <legend>Права</legend>
                     @for (p of permissionLabels; track p.key) {
