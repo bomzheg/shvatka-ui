@@ -63,9 +63,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    this.pushService.onLogout().finally(() => {
-      this.authService.logout().subscribe(() => this.userService.clearUser());
-    });
+    this.logDebugInfo("attempt: logout");
+    this.pushService.onLogout()
+      .catch(error => this.logDebugError("push onLogout before logout", error))
+      .finally(() => {
+        this.authService.logout().subscribe({
+          next: () => {
+            this.userService.clearUser();
+            this.logDebugInfo("success: logout");
+          },
+          error: error => this.logDebugError("logout", error),
+        });
+      });
     this.closeMobileMenu();
   }
 
@@ -119,10 +128,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.selectedThemeMode = this.themeService.getMode();
-    this.gamesService.getActiveGame().subscribe(game => {
-      this.activeGame = game;
-      this.countdown = this.getCountdown();
-      this.setupCountdownTicker();
+    this.gamesService.getActiveGame().subscribe({
+      next: game => {
+        this.activeGame = game;
+        this.countdown = this.getCountdown();
+        this.setupCountdownTicker();
+      },
+      error: error => this.logDebugError("load active game", error),
     });
 
 
@@ -130,16 +142,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.logDebugInfo(`attempt: authenticate blocking webapp (initDataLength=${this.tgWa.initData.length})`);
       const telegramAuthResult = await this.authenticateTelegramWebApp(this.tgWa);
       if (telegramAuthResult) {
-        await this.userService.loadMe();
-        this.pushService.refresh();
-        this.tgWa?.ready?.();
+        try {
+          await this.userService.loadMe();
+          this.pushService.refresh();
+          this.tgWa?.ready?.();
+        } catch (error) {
+          this.logDebugError("load me after telegram webapp auth", error);
+        }
         return;
       }
     } else {
       this.logDebugInfo("skip: blocking webapp is missing initData");
     }
 
-    await this.userService.loadMe();
+    try {
+      await this.userService.loadMe();
+    } catch (error) {
+      this.logDebugError("load me", error);
+    }
   }
 
   hasActiveGame() {
@@ -295,8 +315,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
             resolve(true);
           },
           error: (error) => {
-            const status = typeof error?.status === "number" ? error.status : "unknown";
-            this.logDebugInfo(`failed: authenticateWebApp status=${status}`);
+            this.logDebugError("authenticateWebApp", error);
             resolve(false);
           },
         });
@@ -305,6 +324,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private stringifyForDebug(payload: any): string {
     return "disabled debug"
+  }
+
+  private logDebugError(action: string, error: any) {
+    const status = typeof error?.status === "number" ? error.status : "unknown";
+    const description = error?.error?.description ?? error?.message ?? String(error);
+    this.logDebugInfo(`error: ${action} status=${status} message=${description}`);
   }
 
   private logDebugInfo(message: string) {
