@@ -25,6 +25,7 @@ import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.par
 import {PushToggleComponent} from "../push/push-toggle.component";
 import {AppEmoji} from "../ui/emoji";
 import {SnackbarService} from "../snackbar/snackbar.service";
+import {DebugLogService} from "../debug/debug-log.service";
 import {TeamMember} from "../team/team.models";
 
 @Component({
@@ -72,6 +73,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     private http: HttpAdapter,
     private userService: UserService,
     private snackbar: SnackbarService,
+    private debugLog: DebugLogService,
     ) {
   }
 
@@ -273,6 +275,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
           this.gameService.loadHints();
         },
         error: error => {
+          this.debugLog.error("publish team waivers", error);
           const description = error?.error?.description;
           this.snackbar.error(description || "Не удалось опубликовать вейверы");
         }
@@ -394,7 +397,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
           this.startResultTimer();
           this.keyText = "";
         },
-        error: () => {
+        error: error => {
+          this.debugLog.error("submit key", error);
           this.keySubmitError = "Не удалось отправить ключ";
         }
       });
@@ -751,7 +755,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
         next: fullGame => {
           this.authorScenario = fullGame;
         },
-        error: () => {
+        error: error => {
+          this.debugLog.error("load author scenario", error);
           this.authorScenario = undefined;
         }
       });
@@ -784,14 +789,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   private logDebugInfo(message: string) {
-    const line = `[game-play][${new Date().toISOString()}] ${message}`;
-    console.info(line);
-
-    const key = 'debug-log';
-    const existing = window.sessionStorage.getItem(key);
-    const currentLines = existing ? existing.split('\n').filter(Boolean) : [];
-    currentLines.push(line);
-    window.sessionStorage.setItem(key, currentLines.slice(-80).join('\n'));
+    this.debugLog.info(`game-play: ${message}`);
   }
 
   private stopVisibilityWatcher() {

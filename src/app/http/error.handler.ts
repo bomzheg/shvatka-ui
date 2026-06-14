@@ -2,6 +2,7 @@ import {ErrorHandler, Injectable, NgZone} from "@angular/core";
 import {HttpErrorResponse} from "@angular/common/http";
 import {AuthService} from "../auth/auth.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
+import {DebugLogService} from "../debug/debug-log.service";
 
 @Injectable({
   providedIn: 'root'
@@ -14,9 +15,11 @@ export class GlobalErrorHandler implements ErrorHandler {
     private snackbar: SnackbarService,
     private _zone: NgZone,
     private authService: AuthService,
+    private debugLog: DebugLogService,
   ) { }
 
   handleError(error: any): void {
+    this.logToDebug(error);
     this._zone.run(() => {
       if (!(error instanceof HttpErrorResponse)) {
         console.error(error);
@@ -49,6 +52,21 @@ export class GlobalErrorHandler implements ErrorHandler {
         );
       }
     });
+  }
+
+  private logToDebug(error: any): void {
+    try {
+      if (error instanceof HttpErrorResponse) {
+        const method = (error as any)?.method;
+        const action = `http request${method ? ` ${method}` : ""}`;
+        this.debugLog.error(action, error);
+      } else {
+        const name = error?.name || error?.constructor?.name || "Error";
+        this.debugLog.error(`uncaught ${name}`, error);
+      }
+    } catch {
+      // Never let debug logging break the real error handling.
+    }
   }
 
   private formatUnknownHttpError(error: HttpErrorResponse): string {
