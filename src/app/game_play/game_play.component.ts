@@ -52,6 +52,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   authorScenario: FullGame | undefined;
   isAuthorScenarioLoading = false;
+  private loadedScenarioGameId: number | undefined;
+  private myRoleListenerUnsubscribe: (() => void) | undefined;
   isWaiverModalOpen = false;
   isPublishingWaivers = false;
   waiverSelection: Record<number, boolean> = {};
@@ -81,6 +83,9 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       this.startCountdownTicker();
       this.loadAuthorScenario(game);
     });
+    this.myRoleListenerUnsubscribe = this.gameService.onMyRoleResolved(() => {
+      this.loadAuthorScenario(this.activeGame);
+    });
     this.gameService.loadHints();
     this.startAutoRefreshTicker();
     this.startVisibilityWatcher();
@@ -88,6 +93,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.clearResultTimer();
+    this.myRoleListenerUnsubscribe?.();
     this.activeGameSubscription?.unsubscribe();
     this.clearCountdownTicker();
     this.clearAutoRefreshTicker();
@@ -162,8 +168,17 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return myId !== undefined && authorId !== undefined && myId === authorId;
   }
 
+  canViewScenario(): boolean {
+    if (this.isCurrentUserGameAuthor()) {
+      return true;
+    }
+
+    const org = this.gameService.getMyRole()?.org;
+    return !!org && !org.deleted && org.view_scenario;
+  }
+
   shouldShowAuthorScenario(): boolean {
-    return this.isCurrentUserGameAuthor() && !!this.authorScenario;
+    return this.canViewScenario() && !!this.authorScenario;
   }
 
   getCountdownToStart(): string | undefined {
@@ -735,13 +750,18 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   private loadAuthorScenario(game: ActiveGame | undefined) {
-    this.authorScenario = undefined;
-    this.isAuthorScenarioLoading = false;
-
-    if (!game || !this.isCurrentUserGameAuthor()) {
+    if (!game || !this.canViewScenario()) {
+      this.authorScenario = undefined;
+      this.isAuthorScenarioLoading = false;
+      this.loadedScenarioGameId = undefined;
       return;
     }
 
+    if (this.isAuthorScenarioLoading || this.loadedScenarioGameId === game.id) {
+      return;
+    }
+
+    this.loadedScenarioGameId = game.id;
     this.isAuthorScenarioLoading = true;
     this.http.get<FullGame>(`/games/${game.id}`)
       .pipe(finalize(() => {
@@ -753,6 +773,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.authorScenario = undefined;
+          this.loadedScenarioGameId = undefined;
         }
       });
   }

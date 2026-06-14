@@ -380,7 +380,7 @@
   </div>
 }
 
-@if (isCurrentUserGameAuthor()) {
+@if (canViewScenario()) {
   <details class="author-scenario-spoiler">
     <summary class="game-scn-spoiler">Сценарий текущей игры</summary>
     @if (isAuthorScenarioLoading) {

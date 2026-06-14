@@ -133,6 +133,7 @@ export class OrganizerDto {
     public can_spy: boolean,
     public can_see_log_keys: boolean,
     public can_validate_waivers: boolean,
+    public view_scenario: boolean,
     public deleted: boolean,
   ) {
   }
@@ -167,6 +168,7 @@ export class GamePlayService {
   private isSpyStatLoading = false;
   private isHintsLoading = false;
   private authRequired = false;
+  private myRoleListeners: ((role: MyRoleDto | undefined) => void)[] = [];
 
   constructor(
     private http: HttpAdapter,
@@ -277,6 +279,7 @@ export class GamePlayService {
 
     if (cacheValid) {
       this.maybeLoadSpyData(game.id, this.myRole);
+      this.notifyMyRoleResolved(this.myRole);
       onLoaded?.(this.myRole);
       return;
     }
@@ -288,6 +291,7 @@ export class GamePlayService {
           this.myRoleGameId = game.id;
           this.myRoleCacheUntil = this.resolveRoleCacheUntil(game);
           this.maybeLoadSpyData(game.id, role);
+          this.notifyMyRoleResolved(role);
           onLoaded?.(role);
         },
         error: error => {
@@ -296,6 +300,7 @@ export class GamePlayService {
             this.myRoleGameId = undefined;
             this.myRoleCacheUntil = undefined;
             this.authRequired = true;
+            this.notifyMyRoleResolved(undefined);
             onLoaded?.(undefined);
             return;
           }
@@ -443,6 +448,19 @@ export class GamePlayService {
 
   getMyRole(): MyRoleDto | undefined {
     return this.myRole;
+  }
+
+  onMyRoleResolved(listener: (role: MyRoleDto | undefined) => void): () => void {
+    this.myRoleListeners.push(listener);
+    return () => {
+      this.myRoleListeners = this.myRoleListeners.filter(l => l !== listener);
+    };
+  }
+
+  private notifyMyRoleResolved(role: MyRoleDto | undefined): void {
+    for (const listener of this.myRoleListeners) {
+      listener(role);
+    }
   }
 
   getSpyKeys(): Keys | undefined {
