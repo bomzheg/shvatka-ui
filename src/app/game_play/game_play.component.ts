@@ -192,14 +192,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   isCurrentUserWaiver(entry: WaiverEntry): boolean {
-    const myRole = this.gameService.getMyRole();
-    if (!myRole) {
-      return false;
-    }
-
-    const teamCaptainId = myRole.team?.captain?.id;
-    const myOrgId = myRole.org?.player.id;
-    return entry.player.id === teamCaptainId || entry.player.id === myOrgId;
+    const myId = this.userService.getMe()?.id;
+    return myId !== undefined && entry.player.id === myId;
   }
 
   isGettingWaivers(): boolean {
