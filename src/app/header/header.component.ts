@@ -162,6 +162,19 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return this.hasRunningGame() || this.isGettingWaiversStatus();
   }
 
+  isGamesTabActive(): boolean {
+    const path = this.router.url.split(/[?#]/)[0].replace(/\/+$/, "");
+    const segments = path.split("/").filter(Boolean);
+
+    if (segments[0] !== "games") {
+      return false;
+    }
+
+    // /games (list) and /games/:id (game card) belong to "Прошедшие игры",
+    // but /games/running and /games/constructor have their own tabs.
+    return segments.length === 1 || (segments[1] !== "running" && segments[1] !== "constructor");
+  }
+
   isGettingWaiversStatus() {
     return this.activeGame?.status === "getting_waivers";
   }
