@@ -1,5 +1,5 @@
 <section class="captain-bridge">
-  <h1>Мостик капитана</h1>
+  <h1>{{ pageTitle }}</h1>
 
   @if (isLoading) {
     <p class="status-message">Загрузка...</p>
@@ -69,7 +69,7 @@
       <h2 class="section-title">Участники ({{ members.length }})</h2>
 
       <ul class="members-list">
-        @for (member of members; track member.id) {
+        @for (member of sortedMembers; track member.id) {
           <li class="member-card" [class.member-card-self]="isSelf(member)">
 
             @if (editingMemberId !== member.id) {

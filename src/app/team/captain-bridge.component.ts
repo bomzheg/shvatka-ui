@@ -101,6 +101,31 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
     return !!this.team?.captain && this.team.captain.id === this.userId;
   }
 
+  hasAnyPermission(): boolean {
+    const p = this.currentMember?.permissions;
+    if (!p) return false;
+    return p.can_manage_waivers || p.can_manage_players || p.can_change_team_name
+      || p.can_add_players || p.can_remove_players;
+  }
+
+  get pageTitle(): string {
+    if (!this.team) return 'Моя команда';
+    if (this.isCaptain() || this.hasAnyPermission()) return 'Капитанский мостик';
+    if (this.currentMember) return 'Моя команда';
+    return `Команда ${this.team.name}`;
+  }
+
+  get sortedMembers(): TeamMember[] {
+    const captainId = this.team?.captain?.id;
+    const myId = this.userId;
+    return [...this.members].sort((a, b) => {
+      const aCap = a.id === captainId ? 0 : 1;
+      const bCap = b.id === captainId ? 0 : 1;
+      if (aCap !== bCap) return aCap - bCap;
+      return (a.id === myId ? 0 : 1) - (b.id === myId ? 0 : 1);
+    });
+  }
+
   canEditTeamName(): boolean {
     return this.isCaptain() || !!this.currentMember?.permissions.can_change_team_name;
   }
