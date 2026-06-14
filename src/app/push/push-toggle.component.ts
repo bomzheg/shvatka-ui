@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {PushService} from './push.service';
 
 @Component({
@@ -9,6 +9,8 @@ import {PushService} from './push.service';
   styleUrl: './push-toggle.component.scss',
 })
 export class PushToggleComponent {
+  @Input() allowDisable = true;
+
   constructor(public push: PushService) {
   }
 
