@@ -9,7 +9,8 @@ import {
   WaiversTeam,
   WaiverEntry,
   Played,
-  OrganizerDto
+  OrganizerDto,
+  WaiverInput
 } from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
@@ -23,6 +24,8 @@ import {UserService} from "../auth/user.service";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
 import {PushToggleComponent} from "../push/push-toggle.component";
 import {AppEmoji} from "../ui/emoji";
+import {SnackbarService} from "../snackbar/snackbar.service";
+import {TeamMember} from "../team/team.models";
 
 @Component({
   selector: 'app-game-play',
@@ -49,6 +52,9 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   authorScenario: FullGame | undefined;
   isAuthorScenarioLoading = false;
+  isWaiverModalOpen = false;
+  isPublishingWaivers = false;
+  waiverSelection: Record<number, boolean> = {};
   private activeGameSubscription: Subscription | undefined;
   private countdownInterval: ReturnType<typeof setInterval> | undefined;
   private keyResultTimer: ReturnType<typeof setTimeout> | undefined;
@@ -65,6 +71,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     private gameService: GamePlayService,
     private http: HttpAdapter,
     private userService: UserService,
+    private snackbar: SnackbarService,
     ) {
   }
 
@@ -193,6 +200,100 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     const teamCaptainId = myRole.team?.captain?.id;
     const myOrgId = myRole.org?.player.id;
     return entry.player.id === teamCaptainId || entry.player.id === myOrgId;
+  }
+
+  isGettingWaivers(): boolean {
+    return this.activeGame?.status === "getting_waivers";
+  }
+
+  getMyTeamMembers(): TeamMember[] {
+    return this.gameService.getMyTeamMembers() ?? [];
+  }
+
+  getMemberDisplayName(member: TeamMember): string {
+    return member.username ?? `#${member.id}`;
+  }
+
+  canManageWaivers(): boolean {
+    const role = this.gameService.getMyRole();
+    if (!role?.team) {
+      return false;
+    }
+
+    const myId = this.userService.getMe()?.id;
+    if (myId !== undefined && role.team.captain?.id === myId) {
+      return true;
+    }
+
+    const member = this.getMyTeamMembers().find(m => m.id === myId);
+    return !!member?.permissions.can_manage_waivers;
+  }
+
+  openWaiverModal(): void {
+    const currentWaiverIds = this.getMyTeamCurrentWaiverIds();
+    const selection: Record<number, boolean> = {};
+    for (const member of this.getMyTeamMembers()) {
+      selection[member.id] = currentWaiverIds.has(member.id);
+    }
+    this.waiverSelection = selection;
+    this.isWaiverModalOpen = true;
+  }
+
+  closeWaiverModal(): void {
+    if (this.isPublishingWaivers) {
+      return;
+    }
+    this.isWaiverModalOpen = false;
+  }
+
+  isWaiverPlayerSelected(member: TeamMember): boolean {
+    return !!this.waiverSelection[member.id];
+  }
+
+  toggleWaiverPlayer(member: TeamMember, selected: boolean): void {
+    this.waiverSelection = {...this.waiverSelection, [member.id]: selected};
+  }
+
+  getSelectedWaiverCount(): number {
+    return this.getMyTeamMembers().filter(m => this.waiverSelection[m.id]).length;
+  }
+
+  publishWaivers(): void {
+    if (this.isPublishingWaivers) {
+      return;
+    }
+
+    const waivers: WaiverInput[] = this.getMyTeamMembers()
+      .filter(member => this.waiverSelection[member.id])
+      .map(member => ({player_id: member.id, played: Played.yes}));
+
+    this.isPublishingWaivers = true;
+    this.gameService.replaceMyTeamWaivers(waivers)
+      .pipe(finalize(() => {
+        this.isPublishingWaivers = false;
+      }))
+      .subscribe({
+        next: () => {
+          this.snackbar.success("Вейверы команды опубликованы");
+          this.isWaiverModalOpen = false;
+          this.gameService.loadHints();
+        },
+        error: error => {
+          const description = error?.error?.description;
+          this.snackbar.error(description || "Не удалось опубликовать вейверы");
+        }
+      });
+  }
+
+  private getMyTeamCurrentWaiverIds(): Set<number> {
+    const teamId = this.gameService.getMyRole()?.team?.id;
+    const waiversMap = this.getCurrentWaivers()?.waivers;
+    if (teamId === undefined || !waiversMap) {
+      return new Set<number>();
+    }
+
+    const entries = waiversMap[String(teamId)] ?? [];
+    return new Set<number>(entries.map(entry => entry.player.id));
   }
 
   canOpenSpyTab(): boolean {

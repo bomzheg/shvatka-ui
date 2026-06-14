@@ -240,6 +240,13 @@
     @if (getCountdownToStart()) {
       <p class="waivers-countdown">До старта: {{ getCountdownToStart() }}</p>
     }
+    @if (isGettingWaivers() && canManageWaivers()) {
+      <div class="waivers-manage-bar">
+        <button type="button" (click)="openWaiverModal()">
+          Подать вейверы команды
+        </button>
+      </div>
+    }
     <ul class="waivers-teams">
       @for (team of getCurrentWaivers()!.teams; track team.id) {
         <li class="waivers-team-card">
@@ -261,6 +268,60 @@
         </li>
       }
     </ul>
+  </div>
+}
+
+@if (isWaiverModalOpen) {
+  <div class="waiver-modal-backdrop" (click)="closeWaiverModal()">
+    <div class="waiver-modal" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="icon-close waiver-modal-close"
+        (click)="closeWaiverModal()"
+        [disabled]="isPublishingWaivers"
+        aria-label="Закрыть"
+      >✕</button>
+      <h3 class="waiver-modal-title">Подать вейверы команды</h3>
+      <p class="waiver-modal-hint">Отметьте игроков, которые будут играть.</p>
+
+      @if (getMyTeamMembers().length > 0) {
+        <ul class="waiver-modal-players">
+          @for (member of getMyTeamMembers(); track member.id) {
+            <li class="waiver-modal-player">
+              <label class="waiver-toggle-label">
+                <input
+                  type="checkbox"
+                  [checked]="isWaiverPlayerSelected(member)"
+                  [disabled]="isPublishingWaivers"
+                  (change)="toggleWaiverPlayer(member, $any($event).target.checked)"
+                />
+                @if (member.emoji) {
+                  <span class="waiver-player-emoji" aria-hidden="true">{{ member.emoji }}</span>
+                }
+                <span class="waiver-player-name">{{ getMemberDisplayName(member) }}</span>
+                <span class="waiver-player-status">{{ isWaiverPlayerSelected(member) ? 'Играет' : 'Нет вейвера' }}</span>
+              </label>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="status-message">Список игроков команды недоступен.</p>
+      }
+
+      <div class="waiver-modal-actions">
+        <button type="button" (click)="publishWaivers()" [disabled]="isPublishingWaivers">
+          @if (isPublishingWaivers) {
+            <span class="button-loader"></span>
+            Отправка...
+          } @else {
+            Опубликовать ({{ getSelectedWaiverCount() }})
+          }
+        </button>
+        <button type="button" class="btn-ghost" (click)="closeWaiverModal()" [disabled]="isPublishingWaivers">
+          Отмена
+        </button>
+      </div>
+    </div>
   </div>
 }
 

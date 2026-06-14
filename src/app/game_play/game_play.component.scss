@@ -335,6 +335,101 @@ td {
   color: var(--tg-theme-hint-color, #6b7280);
 }
 
+.waivers-manage-bar {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 1rem;
+}
+
+.waiver-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
+}
+
+.waiver-modal {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  background: var(--app-surface, #fff);
+  border-radius: 12px;
+  padding: 1.1rem 1rem 1rem;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.3);
+  text-align: left;
+}
+
+.waiver-modal-close {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.waiver-modal-title {
+  margin: 0 0 0.25rem;
+}
+
+.waiver-modal-hint {
+  margin: 0 0 0.9rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.waiver-modal-players {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.waiver-modal-player {
+  list-style: none;
+}
+
+.waiver-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  cursor: pointer;
+}
+
+.waiver-toggle-label input {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.waiver-player-name {
+  font-weight: 600;
+}
+
+.waiver-player-status {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.waiver-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.waiver-modal-actions .btn-ghost {
+  background: #e5e7eb;
+  color: #111827;
+}
+
 .spy-panel {
   margin-top: 1rem;
 }

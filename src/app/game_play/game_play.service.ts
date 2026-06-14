@@ -5,6 +5,8 @@ import {SnackbarService} from "../snackbar/snackbar.service";
 import {Effect, Effects, GameStat, KeyTime, Keys, TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
 import {ActiveGame, GamesService} from "../games/games.service";
+import {TeamService} from "../team/team.service";
+import {TeamMember} from "../team/team.models";
 
 export type TypedKeyLog = KeyTime & {
   effects?: Effect[];
@@ -85,6 +87,27 @@ export enum Played {
   not_allowed = "not_allowed",
 }
 
+export interface WaiverInput {
+  player_id: number;
+  played?: Played;
+}
+
+export class TeamWaiverEntry {
+  constructor(
+    public player: WaiverPlayer,
+    public played: Played,
+  ) {
+  }
+}
+
+export class TeamWaivers {
+  constructor(
+    public team: WaiversTeam,
+    public players: TeamWaiverEntry[],
+  ) {
+  }
+}
+
 export class RolePlayer {
   constructor(
     public id: number,
@@ -130,6 +153,8 @@ export class MyRoleDto {
 export class GamePlayService {
   private currentHints: CurrentHints | undefined;
   private currentWaivers: CurrentWaivers | undefined;
+  private myTeamMembers: TeamMember[] | undefined;
+  private myTeamMembersTeamId: number | undefined;
   private myRole: MyRoleDto | undefined;
   private myRoleGameId: number | undefined;
   private myRoleCacheUntil: number | undefined;
@@ -147,6 +172,7 @@ export class GamePlayService {
     private http: HttpAdapter,
     private snackbar: SnackbarService,
     private gamesService: GamesService,
+    private teamService: TeamService,
   ) {
   }
 
@@ -157,6 +183,8 @@ export class GamePlayService {
       if (!game) {
         this.currentHints = undefined;
         this.currentWaivers = undefined;
+        this.myTeamMembers = undefined;
+        this.myTeamMembersTeamId = undefined;
         this.myRole = undefined;
         this.spyGameId = undefined;
         this.spyKeys = undefined;
@@ -166,7 +194,14 @@ export class GamePlayService {
       }
 
       if (game.status === "getting_waivers") {
-        this.loadMyRole(game);
+        this.loadMyRole(game, false, role => {
+          if (role?.team) {
+            this.loadMyTeamMembers(role.team.id);
+          } else {
+            this.myTeamMembers = undefined;
+            this.myTeamMembersTeamId = undefined;
+          }
+        });
         this.loadWaivers();
         return;
       }
@@ -378,6 +413,32 @@ export class GamePlayService {
 
   getCurrentWaivers(): CurrentWaivers | undefined {
     return this.currentWaivers;
+  }
+
+  getMyTeamMembers(): TeamMember[] | undefined {
+    return this.myTeamMembers;
+  }
+
+  replaceMyTeamWaivers(waivers: WaiverInput[]): Observable<TeamWaivers> {
+    return this.http.put<TeamWaivers>(`/waivers/game/current`, {waivers});
+  }
+
+  private loadMyTeamMembers(teamId: number) {
+    if (this.myTeamMembersTeamId === teamId && this.myTeamMembers) {
+      return;
+    }
+
+    this.teamService.getTeamPlayers(teamId)
+      .subscribe({
+        next: res => {
+          this.myTeamMembers = res.items;
+          this.myTeamMembersTeamId = teamId;
+        },
+        error: () => {
+          this.myTeamMembers = undefined;
+          this.myTeamMembersTeamId = undefined;
+        }
+      });
   }
 
   getMyRole(): MyRoleDto | undefined {
