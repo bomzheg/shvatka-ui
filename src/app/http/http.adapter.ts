@@ -55,30 +55,41 @@ export class HttpAdapter {
     );
   }
 
-  delete<T>(url: string, body?: any): Observable<T> {
-    if (this.shouldBlockProtectedRequest(url)) {
-      return this.unauthorizedError(url);
-    }
-    return this.http.delete<T>(
-      this.config.apiUrl + url,
-      {
-        withCredentials: true,
-        headers: {"Content-Type": "application/json"},
-        body,
-      },
-    );
-  }
-
   getFileUrl(gameId: number, fileId: string): string {
     return `${this.config.cdnUrl}/games/${gameId}/files/${fileId}`
   }
 
-  postCdnForm<T>(url: string, formData: FormData): Observable<T> {
+  uploadCdn<T>(url: string, formData: FormData): Observable<T> {
     return this.http.post<T>(
       this.config.cdnUrl + url,
       formData,
       {withCredentials: true},
     );
+  }
+
+  // Note: 'delete' is a JS reserved word and cannot be called from @Injectable services via
+  // dot notation with Angular 17 esbuild. The del() method is the public entry point.
+  delete<T>(url: string, body?: any): Observable<T> {
+    if (this.shouldBlockProtectedRequest(url)) {
+      return this.unauthorizedError(url);
+    }
+    return this.http.request<T>('DELETE',
+      this.config.apiUrl + url,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "application/json"},
+        body,
+        responseType: 'json',
+      },
+    );
+  }
+
+  del<T>(url: string, body?: any): Observable<T> {
+    return this.delete<T>(url, body);
+  }
+
+  postCdnForm<T>(url: string, formData: FormData): Observable<T> {
+    return this.uploadCdn<T>(url, formData);
   }
 
   private shouldBlockProtectedRequest(url: string): boolean {

@@ -37,6 +37,9 @@
     @if (isAuthenticated() && canBeAuthor()) {
       <a routerLink="/games/constructor" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games/constructor', $event)">Черновики</a>
     }
+    @if (isAuthenticated()) {
+      <a routerLink="/team" routerLinkActive="active" class="nav-link" (click)="onNavClick('/team', $event)">Команда</a>
+    }
   </nav>
 
 
@@ -104,6 +107,9 @@
   }
   @if (isAuthenticated() && canBeAuthor()) {
     <a routerLink="/games/constructor" class="mobile-link" (click)="onNavClick('/games/constructor', $event)">Черновики</a>
+  }
+  @if (isAuthenticated()) {
+    <a routerLink="/team" class="mobile-link" (click)="onNavClick('/team', $event)">Команда</a>
   }
   @if (hasCurrentGameTab()) {
     <a routerLink="/games/running" class="mobile-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>

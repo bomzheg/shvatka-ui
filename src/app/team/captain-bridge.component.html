@@ -1,0 +1,270 @@
+<section class="captain-bridge">
+  <h1>{{ pageTitle }}</h1>
+
+  @if (isLoading) {
+    <p class="status-message">Загрузка...</p>
+  } @else if (!isAuthenticated) {
+    <p class="status-message">Войдите, чтобы управлять командой.</p>
+  } @else if (!team) {
+    <div class="no-team-card">
+      <p class="no-team-text">Вы не состоите ни в одной команде.</p>
+      <div class="create-team-notice">
+        <span class="notice-icon">ℹ️</span>
+        <p>Создание команды через сайт пока недоступно — оно привязано к Telegram-чату. Обратитесь к организаторам.</p>
+      </div>
+    </div>
+  } @else {
+
+    <!-- Team info card -->
+    <div class="section-card team-card">
+      @if (!isTeamEditMode) {
+        <div class="team-header">
+          <div class="team-meta">
+            <h2 class="team-name">{{ team.name }}</h2>
+            @if (team.description) {
+              <p class="team-description">{{ team.description }}</p>
+            }
+            @if (team.captain) {
+              <p class="team-captain">Капитан: <strong>{{ team.captain.name_mention }}</strong></p>
+            }
+          </div>
+          @if (canEditTeamName()) {
+            <button type="button" class="btn btn-icon" title="Редактировать" (click)="startEditTeam()">✏️</button>
+          }
+        </div>
+      } @else {
+        <form class="edit-form" (ngSubmit)="saveTeam()">
+          <h2 class="section-title">Редактировать команду</h2>
+          <label for="team-name">Название</label>
+          <input
+            id="team-name"
+            type="text"
+            name="teamName"
+            [(ngModel)]="editTeamName"
+            required
+          />
+
+          <label for="team-desc">Описание (необязательно)</label>
+          <input
+            id="team-desc"
+            type="text"
+            name="teamDescription"
+            [(ngModel)]="editTeamDescription"
+          />
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="isSavingTeam">
+              {{ isSavingTeam ? 'Сохранение...' : 'Сохранить' }}
+            </button>
+            <button type="button" class="btn btn-ghost" (click)="cancelEditTeam()" [disabled]="isSavingTeam">
+              Отмена
+            </button>
+          </div>
+        </form>
+      }
+    </div>
+
+    <!-- Members list -->
+    <div class="section-card members-section">
+      <h2 class="section-title">Участники ({{ members.length }})</h2>
+
+      <ul class="members-list">
+        @for (member of sortedMembers; track member.id) {
+          <li class="member-card" [class.member-card-self]="isSelf(member)">
+
+            @if (editingMemberId !== member.id) {
+              <div class="member-row">
+                <div class="member-info">
+                  @if (member.emoji) {
+                    <span class="member-emoji" aria-hidden="true">{{ member.emoji }}</span>
+                  }
+                  <span class="member-name">{{ getMemberDisplayName(member) }}</span>
+                  @if (member.role) {
+                    <span class="badge badge-role">{{ member.role }}</span>
+                  }
+                  @if (isCaptainMember(member)) {
+                    <span class="badge badge-captain">капитан</span>
+                  }
+                  @if (isSelf(member)) {
+                    <span class="badge badge-you">вы</span>
+                  }
+                </div>
+
+                <div class="member-actions">
+                  @if (canManagePlayers()) {
+                    <button
+                      type="button"
+                      class="btn btn-icon"
+                      title="Изменить"
+                      (click)="startEditMember(member)"
+                    >✏️</button>
+                  }
+                  @if (canRemoveMember(member)) {
+                    <button
+                      type="button"
+                      class="btn btn-sm"
+                      [class.btn-leave]="isSelf(member)"
+                      [class.btn-danger]="!isSelf(member)"
+                      [disabled]="removingMemberId === member.id"
+                      (click)="removeMember(member)"
+                    >
+                      @if (removingMemberId === member.id) {
+                        ...
+                      } @else if (isSelf(member)) {
+                        Покинуть
+                      } @else {
+                        Исключить
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+
+              @if (canManagePlayers()) {
+                <div class="member-perms">
+                  @for (p of permissionLabels; track p.key) {
+                    <span
+                      class="perm-chip"
+                      [class.perm-on]="getMemberPermission(member, p.key)"
+                      [class.perm-off]="!getMemberPermission(member, p.key)"
+                    >{{ getMemberPermission(member, p.key) ? '✓' : '✗' }} {{ p.label }}</span>
+                  }
+                </div>
+              }
+
+            } @else {
+              <!-- Inline edit form for this member -->
+              <form class="edit-form member-edit-form" (ngSubmit)="saveMember()">
+                <div class="form-row-2">
+                  <div>
+                    <label [for]="'edit-role-' + member.id">Роль</label>
+                    <input
+                      [id]="'edit-role-' + member.id"
+                      type="text"
+                      name="editRole"
+                      [(ngModel)]="editMemberRole"
+                    />
+                  </div>
+                  <div>
+                    <label [for]="'edit-emoji-' + member.id">Emoji</label>
+                    <input
+                      [id]="'edit-emoji-' + member.id"
+                      type="text"
+                      name="editEmoji"
+                      [(ngModel)]="editMemberEmoji"
+                      placeholder="🎯"
+                    />
+                  </div>
+                </div>
+
+                @if (canManagePlayers() && !isSelf(member)) {
+                  <fieldset class="permissions-fieldset">
+                    <legend>Права</legend>
+                    @for (p of permissionLabels; track p.key) {
+                      <label class="perm-toggle-label">
+                        <input
+                          type="checkbox"
+                          [name]="'perm_' + p.key"
+                          [checked]="getPermissionValue(p.key)"
+                          (change)="setPermissionValue(p.key, $any($event).target.checked)"
+                        />
+                        {{ p.label }}
+                      </label>
+                    }
+                  </fieldset>
+                }
+
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary btn-sm" [disabled]="isSavingMember">
+                    {{ isSavingMember ? 'Сохранение...' : 'Сохранить' }}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-ghost btn-sm"
+                    (click)="cancelEditMember()"
+                    [disabled]="isSavingMember"
+                  >
+                    Отмена
+                  </button>
+                </div>
+              </form>
+            }
+
+          </li>
+        }
+      </ul>
+    </div>
+
+    <!-- Invite section -->
+    @if (canAddPlayers()) {
+      <div class="section-card invite-section">
+        <h2 class="section-title">Пригласить игрока</h2>
+
+        <div class="search-wrap">
+          <div class="search-input-row">
+            <input
+              type="text"
+              class="search-input"
+              placeholder="Имя пользователя..."
+              [ngModel]="searchQuery"
+              (ngModelChange)="onSearchQueryChange($event)"
+              name="playerSearch"
+              autocomplete="off"
+            />
+            @if (isSearching) {
+              <span class="search-spinner" aria-label="Поиск...">⏳</span>
+            }
+          </div>
+
+          @if (searchResults.length > 0 && !selectedPlayer) {
+            <ul class="search-results">
+              @for (player of searchResults; track player.id) {
+                <li>
+                  <button type="button" class="search-result-btn" (click)="selectPlayer(player)">
+                    {{ player.name_mention }}
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        @if (selectedPlayer) {
+          <div class="selected-player-card">
+            <span>Выбран: <strong>{{ selectedPlayer.name_mention }}</strong></span>
+            <button type="button" class="btn-clear" (click)="clearSelectedPlayer()" aria-label="Отменить выбор">✕</button>
+          </div>
+
+          <form class="edit-form" (ngSubmit)="addPlayer()">
+            <div class="form-row-2">
+              <div>
+                <label for="add-role">Роль (необязательно)</label>
+                <input
+                  id="add-role"
+                  type="text"
+                  name="addRole"
+                  [(ngModel)]="addPlayerRole"
+                />
+              </div>
+              <div>
+                <label for="add-emoji">Emoji (необязательно)</label>
+                <input
+                  id="add-emoji"
+                  type="text"
+                  name="addEmoji"
+                  [(ngModel)]="addPlayerEmoji"
+                  placeholder="🎯"
+                />
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" [disabled]="isAddingPlayer">
+              {{ isAddingPlayer ? 'Добавление...' : 'Добавить в команду' }}
+            </button>
+          </form>
+        }
+      </div>
+    }
+
+  }
+</section>

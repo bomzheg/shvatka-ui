@@ -1,8 +1,10 @@
 import {Injectable, NgZone, signal} from '@angular/core';
 import {Router} from '@angular/router';
 import {firstValueFrom} from 'rxjs';
+import {HttpClient} from '@angular/common/http';
 import {HttpAdapter} from '../http/http.adapter';
 import {SnackbarService} from '../snackbar/snackbar.service';
+import {environment} from '../../environments/environment';
 
 export interface PushConfig {
   enabled: boolean;
@@ -40,6 +42,7 @@ export class PushService {
 
   constructor(
     private http: HttpAdapter,
+    private httpClient: HttpClient,
     private router: Router,
     private snackbar: SnackbarService,
     private zone: NgZone,
@@ -207,7 +210,12 @@ export class PushService {
     }
 
     try {
-      await firstValueFrom(this.http.delete('/push/subscriptions', subscription.toJSON()));
+      await firstValueFrom(
+        this.httpClient.delete(`${environment.apiUrl}/push/subscriptions`, {
+          withCredentials: true,
+          body: subscription.toJSON(),
+        }),
+      );
     } catch (e) {
       // Even if the backend call fails we still unsubscribe locally.
       console.error('push: DELETE /push/subscriptions failed', e);
