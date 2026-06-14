@@ -23,12 +23,12 @@ export class TeamService {
   ) {}
 
   getPlayer(id: number): Observable<PlayerProfile> {
-    return this.http.get<PlayerProfile>(`/players/${id}`);
+    return this.http.get<PlayerProfile>(`/users/${id}/details`);
   }
 
   searchPlayers(query: string): Observable<ItemsResponse<PlayerSearchResult>> {
     const qs = new URLSearchParams({username: query}).toString();
-    return this.http.get<ItemsResponse<PlayerSearchResult>>(`/players/search?${qs}`);
+    return this.http.get<ItemsResponse<PlayerSearchResult>>(`/users?${qs}`);
   }
 
   getTeamPlayers(teamId: number): Observable<ItemsResponse<TeamMember>> {
@@ -39,11 +39,11 @@ export class TeamService {
     return this.http.put<TeamDetails>(`/teams/${teamId}`, {name, description});
   }
 
-  addPlayer(playerId: number, role?: string, emoji?: string): Observable<TeamMember> {
+  addPlayer(teamId: number, playerId: number, role?: string, emoji?: string): Observable<TeamMember> {
     const body: Record<string, unknown> = {player_id: playerId};
     if (role) body['role'] = role;
     if (emoji) body['emoji'] = emoji;
-    return this.http.post<TeamMember>('/teams/my/players', body);
+    return this.http.post<TeamMember>(`/teams/${teamId}/players`, body);
   }
 
   updateMember(

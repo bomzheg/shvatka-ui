@@ -19,9 +19,11 @@ export interface TeamRef {
 }
 
 export interface PlayerInTeam {
-  current_team: TeamRef;
+  id: number;
+  team: TeamRef;
   date_joined: string;
   role: string;
+  emoji: string | null;
 }
 
 export interface PlayerProfile {

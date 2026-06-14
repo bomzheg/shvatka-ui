@@ -182,7 +182,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
         next: (profile) => {
           this.playerProfile = profile;
           if (profile.player_in_team) {
-            const teamData = profile.player_in_team.current_team;
+            const teamData = profile.player_in_team.team;
             this.team = {
               id: teamData.id,
               name: teamData.name,
@@ -339,6 +339,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
   }
 
   addPlayer(): void {
+    if (!this.team) return;
     if (!this.selectedPlayer) {
       this.snackbar.error('Выберите игрока из списка');
       return;
@@ -346,6 +347,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
 
     this.isAddingPlayer = true;
     this.teamService.addPlayer(
+      this.team.id,
       this.selectedPlayer.id,
       this.addPlayerRole.trim() || undefined,
       this.addPlayerEmoji.trim() || undefined,
