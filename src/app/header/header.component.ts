@@ -9,6 +9,7 @@ import {MatIcon} from "@angular/material/icon";
 import {ActiveGame, GamesService} from "../games/games.service";
 import {THEME_MODES, ThemeMode, ThemeService} from "../theme/theme.service";
 import {PushService} from "../push/push.service";
+import {DebugLogService} from "../debug/debug-log.service";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
 
@@ -51,6 +52,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private router: Router,
     private themeService: ThemeService,
     private pushService: PushService,
+    private debugLog: DebugLogService,
   ) {
     this.window = this._document.defaultView;
     this.tg = (this.window as any)?.Telegram;
@@ -327,26 +329,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private logDebugError(action: string, error: any) {
-    const status = typeof error?.status === "number" ? error.status : "unknown";
-    const description = error?.error?.description ?? error?.message ?? String(error);
-    this.logDebugInfo(`error: ${action} status=${status} message=${description}`);
+    this.debugLog.error(action, error);
   }
 
   private logDebugInfo(message: string) {
-    const timestamp = new Date().toISOString();
-    const line = `[debug-info][${timestamp}] ${message}`;
-    console.info(line);
-
-    if (!this.window) {
-      return;
-    }
-
-    const key = "debug-log";
-    const existing = this.window.sessionStorage.getItem(key);
-    const currentLines = existing ? existing.split("\n").filter(Boolean) : [];
-    currentLines.push(line);
-    const tail = currentLines.slice(-40);
-    this.window.sessionStorage.setItem(key, tail.join("\n"));
+    this.debugLog.info(message);
   }
 
   countdownUnitLabel(unit: CountdownUnit): string {
