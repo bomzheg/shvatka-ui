@@ -100,19 +100,37 @@
       <button class="solid-button" type="button" (click)="openLoginForm()">Войти</button>
     }
   </div>
-  <a routerLink="/" class="mobile-link" (click)="onNavClick('/', $event)">Главная</a>
-  <a routerLink="/games" class="mobile-link" (click)="onNavClick('/games', $event)">Прошедшие игры</a>
+  <a routerLink="/" class="mobile-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="onNavClick('/', $event)">
+    <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+    <span>Главная</span>
+  </a>
+  <a routerLink="/games" class="mobile-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" (click)="onNavClick('/games', $event)">
+    <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+    <span>Прошедшие игры</span>
+  </a>
   @if (isAuthenticated()) {
-    <a routerLink="/profile" class="mobile-link" (click)="onNavClick('/profile', $event)">Профиль</a>
+    <a routerLink="/profile" class="mobile-link" routerLinkActive="active" (click)="onNavClick('/profile', $event)">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      <span>Профиль</span>
+    </a>
   }
   @if (isAuthenticated() && canBeAuthor()) {
-    <a routerLink="/games/constructor" class="mobile-link" (click)="onNavClick('/games/constructor', $event)">Черновики</a>
+    <a routerLink="/games/constructor" class="mobile-link" routerLinkActive="active" (click)="onNavClick('/games/constructor', $event)">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+      <span>Черновики</span>
+    </a>
   }
   @if (isAuthenticated()) {
-    <a routerLink="/team" class="mobile-link" (click)="onNavClick('/team', $event)">Команда</a>
+    <a routerLink="/team" class="mobile-link" routerLinkActive="active" (click)="onNavClick('/team', $event)">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      <span>Команда</span>
+    </a>
   }
   @if (hasCurrentGameTab()) {
-    <a routerLink="/games/running" class="mobile-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
+    <a routerLink="/games/running" class="mobile-link" routerLinkActive="active" (click)="onNavClick('/games/running', $event)">
+      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+      <span>Текущая игра</span>
+    </a>
   }
 </aside>
 
