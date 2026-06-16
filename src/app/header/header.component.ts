@@ -208,6 +208,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return !!this.activeGame && !this.hasRunningGame() && !this.isGettingWaiversStatus() && !this.isFinishedStatus();
   }
 
+  activeGameBannerLabel(): string {
+    if (this.isGettingWaiversStatus()) return "собирает вейверы";
+    if (this.isFinishedStatus()) return "все команды финишировали";
+    if (this.hasRunningGame()) return "идёт игра";
+    return "ещё не началась";
+  }
+
   ngOnDestroy() {
     if (this.countdownInterval) {
       window.clearInterval(this.countdownInterval);
