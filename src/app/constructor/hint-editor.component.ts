@@ -15,15 +15,16 @@ import {
 import {ConstructorService} from "./constructor.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {SnackbarService} from "../snackbar/snackbar.service";
-import {AppEmoji, CONTENT_TYPE_EMOJI, HINT_TYPE_EMOJI} from "../ui/emoji";
+import {AppIcon, HINT_TYPE_ICON} from "../ui/icons";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
+import {MatIcon} from "@angular/material/icon";
 
 type PreviewKind = "image" | "video" | "audio" | "none";
 
 @Component({
   selector: "app-hint-editor",
   standalone: true,
-  imports: [FormsModule, ImageLightboxComponent],
+  imports: [FormsModule, ImageLightboxComponent, MatIcon],
   templateUrl: "./hint-editor.component.html",
   styleUrl: "./hint-editor.component.scss",
 })
@@ -37,7 +38,7 @@ export class HintEditorComponent {
   @Output() fileUploaded = new EventEmitter<UploadedFile>();
 
   protected readonly HintType = HintType;
-  protected readonly AppEmoji = AppEmoji;
+  protected readonly AppIcon = AppIcon;
 
   isUploading = false;
   /** "выбрать из загруженных" toggles the file/thumb picker dropdowns. */
@@ -51,8 +52,8 @@ export class HintEditorComponent {
   ) {
   }
 
-  get typeEmoji(): string {
-    return HINT_TYPE_EMOJI[this.hint.type];
+  get typeIcon(): AppIcon {
+    return HINT_TYPE_ICON[this.hint.type];
   }
 
   get typeLabel(): string {
@@ -83,8 +84,7 @@ export class HintEditorComponent {
       ? `${file.original_filename}${file.extension || ""}`
       : `файл ${file.guid.slice(0, 8)}…`;
     const contentType = file.content_type ? CONTENT_TYPE_LABELS[file.content_type] ?? file.content_type : undefined;
-    const emoji = file.content_type ? CONTENT_TYPE_EMOJI[file.content_type] ?? "" : "";
-    return contentType ? `${emoji} ${name} (${contentType})` : name;
+    return contentType ? `${name} (${contentType})` : name;
   }
 
   needsFile(): boolean {

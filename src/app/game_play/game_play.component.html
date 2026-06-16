@@ -41,7 +41,7 @@
            [class.key-result-ok]="!keyResultData.wrong"
            [class.key-result-wrong]="keyResultData.wrong"
            [class.key-result-duplicate]="keyResultData.is_duplicate">
-        <button type="button" class="icon-close right-top-panel" (click)="closeResultKeyPanel()" aria-label="Закрыть">✕</button>
+        <button type="button" class="icon-close right-top-panel" (click)="closeResultKeyPanel()" aria-label="Закрыть"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
         <p><strong>Результат:</strong> {{ keyResult }}</p>
         <p><strong>Ключ:</strong> {{ keyResultData.text }}</p>
 
@@ -70,7 +70,7 @@
                 [class.typed-key-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-duplicate'"
                 [class.typed-key-wrong]="typedKeyStatusClass(typedKey) === 'typed-key-wrong'"
                 [class.typed-key-bad-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-bad-duplicate'">
-              <span class="typed-key-status">{{ typedKeyEmoji(typedKey) }}</span>
+              <span class="typed-key-status">@for (icon of typedKeyIcons(typedKey); track icon) {<mat-icon class="app-icon-inline" [svgIcon]="icon"/>}</span>
               @if (isTypedKeyTappable(typedKey)) {
                 <button
                   type="button"
@@ -78,7 +78,7 @@
                   (click)="toggleTypedKeyEffects(typedKey)"
                   [attr.aria-expanded]="isTypedKeyEffectsOpened(typedKey)">
                   <strong>{{ typedKey.text }}</strong>
-                  <span class="typed-key-hint-pill" aria-hidden="true">✨ эффект</span>
+                  <span class="typed-key-hint-pill" aria-hidden="true"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/> эффект</span>
                 </button>
               } @else {
                 <strong class="typed-key-label">{{ typedKey.text }}</strong>
@@ -90,8 +90,8 @@
 
               @if (isTypedKeyEffectsOpened(typedKey)) {
                 <div class="typed-effects">
-                  @for (tag of getTypedKeyEffects(typedKey); track tag) {
-                    <span class="effect-tag">{{ tag }}</span>
+                  @for (tag of getTypedKeyEffects(typedKey); track $index) {
+                    <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
                   }
 
                   @if (getTypedKeyHints(typedKey).length > 0) {
@@ -132,21 +132,21 @@
             @for (event of getCurrentLevelEvents(); track event.id) {
               <li class="event-entry">
                 <strong>{{ toLocal(event.at) }}</strong>
-                @if(event.key) {<span>{{AppEmoji.key}}{{event.key}}</span>}
-                @if(event.is_timer) {<span>🕑</span>}
+                @if(event.key) {<span><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/>{{event.key}}</span>}
+                @if(event.is_timer) {<span><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.clock"/></span>}
                 @if (hasEventVisibleEffects(event)) {
                   <button
                     type="button"
                     class="typed-key-toggle"
                     (click)="toggleEventEffects(event)"
                     [attr.aria-expanded]="isEventEffectsOpened(event)">
-                    <span class="typed-key-hint-pill" aria-hidden="true">✨ эффект</span>
+                    <span class="typed-key-hint-pill" aria-hidden="true"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/> эффект</span>
                   </button>
                 }
                 @if (isEventEffectsOpened(event)) {
                   <div class="typed-effects">
-                    @for (tag of getEventEffects(event); track tag) {
-                      <span class="effect-tag">{{ tag }}</span>
+                    @for (tag of getEventEffects(event); track $index) {
+                      <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
                     }
                     @if (getEventHints(event).length > 0) {
                       <ul class="typed-key-hints">
@@ -171,21 +171,21 @@
               @for (event of getPreviousLevelEvents(); track event.id) {
                 <li class="event-entry">
                   <strong>{{ toLocal(event.at) }}</strong>
-                  @if(event.key) {<span>{{AppEmoji.key}}{{event.key}}</span>}
-                  @if(event.is_timer) {<span>🕑</span>}
+                  @if(event.key) {<span><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/>{{event.key}}</span>}
+                  @if(event.is_timer) {<span><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.clock"/></span>}
                   @if (hasEventVisibleEffects(event)) {
                     <button
                       type="button"
                       class="typed-key-toggle"
                       (click)="toggleEventEffects(event)"
                       [attr.aria-expanded]="isEventEffectsOpened(event)">
-                      <span class="typed-key-hint-pill" aria-hidden="true">✨ эффект</span>
+                      <span class="typed-key-hint-pill" aria-hidden="true"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/> эффект</span>
                     </button>
                   }
                   @if (isEventEffectsOpened(event)) {
                     <div class="typed-effects">
-                      @for (tag of getEventEffects(event); track tag) {
-                        <span class="effect-tag">{{ tag }}</span>
+                      @for (tag of getEventEffects(event); track $index) {
+                        <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
                       }
                       @if (getEventHints(event).length > 0) {
                         <ul class="typed-key-hints">
@@ -224,14 +224,14 @@
           } @else {
             <p><strong>Я организатор:</strong></p>
             @if (getMyOrg()?.can_see_log_keys) {
-              <p><span>✅</span>Могу смотреть лог ключей</p>
+              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/>Могу смотреть лог ключей</p>
             } @else {
-              <p><span>❌</span>Не могу смотреть лог ключей</p>
+              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.cancel"/>Не могу смотреть лог ключей</p>
             }
             @if (getMyOrg()?.can_spy) {
-              <p><span>✅</span>Могу смотреть какая команда на каком уровне</p>
+              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/>Могу смотреть какая команда на каком уровне</p>
             } @else {
-              <p><span>❌</span>Не могу смотреть какая команда на каком уровне</p>
+              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.cancel"/>Не могу смотреть какая команда на каком уровне</p>
             }
           }
         }
@@ -280,7 +280,7 @@
         (click)="closeWaiverModal()"
         [disabled]="isPublishingWaivers"
         aria-label="Закрыть"
-      >✕</button>
+      ><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
       <h3 class="waiver-modal-title">Подать вейверы команды</h3>
       <p class="waiver-modal-hint">Отметьте игроков, которые будут играть.</p>
 

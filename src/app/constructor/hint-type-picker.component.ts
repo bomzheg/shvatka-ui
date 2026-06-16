@@ -1,7 +1,8 @@
 import {Component, ElementRef, EventEmitter, Input, Output, ViewChild} from "@angular/core";
 import {HintType} from "../domain/game.models";
 import {CREATABLE_HINT_TYPES, HINT_TYPE_LABELS} from "./constructor.models";
-import {HINT_TYPE_EMOJI} from "../ui/emoji";
+import {MatIcon} from "@angular/material/icon";
+import {HINT_TYPE_ICON} from "../ui/icons";
 
 /**
  * "+ Подсказка" button that opens a menu of hint part types.
@@ -11,7 +12,7 @@ import {HINT_TYPE_EMOJI} from "../ui/emoji";
 @Component({
   selector: "app-hint-type-picker",
   standalone: true,
-  imports: [],
+  imports: [MatIcon],
   templateUrl: "./hint-type-picker.component.html",
   styleUrl: "./hint-type-picker.component.scss",
 })
@@ -23,7 +24,7 @@ export class HintTypePickerComponent {
 
   protected readonly allTypes = CREATABLE_HINT_TYPES;
   protected readonly typeLabels = HINT_TYPE_LABELS;
-  protected readonly typeEmoji = HINT_TYPE_EMOJI;
+  protected readonly typeIcon = HINT_TYPE_ICON;
 
   pick(type: HintType) {
     this.picked.emit(type);

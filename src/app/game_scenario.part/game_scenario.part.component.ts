@@ -3,6 +3,8 @@ import {FullGame, HintPart, Level, ScenarioCondition, ScenarioConditionType} fro
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {EffectsPartComponent} from "../effects.part/effects.part.component";
 import {HttpAdapter} from "../http/http.adapter";
+import {MatIcon} from "@angular/material/icon";
+import {AppIcon} from "../ui/icons";
 
 @Component({
   selector: 'app-game-scenario-part',
@@ -10,12 +12,14 @@ import {HttpAdapter} from "../http/http.adapter";
   imports: [
     HintPartComponent,
     EffectsPartComponent,
+    MatIcon,
   ],
   templateUrl: './game_scenario.part.component.html',
   styleUrl: './game_scenario.part.component.scss'
 })
 export class GameScenarioPartComponent {
   protected readonly ScenarioConditionType = ScenarioConditionType;
+  protected readonly AppIcon = AppIcon;
 
   @Input({required: true}) game!: FullGame;
 

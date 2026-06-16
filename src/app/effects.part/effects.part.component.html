@@ -3,7 +3,7 @@
     @for (effect of getVisibleEffects(); track $index) {
       <li class="effects-item">
         @for (tag of getEffectTags(effect); track $index) {
-          <span class="effect-tag">{{ tag }}</span>
+          <span class="effect-tag"><mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
         }
         @if (getEffectHints(effect).length > 0) {
           <ul>

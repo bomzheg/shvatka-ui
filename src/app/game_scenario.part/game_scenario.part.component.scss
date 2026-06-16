@@ -35,12 +35,19 @@
 }
 
 .level-keys {
-  list-style: disc;
+  list-style: none;
 }
 
-.level-key::marker {
-  content: "🔑 ";
-  font-size: 0.95rem;
+.level-key::before {
+  content: "";
+  display: inline-block;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-right: 0.35em;
+  vertical-align: -0.15em;
+  background-color: currentColor;
+  -webkit-mask: url("/assets/svg-icons/key.svg") no-repeat center / contain;
+  mask: url("/assets/svg-icons/key.svg") no-repeat center / contain;
 }
 
 .nested-level-keys {

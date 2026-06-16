@@ -103,6 +103,26 @@ pre {
   }
 }
 
+/* App SVG icons (mat-icon svgIcon) inherit the surrounding text color. */
+mat-icon svg {
+  fill: currentColor;
+}
+
+/* Icon that flows inline with adjacent text, scaled to the font size. */
+mat-icon.app-icon-inline {
+  width: 1.15em;
+  height: 1.15em;
+  font-size: inherit;
+  line-height: 1;
+  vertical-align: -0.22em;
+}
+
+mat-icon.app-icon-inline svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 /* CDK drag-drop: the drag preview is attached to <body>, so style it globally */
 .cdk-drag-preview {
   background: var(--app-surface);

@@ -1,6 +1,6 @@
 <div class="hint-editor">
   <div class="hint-head">
-    <span class="hint-type">{{ typeEmoji }} {{ typeLabel }}</span>
+    <span class="hint-type"><mat-icon class="app-icon-inline" [svgIcon]="typeIcon"/> {{ typeLabel }}</span>
     @if (!disabled) {
       <button type="button" class="ghost-button danger" (click)="onRemove()">Удалить</button>
     }
@@ -55,7 +55,7 @@
     @if (!disabled) {
       <div class="file-actions">
         <label class="upload-button" [class.busy]="isUploading">
-          {{ AppEmoji.upload }} {{ isUploading ? "Загрузка..." : (hint.file_guid ? "Заменить файл" : "Загрузить файл") }}
+          <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.upload"/> {{ isUploading ? "Загрузка..." : (hint.file_guid ? "Заменить файл" : "Загрузить файл") }}
           <input type="file" hidden (change)="onUploadSelected($event, 'file')" [disabled]="isUploading" />
         </label>
         @if (files.length > 0) {
@@ -93,7 +93,7 @@
     @if (!disabled) {
       <div class="file-actions">
         <label class="upload-button" [class.busy]="isUploading">
-          {{ AppEmoji.upload }} {{ hint.thumb_guid ? "Заменить превью" : "Загрузить превью" }}
+          <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.upload"/> {{ hint.thumb_guid ? "Заменить превью" : "Загрузить превью" }}
           <input type="file" hidden (change)="onUploadSelected($event, 'thumb')" [disabled]="isUploading" />
         </label>
         @if (files.length > 0) {

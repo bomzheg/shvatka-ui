@@ -478,6 +478,18 @@ td {
   margin-bottom: 10px;
 }
 
-ul.hints > li::marker {
-  content: '💡';
+ul.hints > li {
+  list-style: none;
+}
+
+ul.hints > li::before {
+  content: "";
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  margin-right: 0.35em;
+  vertical-align: -0.2em;
+  background-color: currentColor;
+  -webkit-mask: url("/assets/svg-icons/lightbulb.svg") no-repeat center / contain;
+  mask: url("/assets/svg-icons/lightbulb.svg") no-repeat center / contain;
 }

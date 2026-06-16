@@ -27,7 +27,8 @@ import {
 } from "./constructor.models";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {HttpAdapter} from "../http/http.adapter";
-import {AppEmoji, CONTENT_TYPE_EMOJI} from "../ui/emoji";
+import {MatIcon} from "@angular/material/icon";
+import {AppIcon, CONTENT_TYPE_ICON} from "../ui/icons";
 
 interface EditorCondition {
   keysText: string;            // EFFECTS_KEY
@@ -69,12 +70,13 @@ type FilePreviewKind = "image" | "video" | "audio" | "none";
     HintTypePickerComponent,
     EffectsEditorComponent,
     ImageLightboxComponent,
+    MatIcon,
   ],
   templateUrl: "./game-editor.component.html",
   styleUrl: "./game-editor.component.scss",
 })
 export class GameEditorComponent implements OnInit, OnDestroy {
-  protected readonly AppEmoji = AppEmoji;
+  protected readonly AppIcon = AppIcon;
 
   gameId!: number;
   game: FullGame | undefined;
@@ -490,11 +492,11 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     return `${file.original_filename}${file.extension || ""}`;
   }
 
-  fileEmoji(file: UploadedFile): string {
-    if (file.content_type && CONTENT_TYPE_EMOJI[file.content_type]) {
-      return CONTENT_TYPE_EMOJI[file.content_type];
+  fileIcon(file: UploadedFile): AppIcon {
+    if (file.content_type && CONTENT_TYPE_ICON[file.content_type]) {
+      return CONTENT_TYPE_ICON[file.content_type];
     }
-    return AppEmoji.files;
+    return AppIcon.files;
   }
 
   fileContentTypeLabel(file: UploadedFile): string | undefined {

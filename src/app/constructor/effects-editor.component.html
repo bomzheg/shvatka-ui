@@ -1,7 +1,7 @@
 <div class="effects-editor">
   <div class="effects-row">
     <div class="bonus-field">
-      <label>{{ AppEmoji.bonus }} Бонус минут</label>
+      <label><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonus"/> Бонус минут</label>
       <input type="number" step="any" [(ngModel)]="effects.bonus_minutes" [disabled]="disabled" title="+ бонус, − штраф" />
       <span class="field-hint">+ бонус, − штраф</span>
     </div>
@@ -11,13 +11,13 @@
         <label class="toggle" [class.disabled]="disabled">
           <input type="checkbox" [(ngModel)]="effects.level_up" (ngModelChange)="onLevelUpChange()" [disabled]="disabled" />
           <span class="toggle-track"><span class="toggle-thumb"></span></span>
-          <span class="toggle-label">{{ AppEmoji.levelUp }} Завершение уровня</span>
+          <span class="toggle-label"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.levelUp"/> Завершение уровня</span>
         </label>
         @if (effects.level_up) {
           <select [(ngModel)]="effects.next_level" [disabled]="disabled" title="Переход на уровень">
-            <option [ngValue]="null">{{ AppEmoji.jump }} следующий по порядку</option>
+            <option [ngValue]="null">следующий по порядку</option>
             @for (id of levelIds; track id) {
-              <option [ngValue]="id">{{ AppEmoji.jump }} {{ id }}</option>
+              <option [ngValue]="id">{{ id }}</option>
             }
           </select>
         }
@@ -27,7 +27,7 @@
 
   <div class="effect-hints">
     <div class="hints-head">
-      <span>{{ AppEmoji.bonusHint }} Бонусные подсказки</span>
+      <span><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonusHint"/> Бонусные подсказки</span>
       @if (!disabled) {
         <app-hint-type-picker (picked)="addHint($event)"></app-hint-type-picker>
       }

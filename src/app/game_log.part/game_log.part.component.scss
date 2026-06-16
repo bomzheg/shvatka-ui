@@ -52,6 +52,19 @@ td {
   margin-right: 0.25rem;
 }
 
+// Match the key result palette used in game_play (correct / wrong / duplicate).
+.key-type-correct {
+  color: rgb(34, 197, 94);
+}
+
+.key-type-wrong {
+  color: rgb(239, 68, 68);
+}
+
+.key-type-duplicate {
+  color: rgb(234, 179, 8);
+}
+
 .level-break-row td {
   font-style: italic;
   opacity: 0.85;
