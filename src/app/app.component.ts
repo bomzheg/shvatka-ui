@@ -9,6 +9,7 @@ import {ThemeService} from "./theme/theme.service";
 import {filter} from "rxjs";
 import {VersionInfo, VersionService} from "./version/version.service";
 import {PushService} from "./push/push.service";
+import {registerAppIcons} from "./ui/icons";
 
 @Component({
   selector: 'app-root',
@@ -42,6 +43,7 @@ export class AppComponent implements OnInit {
       "account-circle",
       domSanitizer.bypassSecurityTrustResourceUrl('/assets/account_circle.svg')
     );
+    registerAppIcons(this.matIconRegistry, domSanitizer);
     this.themeService.getMode();
     this.window = this.document.defaultView ?? undefined;
   }

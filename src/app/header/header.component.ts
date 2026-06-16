@@ -5,6 +5,7 @@ import {AuthService} from "../auth/auth.service";
 import {UserService} from "../auth/user.service";
 import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
+import {AppIcon} from "../ui/icons";
 import {ActiveGame, GamesService} from "../games/games.service";
 import {ThemeMode, ThemeService} from "../theme/theme.service";
 import {PushService} from "../push/push.service";
@@ -32,6 +33,7 @@ interface Countdown {
   styleUrl: './header.component.scss',
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  protected readonly AppIcon = AppIcon;
   private readonly window: (Window & typeof globalThis) | undefined;
   private readonly tg: any;
   private readonly tgWa: any;

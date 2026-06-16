@@ -1,5 +1,7 @@
 import {Component, Input} from '@angular/core';
 import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game.models";
+import {MatIcon} from "@angular/material/icon";
+import {AppIcon} from "../ui/icons";
 
 interface TeamPivotData {
   teamName: string;
@@ -12,10 +14,12 @@ interface TeamPivotData {
 @Component({
   selector: 'app-game-log-part',
   standalone: true,
+  imports: [MatIcon],
   templateUrl: './game_log.part.component.html',
   styleUrl: './game_log.part.component.scss',
 })
 export class GameLogPartComponent {
+  protected readonly AppIcon = AppIcon;
   private _keys: Keys | undefined;
   private _stat: GameStat | undefined;
 
@@ -215,22 +219,22 @@ export class GameLogPartComponent {
     return this.minAbsoluteTimePerLevel.get(levelNumber) === timeMs;
   }
 
-  keyTypeEmoji(key: KeyTime): string {
+  keyTypeIcon(key: KeyTime): AppIcon {
     if (key.is_duplicate) {
-      return "💤";
+      return AppIcon.duplicate;
     }
 
     switch (key.type_) {
       case KeyType.simple:
-        return "✅";
+        return AppIcon.levelUp;
       case KeyType.wrong:
-        return "❌";
+        return AppIcon.cancel;
       case KeyType.bonus:
-        return "💰";
+        return AppIcon.bonus;
       case KeyType.effects:
-        return "✨"
+        return AppIcon.effects;
       default:
-        return "❔";
+        return AppIcon.unknown;
     }
   }
 

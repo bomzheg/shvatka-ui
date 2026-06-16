@@ -29,7 +29,7 @@
             }
           </div>
           @if (canEditTeamName()) {
-            <button type="button" class="btn btn-icon" title="Редактировать" (click)="startEditTeam()">✏️</button>
+            <button type="button" class="btn btn-icon" title="Редактировать" (click)="startEditTeam()"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
           }
         </div>
       } @else {
@@ -97,7 +97,7 @@
                       class="btn btn-icon"
                       title="Изменить"
                       (click)="startEditMember(member)"
-                    >✏️</button>
+                    ><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
                   }
                   @if (canRemoveMember(member)) {
                     <button
@@ -127,7 +127,7 @@
                       class="perm-chip"
                       [class.perm-on]="getMemberPermission(member, p.key)"
                       [class.perm-off]="!getMemberPermission(member, p.key)"
-                    >{{ getMemberPermission(member, p.key) ? '✓' : '✗' }} {{ p.label }}</span>
+                    ><mat-icon class="app-icon-inline" [svgIcon]="getMemberPermission(member, p.key) ? AppIcon.check : AppIcon.close"/> {{ p.label }}</span>
                   }
                 </div>
               }
@@ -212,7 +212,7 @@
               autocomplete="off"
             />
             @if (isSearching) {
-              <span class="search-spinner" aria-label="Поиск...">⏳</span>
+              <span class="search-spinner" aria-label="Поиск..."><span class="loading-spinner"></span></span>
             }
           </div>
 
@@ -232,7 +232,7 @@
         @if (selectedPlayer) {
           <div class="selected-player-card">
             <span>Выбран: <strong>{{ selectedPlayer.name_mention }}</strong></span>
-            <button type="button" class="btn-clear" (click)="clearSelectedPlayer()" aria-label="Отменить выбор">✕</button>
+            <button type="button" class="btn-clear" (click)="clearSelectedPlayer()" aria-label="Отменить выбор"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
           </div>
 
           <form class="edit-form" (ngSubmit)="addPlayer()">

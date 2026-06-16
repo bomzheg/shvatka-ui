@@ -4,12 +4,13 @@ import {HintType} from "../domain/game.models";
 import {EffectsPayload, UploadedFile} from "./constructor.models";
 import {HintEditorComponent} from "./hint-editor.component";
 import {HintTypePickerComponent} from "./hint-type-picker.component";
-import {AppEmoji} from "../ui/emoji";
+import {MatIcon} from "@angular/material/icon";
+import {AppIcon} from "../ui/icons";
 
 @Component({
   selector: "app-effects-editor",
   standalone: true,
-  imports: [FormsModule, HintEditorComponent, HintTypePickerComponent],
+  imports: [FormsModule, HintEditorComponent, HintTypePickerComponent, MatIcon],
   templateUrl: "./effects-editor.component.html",
   styleUrl: "./effects-editor.component.scss",
 })
@@ -25,7 +26,7 @@ export class EffectsEditorComponent {
   @Input() levelIds: string[] = [];
   @Output() fileUploaded = new EventEmitter<UploadedFile>();
 
-  protected readonly AppEmoji = AppEmoji;
+  protected readonly AppIcon = AppIcon;
 
   onLevelUpChange() {
     if (!this.effects.level_up) {

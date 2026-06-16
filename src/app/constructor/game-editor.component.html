@@ -1,5 +1,5 @@
 <section class="editor-page">
-  <a routerLink="/games/constructor" class="back-link">← К списку игр</a>
+  <a routerLink="/games/constructor" class="back-link"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.back"/> К списку игр</a>
 
   @if (isLoading && !game) {
     <div class="loading-state" aria-live="polite">
@@ -43,7 +43,7 @@
     <!-- Levels -->
     <div class="block">
       <div class="block-head">
-        <h2>{{ AppEmoji.level }} Уровни</h2>
+        <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.level"/> Уровни</h2>
         @if (isEditable) {
           <button type="button" class="primary" (click)="addLevel()">+ Уровень</button>
         }
@@ -62,14 +62,14 @@
               <span class="level-title">#{{ li + 1 }} ({{ level.id }})</span>
             </span>
             <span class="level-stats">
-              {{ AppEmoji.key }} условий: {{ conditionsCount(level) }}
-              {{ AppEmoji.bonusHint }} подсказок: {{ hintsCount(level) }}
+              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/> условий: {{ conditionsCount(level) }}
+              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonusHint"/> подсказок: {{ hintsCount(level) }}
             </span>
             @if (isEditable) {
               <span class="level-actions">
-                <button type="button" class="ghost-button icon" (click)="moveLevel(li, -1); $event.preventDefault(); $event.stopPropagation()" [disabled]="li === 0" title="Вверх">↑</button>
-                <button type="button" class="ghost-button icon" (click)="moveLevel(li, 1); $event.preventDefault(); $event.stopPropagation()" [disabled]="li === levels.length - 1" title="Вниз">↓</button>
-                <button type="button" class="ghost-button icon danger" (click)="removeLevel(li); $event.preventDefault(); $event.stopPropagation()" title="Удалить уровень">{{ AppEmoji.remove }}</button>
+                <button type="button" class="ghost-button icon" (click)="moveLevel(li, -1); $event.preventDefault(); $event.stopPropagation()" [disabled]="li === 0" title="Вверх"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.up"/></button>
+                <button type="button" class="ghost-button icon" (click)="moveLevel(li, 1); $event.preventDefault(); $event.stopPropagation()" [disabled]="li === levels.length - 1" title="Вниз"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.down"/></button>
+                <button type="button" class="ghost-button icon danger" (click)="removeLevel(li); $event.preventDefault(); $event.stopPropagation()" title="Удалить уровень"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.remove"/></button>
               </span>
             }
           </summary>
@@ -88,7 +88,7 @@
 
             <!-- 1. Default win key -->
             <div class="sub-block">
-              <label>{{ AppEmoji.key }} Ключ уровня (несколько — через пробел)</label>
+              <label><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/> Ключ уровня (несколько — через пробел)</label>
               <input type="text" [ngModel]="level.winKeysText"
                      (ngModelChange)="level.winKeysText = upperKeys($event)"
                      [disabled]="!isEditable" placeholder="например: SH123 SH321"
@@ -100,7 +100,7 @@
 
             <!-- 2. Auto-finish timer -->
             <div class="sub-block">
-              <label>{{ AppEmoji.autoFinish }} Время автозавершения уровня (минуты; пусто — нет)</label>
+              <label><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.autoFinish"/> Время автозавершения уровня (минуты; пусто — нет)</label>
               <input class="time-input" type="number" min="0" [(ngModel)]="level.autoFinishTime" [disabled]="!isEditable"
                      [class.invalid]="level.autoFinishTime != null && level.autoFinishTime < 0" />
               @if (level.autoFinishTime != null && level.autoFinishTime < 0) {
@@ -111,7 +111,7 @@
             <!-- 3. Effect keys -->
             <div class="sub-block">
               <div class="block-head">
-                <h3>{{ AppEmoji.key }} Ключи с эффектами</h3>
+                <h3><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/> Ключи с эффектами</h3>
                 @if (isEditable) {
                   <button type="button" class="ghost-button" (click)="addKeyCondition(level)">+ Ключ</button>
                 }
@@ -147,7 +147,7 @@
             <!-- 4. Effect timers -->
             <div class="sub-block">
               <div class="block-head">
-                <h3>{{ AppEmoji.timer }} Таймеры с эффектами</h3>
+                <h3><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.timer"/> Таймеры с эффектами</h3>
                 @if (isEditable) {
                   <button type="button" class="ghost-button" (click)="addTimerCondition(level)">+ Таймер</button>
                 }
@@ -181,7 +181,7 @@
             <!-- 5. Time hints -->
             <div class="sub-block">
               <div class="block-head">
-                <h3>{{ AppEmoji.bonusHint }} Подсказки по времени</h3>
+                <h3><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonusHint"/> Подсказки по времени</h3>
                 @if (isEditable) {
                   <button type="button" class="ghost-button" (click)="addTimeHint(level)">+ Время</button>
                 }
@@ -195,7 +195,7 @@
                            [class.invalid]="th.time < 0" />
                     <span class="inline-label">мин.</span>
                     @if (isEditable) {
-                      <button type="button" class="ghost-button icon danger" (click)="removeTimeHint(level, ti)" title="Удалить подсказку">{{ AppEmoji.remove }}</button>
+                      <button type="button" class="ghost-button icon danger" (click)="removeTimeHint(level, ti)" title="Удалить подсказку"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.remove"/></button>
                     }
                   </div>
                   @if (th.time < 0) {
@@ -228,14 +228,14 @@
 
     <!-- Files -->
     <div class="block">
-      <h2>{{ AppEmoji.files }} Файлы</h2>
+      <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.files"/> Файлы</h2>
       <p class="hint-note">Все загруженные файлы игры. Загружать можно и прямо из подсказки.</p>
       @if (files.length > 0) {
         <ul class="files-list">
           @for (f of files; track f.guid) {
             <li>
               <div class="file-info">
-                <span class="file-name">{{ fileEmoji(f) }} {{ fileLabel(f) }}</span>
+                <span class="file-name"><mat-icon class="app-icon-inline" [svgIcon]="fileIcon(f)"/> {{ fileLabel(f) }}</span>
                 @if (fileContentTypeLabel(f)) {
                   <span class="file-type">{{ fileContentTypeLabel(f) }}</span>
                 }
@@ -257,7 +257,7 @@
       }
       @if (isEditable) {
         <label class="upload-button" [class.busy]="isUploading">
-          {{ AppEmoji.upload }} {{ isUploading ? "Загрузка..." : "Загрузить файл" }}
+          <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.upload"/> {{ isUploading ? "Загрузка..." : "Загрузить файл" }}
           <input type="file" hidden (change)="onFileSelected($event)" [disabled]="isUploading" />
         </label>
       }

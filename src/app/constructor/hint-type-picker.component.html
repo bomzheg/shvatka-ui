@@ -3,7 +3,7 @@
   <div class="picker-menu">
     @for (t of allTypes; track t) {
       <button type="button" class="picker-item" (click)="pick(t)">
-        <span class="picker-emoji">{{ typeEmoji[t] }}</span>
+        <span class="picker-emoji"><mat-icon class="app-icon-inline" [svgIcon]="typeIcon[t]"/></span>
         <span>{{ typeLabels[t] }}</span>
       </button>
     }

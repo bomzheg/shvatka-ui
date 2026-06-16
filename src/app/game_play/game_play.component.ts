@@ -23,7 +23,8 @@ import {EffectsPartComponent} from "../effects.part/effects.part.component";
 import {UserService} from "../auth/user.service";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
 import {PushToggleComponent} from "../push/push-toggle.component";
-import {AppEmoji} from "../ui/emoji";
+import {MatIcon} from "@angular/material/icon";
+import {AppIcon, IconTag} from "../ui/icons";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {DebugLogService} from "../debug/debug-log.service";
 import {TeamMember} from "../team/team.models";
@@ -38,12 +39,13 @@ import {TeamMember} from "../team/team.models";
     EffectsPartComponent,
     GameScenarioPartComponent,
     PushToggleComponent,
+    MatIcon,
   ],
   templateUrl: './game_play.component.html',
   styleUrl: './game_play.component.scss'
 })
 export class GamePlayComponent implements OnInit, OnDestroy {
-  protected readonly AppEmoji = AppEmoji;
+  protected readonly AppIcon = AppIcon;
   activeGame: ActiveGame | undefined;
   countdownToStart: string | undefined;
   keyText: string = "";
@@ -423,32 +425,32 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return Effects.normalize(result.effects).some(effect => effect.level_up);
   }
 
-  getEffectTags(effect: EffectLike): string[] {
-    const tags: string[] = [];
+  getEffectTags(effect: EffectLike): IconTag[] {
+    const tags: IconTag[] = [];
 
     const bonusMinutes = typeof effect.bonus_minutes === 'number' ? effect.bonus_minutes : 0;
     if (bonusMinutes > 0) {
-      tags.push(`+${AppEmoji.bonus}бонус ${bonusMinutes} мин.`);
+      tags.push({prefix: "+", icon: AppIcon.bonus, text: `бонус ${bonusMinutes} мин.`});
     } else if (bonusMinutes < 0) {
-      tags.push(`-${AppEmoji.penalty}штраф ${-bonusMinutes} мин.`);
+      tags.push({prefix: "-", icon: AppIcon.penalty, text: `штраф ${-bonusMinutes} мин.`});
     }
     if (effect.level_up) {
       if (effect.next_level) {
-        tags.push(`${AppEmoji.jump}переход на ${effect.next_level}`);
+        tags.push({icon: AppIcon.jump, text: `переход на ${effect.next_level}`});
       } else {
-        tags.push(`${AppEmoji.levelUp}переход на следующий уровень`);
+        tags.push({icon: AppIcon.levelUp, text: `переход на следующий уровень`});
       }
     }
 
     const hintsCount = Effects.hints(effect).length;
     if (hintsCount > 0) {
-      tags.push(`${AppEmoji.bonusHint}бонусные подсказки: ${hintsCount}`);
+      tags.push({icon: AppIcon.bonusHint, text: `бонусные подсказки: ${hintsCount}`});
     }
 
     return tags;
   }
 
-  getTypedKeyEffects(typedKey: TypedKeyLog): string[] {
+  getTypedKeyEffects(typedKey: TypedKeyLog): IconTag[] {
     return this.getEffectsTags(typedKey?.effects);
   }
 
@@ -482,7 +484,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return Effects.normalize(event.effects).some(effect => Effects.hasVisiblePayload(effect));
   }
 
-  getEventEffects(event: GameEvent): string[] {
+  getEventEffects(event: GameEvent): IconTag[] {
     return this.getEffectsTags(event.effects);
   }
 
@@ -550,28 +552,36 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return 'typed-key-ok';
   }
 
-  typedKeyEmoji(typedKey: TypedKeyLog): string {
+  typedKeyIcons(typedKey: TypedKeyLog): AppIcon[] {
     if (this.isTypedKeyTappable(typedKey)) {
-      return '✨';
+      return [AppIcon.effects];
     }
 
     const isWrong = this.isWrongTypedKey(typedKey);
     if (isWrong && typedKey?.is_duplicate) {
-      return '💤❌';
+      return [AppIcon.duplicate, AppIcon.cancel];
     }
     if (isWrong) {
-      return '❌';
+      return [AppIcon.cancel];
     }
     if (typedKey?.is_duplicate) {
-      return '💤';
+      return [AppIcon.duplicate];
     }
-    return '✅';
+    return [AppIcon.levelUp];
   }
 
-  private getEffectsTags(effects: EffectLike[] | EffectLike | undefined): string[] {
+  private getEffectsTags(effects: EffectLike[] | EffectLike | undefined): IconTag[] {
+    const seen = new Set<string>();
     return Effects.normalize(effects)
       .flatMap((effect: EffectLike) => this.getEffectTags(effect))
-      .filter((tag, idx, arr) => arr.indexOf(tag) === idx);
+      .filter(tag => {
+        const id = `${tag.prefix ?? ""}|${tag.icon}|${tag.text}`;
+        if (seen.has(id)) {
+          return false;
+        }
+        seen.add(id);
+        return true;
+      });
   }
 
   private getEffectsHints(effects: EffectLike[] | EffectLike | undefined): HintPart[] {

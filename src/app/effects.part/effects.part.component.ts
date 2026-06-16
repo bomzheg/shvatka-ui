@@ -2,13 +2,15 @@ import {Component, Input} from '@angular/core';
 import {EffectLike, Effects, HintPart} from "../domain/game.models";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {HttpAdapter} from "../http/http.adapter";
-import {AppEmoji} from "../ui/emoji";
+import {MatIcon} from "@angular/material/icon";
+import {AppIcon, IconTag} from "../ui/icons";
 
 @Component({
   selector: 'app-effects-part',
   standalone: true,
   imports: [
     HintPartComponent,
+    MatIcon,
   ],
   templateUrl: './effects.part.component.html',
   styleUrl: './effects.part.component.scss'
@@ -24,27 +26,27 @@ export class EffectsPartComponent {
     return Effects.normalize(this.effects).filter(effect => Effects.hasVisiblePayload(effect));
   }
 
-  getEffectTags(effect: EffectLike): string[] {
-    const tags: string[] = [];
+  getEffectTags(effect: EffectLike): IconTag[] {
+    const tags: IconTag[] = [];
     const bonusMinutes = typeof effect.bonus_minutes === 'number' ? effect.bonus_minutes : 0;
 
     if (bonusMinutes > 0) {
-      tags.push(`${AppEmoji.bonus}бонус ${bonusMinutes} мин.`);
+      tags.push({icon: AppIcon.bonus, text: `бонус ${bonusMinutes} мин.`});
     } else if (bonusMinutes < 0) {
-      tags.push(`${AppEmoji.penalty}штраф ${-bonusMinutes} мин.`);
+      tags.push({icon: AppIcon.penalty, text: `штраф ${-bonusMinutes} мин.`});
     }
 
     if (effect.level_up) {
       if (effect.next_level) {
-        tags.push(`${AppEmoji.jump}переход на ${effect.next_level}`);
+        tags.push({icon: AppIcon.jump, text: `переход на ${effect.next_level}`});
       } else {
-        tags.push(`${AppEmoji.levelUp}переход на следующий уровень`);
+        tags.push({icon: AppIcon.levelUp, text: `переход на следующий уровень`});
       }
     }
 
     const hintsCount = Effects.hints(effect).length;
     if (hintsCount > 0) {
-      tags.push(`${AppEmoji.bonusHint}бонусные подсказки (${hintsCount}):`);
+      tags.push({icon: AppIcon.bonusHint, text: `бонусные подсказки (${hintsCount}):`});
     }
 
     return tags;

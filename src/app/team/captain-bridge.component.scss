@@ -377,7 +377,8 @@ h1 {
 }
 
 .search-spinner {
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
 }
 
