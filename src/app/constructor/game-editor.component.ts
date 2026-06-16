@@ -7,6 +7,7 @@ import {ConstructorService} from "./constructor.service";
 import {HintEditorComponent} from "./hint-editor.component";
 import {HintTypePickerComponent} from "./hint-type-picker.component";
 import {EffectsEditorComponent} from "./effects-editor.component";
+import {OrganizersEditorComponent} from "./organizers-editor.component";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
 import {
@@ -69,6 +70,7 @@ type FilePreviewKind = "image" | "video" | "audio" | "none";
     HintEditorComponent,
     HintTypePickerComponent,
     EffectsEditorComponent,
+    OrganizersEditorComponent,
     ImageLightboxComponent,
     MatIcon,
   ],
