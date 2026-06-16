@@ -1,60 +1,56 @@
 <div class="scn-compact">
   @for (level of game.levels; track level.db_id) {
     <div class="scn-compact-level">
-      <span class="scn-compact-num">{{ level.number_in_game! + 1 }} ({{ level.name_id }}):</span>
+      <div class="scn-compact-num">{{ level.number_in_game! + 1 }} ({{ level.name_id }}):</div>
 
       @if (getWinKeys(level).length > 0) {
-        <span class="scn-group-head">
+        <div class="scn-group">
           @for (key of getWinKeys(level); track key) {
             <span class="scn-chip"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/>{{ key }}</span>
           }
-        </span>
+        </div>
       }
 
       @for (condition of getEffectsKeyConditions(level); track 'k' + $index) {
-        <span class="scn-group">
-          <span class="scn-group-head">
-            @for (key of getConditionKeys(condition); track key) {
-              <span class="scn-chip scn-chip-effect"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/>{{ key }}</span>
-            }
-            @if (hasVisibleEffects(condition)) {
-              <button
-                type="button"
-                class="scn-effect-toggle"
-                (click)="toggleEffects(conditionId(level, 'k', $index))"
-                [attr.aria-expanded]="isOpened(conditionId(level, 'k', $index))">
-                <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>эффект
-              </button>
-            }
-          </span>
-          @if (hasVisibleEffects(condition) && isOpened(conditionId(level, 'k', $index))) {
-            <span class="scn-effects">
-              <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
-            </span>
+        <div class="scn-group">
+          @for (key of getConditionKeys(condition); track key) {
+            <span class="scn-chip scn-chip-effect"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/>{{ key }}</span>
           }
-        </span>
+          @if (hasVisibleEffects(condition)) {
+            <button
+              type="button"
+              class="scn-effect-toggle"
+              (click)="toggleEffects(conditionId(level, 'k', $index))"
+              [attr.aria-expanded]="isOpened(conditionId(level, 'k', $index))">
+              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>эффект
+            </button>
+          }
+        </div>
+        @if (hasVisibleEffects(condition) && isOpened(conditionId(level, 'k', $index))) {
+          <div class="scn-effects">
+            <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
+          </div>
+        }
       }
 
       @for (condition of getEffectsTimerConditions(level); track 't' + $index) {
-        <span class="scn-group">
-          <span class="scn-group-head">
-            <span class="scn-chip scn-chip-timer"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.clock"/>{{ getTimerActionTime(condition) }} мин</span>
-            @if (hasVisibleEffects(condition)) {
-              <button
-                type="button"
-                class="scn-effect-toggle"
-                (click)="toggleEffects(conditionId(level, 't', $index))"
-                [attr.aria-expanded]="isOpened(conditionId(level, 't', $index))">
-                <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>эффект
-              </button>
-            }
-          </span>
-          @if (hasVisibleEffects(condition) && isOpened(conditionId(level, 't', $index))) {
-            <span class="scn-effects">
-              <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
-            </span>
+        <div class="scn-group">
+          <span class="scn-chip scn-chip-timer"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.clock"/>{{ getTimerActionTime(condition) }} мин</span>
+          @if (hasVisibleEffects(condition)) {
+            <button
+              type="button"
+              class="scn-effect-toggle"
+              (click)="toggleEffects(conditionId(level, 't', $index))"
+              [attr.aria-expanded]="isOpened(conditionId(level, 't', $index))">
+              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>эффект
+            </button>
           }
-        </span>
+        </div>
+        @if (hasVisibleEffects(condition) && isOpened(conditionId(level, 't', $index))) {
+          <div class="scn-effects">
+            <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
+          </div>
+        }
       }
     </div>
   }

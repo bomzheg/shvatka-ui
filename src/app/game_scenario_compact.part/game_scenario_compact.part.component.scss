@@ -1,16 +1,14 @@
 .scn-compact {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.45rem;
   font-size: 0.85rem;
 }
 
 .scn-compact-level {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.3rem;
+  display: grid;
+  gap: 0.25rem;
   min-width: 0;
-  padding-bottom: 0.3rem;
+  padding-bottom: 0.35rem;
   border-bottom: 1px solid rgba(148, 163, 184, 0.25);
 }
 
@@ -23,31 +21,26 @@
   font-weight: 600;
 }
 
-/* A key/timer condition and its effect toggle live in one group that wraps
-   as a whole relative to other groups, while its revealed effects drop below. */
+/* One keyset or one timer per line. Keys wrap freely if there are many,
+   and a single over-long key triggers horizontal scroll for this line only. */
 .scn-group {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.3rem;
   min-width: 0;
-}
-
-/* Keys of one keyset together with their toggle never break apart. */
-.scn-group-head {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.3rem;
+  overflow-x: auto;
 }
 
 .scn-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.15rem;
+  flex-shrink: 0;
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.08);
+  white-space: nowrap;
 }
 
 .scn-chip-effect {
@@ -66,15 +59,15 @@
   display: inline-flex;
   align-items: center;
   gap: 0.15rem;
+  flex-shrink: 0;
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
   font: inherit;
   font-size: 0.72rem;
+  white-space: nowrap;
 }
 
 .scn-effects {
-  flex-basis: 100%;
-  width: 100%;
   min-width: 0;
   padding-left: 0.6rem;
 }
