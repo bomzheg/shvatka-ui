@@ -224,19 +224,19 @@
           } @else {
             <p><strong>Я организатор:</strong></p>
             @if (getMyOrg()?.can_see_log_keys) {
-              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/>Могу смотреть лог ключей</p>
+              <p><mat-icon class="app-icon-inline app-icon-success" [svgIcon]="AppIcon.check"/>Могу смотреть лог ключей</p>
             } @else {
-              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.cancel"/>Не могу смотреть лог ключей</p>
+              <p><mat-icon class="app-icon-inline app-icon-danger" [svgIcon]="AppIcon.cancel"/>Не могу смотреть лог ключей</p>
             }
             @if (getMyOrg()?.can_spy) {
-              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/>Могу смотреть какая команда на каком уровне</p>
+              <p><mat-icon class="app-icon-inline app-icon-success" [svgIcon]="AppIcon.check"/>Могу смотреть какая команда на каком уровне</p>
             } @else {
-              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.cancel"/>Не могу смотреть какая команда на каком уровне</p>
+              <p><mat-icon class="app-icon-inline app-icon-danger" [svgIcon]="AppIcon.cancel"/>Не могу смотреть какая команда на каком уровне</p>
             }
             @if (getMyOrg()?.view_scenario) {
-              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/>Могу смотреть сценарий</p>
+              <p><mat-icon class="app-icon-inline app-icon-success" [svgIcon]="AppIcon.check"/>Могу смотреть сценарий</p>
             } @else {
-              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.cancel"/>Не могу смотреть сценарий</p>
+              <p><mat-icon class="app-icon-inline app-icon-danger" [svgIcon]="AppIcon.cancel"/>Не могу смотреть сценарий</p>
             }
           }
         }
