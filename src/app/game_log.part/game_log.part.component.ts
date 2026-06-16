@@ -238,6 +238,23 @@ export class GameLogPartComponent {
     }
   }
 
+  /** Color class for a key in the log: correct / wrong / duplicate. */
+  keyTypeClass(key: KeyTime): string {
+    if (key.is_duplicate) {
+      return "key-type-duplicate";
+    }
+    switch (key.type_) {
+      case KeyType.wrong:
+        return "key-type-wrong";
+      case KeyType.simple:
+      case KeyType.bonus:
+      case KeyType.effects:
+        return "key-type-correct";
+      default:
+        return "";
+    }
+  }
+
   isLevelChanged(keys: KeyTime[], index: number): boolean {
     if (index >= keys.length - 1) {
       return false;

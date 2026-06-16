@@ -20,7 +20,7 @@
                     <tr>
                       <td class="key-time">{{ toLocalHm(key.at) }}</td>
                       <td>
-                        <span class="key-type-inline"><mat-icon class="app-icon-inline" [svgIcon]="keyTypeIcon(key)"/></span>{{ key.text }}
+                        <span class="key-type-inline" [class]="keyTypeClass(key)"><mat-icon class="app-icon-inline" [svgIcon]="keyTypeIcon(key)"/></span>{{ key.text }}
                       </td>
                       <td>{{ key.player.name_mention }}</td>
                     </tr>
