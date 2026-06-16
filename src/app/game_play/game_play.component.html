@@ -233,6 +233,11 @@
             } @else {
               <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.cancel"/>Не могу смотреть какая команда на каком уровне</p>
             }
+            @if (getMyOrg()?.view_scenario) {
+              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/>Могу смотреть сценарий</p>
+            } @else {
+              <p><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.cancel"/>Не могу смотреть сценарий</p>
+            }
           }
         }
       </div>
