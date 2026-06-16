@@ -165,11 +165,17 @@
     transform: translateX(0);
   }
 
+  .mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .mobile-close {
-    align-self: flex-end;
     border: none;
     background: transparent;
     color: inherit;
+    cursor: pointer;
   }
 
   .mobile-link {

@@ -74,9 +74,12 @@
 
 <div class="mobile-menu-backdrop" [class.open]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
 <aside class="mobile-menu" [class.open]="isMobileMenuOpen">
-  <button class="mobile-close" type="button" (click)="closeMobileMenu()" aria-label="Close menu">
-    <span aria-hidden="true">✕</span>
-  </button>
+  <div class="mobile-menu-header">
+    <a routerLink="/" class="home-link" (click)="onNavClick('/', $event)">Схватка</a>
+    <button class="mobile-close" type="button" (click)="closeMobileMenu()" aria-label="Close menu">
+      <span aria-hidden="true">✕</span>
+    </button>
+  </div>
   <div class="mobile-auth">
 
   <div class="theme-picker mobile-theme-picker">
