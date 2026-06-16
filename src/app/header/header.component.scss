@@ -254,8 +254,10 @@
     }
   }
 
-  .mobile-auth {
-    margin-top: 0;
+  .mobile-footer {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--app-border);
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -264,6 +266,7 @@
   .mobile-user-row {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 0.5rem;
   }
 
@@ -298,13 +301,15 @@
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
+    gap: 0.5rem;
     background: transparent;
     border: none;
     border-radius: 6px;
-    padding: 0.4rem;
+    padding: 0.4rem 0.5rem;
     cursor: pointer;
-    color: var(--app-muted-text);
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--app-text);
 
     svg {
       width: 1.25rem;
