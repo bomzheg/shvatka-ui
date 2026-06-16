@@ -68,4 +68,8 @@ export class UserService {
   public changePassword(newPassword: string): Observable<void> {
     return this.http.put<void>("/users/me/password", JSON.stringify(newPassword));
   }
+
+  public changeUsername(newUsername: string): Observable<void> {
+    return this.http.put<void>("/users/me/username", JSON.stringify({username: newUsername}));
+  }
 }

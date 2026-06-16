@@ -14,6 +14,8 @@ import {PushToggleComponent} from '../push/push-toggle.component';
   styleUrl: './profile.component.scss',
 })
 export class ProfileComponent implements OnInit {
+  newUsername = '';
+  isUsernameSubmitting = false;
   newPassword = '';
   confirmPassword = '';
   isSubmitting = false;
@@ -36,6 +38,34 @@ export class ProfileComponent implements OnInit {
 
   get username(): string {
     return this.userService.getMe()?.name_mention || '';
+  }
+
+  changeUsername() {
+    const username = this.newUsername.trim();
+    if (!username) {
+      this.snackbar.error('Введите новое имя пользователя');
+      return;
+    }
+
+    this.isUsernameSubmitting = true;
+    this.userService.changeUsername(username)
+      .subscribe({
+        next: async () => {
+          await this.userService.loadMe();
+          this.newUsername = '';
+          this.isUsernameSubmitting = false;
+          this.snackbar.success('Имя пользователя успешно изменено');
+        },
+        error: (err) => {
+          this.isUsernameSubmitting = false;
+          if (err instanceof HttpErrorResponse && err.status === 401) {
+            this.snackbar.error('Нужно войти в аккаунт');
+            return;
+          }
+
+          this.snackbar.error('Не удалось изменить имя пользователя');
+        },
+      });
   }
 
   changePassword() {
