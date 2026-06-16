@@ -23,6 +23,24 @@
   font-weight: 600;
 }
 
+/* A key/timer condition and its effect toggle live in one group that wraps
+   as a whole relative to other groups, while its revealed effects drop below. */
+.scn-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* Keys of one keyset together with their toggle never break apart. */
+.scn-group-head {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .scn-chip {
   display: inline-flex;
   align-items: center;
@@ -56,6 +74,7 @@
 
 .scn-effects {
   flex-basis: 100%;
+  width: 100%;
   min-width: 0;
   padding-left: 0.6rem;
 }
