@@ -193,7 +193,11 @@
   }
 
   .mobile-theme-picker {
+    display: flex;
+
     .theme-toggle {
+      flex: 1;
+      justify-content: space-between;
       background: color-mix(in srgb, var(--app-text) 10%, transparent);
     }
   }
