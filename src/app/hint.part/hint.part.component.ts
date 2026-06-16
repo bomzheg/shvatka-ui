@@ -17,4 +17,19 @@ export class HintPartComponent {
 
     protected readonly HintType = HintType;
     protected readonly JSON = JSON;
+
+  /**
+   * Prepares an HTML hint for rendering: normalizes line endings and turns
+   * text line breaks into <br>. Newlines that sit inside a tag (e.g. between
+   * attributes) are left untouched so the markup is not broken.
+   */
+  toHtml(value: string | undefined | null): string {
+    if (!value) {
+      return '';
+    }
+
+    return value
+      .replace(/\r\n?/g, '\n')
+      .replace(/\n(?![^<]*>)/g, '<br>');
+  }
 }
