@@ -123,6 +123,15 @@ mat-icon.app-icon-inline svg {
   display: block;
 }
 
+/* Status icon colors (fill follows currentColor) */
+mat-icon.app-icon-success {
+  color: #2e7d32;
+}
+
+mat-icon.app-icon-danger {
+  color: #c62828;
+}
+
 /* CDK drag-drop: the drag preview is attached to <body>, so style it globally */
 .cdk-drag-preview {
   background: var(--app-surface);
