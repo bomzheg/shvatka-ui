@@ -6,6 +6,11 @@ import {environment} from "../../environments/environment";
 import {Page} from "../games/games.service";
 import {FullGame} from "../domain/game.models";
 import {MyGame, ScenarioPayload, UploadedFile} from "./constructor.models";
+import {GameOrganizer, OrgPermissionKey, OrgPlayer} from "./organizers.models";
+
+interface ItemsResponse<T> {
+  items: T[];
+}
 
 @Injectable({
   providedIn: "root",
@@ -53,5 +58,52 @@ export class ConstructorService {
       formData,
       {withCredentials: true},
     );
+  }
+
+  // -------------------------------------------------------------------------
+  // Organizers (Game Organizers API)
+  // -------------------------------------------------------------------------
+
+  /** List the organizers of a game (primary first, then secondary incl. deleted). */
+  listOrganizers(gameId: number): Observable<Page<GameOrganizer>> {
+    return this.http.get<Page<GameOrganizer>>(`/games/${gameId}/organizers`);
+  }
+
+  /** Add a player as a new secondary organizer (all permissions start false). */
+  addOrganizer(gameId: number, playerId: number): Observable<GameOrganizer> {
+    return this.http.post<GameOrganizer>(`/games/${gameId}/organizers`, {player_id: playerId});
+  }
+
+  /** Soft-delete a secondary organizer (the org is passed in the body, not path). */
+  deleteOrganizer(gameId: number, orgId: number): Observable<GameOrganizer> {
+    return this.httpClient.request<GameOrganizer>(
+      "DELETE",
+      `${environment.apiUrl}/games/${gameId}/organizers`,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "application/json"},
+        body: {org_id: orgId},
+        responseType: "json",
+      },
+    );
+  }
+
+  /** Set a single permission of a secondary organizer to an explicit value. */
+  setOrganizerPermission(
+    gameId: number,
+    orgId: number,
+    permission: OrgPermissionKey,
+    value: boolean,
+  ): Observable<GameOrganizer> {
+    return this.http.put<GameOrganizer>(
+      `/games/${gameId}/organizers/${orgId}`,
+      {permission, value},
+    );
+  }
+
+  /** Search players by username — used to pick a new organizer to invite. */
+  searchPlayers(query: string): Observable<ItemsResponse<OrgPlayer>> {
+    const qs = new URLSearchParams({username: query}).toString();
+    return this.http.get<ItemsResponse<OrgPlayer>>(`/users?${qs}`);
   }
 }

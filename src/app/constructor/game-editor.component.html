@@ -40,6 +40,9 @@
       <input id="gameName" type="text" [(ngModel)]="name" [disabled]="!isEditable" />
     </div>
 
+    <!-- Organizers -->
+    <app-organizers-editor [gameId]="gameId"></app-organizers-editor>
+
     <!-- Levels -->
     <div class="block">
       <div class="block-head">

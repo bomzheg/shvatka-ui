@@ -1,0 +1,114 @@
+<div class="block organizers-block">
+  <div class="block-head">
+    <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.contact"/> Организаторы</h2>
+  </div>
+  <p class="hint-note">Автор всегда имеет все права и не может быть удалён. Дополнительным
+    организаторам можно выдавать отдельные права.</p>
+
+  @if (isLoading && organizers.length === 0) {
+    <div class="loading-state" aria-live="polite">
+      <span class="loading-spinner"></span>
+      Загрузка организаторов...
+    </div>
+  } @else {
+    <ul class="org-list">
+      <!-- Primary organizer (author) -->
+      @if (primaryOrganizer; as author) {
+        <li class="org-card org-card-author">
+          <div class="org-row">
+            <div class="org-info">
+              <span class="org-name">{{ getPlayerName(author) }}</span>
+              <span class="badge badge-author">автор</span>
+            </div>
+          </div>
+          <div class="org-perms-readonly">
+            @for (p of permissionLabels; track p.key) {
+              <span class="perm-chip perm-on"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/> {{ p.label }}</span>
+            }
+          </div>
+        </li>
+      }
+
+      <!-- Secondary organizers -->
+      @for (org of secondaryOrganizers; track org.org_id) {
+        <li class="org-card">
+          <div class="org-row">
+            <div class="org-info">
+              <span class="org-name">{{ getPlayerName(org) }}</span>
+            </div>
+            <div class="org-actions">
+              <button
+                type="button"
+                class="ghost-button icon danger"
+                title="Удалить организатора"
+                [disabled]="isBusy(org)"
+                (click)="removeOrganizer(org)"
+              ><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.remove"/></button>
+            </div>
+          </div>
+          <div class="org-perms">
+            @for (p of permissionLabels; track p.key) {
+              <label class="perm-toggle-label">
+                <input
+                  type="checkbox"
+                  [checked]="getPermission(org, p.key)"
+                  [disabled]="isBusy(org)"
+                  (change)="togglePermission(org, p.key, $any($event).target.checked)"
+                />
+                {{ p.label }}
+              </label>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+
+    @if (secondaryOrganizers.length === 0) {
+      <p class="empty-note">Дополнительных организаторов пока нет.</p>
+    }
+
+    <!-- Add organizer via search -->
+    <div class="add-org">
+      <h3>Добавить организатора</h3>
+      <div class="search-wrap">
+        <div class="search-input-row">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Имя пользователя..."
+            [ngModel]="searchQuery"
+            (ngModelChange)="onSearchQueryChange($event)"
+            name="orgSearch"
+            autocomplete="off"
+          />
+          @if (isSearching) {
+            <span class="search-spinner" aria-label="Поиск..."><span class="loading-spinner"></span></span>
+          }
+        </div>
+
+        @if (searchResults.length > 0 && !selectedPlayer) {
+          <ul class="search-results">
+            @for (player of searchResults; track player.id) {
+              <li>
+                <button type="button" class="search-result-btn" (click)="selectPlayer(player)">
+                  {{ player.name_mention }}
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      @if (selectedPlayer) {
+        <div class="selected-player-card">
+          <span>Выбран: <strong>{{ selectedPlayer.name_mention }}</strong></span>
+          <button type="button" class="btn-clear" (click)="clearSelectedPlayer()" aria-label="Отменить выбор"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
+        </div>
+
+        <button type="button" class="primary" [disabled]="isAdding" (click)="addOrganizer()">
+          {{ isAdding ? "Добавление..." : "Добавить в организаторы" }}
+        </button>
+      }
+    </div>
+  }
+</div>
