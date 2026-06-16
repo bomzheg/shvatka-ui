@@ -1,25 +1,9 @@
 @if (hasActiveGame()) {
-  <div class="active-game-banner">
-    @if (hasRunningGame()) {
-      Идёт игра: {{ activeGame?.name }}
+  <a class="active-game-banner" routerLink="/games/running" (click)="onNavClick('/games/running', $event)">
+    {{ activeGame?.name }}: {{ activeGameBannerLabel() }}@if (countdown) {
+      , начнётся через {{ countdown.firstValue }} {{ countdownUnitLabel(countdown.firstUnit) }} {{ countdown.secondValue }} {{ countdownUnitLabel(countdown.secondUnit) }}
     }
-
-    @if (isGettingWaiversStatus()) {
-      в настоящее время игра {{ activeGame?.name }} собирает вейверы
-    }
-
-    @if (isFinishedStatus()) {
-      игра завершена, ждём публикацию результатов
-    }
-
-    @if (isOtherPreStartStatus()) {
-      игра {{ activeGame?.name }} ещё не началась
-    }
-
-    @if (countdown) {
-      , игра начнётся через {{ countdown.firstValue }} {{ countdownUnitLabel(countdown.firstUnit) }} {{ countdown.secondValue }} {{ countdownUnitLabel(countdown.secondUnit) }}
-    }
-  </div>
+  </a>
 }
 
 <header class="main-header">

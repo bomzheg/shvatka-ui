@@ -1,8 +1,14 @@
 .active-game-banner {
+  display: block;
   background-color: var(--app-header-bg);
   color: var(--app-header-text);
   font-size: 0.9rem;
   padding: 0.5rem 1rem;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .main-header {
