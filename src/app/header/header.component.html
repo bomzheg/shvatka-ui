@@ -105,8 +105,6 @@
       <mat-icon aria-hidden="true" [svgIcon]="AppIcon.close"/>
     </button>
   </div>
-  <div class="mobile-auth">
-
   <div class="theme-picker mobile-theme-picker">
     <div class="theme-toggle" role="group" [attr.aria-label]="'Тема'">
       <button
@@ -146,20 +144,6 @@
     </div>
   </div>
 
-    @if (isAuthenticated()) {
-      <div class="mobile-user-row">
-        <a routerLink="/profile" class="mobile-profile-link" (click)="onNavClick('/profile', $event)">
-          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          <span class="mobile-username">{{ getMe()?.name_mention }}</span>
-        </a>
-        <button class="mobile-logout-btn" type="button" (click)="logout()" aria-label="Выйти">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
-        </button>
-      </div>
-    } @else {
-      <button class="solid-button" type="button" (click)="openLoginForm()">Войти</button>
-    }
-  </div>
   @if (hasCurrentGameTab()) {
     <a routerLink="/games/running" class="mobile-link mobile-link--active-game" routerLinkActive="active" (click)="onNavClick('/games/running', $event)">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
@@ -182,6 +166,23 @@
       <span>Команда</span>
     </a>
   }
+
+  <div class="mobile-footer">
+    @if (isAuthenticated()) {
+      <div class="mobile-user-row">
+        <a routerLink="/profile" class="mobile-profile-link" (click)="onNavClick('/profile', $event)">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <span class="mobile-username">{{ getMe()?.name_mention }}</span>
+        </a>
+        <button class="mobile-logout-btn" type="button" (click)="logout()">
+          <span>Выйти</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+        </button>
+      </div>
+    } @else {
+      <button class="solid-button" type="button" (click)="openLoginForm()">Войти</button>
+    }
+  </div>
 </aside>
 
 <app-auth/>
