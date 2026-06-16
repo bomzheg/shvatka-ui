@@ -44,17 +44,42 @@
 
 
   <div class="theme-picker">
-    <label for="theme-mode" class="theme-label">Тема</label>
-    <select
-      id="theme-mode"
-      class="theme-select"
-      [ngModel]="selectedThemeMode"
-      (ngModelChange)="setThemeMode($event)"
-    >
-      @for (mode of themeModes; track mode) {
-        <option [ngValue]="mode">{{ getThemeModeLabel(mode) }}</option>
-      }
-    </select>
+    <div class="theme-toggle" role="group" [attr.aria-label]="'Тема'">
+      <button
+        type="button"
+        class="theme-toggle__option"
+        [class.active]="selectedThemeMode === 'light'"
+        [attr.aria-pressed]="selectedThemeMode === 'light'"
+        [attr.aria-label]="getThemeModeLabel('light')"
+        [attr.title]="getThemeModeLabel('light')"
+        (click)="setThemeMode('light')"
+      >
+        <svg class="theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 13h2a1 1 0 0 0 0-2H2a1 1 0 0 0 0 2zm18 0h2a1 1 0 0 0 0-2h-2a1 1 0 0 0 0 2zM11 2v2a1 1 0 0 0 2 0V2a1 1 0 0 0-2 0zm0 18v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-2 0zM5.64 4.22 4.22 5.64a1 1 0 0 0 1.42 1.42l1.41-1.41A1 1 0 0 0 5.64 4.22zm12.73 12.73-1.41 1.41a1 1 0 0 0 1.41 1.42l1.42-1.42a1 1 0 0 0-1.42-1.41zM18.36 4.22a1 1 0 0 0-1.42 0l-1.41 1.42a1 1 0 0 0 1.41 1.41l1.42-1.41a1 1 0 0 0 0-1.42zM5.64 16.95l-1.42 1.41a1 1 0 0 0 1.42 1.42l1.41-1.42a1 1 0 0 0-1.41-1.41z"/></svg>
+      </button>
+      <button
+        type="button"
+        class="theme-toggle__option theme-toggle__option--auto"
+        [class.active]="selectedThemeMode === 'system'"
+        [attr.aria-pressed]="selectedThemeMode === 'system'"
+        [attr.aria-label]="getThemeModeLabel('system')"
+        [attr.title]="getThemeModeLabel('system')"
+        (click)="setThemeMode('system')"
+      >
+        <svg class="theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.85 12.65h2.3L12 9l-1.15 3.65zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm2.19 13-.66-2H10.5l-.67 2H8.31l3.06-8h1.27l3.05 8h-1.5z"/></svg>
+        <span>Авто</span>
+      </button>
+      <button
+        type="button"
+        class="theme-toggle__option"
+        [class.active]="selectedThemeMode === 'dark'"
+        [attr.aria-pressed]="selectedThemeMode === 'dark'"
+        [attr.aria-label]="getThemeModeLabel('dark')"
+        [attr.title]="getThemeModeLabel('dark')"
+        (click)="setThemeMode('dark')"
+      >
+        <svg class="theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </button>
+    </div>
   </div>
 
   <div class="user-section">
@@ -83,17 +108,43 @@
   <div class="mobile-auth">
 
   <div class="theme-picker mobile-theme-picker">
-    <label for="theme-mode-mobile" class="theme-label">Тема</label>
-    <select
-      id="theme-mode-mobile"
-      class="theme-select"
-      [ngModel]="selectedThemeMode"
-      (ngModelChange)="setThemeMode($event)"
-    >
-      @for (mode of themeModes; track mode) {
-        <option [ngValue]="mode">{{ getThemeModeLabel(mode) }}</option>
-      }
-    </select>
+    <span class="theme-label">Тема</span>
+    <div class="theme-toggle" role="group" [attr.aria-label]="'Тема'">
+      <button
+        type="button"
+        class="theme-toggle__option"
+        [class.active]="selectedThemeMode === 'light'"
+        [attr.aria-pressed]="selectedThemeMode === 'light'"
+        [attr.aria-label]="getThemeModeLabel('light')"
+        [attr.title]="getThemeModeLabel('light')"
+        (click)="setThemeMode('light')"
+      >
+        <svg class="theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM2 13h2a1 1 0 0 0 0-2H2a1 1 0 0 0 0 2zm18 0h2a1 1 0 0 0 0-2h-2a1 1 0 0 0 0 2zM11 2v2a1 1 0 0 0 2 0V2a1 1 0 0 0-2 0zm0 18v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-2 0zM5.64 4.22 4.22 5.64a1 1 0 0 0 1.42 1.42l1.41-1.41A1 1 0 0 0 5.64 4.22zm12.73 12.73-1.41 1.41a1 1 0 0 0 1.41 1.42l1.42-1.42a1 1 0 0 0-1.42-1.41zM18.36 4.22a1 1 0 0 0-1.42 0l-1.41 1.42a1 1 0 0 0 1.41 1.41l1.42-1.41a1 1 0 0 0 0-1.42zM5.64 16.95l-1.42 1.41a1 1 0 0 0 1.42 1.42l1.41-1.42a1 1 0 0 0-1.41-1.41z"/></svg>
+      </button>
+      <button
+        type="button"
+        class="theme-toggle__option theme-toggle__option--auto"
+        [class.active]="selectedThemeMode === 'system'"
+        [attr.aria-pressed]="selectedThemeMode === 'system'"
+        [attr.aria-label]="getThemeModeLabel('system')"
+        [attr.title]="getThemeModeLabel('system')"
+        (click)="setThemeMode('system')"
+      >
+        <svg class="theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.85 12.65h2.3L12 9l-1.15 3.65zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm2.19 13-.66-2H10.5l-.67 2H8.31l3.06-8h1.27l3.05 8h-1.5z"/></svg>
+        <span>Авто</span>
+      </button>
+      <button
+        type="button"
+        class="theme-toggle__option"
+        [class.active]="selectedThemeMode === 'dark'"
+        [attr.aria-pressed]="selectedThemeMode === 'dark'"
+        [attr.aria-label]="getThemeModeLabel('dark')"
+        [attr.title]="getThemeModeLabel('dark')"
+        (click)="setThemeMode('dark')"
+      >
+        <svg class="theme-toggle__icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </button>
+    </div>
   </div>
 
     @if (isAuthenticated()) {

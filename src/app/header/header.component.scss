@@ -58,12 +58,48 @@
   opacity: 0.92;
 }
 
-.theme-select {
-  border-radius: 10px;
-  border: 1px solid var(--app-border);
-  background: var(--app-surface);
-  color: var(--app-text);
-  padding: 0.35rem 0.5rem;
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.theme-toggle__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.7;
+  transition: background 0.18s ease, opacity 0.18s ease, color 0.18s ease;
+
+  .theme-toggle__icon {
+    width: 1.05rem;
+    height: 1.05rem;
+    fill: currentColor;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &.active {
+    background: var(--app-accent);
+    color: var(--app-accent-contrast);
+    opacity: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
 }
 
 .avatar-link {
@@ -158,7 +194,12 @@
 
   .mobile-theme-picker {
     display: flex;
+    align-items: center;
     justify-content: space-between;
+
+    .theme-toggle {
+      background: color-mix(in srgb, var(--app-text) 10%, transparent);
+    }
   }
 
   .mobile-menu.open {
