@@ -1,5 +1,4 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {FormsModule} from "@angular/forms";
 import {DOCUMENT} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
@@ -7,7 +6,7 @@ import {UserService} from "../auth/user.service";
 import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {ActiveGame, GamesService} from "../games/games.service";
-import {THEME_MODES, ThemeMode, ThemeService} from "../theme/theme.service";
+import {ThemeMode, ThemeService} from "../theme/theme.service";
 import {PushService} from "../push/push.service";
 import {DebugLogService} from "../debug/debug-log.service";
 
@@ -28,7 +27,6 @@ interface Countdown {
     RouterLink,
     RouterLinkActive,
     MatIcon,
-    FormsModule,
   ],
   templateUrl: 'header.component.html',
   styleUrl: './header.component.scss',
@@ -41,7 +39,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
   isMobileMenuOpen = false;
-  readonly themeModes = THEME_MODES;
   selectedThemeMode: ThemeMode = "system";
 
   constructor(
