@@ -1,0 +1,49 @@
+<div class="scn-compact">
+  @for (level of game.levels; track level.db_id) {
+    <div class="scn-compact-level">
+      <span class="scn-compact-num">{{ level.number_in_game! + 1 }} ({{ level.name_id }}):</span>
+
+      @for (key of getWinKeys(level); track key) {
+        <span class="scn-chip"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/>{{ key }}</span>
+      }
+
+      @for (condition of getEffectsKeyConditions(level); track 'k' + $index) {
+        @for (key of getConditionKeys(condition); track key) {
+          <span class="scn-chip scn-chip-effect"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/>{{ key }}</span>
+        }
+        @if (hasVisibleEffects(condition)) {
+          <button
+            type="button"
+            class="scn-effect-toggle"
+            (click)="toggleEffects(conditionId(level, 'k', $index))"
+            [attr.aria-expanded]="isOpened(conditionId(level, 'k', $index))">
+            <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>эффект
+          </button>
+          @if (isOpened(conditionId(level, 'k', $index))) {
+            <span class="scn-effects">
+              <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
+            </span>
+          }
+        }
+      }
+
+      @for (condition of getEffectsTimerConditions(level); track 't' + $index) {
+        <span class="scn-chip scn-chip-timer"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.clock"/>{{ getTimerActionTime(condition) }} мин</span>
+        @if (hasVisibleEffects(condition)) {
+          <button
+            type="button"
+            class="scn-effect-toggle"
+            (click)="toggleEffects(conditionId(level, 't', $index))"
+            [attr.aria-expanded]="isOpened(conditionId(level, 't', $index))">
+            <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>эффект
+          </button>
+          @if (isOpened(conditionId(level, 't', $index))) {
+            <span class="scn-effects">
+              <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
+            </span>
+          }
+        }
+      }
+    </div>
+  }
+</div>

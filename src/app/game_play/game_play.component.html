@@ -387,6 +387,17 @@
 
 @if (canViewScenario()) {
   <details class="author-scenario-spoiler">
+    <summary class="game-scn-spoiler">Ключи и таймеры (кратко)</summary>
+    @if (isAuthorScenarioLoading) {
+      <p class="status-message">Загрузка сценария...</p>
+    } @else if (shouldShowAuthorScenario()) {
+      <app-game-scenario-compact-part [game]="authorScenario!"></app-game-scenario-compact-part>
+    } @else {
+      <p class="status-message">Не удалось загрузить сценарий.</p>
+    }
+  </details>
+
+  <details class="author-scenario-spoiler">
     <summary class="game-scn-spoiler">Сценарий текущей игры</summary>
     @if (isAuthorScenarioLoading) {
       <p class="status-message">Загрузка сценария...</p>

@@ -22,6 +22,7 @@ import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {EffectsPartComponent} from "../effects.part/effects.part.component";
 import {UserService} from "../auth/user.service";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
+import {GameScenarioCompactPartComponent} from "../game_scenario_compact.part/game_scenario_compact.part.component";
 import {PushToggleComponent} from "../push/push-toggle.component";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon, IconTag} from "../ui/icons";
@@ -38,6 +39,7 @@ import {TeamMember} from "../team/team.models";
     GameLogPartComponent,
     EffectsPartComponent,
     GameScenarioPartComponent,
+    GameScenarioCompactPartComponent,
     PushToggleComponent,
     MatIcon,
   ],

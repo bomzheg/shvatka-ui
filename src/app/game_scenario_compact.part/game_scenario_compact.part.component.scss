@@ -1,0 +1,61 @@
+.scn-compact {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.scn-compact-level {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.scn-compact-level:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.scn-compact-num {
+  font-weight: 600;
+}
+
+.scn-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+}
+
+.scn-chip-effect {
+  background: rgba(168, 85, 247, 0.12);
+}
+
+.scn-chip-timer {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.scn-effect-toggle {
+  border: 0;
+  background: rgba(168, 85, 247, 0.15);
+  color: #7e22ce;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.scn-effects {
+  flex-basis: 100%;
+  min-width: 0;
+  padding-left: 0.6rem;
+}
