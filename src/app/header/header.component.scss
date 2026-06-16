@@ -194,10 +194,9 @@
 
   .mobile-theme-picker {
     display: flex;
+    justify-content: flex-end;
 
     .theme-toggle {
-      flex: 1;
-      justify-content: space-between;
       background: color-mix(in srgb, var(--app-text) 10%, transparent);
     }
   }
