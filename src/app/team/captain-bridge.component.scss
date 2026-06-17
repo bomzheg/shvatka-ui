@@ -85,9 +85,11 @@ h1 {
 .team-captain {
   margin: 0;
   font-size: 0.9rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
+
+  strong {
+    overflow-wrap: anywhere;
+  }
 }
 
 // ── Members ────────────────────────────────────────────────────────────────────
@@ -116,32 +118,48 @@ h1 {
 .member-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
 .member-info {
   display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.member-identity {
+  display: flex;
   align-items: center;
   gap: 0.45rem;
-  flex-wrap: wrap;
   min-width: 0;
 }
 
 .member-emoji {
   font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .member-name {
   font-weight: 600;
-  word-break: break-all;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.member-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .member-actions {
   display: flex;
   gap: 0.4rem;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .member-perms {

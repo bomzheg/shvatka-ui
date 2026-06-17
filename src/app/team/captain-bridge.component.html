@@ -75,18 +75,24 @@
             @if (editingMemberId !== member.id) {
               <div class="member-row">
                 <div class="member-info">
-                  @if (member.emoji) {
-                    <span class="member-emoji" aria-hidden="true">{{ member.emoji }}</span>
-                  }
-                  <span class="member-name">{{ getMemberDisplayName(member) }}</span>
-                  @if (member.role) {
-                    <span class="badge badge-role">{{ member.role }}</span>
-                  }
-                  @if (isCaptainMember(member)) {
-                    <span class="badge badge-captain">капитан</span>
-                  }
-                  @if (isSelf(member)) {
-                    <span class="badge badge-you">вы</span>
+                  <div class="member-identity">
+                    @if (member.emoji) {
+                      <span class="member-emoji" aria-hidden="true">{{ member.emoji }}</span>
+                    }
+                    <span class="member-name">{{ getMemberDisplayName(member) }}</span>
+                  </div>
+                  @if (member.role || isCaptainMember(member) || isSelf(member)) {
+                    <div class="member-badges">
+                      @if (member.role) {
+                        <span class="badge badge-role">{{ member.role }}</span>
+                      }
+                      @if (isCaptainMember(member)) {
+                        <span class="badge badge-captain">капитан</span>
+                      }
+                      @if (isSelf(member)) {
+                        <span class="badge badge-you">вы</span>
+                      }
+                    </div>
                   }
                 </div>
 
