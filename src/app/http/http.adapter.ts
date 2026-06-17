@@ -110,6 +110,7 @@ export class HttpAdapter {
       || url === "/games/running/level/current"
       || url === "/games/running/key"
       || url === "/users/me/password"
+      || url === "/users/me/username"
       || url === "/teams/my";
   }
 

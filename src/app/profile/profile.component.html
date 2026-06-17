@@ -4,6 +4,21 @@
   @if (isAuthenticated) {
     <p class="username">Пользователь: <strong>{{ username }}</strong></p>
 
+    <form class="username-form" (ngSubmit)="changeUsername()">
+      <label for="newUsername">Новое имя пользователя</label>
+      <input
+        id="newUsername"
+        name="newUsername"
+        type="text"
+        [(ngModel)]="newUsername"
+        autocomplete="username"
+      />
+
+      <button class="primary" type="submit" [disabled]="isUsernameSubmitting">
+        {{ isUsernameSubmitting ? 'Сохраняем...' : 'Изменить имя' }}
+      </button>
+    </form>
+
     <div class="notifications-block">
       <h2 class="notifications-title">Уведомления</h2>
       <app-push-toggle></app-push-toggle>
