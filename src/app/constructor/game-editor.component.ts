@@ -60,6 +60,17 @@ interface EditorLevel {
 
 type FilePreviewKind = "image" | "video" | "audio" | "none";
 
+// Used to recover a file's media kind when the server omits content_type.
+const IMAGE_EXTENSIONS = new Set([
+  "jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "heic", "heif", "avif",
+]);
+const VIDEO_EXTENSIONS = new Set([
+  "mp4", "webm", "mov", "mkv", "avi", "m4v", "3gp", "ogv",
+]);
+const AUDIO_EXTENSIONS = new Set([
+  "mp3", "ogg", "oga", "opus", "wav", "m4a", "aac", "flac",
+]);
+
 @Component({
   selector: "app-game-editor",
   standalone: true,
@@ -254,7 +265,13 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   private collectFiles(game: FullGame): UploadedFile[] {
     const provided = (game as any).files;
     if (Array.isArray(provided) && provided.length > 0) {
-      return provided as UploadedFile[];
+      // The server's file list often omits content_type, which left the media
+      // list with a generic icon and no preview. Derive it from the MIME type
+      // or filename extension so the icon, label and preview all resolve.
+      return (provided as UploadedFile[]).map(f => ({
+        ...f,
+        content_type: f.content_type ?? this.contentTypeForFile(f),
+      }));
     }
 
     // The server doesn't return file metadata here, so derive at least the
@@ -305,6 +322,31 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       default:
         return undefined;
     }
+  }
+
+  /** Best-effort CDN content_type from a file's MIME type or extension, used
+   *  when the server's file list doesn't include it. */
+  private contentTypeForFile(file: UploadedFile): string | undefined {
+    const mime = (file.mime_type ?? "").toLowerCase();
+    if (mime.startsWith("image/")) return "photo";
+    if (mime.startsWith("video/")) return "video";
+    if (mime.startsWith("audio/")) return "audio";
+
+    const ext = this.fileExtension(file);
+    if (IMAGE_EXTENSIONS.has(ext)) return "photo";
+    if (VIDEO_EXTENSIONS.has(ext)) return "video";
+    if (AUDIO_EXTENSIONS.has(ext)) return "audio";
+    return undefined;
+  }
+
+  /** Lowercase extension without the dot, from the `extension` field or, failing
+   *  that, parsed off the original filename. */
+  private fileExtension(file: UploadedFile): string {
+    const fromField = (file.extension ?? "").replace(/^\./, "").toLowerCase();
+    if (fromField) return fromField;
+    const name = file.original_filename ?? "";
+    const dot = name.lastIndexOf(".");
+    return dot >= 0 ? name.slice(dot + 1).toLowerCase() : "";
   }
 
   // -------------------------------------------------------------------------
