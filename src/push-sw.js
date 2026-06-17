@@ -39,7 +39,11 @@ self.addEventListener('push', (event) => {
   const options = {
     body: payload.body || '',
     icon: '/assets/icons/web-app-manifest-192x192.png',
-    badge: '/assets/icons/favicon-96x96.png',
+    // Android renders the status-bar/lock-screen badge from this image's alpha
+    // channel only, so it must be a transparent silhouette (not a full photo)
+    // or it shows up as a solid white square.
+    badge: '/assets/icons/notification-badge.png',
+    vibrate: [200, 100, 200],
     data: Object.assign({}, payload.data, { url }),
   };
   if (payload.tag) {
