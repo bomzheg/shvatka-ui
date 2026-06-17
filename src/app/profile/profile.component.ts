@@ -30,6 +30,7 @@ export class ProfileComponent implements OnInit {
     if (!this.userService.isUserLoaded()) {
       await this.userService.loadMe();
     }
+    this.newUsername = this.username;
   }
 
   get isAuthenticated(): boolean {
@@ -47,12 +48,17 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
+    if (username === this.username) {
+      this.snackbar.error('Имя пользователя не изменилось');
+      return;
+    }
+
     this.isUsernameSubmitting = true;
     this.userService.changeUsername(username)
       .subscribe({
         next: async () => {
           await this.userService.loadMe();
-          this.newUsername = '';
+          this.newUsername = this.username;
           this.isUsernameSubmitting = false;
           this.snackbar.success('Имя пользователя успешно изменено');
         },
