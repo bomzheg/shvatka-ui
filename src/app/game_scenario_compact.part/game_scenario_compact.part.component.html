@@ -33,22 +33,26 @@
         }
       }
 
-      @for (condition of getEffectsTimerConditions(level); track 't' + $index) {
+      @for (entry of getTimerEntries(level); track 't' + $index) {
         <div class="scn-group">
-          <span class="scn-chip scn-chip-timer"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.clock"/>{{ getTimerActionTime(condition) }} мин</span>
-          @if (hasVisibleEffects(condition)) {
+          <span class="scn-chip scn-chip-timer"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.clock"/>{{ entry.time }} мин</span>
+          @if (hasVisibleEntryEffects(entry)) {
             <button
               type="button"
               class="scn-effect-toggle"
               (click)="toggleEffects(conditionId(level, 't', $index))"
               [attr.aria-expanded]="isOpened(conditionId(level, 't', $index))">
-              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>эффект
+              @if (entry.kind === 'hint') {
+                <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonusHint"/>подсказка
+              } @else {
+                <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>эффект
+              }
             </button>
           }
         </div>
-        @if (hasVisibleEffects(condition) && isOpened(conditionId(level, 't', $index))) {
+        @if (hasVisibleEntryEffects(entry) && isOpened(conditionId(level, 't', $index))) {
           <div class="scn-effects">
-            <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
+            <app-effects-part [effects]="entry.effects" [gameId]="game.id"></app-effects-part>
           </div>
         }
       }
