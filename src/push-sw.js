@@ -31,6 +31,40 @@ function resolveUrl(payload) {
   return payload.url || (payload.data && payload.data.url) || '/';
 }
 
+// Service workers get killed between pushes, so the unread count is persisted
+// in Cache Storage (no IndexedDB schema needed for a single number) instead of
+// an in-memory variable.
+const BADGE_CACHE = 'shvatka-badge-v1';
+const BADGE_KEY = '/__badge-count__';
+
+async function getBadgeCount() {
+  if (!('caches' in self)) {
+    return 0;
+  }
+  const cache = await caches.open(BADGE_CACHE);
+  const cached = await cache.match(BADGE_KEY);
+  const count = cached ? parseInt(await cached.text(), 10) : 0;
+  return Number.isFinite(count) ? count : 0;
+}
+
+async function setBadgeCount(count) {
+  if ('caches' in self) {
+    const cache = await caches.open(BADGE_CACHE);
+    await cache.put(BADGE_KEY, new Response(String(count)));
+  }
+  if (self.navigator && 'setAppBadge' in self.navigator) {
+    try {
+      if (count > 0) {
+        await self.navigator.setAppBadge(count);
+      } else {
+        await self.navigator.clearAppBadge();
+      }
+    } catch (e) {
+      // Badging API unsupported in this context; safe to ignore.
+    }
+  }
+}
+
 self.addEventListener('push', (event) => {
   const payload = parsePayload(event) || {};
   const title = payload.title || 'Shvatka';
@@ -51,16 +85,21 @@ self.addEventListener('push', (event) => {
     options.renotify = true;
   }
 
-  const showNotification = self.registration.showNotification(title, options);
+  const handlePush = (async () => {
+    const clientsList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const isAppVisible = clientsList.some((client) => client.visibilityState === 'visible');
 
-  // Let any open tab show an in-app toast for foreground messages.
-  const notifyClients = self.clients
-    .matchAll({ type: 'window', includeUncontrolled: true })
-    .then((clients) => {
-      clients.forEach((client) => client.postMessage({ type: 'push', payload }));
-    });
+    clientsList.forEach((client) => client.postMessage({ type: 'push', payload }));
 
-  event.waitUntil(Promise.all([showNotification, notifyClients]));
+    await Promise.all([
+      self.registration.showNotification(title, options),
+      // While the app is open and visible the user already sees the toast above,
+      // so it doesn't count toward the unread badge.
+      isAppVisible ? setBadgeCount(0) : getBadgeCount().then((count) => setBadgeCount(count + 1)),
+    ]);
+  })();
+
+  event.waitUntil(handlePush);
 });
 
 self.addEventListener('notificationclick', (event) => {
@@ -70,6 +109,8 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     (async () => {
+      await setBadgeCount(0);
+
       const clients = await self.clients.matchAll({
         type: 'window',
         includeUncontrolled: true,
@@ -87,4 +128,10 @@ self.addEventListener('notificationclick', (event) => {
       }
     })(),
   );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'reset-badge-count') {
+    event.waitUntil(setBadgeCount(0));
+  }
 });

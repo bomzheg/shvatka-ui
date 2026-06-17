@@ -39,6 +39,7 @@ export class PushService {
   private config: PushConfig | undefined;
   private registration: ServiceWorkerRegistration | undefined;
   private messageHandlerBound = false;
+  private visibilityHandlerBound = false;
 
   constructor(
     private http: HttpAdapter,
@@ -69,6 +70,7 @@ export class PushService {
     }
 
     this.bindMessageHandler();
+    this.bindVisibilityHandler();
 
     try {
       this.registration = await this.registerServiceWorker();
@@ -82,6 +84,10 @@ export class PushService {
     } else {
       await this.syncState();
     }
+
+    // The app is visible right now (it just booted in the foreground tab), so
+    // any unread badge from earlier background pushes is now seen.
+    this.clearBadge();
   }
 
   /** User action: enable notifications from a visible button. */
@@ -265,6 +271,36 @@ export class PushService {
       console.error('push: state sync failed', e);
       this.state.set('default');
     }
+  }
+
+  /**
+   * Clears the unread-count badge on the home screen icon: tells the service
+   * worker (source of truth, since it persists the count across restarts)
+   * and, where supported, also clears it directly in case the worker is gone.
+   */
+  private clearBadge(): void {
+    if (!this.isSupported()) {
+      return;
+    }
+    navigator.serviceWorker.ready
+      .then((registration) => registration.active?.postMessage({type: 'reset-badge-count'}))
+      .catch(() => undefined);
+    if ('clearAppBadge' in navigator) {
+      (navigator as Navigator & {clearAppBadge(): Promise<void>}).clearAppBadge().catch(() => undefined);
+    }
+  }
+
+  private bindVisibilityHandler(): void {
+    if (this.visibilityHandlerBound) {
+      return;
+    }
+    this.visibilityHandlerBound = true;
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        this.clearBadge();
+      }
+    });
   }
 
   private bindMessageHandler(): void {
