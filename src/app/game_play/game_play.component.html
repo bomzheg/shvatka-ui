@@ -377,7 +377,7 @@
         @if (isSpyStatDataLoading()) {
           <p class="status-message">Обновление статистики...</p>
         }
-        <app-game-log-part [stat]="getSpyStat()" [showLevelNameId]="true"></app-game-log-part>
+        <app-game-log-part [stat]="getSpyStat()"></app-game-log-part>
       } @else {
         <p class="status-message">Статистика пока недоступна.</p>
       }
