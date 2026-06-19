@@ -114,8 +114,8 @@
     <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }} начался {{ toLocal(getCurrentHints()!.started_at) }} ({{ getLevelElapsed(getCurrentHints()!.started_at) }})</h3>
     <ul class="hints">
       @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
-        <li class="hint-entry">
-          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.:</h5>
+        <li>
+          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.@if (getEntryCaptionHtml(timeHint); as captionHtml) {: <span class="hint-caption" [innerHTML]="captionHtml"></span>}</h5>
           @for (hint of timeHint.hint; track hint) {
             <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
           }

@@ -13,8 +13,8 @@ import {
   WaiverInput
 } from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
-import {HintPartComponent} from "../hint.part/hint.part.component";
-import {Effect, EffectLike, Effects, FullGame, GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
+import {HintPartComponent, hintHtml} from "../hint.part/hint.part.component";
+import {Effect, EffectLike, Effects, FullGame, GameStat, HintPart, KeyType, Keys, TimeHint} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize, Subscription} from "rxjs";
 import {ActiveGame} from "../games/games.service";
@@ -360,6 +360,11 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       return undefined;
     }
     return this.http.getFileUrl(this.getCurrentHints()!.game_id, hint.file_guid)
+  }
+
+  getEntryCaptionHtml(timeHint: TimeHint): string | undefined {
+    const caption = timeHint.hint.find(hint => hint.caption)?.caption;
+    return caption ? hintHtml(caption) : undefined;
   }
 
   toLocal(dt: string): string {

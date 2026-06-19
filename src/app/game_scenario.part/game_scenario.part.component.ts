@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
-import {FullGame, HintPart, Level, ScenarioCondition, ScenarioConditionType} from "../domain/game.models";
-import {HintPartComponent} from "../hint.part/hint.part.component";
+import {FullGame, HintPart, Level, ScenarioCondition, ScenarioConditionType, TimeHint} from "../domain/game.models";
+import {HintPartComponent, hintHtml} from "../hint.part/hint.part.component";
 import {EffectsPartComponent} from "../effects.part/effects.part.component";
 import {HttpAdapter} from "../http/http.adapter";
 import {MatIcon} from "@angular/material/icon";
@@ -60,5 +60,10 @@ export class GameScenarioPartComponent {
     }
 
     return this.http.getFileUrl(this.game.id, hint.file_guid);
+  }
+
+  getEntryCaptionHtml(timeHint: TimeHint): string | undefined {
+    const caption = timeHint.hint.find(hint => hint.caption)?.caption;
+    return caption ? hintHtml(caption) : undefined;
   }
 }

@@ -46,7 +46,7 @@
     <ul class="hints">
       @for (timeHint of level.scenario.time_hints; track timeHint.time) {
         <li class="hint-item">
-          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.:</h5>
+          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.@if (getEntryCaptionHtml(timeHint); as captionHtml) {: <span class="hint-caption" [innerHTML]="captionHtml"></span>}</h5>
           @for (hint of timeHint.hint; track hint) {
             <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)"></app-hint-part>
           }

@@ -1,6 +1,20 @@
 import {Component, Input} from '@angular/core';
 import {HintPart, HintType} from "../domain/game.models";
 
+/**
+ * Normalizes line endings and turns text line breaks into <br>. Newlines that
+ * sit inside a tag (e.g. between attributes) are left untouched so the markup
+ * is not broken.
+ */
+export function hintHtml(value: string | undefined | null): string {
+  if (!value) {
+    return '';
+  }
+
+  return value
+    .replace(/\r\n?/g, '\n')
+    .replace(/\n(?![^<]*>)/g, '<br>');
+}
 
 @Component({
   selector: 'app-hint-part',
@@ -18,18 +32,7 @@ export class HintPartComponent {
     protected readonly HintType = HintType;
     protected readonly JSON = JSON;
 
-  /**
-   * Prepares an HTML hint for rendering: normalizes line endings and turns
-   * text line breaks into <br>. Newlines that sit inside a tag (e.g. between
-   * attributes) are left untouched so the markup is not broken.
-   */
   toHtml(value: string | undefined | null): string {
-    if (!value) {
-      return '';
-    }
-
-    return value
-      .replace(/\r\n?/g, '\n')
-      .replace(/\n(?![^<]*>)/g, '<br>');
+    return hintHtml(value);
   }
 }
