@@ -280,6 +280,12 @@ export class GameLogPartComponent {
     return currentLevel?.name_id ?? null;
   }
 
+  getCurrentLevelLabel(teamLevelTimes: LevelTime[]): string {
+    const number = this.getCurrentLevelNumber(teamLevelTimes);
+    const nameId = this.getCurrentLevelNameId(teamLevelTimes);
+    return nameId ? `${number}(${nameId})` : `${number}`;
+  }
+
   getLevelNameId(levelNumber: number): string | null {
     return this.levelNameIds.get(levelNumber) ?? null;
   }
