@@ -124,7 +124,7 @@ export class Effect {
     public hints_: HintPart[] = [],
     public bonus_minutes: number = 0,
     public level_up: boolean = false,
-    public next_level: string | null = null,
+    public next_level: number | null = null,
   ) {
   }
 
@@ -155,7 +155,7 @@ export type EffectLike = {
   hints?: HintPart[];
   bonus_minutes?: number;
   level_up?: boolean;
-  next_level?: string | null;
+  next_level?: number | null;
 };
 
 export class Effects {
@@ -259,6 +259,7 @@ export class LevelTime {
     public game: FullGame,
     public team: Team,
     public level_number: number,
+    public name_id: string | null,
     public start_at: Date,
     public is_finished: boolean,
   ) {

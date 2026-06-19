@@ -437,8 +437,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       tags.push({prefix: "-", icon: AppIcon.penalty, text: `штраф ${-bonusMinutes} мин.`});
     }
     if (effect.level_up) {
-      if (effect.next_level) {
-        tags.push({icon: AppIcon.jump, text: `переход на ${effect.next_level}`});
+      if (typeof effect.next_level === 'number') {
+        tags.push({icon: AppIcon.jump, text: `переход на уровень ${effect.next_level + 1}`});
       } else {
         tags.push({icon: AppIcon.levelUp, text: `переход на следующий уровень`});
       }

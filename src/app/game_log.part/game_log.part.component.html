@@ -52,6 +52,9 @@
               <thead>
               <tr>
                 <th class="stat-level-column">№</th>
+                @if (showLevelNameId) {
+                  <th>ID уровня</th>
+                }
                 <th>Команда</th>
                 <th>Время на уровне</th>
               </tr>
@@ -61,6 +64,9 @@
                   @if (results[1].length > 0) {
                     <tr>
                       <td class="stat-level-column">{{ getCurrentLevelNumber(results[1]) }}</td>
+                      @if (showLevelNameId) {
+                        <td>{{ getCurrentLevelNameId(results[1]) ?? '—' }}</td>
+                      }
                       <td>{{ results[1][0].team.name }}</td>
                       <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
                     </tr>

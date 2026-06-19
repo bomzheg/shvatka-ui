@@ -55,6 +55,8 @@ export class GameLogPartComponent {
   @Input() openKeys = false;
   @Input() openStat = false;
   @Input() isCompleted = false;
+  /** Whether the level's internal name_id may be shown (organizer/spy view only). */
+  @Input() showLevelNameId = false;
 
   sortedTeamKeysEntries: [string, KeyTime[]][] = [];
   sortedStatEntries: [string, LevelTime[]][] = [];
@@ -266,6 +268,11 @@ export class GameLogPartComponent {
   getCurrentLevelNumber(teamLevelTimes: LevelTime[]): number {
     const currentLevel = teamLevelTimes[teamLevelTimes.length - 1];
     return (currentLevel?.level_number ?? 0) + 1;
+  }
+
+  getCurrentLevelNameId(teamLevelTimes: LevelTime[]): string | null {
+    const currentLevel = teamLevelTimes[teamLevelTimes.length - 1];
+    return currentLevel?.name_id ?? null;
   }
 
   getCurrentLevelDuration(teamLevelTimes: LevelTime[]): string {
