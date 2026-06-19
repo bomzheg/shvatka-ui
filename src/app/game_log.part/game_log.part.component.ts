@@ -283,7 +283,7 @@ export class GameLogPartComponent {
   getCurrentLevelLabel(teamLevelTimes: LevelTime[]): string {
     const number = this.getCurrentLevelNumber(teamLevelTimes);
     const nameId = this.getCurrentLevelNameId(teamLevelTimes);
-    return nameId ? `${number}(${nameId})` : `${number}`;
+    return nameId ? `${number} (${nameId})` : `${number}`;
   }
 
   getLevelNameId(levelNumber: number): string | null {
