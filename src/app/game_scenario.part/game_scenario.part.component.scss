@@ -88,8 +88,13 @@
   border: 1px solid rgba(148, 163, 184, 0.35);
   border-radius: 8px;
   padding: 0.35rem 0.45rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.35em;
+  row-gap: 0.2em;
 }
 
 .hint-header {
-  margin: 0 0 0.3rem;
+  margin: 0;
 }

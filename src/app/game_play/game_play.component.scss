@@ -482,14 +482,28 @@ ul.hints > li {
   list-style: none;
 }
 
+ul.hints > li.hint-entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.35em;
+  row-gap: 0.2em;
+  margin-bottom: 0.3rem;
+}
+
 ul.hints > li::before {
   content: "";
   display: inline-block;
   width: 1.1em;
   height: 1.1em;
-  margin-right: 0.35em;
+  flex-shrink: 0;
   vertical-align: -0.2em;
   background-color: currentColor;
   -webkit-mask: url("/assets/svg-icons/lightbulb.svg") no-repeat center / contain;
   mask: url("/assets/svg-icons/lightbulb.svg") no-repeat center / contain;
+}
+
+.hint-header {
+  margin: 0;
+  font-weight: 600;
 }
