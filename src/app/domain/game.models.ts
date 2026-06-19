@@ -155,7 +155,7 @@ export type EffectLike = {
   hints?: HintPart[];
   bonus_minutes?: number;
   level_up?: boolean;
-  next_level?: number | null;
+  next_level?: number | string | null;
 };
 
 export class Effects {
