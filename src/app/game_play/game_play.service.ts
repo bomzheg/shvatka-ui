@@ -30,6 +30,7 @@ export class CurrentHints {
     public level_time_id: number,
     public started_at: string,
     public game_id: number,
+    public is_finished: boolean,
   ) {
   }
 }

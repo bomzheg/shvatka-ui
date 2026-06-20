@@ -122,6 +122,10 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.getCurrentHints() !== undefined;
   }
 
+  isTeamFinished(): boolean {
+    return this.getCurrentHints()?.is_finished === true;
+  }
+
   hasWaivers(): boolean {
     return this.getCurrentWaivers() !== undefined;
   }
@@ -393,7 +397,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   submitKey() {
-    if (!this.hasHints() || this.isSubmitting) {
+    if (!this.hasHints() || this.isTeamFinished() || this.isSubmitting) {
       return;
     }
 

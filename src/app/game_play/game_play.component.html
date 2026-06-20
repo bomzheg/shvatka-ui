@@ -12,6 +12,11 @@
 
 @if (hasHints()) {
   <div class="scenario">
+    @if (isTeamFinished()) {
+      <p class="status-message team-finished-message">Ваша команда финишировала. Игра для вас завершена.</p>
+    }
+
+    @if (!isTeamFinished()) {
     <div class="level-keys">
       <label for="key-input">Ключ:</label>
       <input
@@ -58,6 +63,7 @@
           <p><strong>Игра завершена</strong></p>
         }
       </div>
+    }
     }
 
     @if (hasAnyTypedKeys()) {
@@ -111,6 +117,7 @@
       </details>
     }
 
+    @if (!isTeamFinished()) {
     <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }} начался {{ toLocal(getCurrentHints()!.started_at) }} ({{ getLevelElapsed(getCurrentHints()!.started_at) }})</h3>
     <ul class="hints">
       @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
@@ -122,6 +129,7 @@
         </li>
       }
     </ul>
+    }
 
     @if (hasAnyEvents()) {
       <details class="events-spoiler">
