@@ -6,8 +6,6 @@ import {NgClass, NgIf, NgStyle} from "@angular/common";
 import {UserService} from "./user.service";
 import {ShvatkaConfig} from "../app.config";
 import {HttpErrorResponse} from "@angular/common/http";
-import {MatIcon} from "@angular/material/icon";
-import {AppIcon} from "../ui/icons";
 
 @Component({
   selector: 'app-auth',
@@ -17,13 +15,11 @@ import {AppIcon} from "../ui/icons";
     NgClass,
     NgIf,
     NgStyle,
-    MatIcon,
   ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
 })
 export class AuthComponent implements AfterViewInit, OnInit {
-  protected readonly AppIcon = AppIcon;
   username: string | undefined;
   password: string | undefined;
   isVisible: boolean = false;

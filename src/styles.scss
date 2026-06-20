@@ -86,6 +86,7 @@ pre {
 }
 
 .icon-close {
+  position: relative;
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 999px;
@@ -95,7 +96,27 @@ pre {
   align-items: center;
   justify-content: center;
   padding: 0;
-  font-size: 1.6rem;
+}
+
+/* Draw the close cross with CSS so it reliably fills the button. */
+.icon-close::before,
+.icon-close::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.3rem;
+  height: 0.2rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.icon-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.icon-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 @keyframes spin {

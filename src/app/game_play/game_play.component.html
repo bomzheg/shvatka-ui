@@ -41,7 +41,7 @@
            [class.key-result-ok]="!keyResultData.wrong"
            [class.key-result-wrong]="keyResultData.wrong"
            [class.key-result-duplicate]="keyResultData.is_duplicate">
-        <button type="button" class="icon-close right-top-panel" (click)="closeResultKeyPanel()" aria-label="Закрыть"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
+        <button type="button" class="icon-close right-top-panel" (click)="closeResultKeyPanel()" aria-label="Закрыть"></button>
         <p><strong>Результат:</strong> {{ keyResult }}</p>
         <p><strong>Ключ:</strong> {{ keyResultData.text }}</p>
 
@@ -285,7 +285,7 @@
         (click)="closeWaiverModal()"
         [disabled]="isPublishingWaivers"
         aria-label="Закрыть"
-      ><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
+      ></button>
       <h3 class="waiver-modal-title">Подать вейверы команды</h3>
       <p class="waiver-modal-hint">Отметьте игроков, которые будут играть.</p>
 
