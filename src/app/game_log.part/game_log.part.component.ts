@@ -97,8 +97,8 @@ export class GameLogPartComponent {
           return levelDiff;
         }
 
-        const aStartedAt = this.parseDate(aTimes[0]?.start_at) ?? Number.MAX_SAFE_INTEGER;
-        const bStartedAt = this.parseDate(bTimes[0]?.start_at) ?? Number.MAX_SAFE_INTEGER;
+        const aStartedAt = this.parseDate(aTimes[aTimes.length - 1]?.start_at) ?? Number.MAX_SAFE_INTEGER;
+        const bStartedAt = this.parseDate(bTimes[bTimes.length - 1]?.start_at) ?? Number.MAX_SAFE_INTEGER;
         return aStartedAt - bStartedAt;
       });
   }
