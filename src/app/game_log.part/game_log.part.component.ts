@@ -92,13 +92,13 @@ export class GameLogPartComponent {
       .sort((a, b) => {
         const aTimes = a[1];
         const bTimes = b[1];
-        const levelsDiff = bTimes.length - aTimes.length;
-        if (levelsDiff !== 0) {
-          return levelsDiff;
+        const levelDiff = this.getCurrentLevelNumber(bTimes) - this.getCurrentLevelNumber(aTimes);
+        if (levelDiff !== 0) {
+          return levelDiff;
         }
 
-        const aStartedAt = this.parseDate(aTimes[0]?.start_at) ?? Number.MAX_SAFE_INTEGER;
-        const bStartedAt = this.parseDate(bTimes[0]?.start_at) ?? Number.MAX_SAFE_INTEGER;
+        const aStartedAt = this.parseDate(aTimes[aTimes.length - 1]?.start_at) ?? Number.MAX_SAFE_INTEGER;
+        const bStartedAt = this.parseDate(bTimes[bTimes.length - 1]?.start_at) ?? Number.MAX_SAFE_INTEGER;
         return aStartedAt - bStartedAt;
       });
   }
