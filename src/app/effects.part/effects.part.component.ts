@@ -37,8 +37,10 @@ export class EffectsPartComponent {
     }
 
     if (effect.level_up) {
-      if (effect.next_level) {
-        tags.push({icon: AppIcon.jump, text: `переход на ${effect.next_level}`});
+      if (typeof effect.next_level === 'number') {
+        tags.push({icon: AppIcon.jump, text: `переход на уровень ${effect.next_level + 1}`});
+      } else if (typeof effect.next_level === 'string' && effect.next_level) {
+        tags.push({icon: AppIcon.jump, text: `переход на уровень ${effect.next_level}`});
       } else {
         tags.push({icon: AppIcon.levelUp, text: `переход на следующий уровень`});
       }

@@ -62,6 +62,7 @@ export class GameLogPartComponent {
   allLevelNumbers: number[] = [];
   minDurationPerLevel: Map<number, number> = new Map();
   minAbsoluteTimePerLevel: Map<number, number> = new Map();
+  levelNameIds: Map<number, string> = new Map();
 
   keysDetailsOpen = false;
   statDetailsOpen = false;
@@ -108,10 +109,12 @@ export class GameLogPartComponent {
       this.allLevelNumbers = [];
       this.minDurationPerLevel = new Map();
       this.minAbsoluteTimePerLevel = new Map();
+      this.levelNameIds = new Map();
       return;
     }
 
     const allLevels = new Set<number>();
+    const levelNameIds = new Map<number, string>();
     const pivotRows: TeamPivotData[] = [];
 
     for (const [, teamLevelTimes] of this.sortedStatEntries) {
@@ -126,6 +129,9 @@ export class GameLogPartComponent {
       for (let i = 0; i < sorted.length; i++) {
         const lt = sorted[i];
         allLevels.add(lt.level_number);
+        if (lt.name_id) {
+          levelNameIds.set(lt.level_number, lt.name_id);
+        }
 
         const ms = this.parseDate(lt.start_at);
 
@@ -158,6 +164,7 @@ export class GameLogPartComponent {
     );
     this.allLevelNumbers = sortedLevels.filter(hasData);
     this.pivotData = pivotRows;
+    this.levelNameIds = levelNameIds;
 
     const minDurations = new Map<number, number>();
     const minAbsTimes = new Map<number, number>();
@@ -266,6 +273,21 @@ export class GameLogPartComponent {
   getCurrentLevelNumber(teamLevelTimes: LevelTime[]): number {
     const currentLevel = teamLevelTimes[teamLevelTimes.length - 1];
     return (currentLevel?.level_number ?? 0) + 1;
+  }
+
+  getCurrentLevelNameId(teamLevelTimes: LevelTime[]): string | null {
+    const currentLevel = teamLevelTimes[teamLevelTimes.length - 1];
+    return currentLevel?.name_id ?? null;
+  }
+
+  getCurrentLevelLabel(teamLevelTimes: LevelTime[]): string {
+    const number = this.getCurrentLevelNumber(teamLevelTimes);
+    const nameId = this.getCurrentLevelNameId(teamLevelTimes);
+    return nameId ? `${number} (${nameId})` : `${number}`;
+  }
+
+  getLevelNameId(levelNumber: number): string | null {
+    return this.levelNameIds.get(levelNumber) ?? null;
   }
 
   getCurrentLevelDuration(teamLevelTimes: LevelTime[]): string {
