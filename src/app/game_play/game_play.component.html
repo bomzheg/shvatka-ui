@@ -2,7 +2,7 @@
   <app-push-toggle [allowDisable]="false"></app-push-toggle>
 </div>
 
-@if (isLoading()) {
+@if (isLoading() && !hasHints() && !hasWaivers()) {
   <p class="status-message">Загрузка текущей игры...</p>
 }
 
@@ -13,7 +13,7 @@
 @if (hasHints()) {
   <div class="scenario">
     @if (isTeamFinished()) {
-      <p class="status-message team-finished-message">Ваша команда финишировала. Игра для вас завершена.</p>
+      <p class="status-message team-finished-message">Ваша команда финишировала. Игра для вас завершена.@if (isLoading()) {<span class="inline-refresh"><span class="inline-refresh-loader"></span>обновление…</span>}</p>
     }
 
     @if (!isTeamFinished()) {
@@ -35,6 +35,9 @@
           Отправить
         }
       </button>
+      @if (isLoading()) {
+        <span class="inline-refresh"><span class="inline-refresh-loader"></span>обновление…</span>
+      }
     </div>
 
     @if (keySubmitError) {
@@ -367,10 +370,7 @@
       }
 
       @if (getSpyKeys()) {
-        @if (isSpyKeysDataLoading()) {
-          <p class="status-message">Обновление ключей...</p>
-        }
-        <app-game-log-part [keys]="getSpyKeys()"></app-game-log-part>
+        <app-game-log-part [keys]="getSpyKeys()" [keysLoading]="isSpyKeysDataLoading()"></app-game-log-part>
       } @else {
         <p class="status-message">Ключи пока недоступны.</p>
       }
@@ -382,10 +382,7 @@
       }
 
       @if (getSpyStat()) {
-        @if (isSpyStatDataLoading()) {
-          <p class="status-message">Обновление статистики...</p>
-        }
-        <app-game-log-part [stat]="getSpyStat()"></app-game-log-part>
+        <app-game-log-part [stat]="getSpyStat()" [statLoading]="isSpyStatDataLoading()"></app-game-log-part>
       } @else {
         <p class="status-message">Статистика пока недоступна.</p>
       }
