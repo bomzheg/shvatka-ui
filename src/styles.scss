@@ -86,15 +86,43 @@ pre {
 }
 
 .icon-close {
-  width: 2rem;
-  height: 2rem;
+  position: relative;
+  width: 1.875rem;
+  height: 1.875rem;
   border-radius: 999px;
-  background: #f3f4f6;
-  color: #111827;
+  background: #eef0f2;
+  color: #6b7280;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.icon-close:hover {
+  background: #e2e4e7;
+  color: #374151;
+}
+
+/* Draw the close cross with CSS so it reliably fills the button. */
+.icon-close::before,
+.icon-close::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.85rem;
+  height: 0.125rem;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.icon-close::before {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.icon-close::after {
+  transform: translate(-50%, -50%) rotate(-45deg);
 }
 
 @keyframes spin {
