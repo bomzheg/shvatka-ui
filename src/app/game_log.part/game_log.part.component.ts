@@ -55,6 +55,8 @@ export class GameLogPartComponent {
   @Input() openKeys = false;
   @Input() openStat = false;
   @Input() isCompleted = false;
+  @Input() keysLoading = false;
+  @Input() statLoading = false;
 
   sortedTeamKeysEntries: [string, KeyTime[]][] = [];
   sortedStatEntries: [string, LevelTime[]][] = [];
