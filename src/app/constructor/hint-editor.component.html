@@ -8,7 +8,7 @@
 
   @switch (hint.type) {
     @case (HintType.text) {
-      <textarea rows="3" [(ngModel)]="hint.text" [disabled]="disabled" placeholder="Текст подсказки"></textarea>
+      <app-hint-text-editor [(ngModel)]="hint.text" [disabled]="disabled" placeholder="Текст подсказки"></app-hint-text-editor>
     }
 
     @case (HintType.gps) {
@@ -113,7 +113,7 @@
 
   @if (needsCaption()) {
     <label>Подпись</label>
-    <input type="text" [(ngModel)]="hint.caption" [disabled]="disabled" />
+    <app-hint-text-editor [(ngModel)]="hint.caption" [disabled]="disabled" placeholder="Подпись"></app-hint-text-editor>
   }
 
   @if (needsCaptionAbove()) {

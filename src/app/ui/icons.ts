@@ -52,6 +52,16 @@ export enum AppIcon {
   unknown = "help",
   effects = "auto-awesome",
   clock = "schedule",
+  // rich-text toolbar (Telegram message entities)
+  bold = "format-bold",
+  italic = "format-italic",
+  underline = "format-underlined",
+  strikethrough = "format-strikethrough",
+  quote = "format-quote",
+  code = "code",
+  link = "link",
+  spoiler = "visibility-off",
+  clearFormat = "format-clear",
 }
 
 /** A label line decorated with a leading icon (used for effect tags). */
