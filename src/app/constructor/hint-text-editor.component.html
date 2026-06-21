@@ -1,0 +1,48 @@
+<div class="tg-editor" [class.disabled]="disabled">
+  @if (!disabled) {
+    <div class="tg-toolbar">
+      <button type="button" title="Жирный" (mousedown)="$event.preventDefault()" (click)="bold()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bold"/>
+      </button>
+      <button type="button" title="Курсив" (mousedown)="$event.preventDefault()" (click)="italic()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.italic"/>
+      </button>
+      <button type="button" title="Подчёркнутый" (mousedown)="$event.preventDefault()" (click)="underline()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.underline"/>
+      </button>
+      <button type="button" title="Зачёркнутый" (mousedown)="$event.preventDefault()" (click)="strike()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.strikethrough"/>
+      </button>
+      <button type="button" title="Спойлер" (mousedown)="$event.preventDefault()" (click)="spoiler()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.spoiler"/>
+      </button>
+      <button type="button" title="Моноширинный" (mousedown)="$event.preventDefault()" (click)="code()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.code"/>
+      </button>
+      <button type="button" title="Цитата" (mousedown)="$event.preventDefault()" (click)="quote()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.quote"/>
+      </button>
+      <button type="button" title="Ссылка" (mousedown)="$event.preventDefault()" (click)="link()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.link"/>
+      </button>
+      <span class="tg-toolbar-spacer"></span>
+      <button type="button" title="Убрать форматирование" (mousedown)="$event.preventDefault()" (click)="clearFormat()">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.clearFormat"/>
+      </button>
+    </div>
+  }
+  <div class="tg-content-wrap">
+    <div
+      #editor
+      class="tg-content"
+      role="textbox"
+      aria-multiline="true"
+      [attr.contenteditable]="!disabled"
+      (input)="onInput()"
+      (blur)="onBlur()"
+    ></div>
+    @if (isEmpty) {
+      <span class="tg-placeholder">{{ placeholder }}</span>
+    }
+  </div>
+</div>

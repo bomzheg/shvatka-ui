@@ -18,13 +18,14 @@ import {SnackbarService} from "../snackbar/snackbar.service";
 import {AppIcon, HINT_TYPE_ICON} from "../ui/icons";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {MatIcon} from "@angular/material/icon";
+import {HintTextEditorComponent} from "./hint-text-editor.component";
 
 type PreviewKind = "image" | "video" | "audio" | "none";
 
 @Component({
   selector: "app-hint-editor",
   standalone: true,
-  imports: [FormsModule, ImageLightboxComponent, MatIcon],
+  imports: [FormsModule, ImageLightboxComponent, MatIcon, HintTextEditorComponent],
   templateUrl: "./hint-editor.component.html",
   styleUrl: "./hint-editor.component.scss",
 })
