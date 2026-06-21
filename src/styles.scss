@@ -200,3 +200,62 @@ mat-icon.app-icon-danger {
 .snackbar-info .mdc-snackbar__surface .mat-mdc-button {
   color: #fff !important;
 }
+
+/* ------------------------------------------------------------------------- */
+/* Telegram message-entity rendering.                                        */
+/* These rules live globally (not in a component) because hint text/captions */
+/* are injected via [innerHTML] / contenteditable, and such runtime DOM does */
+/* not receive Angular's scoped-style attributes.                            */
+/* ------------------------------------------------------------------------- */
+
+/* Spoiler in read-only views: hidden until hovered/tapped. */
+.tg-spoiler {
+  background-color: var(--app-text);
+  color: transparent;
+  border-radius: 3px;
+  padding: 0 0.1em;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.tg-spoiler:hover,
+.tg-spoiler:focus,
+.tg-spoiler:active {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Rich formatting inside the WYSIWYG editor's contenteditable area. */
+.tg-content code,
+.tg-content pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+  background: color-mix(in srgb, var(--app-text) 8%, transparent);
+  border-radius: 4px;
+  padding: 0 0.2em;
+}
+
+.tg-content pre {
+  display: block;
+  padding: 0.5em 0.65em;
+  white-space: pre-wrap;
+}
+
+.tg-content blockquote {
+  margin: 0.25rem 0;
+  padding-left: 0.6rem;
+  border-left: 3px solid var(--app-accent);
+  color: var(--app-muted-text);
+}
+
+.tg-content a {
+  color: var(--app-accent);
+}
+
+/* In the editor a spoiler must stay legible for the author, so override the
+   hide-on-read effect with a subtle marker. */
+.tg-content .tg-spoiler {
+  background-color: color-mix(in srgb, var(--app-text) 16%, transparent);
+  color: inherit;
+  cursor: text;
+}

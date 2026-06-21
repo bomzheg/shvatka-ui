@@ -34,6 +34,10 @@ export class HintTextEditorComponent implements ControlValueAccessor {
   protected readonly AppIcon = AppIcon;
   protected disabled = false;
   protected isEmpty = true;
+  /** "wysiwyg" — rich contenteditable; "plain" — raw Telegram HTML textarea. */
+  protected mode: "wysiwyg" | "plain" = "wysiwyg";
+  /** Source of truth: the stored Telegram HTML. Bound to the plain textarea. */
+  protected currentValue = "";
 
   private onChange: (value: string) => void = () => {};
   private onTouched: () => void = () => {};
@@ -41,7 +45,8 @@ export class HintTextEditorComponent implements ControlValueAccessor {
   // -- ControlValueAccessor ------------------------------------------------
 
   writeValue(value: string | null): void {
-    this.editorRef.nativeElement.innerHTML = telegramHtmlToEditable(value);
+    this.currentValue = value ?? "";
+    this.editorRef.nativeElement.innerHTML = telegramHtmlToEditable(this.currentValue);
     this.refreshEmpty();
   }
 
@@ -57,6 +62,20 @@ export class HintTextEditorComponent implements ControlValueAccessor {
     this.disabled = isDisabled;
   }
 
+  // -- mode tabs -----------------------------------------------------------
+
+  setMode(mode: "wysiwyg" | "plain"): void {
+    if (mode === this.mode) {
+      return;
+    }
+    if (mode === "wysiwyg") {
+      // Re-hydrate the contenteditable from whatever was typed as raw HTML.
+      this.editorRef.nativeElement.innerHTML = telegramHtmlToEditable(this.currentValue);
+      this.refreshEmpty();
+    }
+    this.mode = mode;
+  }
+
   // -- editor events -------------------------------------------------------
 
   onInput(): void {
@@ -65,6 +84,13 @@ export class HintTextEditorComponent implements ControlValueAccessor {
 
   onBlur(): void {
     this.onTouched();
+  }
+
+  /** Raw-HTML textarea edits feed the value straight through. */
+  onPlainInput(value: string): void {
+    this.currentValue = value;
+    this.isEmpty = value.trim().length === 0;
+    this.onChange(value);
   }
 
   // -- toolbar -------------------------------------------------------------
@@ -185,7 +211,8 @@ export class HintTextEditorComponent implements ControlValueAccessor {
 
   private emit(): void {
     this.refreshEmpty();
-    this.onChange(serializeTelegramHtml(this.editorRef.nativeElement));
+    this.currentValue = serializeTelegramHtml(this.editorRef.nativeElement);
+    this.onChange(this.currentValue);
   }
 
   private refreshEmpty(): void {

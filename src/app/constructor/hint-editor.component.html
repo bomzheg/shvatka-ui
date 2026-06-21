@@ -113,7 +113,7 @@
 
   @if (needsCaption()) {
     <label>Подпись</label>
-    <input type="text" [(ngModel)]="hint.caption" [disabled]="disabled" />
+    <app-hint-text-editor [(ngModel)]="hint.caption" [disabled]="disabled" placeholder="Подпись"></app-hint-text-editor>
   }
 
   @if (needsCaptionAbove()) {

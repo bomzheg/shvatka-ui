@@ -24,7 +24,10 @@ const WRAP_ITALIC: TagWrap = {open: "<i>", close: "</i>"};
 const WRAP_UNDERLINE: TagWrap = {open: "<u>", close: "</u>"};
 const WRAP_STRIKE: TagWrap = {open: "<s>", close: "</s>"};
 const WRAP_CODE: TagWrap = {open: "<code>", close: "</code>"};
-const WRAP_SPOILER: TagWrap = {open: "<tg-spoiler>", close: "</tg-spoiler>"};
+// Telegram accepts both <tg-spoiler> and <span class="tg-spoiler">. We emit the
+// span form because Angular's HTML sanitizer keeps <span class> (so it renders
+// in the read-only hint view via [innerHTML]) but strips the custom <tg-spoiler>.
+const WRAP_SPOILER: TagWrap = {open: '<span class="tg-spoiler">', close: "</span>"};
 
 function escapeText(value: string): string {
   return value

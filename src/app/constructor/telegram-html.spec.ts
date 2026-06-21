@@ -31,7 +31,8 @@ describe("serializeTelegramHtml", () => {
 
   it("supports code, spoiler and blockquote", () => {
     expect(serializeHtml("<code>x</code>")).toBe("<code>x</code>");
-    expect(serializeHtml('<span class="tg-spoiler">x</span>')).toBe("<tg-spoiler>x</tg-spoiler>");
+    expect(serializeHtml('<span class="tg-spoiler">x</span>')).toBe('<span class="tg-spoiler">x</span>');
+    expect(serializeHtml("<tg-spoiler>x</tg-spoiler>")).toBe('<span class="tg-spoiler">x</span>');
     expect(serializeHtml("<blockquote>x</blockquote>")).toBe("<blockquote>x</blockquote>");
   });
 
