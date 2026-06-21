@@ -52,6 +52,13 @@
         }
       </div>
 
+      @if (levels.length > 0) {
+        <details class="graph-spoiler">
+          <summary>Граф переходов</summary>
+          <app-scenario-graph-part [levels]="getGraphLevels()"></app-scenario-graph-part>
+        </details>
+      }
+
       <div cdkDropList (cdkDropListDropped)="onLevelDrop($event)">
       @for (level of levels; track level; let li = $index) {
         <details class="level-card" cdkDrag [cdkDragDisabled]="!isEditable || anyLevelExpanded()"

@@ -412,4 +412,15 @@
       <p class="status-message">Не удалось загрузить сценарий.</p>
     }
   </details>
+
+  <details class="author-scenario-spoiler">
+    <summary class="game-scn-spoiler">Граф переходов</summary>
+    @if (isAuthorScenarioLoading) {
+      <p class="status-message">Загрузка сценария...</p>
+    } @else if (shouldShowAuthorScenario()) {
+      <app-scenario-graph-part [levels]="getScenarioGraphLevels()"></app-scenario-graph-part>
+    } @else {
+      <p class="status-message">Не удалось загрузить сценарий.</p>
+    }
+  </details>
 }

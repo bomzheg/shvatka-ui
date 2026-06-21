@@ -23,6 +23,8 @@ import {EffectsPartComponent} from "../effects.part/effects.part.component";
 import {UserService} from "../auth/user.service";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
 import {GameScenarioCompactPartComponent} from "../game_scenario_compact.part/game_scenario_compact.part.component";
+import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
+import {GraphLevel, routingGraphFromGame} from "../scenario_graph.part/scenario_graph.model";
 import {PushToggleComponent} from "../push/push-toggle.component";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon, IconTag} from "../ui/icons";
@@ -40,6 +42,7 @@ import {TeamMember} from "../team/team.models";
     EffectsPartComponent,
     GameScenarioPartComponent,
     GameScenarioCompactPartComponent,
+    ScenarioGraphPartComponent,
     PushToggleComponent,
     MatIcon,
   ],
@@ -189,6 +192,21 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   shouldShowAuthorScenario(): boolean {
     return this.canViewScenario() && !!this.authorScenario;
+  }
+
+  private graphCacheGame: FullGame | undefined;
+  private graphCacheLevels: GraphLevel[] = [];
+
+  getScenarioGraphLevels(): GraphLevel[] {
+    const game = this.authorScenario;
+    if (!game) {
+      return [];
+    }
+    if (this.graphCacheGame !== game) {
+      this.graphCacheGame = game;
+      this.graphCacheLevels = routingGraphFromGame(game);
+    }
+    return this.graphCacheLevels;
   }
 
   getCountdownToStart(): string | undefined {

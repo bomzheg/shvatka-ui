@@ -1,7 +1,7 @@
 import {Component, Input} from '@angular/core';
-import {Effects, FullGame, Level, ScenarioConditionType} from "../domain/game.models";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon} from "../ui/icons";
+import {GraphLevel} from "./scenario_graph.model";
 
 /** A level (or the terminal "finish") box laid out on the routing graph. */
 interface GraphNode {
@@ -45,16 +45,16 @@ const ROW_H = 88;
 const TOP = 24;
 const NODE_X = 16;
 const TITLE_MAX = 28;
-const KEY_MAX = 16;
 
 /**
  * Renders the level-to-level routing of a scenario as a directed graph.
  *
- * Nodes are the levels (ordered by {@link Level.number_in_game}) plus a terminal
- * "Финиш" node. The vertical spine is the default progression — completing a
- * level on its win key moves to the next one. `next_level` routing effects that
- * point somewhere other than the next level are drawn as labelled arcs, so a
- * scenario that branches or loops back becomes visible at a glance.
+ * Input is a host-agnostic {@link GraphLevel} list (see `scenario_graph.model`),
+ * so the same view serves the completed game, the running game and the editor.
+ * Nodes are the levels in order plus a terminal "Финиш" node. The vertical spine
+ * is the default progression — completing a level moves to the next one. Routes
+ * that point somewhere other than the next level are drawn as labelled arcs, so
+ * a scenario that branches or loops back becomes visible at a glance.
  */
 @Component({
   selector: 'app-scenario-graph-part',
@@ -68,15 +68,16 @@ const KEY_MAX = 16;
 export class ScenarioGraphPartComponent {
   protected readonly AppIcon = AppIcon;
 
-  @Input({required: true}) game!: FullGame;
+  @Input({required: true}) levels: GraphLevel[] = [];
 
-  private cachedFor: FullGame | undefined;
+  private cachedSignature: string | undefined;
   private cachedModel: GraphModel | undefined;
 
   get model(): GraphModel {
-    if (this.cachedFor !== this.game || this.cachedModel === undefined) {
-      this.cachedFor = this.game;
-      this.cachedModel = this.build(this.game);
+    const signature = this.signature(this.levels);
+    if (signature !== this.cachedSignature || this.cachedModel === undefined) {
+      this.cachedSignature = signature;
+      this.cachedModel = this.build(this.levels ?? []);
     }
     return this.cachedModel;
   }
@@ -86,25 +87,14 @@ export class ScenarioGraphPartComponent {
   }
 
   hasLevels(): boolean {
-    return (this.game?.levels?.length ?? 0) > 0;
+    return (this.levels?.length ?? 0) > 0;
   }
 
-  private build(game: FullGame): GraphModel {
-    const ordered = (game.levels ?? [])
-      .map((level, position) => ({
-        level,
-        index: typeof level.number_in_game === 'number' ? level.number_in_game : position,
-      }))
-      .sort((a, b) => a.index - b.index);
+  private build(levels: GraphLevel[]): GraphModel {
+    const finishPos = levels.length;
 
-    const indexToPos = new Map<number, number>();
-    ordered.forEach((entry, pos) => indexToPos.set(entry.index, pos));
-    const maxIndex = ordered.length > 0 ? ordered[ordered.length - 1].index : -1;
-    const finishPos = ordered.length;
-
-    const nodes: GraphNode[] = ordered.map((entry, pos) =>
-      this.makeNode(pos, `№${entry.index + 1} (${entry.level.name_id})`, false));
-    if (ordered.length > 0) {
+    const nodes: GraphNode[] = levels.map((level, pos) => this.makeNode(pos, level.title, false));
+    if (levels.length > 0) {
       nodes.push(this.makeNode(finishPos, 'Финиш', true));
     }
 
@@ -118,70 +108,44 @@ export class ScenarioGraphPartComponent {
     const jumpByKey = new Map<string, JumpEdge>();
     let maxBulge = 0;
 
-    ordered.forEach((entry, pos) => {
-      for (const condition of (entry.level.scenario?.conditions ?? [])) {
-        const isTimer = condition.type === ScenarioConditionType.effectsTimer;
-        for (const effect of Effects.normalize(condition.effects)) {
-          if (effect.level_up !== true) {
-            continue;
-          }
-
-          let targetIndex: number;
-          if (typeof effect.next_level === 'number') {
-            targetIndex = effect.next_level;
-          } else if (effect.next_level === undefined || effect.next_level === null) {
-            targetIndex = entry.index + 1;
-          } else {
-            // A non-numeric target (e.g. a name id) can't be resolved against the
-            // played game's numeric level indices — skip rather than guess.
-            continue;
-          }
-
-          let targetPos: number;
-          if (indexToPos.has(targetIndex)) {
-            targetPos = indexToPos.get(targetIndex)!;
-          } else if (targetIndex > maxIndex) {
-            targetPos = finishPos;
-          } else {
-            continue;
-          }
-
-          // The straight-down spine already shows the default next-level step.
-          if (targetPos === pos + 1 || targetPos === pos) {
-            continue;
-          }
-
-          const label = isTimer ? this.timerLabel(condition.action_time) : this.keyLabel(condition.keys);
-          const kind: JumpEdge['kind'] = isTimer ? 'timer' : 'key';
-          const dedupeKey = `${pos}->${targetPos}:${kind}`;
-
-          const existing = jumpByKey.get(dedupeKey);
-          if (existing) {
-            if (label && !existing.label.includes(label)) {
-              existing.label = `${existing.label}, ${label}`;
-            }
-            continue;
-          }
-
-          const src = nodes[pos];
-          const dst = nodes[targetPos];
-          const sx = src.x + src.w;
-          const sy = src.cy;
-          const ex = dst.x + dst.w;
-          const ey = dst.cy;
-          const span = Math.abs(targetPos - pos);
-          const bulge = 30 + 18 * Math.min(span, 6);
-          maxBulge = Math.max(maxBulge, bulge);
-
-          jumpByKey.set(dedupeKey, {
-            d: `M ${sx} ${sy} C ${sx + bulge} ${sy}, ${ex + bulge} ${ey}, ${ex} ${ey}`,
-            label,
-            labelX: Math.max(sx, ex) + bulge * 0.6 + 8,
-            labelY: (sy + ey) / 2,
-            kind,
-            back: targetPos < pos,
-          });
+    levels.forEach((level, pos) => {
+      for (const route of level.routes) {
+        const target = route.target;
+        if (target < 0 || target > finishPos) {
+          continue;
         }
+        // The straight-down spine already shows the default next-level step.
+        if (target === pos + 1 || target === pos) {
+          continue;
+        }
+
+        const dedupeKey = `${pos}->${target}:${route.kind}`;
+        const existing = jumpByKey.get(dedupeKey);
+        if (existing) {
+          if (route.label && !existing.label.includes(route.label)) {
+            existing.label = `${existing.label}, ${route.label}`;
+          }
+          continue;
+        }
+
+        const src = nodes[pos];
+        const dst = nodes[target];
+        const sx = src.x + src.w;
+        const sy = src.cy;
+        const ex = dst.x + dst.w;
+        const ey = dst.cy;
+        const span = Math.abs(target - pos);
+        const bulge = 30 + 18 * Math.min(span, 6);
+        maxBulge = Math.max(maxBulge, bulge);
+
+        jumpByKey.set(dedupeKey, {
+          d: `M ${sx} ${sy} C ${sx + bulge} ${sy}, ${ex + bulge} ${ey}, ${ex} ${ey}`,
+          label: route.label,
+          labelX: Math.max(sx, ex) + bulge * 0.6 + 8,
+          labelY: (sy + ey) / 2,
+          kind: route.kind,
+          back: target < pos,
+        });
       }
     });
 
@@ -209,17 +173,10 @@ export class ScenarioGraphPartComponent {
     };
   }
 
-  private timerLabel(actionTime: number | undefined): string {
-    return typeof actionTime === 'number' ? `${actionTime} мин` : 'таймер';
-  }
-
-  private keyLabel(keys: string[] | undefined): string {
-    const list = Array.isArray(keys) ? keys : [];
-    if (list.length === 0) {
-      return 'ключ';
-    }
-    const head = this.truncate(list[0], KEY_MAX);
-    return list.length > 1 ? `${head} +${list.length - 1}` : head;
+  private signature(levels: GraphLevel[] | undefined): string {
+    return (levels ?? [])
+      .map(level => `${level.title}|${level.routes.map(r => `${r.target}:${r.kind}:${r.label}`).join(',')}`)
+      .join(';');
   }
 
   private truncate(value: string, max: number): string {
