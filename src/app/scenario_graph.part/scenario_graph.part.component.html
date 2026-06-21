@@ -50,22 +50,6 @@
         <path class="edge-spine" [attr.d]="edge.d" marker-end="url(#scn-graph-arrow)"/>
       }
 
-      @for (jump of model.jumps; track $index) {
-        <path
-          class="edge-jump"
-          [class.edge-jump-key]="jump.kind === 'key'"
-          [class.edge-jump-timer]="jump.kind === 'timer'"
-          [class.edge-jump-back]="jump.back"
-          [attr.d]="jump.d"
-          marker-end="url(#scn-graph-arrow)"/>
-        <text
-          class="edge-label"
-          [class.edge-label-key]="jump.kind === 'key'"
-          [class.edge-label-timer]="jump.kind === 'timer'"
-          [attr.x]="jump.labelX"
-          [attr.y]="jump.labelY">{{ jump.label }}</text>
-      }
-
       @for (node of model.nodes; track $index) {
         <g class="node" [class.node-finish]="node.isFinish">
           <rect
@@ -83,6 +67,28 @@
             <title>{{ node.fullTitle }}</title>
           </text>
         </g>
+      }
+
+      @for (jump of model.jumps; track $index) {
+        <path
+          class="edge-jump"
+          [class.edge-jump-key]="jump.kind === 'key'"
+          [class.edge-jump-timer]="jump.kind === 'timer'"
+          [attr.d]="jump.d"
+          marker-end="url(#scn-graph-arrow)"/>
+        <circle
+          class="edge-dot"
+          [class.edge-dot-key]="jump.kind === 'key'"
+          [class.edge-dot-timer]="jump.kind === 'timer'"
+          [attr.cx]="jump.dotX"
+          [attr.cy]="jump.dotY"
+          r="3.5"/>
+        <text
+          class="edge-label"
+          [class.edge-label-key]="jump.kind === 'key'"
+          [class.edge-label-timer]="jump.kind === 'timer'"
+          [attr.x]="jump.labelX"
+          [attr.y]="jump.labelY">{{ jump.label }}</text>
       }
     </svg>
   </div>

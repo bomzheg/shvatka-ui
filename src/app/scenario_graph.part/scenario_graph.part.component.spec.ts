@@ -93,7 +93,7 @@ describe('ScenarioGraphPartComponent', () => {
     expect(component.hasJumps()).toBeFalse();
   });
 
-  it('draws an arc for a route that skips ahead', () => {
+  it('draws an arc for a route that skips ahead, labelled with its destination', () => {
     component.levels = levels([
       {title: 'A', routes: [{target: 2, kind: 'key', label: 'SKIP'}]},
       {title: 'B', routes: []},
@@ -103,8 +103,8 @@ describe('ScenarioGraphPartComponent', () => {
     const jumps = component.model.jumps;
     expect(jumps.length).toBe(1);
     expect(jumps[0].kind).toBe('key');
-    expect(jumps[0].label).toBe('SKIP');
-    expect(jumps[0].back).toBeFalse();
+    expect(jumps[0].label).toContain('SKIP');
+    expect(jumps[0].label).toContain('C');
   });
 
   it('does not draw an arc when a route points to the next sequential level', () => {
@@ -116,7 +116,7 @@ describe('ScenarioGraphPartComponent', () => {
     expect(component.hasJumps()).toBeFalse();
   });
 
-  it('marks a backward jump', () => {
+  it('renders a backward jump with a source dot and destination label', () => {
     component.levels = levels([
       {title: 'A', routes: []},
       {title: 'B', routes: [{target: 0, kind: 'timer', label: '15 мин'}]},
@@ -125,7 +125,11 @@ describe('ScenarioGraphPartComponent', () => {
 
     const jumps = component.model.jumps;
     expect(jumps.length).toBe(1);
-    expect(jumps[0].back).toBeTrue();
+    expect(jumps[0].kind).toBe('timer');
+    expect(jumps[0].label).toContain('15 мин');
+    expect(jumps[0].label).toContain('A');
+    // The source dot sits on the departing node (B), above the target (A).
+    expect(jumps[0].dotY).toBeGreaterThan(component.model.nodes[0].cy);
   });
 
   it('reports no levels gracefully', () => {

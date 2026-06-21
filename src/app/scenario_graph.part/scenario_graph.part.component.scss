@@ -79,8 +79,16 @@
   stroke-dasharray: 6 4;
 }
 
-.edge-jump-back {
-  stroke-width: 2.4;
+.edge-dot {
+  stroke: none;
+}
+
+.edge-dot-key {
+  fill: #2563eb;
+}
+
+.edge-dot-timer {
+  fill: #b45309;
 }
 
 #scn-graph-arrow path {

@@ -24,11 +24,13 @@ interface SpineEdge {
 /** A non-sequential jump produced by a `next_level` routing effect. */
 interface JumpEdge {
   d: string;
+  /** Source marker — the node the jump departs from. */
+  dotX: number;
+  dotY: number;
   label: string;
   labelX: number;
   labelY: number;
   kind: 'key' | 'timer';
-  back: boolean;
 }
 
 interface GraphModel {
@@ -45,6 +47,12 @@ const ROW_H = 88;
 const TOP = 24;
 const NODE_X = 16;
 const TITLE_MAX = 28;
+// Right-hand "bus" lanes for jump arrows: each jump gets its own vertical lane
+// so arrows never overlap, with a source dot and an arrowhead making direction
+// unambiguous.
+const LANE_GAP = 22;
+const LANE_STEP = 22;
+const LABEL_CHAR_W = 7;
 
 /**
  * Renders the level-to-level routing of a scenario as a directed graph.
@@ -105,9 +113,9 @@ export class ScenarioGraphPartComponent {
       spine.push({d: `M ${a.cx} ${a.y + a.h} L ${b.cx} ${b.y}`});
     }
 
-    const jumpByKey = new Map<string, JumpEdge>();
-    let maxBulge = 0;
-
+    // Collect the jumps (merging duplicates that share source/target/kind, e.g.
+    // several keys that all route to the same level) before laying them out.
+    const jumpByKey = new Map<string, {pos: number; target: number; kind: 'key' | 'timer'; triggers: string[]}>();
     levels.forEach((level, pos) => {
       for (const route of level.routes) {
         const target = route.target;
@@ -122,35 +130,47 @@ export class ScenarioGraphPartComponent {
         const dedupeKey = `${pos}->${target}:${route.kind}`;
         const existing = jumpByKey.get(dedupeKey);
         if (existing) {
-          if (route.label && !existing.label.includes(route.label)) {
-            existing.label = `${existing.label}, ${route.label}`;
+          if (route.label && !existing.triggers.includes(route.label)) {
+            existing.triggers.push(route.label);
           }
           continue;
         }
-
-        const src = nodes[pos];
-        const dst = nodes[target];
-        const sx = src.x + src.w;
-        const sy = src.cy;
-        const ex = dst.x + dst.w;
-        const ey = dst.cy;
-        const span = Math.abs(target - pos);
-        const bulge = 30 + 18 * Math.min(span, 6);
-        maxBulge = Math.max(maxBulge, bulge);
-
-        jumpByKey.set(dedupeKey, {
-          d: `M ${sx} ${sy} C ${sx + bulge} ${sy}, ${ex + bulge} ${ey}, ${ex} ${ey}`,
-          label: route.label,
-          labelX: Math.max(sx, ex) + bulge * 0.6 + 8,
-          labelY: (sy + ey) / 2,
-          kind: route.kind,
-          back: target < pos,
-        });
+        jumpByKey.set(dedupeKey, {pos, target, kind: route.kind, triggers: route.label ? [route.label] : []});
       }
     });
 
-    const jumps = [...jumpByKey.values()];
-    const width = NODE_X + NODE_W + maxBulge + 150;
+    const right = NODE_X + NODE_W;
+    const rawJumps = [...jumpByKey.values()];
+    // Labels share one column to the right of every lane, so no connector line
+    // ever crosses label text; a label ties to its arc by colour and shared y.
+    const labelX = right + LANE_GAP + Math.max(rawJumps.length - 1, 0) * LANE_STEP + 14;
+    let maxRight = labelX;
+
+    const jumps: JumpEdge[] = rawJumps.map((jump, lane) => {
+      const laneX = right + LANE_GAP + lane * LANE_STEP;
+      const src = nodes[jump.pos];
+      const dst = nodes[jump.target];
+      const sy = src.cy;
+      const ty = dst.cy;
+      const dest = dst.isFinish ? 'Финиш' : dst.title.split(' ')[0];
+      const triggers = jump.triggers.join(', ');
+      const label = triggers ? `${triggers} → ${dest}` : `→ ${dest}`;
+
+      maxRight = Math.max(maxRight, labelX + label.length * LABEL_CHAR_W + 8);
+
+      return {
+        // Out from the source's right edge, down/up the lane, back into the target.
+        d: `M ${right} ${sy} H ${laneX} V ${ty} H ${right}`,
+        dotX: right,
+        dotY: sy,
+        label,
+        labelX,
+        labelY: (sy + ty) / 2,
+        kind: jump.kind,
+      };
+    });
+
+    const width = Math.max(maxRight, right + 60);
     const height = nodes.length > 0
       ? TOP + (nodes.length - 1) * ROW_H + NODE_H + 24
       : 0;
