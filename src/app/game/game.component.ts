@@ -5,6 +5,7 @@ import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
+import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 
 @Component({
   selector: 'app-game',
@@ -13,6 +14,7 @@ import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.par
     GameLogPartComponent,
     GameScenarioPartComponent,
     RouterLink,
+    ScenarioGraphPartComponent,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'

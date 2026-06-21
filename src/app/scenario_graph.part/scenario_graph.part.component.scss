@@ -1,0 +1,124 @@
+.graph-empty,
+.graph-note {
+  color: var(--app-muted-text);
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.graph-note {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--app-muted-text);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 1.4rem;
+  height: 0;
+  border-top-width: 3px;
+  border-top-style: solid;
+  border-radius: 2px;
+}
+
+.legend-spine {
+  border-top-color: #64748b;
+}
+
+.legend-key {
+  border-top-color: #2563eb;
+}
+
+.legend-timer {
+  border-top-color: #b45309;
+  border-top-style: dashed;
+}
+
+.graph-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.graph-svg {
+  max-width: 100%;
+  height: auto;
+}
+
+// Edges -------------------------------------------------------------------
+.edge-spine {
+  fill: none;
+  stroke: #64748b;
+  stroke-width: 2;
+}
+
+.edge-jump {
+  fill: none;
+  stroke-width: 2;
+}
+
+.edge-jump-key {
+  stroke: #2563eb;
+}
+
+.edge-jump-timer {
+  stroke: #b45309;
+  stroke-dasharray: 6 4;
+}
+
+.edge-jump-back {
+  stroke-width: 2.4;
+}
+
+#scn-graph-arrow path {
+  fill: context-stroke;
+}
+
+.edge-label {
+  font-size: 12px;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: var(--app-surface);
+  stroke-width: 3px;
+}
+
+.edge-label-key {
+  fill: #2563eb;
+}
+
+.edge-label-timer {
+  fill: #b45309;
+}
+
+// Nodes -------------------------------------------------------------------
+.node-box {
+  fill: var(--app-surface);
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+}
+
+.node-finish .node-box {
+  fill: color-mix(in srgb, var(--app-accent) 22%, var(--app-surface));
+  stroke: var(--app-accent);
+}
+
+.node-text {
+  fill: var(--app-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
