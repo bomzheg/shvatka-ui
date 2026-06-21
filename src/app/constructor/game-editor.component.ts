@@ -167,7 +167,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   private applyGame(game: FullGame) {
     this.game = game;
     this.name = game.name;
-    this.startAtLocal = game.start_at ? this.toLocalInput(game.start_at) : "";
+    this.startAtLocal = game.start_at ? this.toLocalInput(game.start_at) : this.defaultStartAtLocal();
 
     const rawLevels = [...(game.levels ?? [])].sort(
       (a, b) => (a.number_in_game ?? 0) - (b.number_in_game ?? 0),
@@ -668,7 +668,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   clearStartAt() {
     this.constructorService.setStartAt(this.gameId, null).subscribe({
       next: () => {
-        this.startAtLocal = "";
+        this.startAtLocal = this.defaultStartAtLocal();
         this.snackbar.success("Планируемый старт отменён");
         this.load();
       },
@@ -688,5 +688,12 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     const d = new Date(iso);
     const pad = (n: number) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  /** Default value for the planned-start picker: today at 23:00. */
+  private defaultStartAtLocal(): string {
+    const d = new Date();
+    d.setHours(23, 0, 0, 0);
+    return this.toLocalInput(d.toISOString());
   }
 }
