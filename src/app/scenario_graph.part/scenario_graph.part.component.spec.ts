@@ -21,12 +21,16 @@ function game(levels: Level[]): FullGame {
   return new FullGame(1, new Player('author', 1, true), 'Game', 'complete', undefined, levels);
 }
 
+function gl(name: string, number: number, routes: GraphLevel['routes'] = []): GraphLevel {
+  return {id: name, name, number, routes};
+}
+
 describe('routingGraphFromGame', () => {
   it('produces a routing level per game level with sequential progression only', () => {
     const levels = routingGraphFromGame(game([level(0), level(1), level(2)]));
     expect(levels.length).toBe(3);
     expect(levels.every(l => l.routes.length === 0)).toBeTrue();
-    expect(levels[0].title).toContain('№1');
+    expect(levels[0]).toEqual(jasmine.objectContaining({id: 'lvl-0', name: 'lvl-0', number: 1}));
   });
 
   it('resolves a numeric next_level jump to a node position', () => {
@@ -68,22 +72,14 @@ describe('ScenarioGraphPartComponent', () => {
     component = fixture.componentInstance;
   });
 
-  function levels(spec: GraphLevel[]): GraphLevel[] {
-    return spec;
-  }
-
   it('should create', () => {
-    component.levels = levels([{title: 'A', routes: []}, {title: 'B', routes: []}]);
+    component.levels = [gl('A', 1), gl('B', 2)];
     fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('builds a node per level plus a finish node and a connecting spine', () => {
-    component.levels = levels([
-      {title: 'A', routes: []},
-      {title: 'B', routes: []},
-      {title: 'C', routes: []},
-    ]);
+    component.levels = [gl('A', 1), gl('B', 2), gl('C', 3)];
     const model = component.model;
 
     expect(model.nodes.length).toBe(4);
@@ -93,43 +89,40 @@ describe('ScenarioGraphPartComponent', () => {
     expect(component.hasJumps()).toBeFalse();
   });
 
-  it('draws an arc for a route that skips ahead, labelled with its destination', () => {
-    component.levels = levels([
-      {title: 'A', routes: [{target: 2, kind: 'key', label: 'SKIP'}]},
-      {title: 'B', routes: []},
-      {title: 'C', routes: []},
-    ]);
+  it('renders a skip-ahead jump as an outgoing stub on the source and an incoming stub on the target', () => {
+    component.levels = [
+      gl('A', 1, [{target: 2, kind: 'key', label: 'SKIP'}]),
+      gl('B', 2),
+      gl('C', 3),
+    ];
+    const model = component.model;
 
-    const jumps = component.model.jumps;
-    expect(jumps.length).toBe(1);
-    expect(jumps[0].kind).toBe('key');
-    expect(jumps[0].label).toContain('SKIP');
-    expect(jumps[0].label).toContain('C');
+    expect(model.rightStubs.length).toBe(1);
+    expect(model.leftStubs.length).toBe(1);
+    // outgoing stub on A names its target C, incoming stub on C names its source A
+    expect(model.rightStubs[0]).toEqual(jasmine.objectContaining({name: 'C', navId: 'C', kind: 'key'}));
+    expect(model.rightStubs[0].trigger).toContain('SKIP');
+    expect(model.leftStubs[0]).toEqual(jasmine.objectContaining({name: 'A', navId: 'A'}));
   });
 
-  it('does not draw an arc when a route points to the next sequential level', () => {
-    component.levels = levels([
-      {title: 'A', routes: [{target: 1, kind: 'key', label: 'NEXT'}]},
-      {title: 'B', routes: []},
-    ]);
+  it('does not create a stub when a route points to the next sequential level', () => {
+    component.levels = [
+      gl('A', 1, [{target: 1, kind: 'key', label: 'NEXT'}]),
+      gl('B', 2),
+    ];
 
     expect(component.hasJumps()).toBeFalse();
+    expect(component.model.leftStubs.length).toBe(0);
   });
 
-  it('renders a backward jump with a source dot and destination label', () => {
-    component.levels = levels([
-      {title: 'A', routes: []},
-      {title: 'B', routes: [{target: 0, kind: 'timer', label: '15 мин'}]},
-      {title: 'C', routes: []},
-    ]);
+  it('emits the level id when a stub name is activated', () => {
+    const emitted: string[] = [];
+    component.levelSelected.subscribe(id => emitted.push(id));
 
-    const jumps = component.model.jumps;
-    expect(jumps.length).toBe(1);
-    expect(jumps[0].kind).toBe('timer');
-    expect(jumps[0].label).toContain('15 мин');
-    expect(jumps[0].label).toContain('A');
-    // The source dot sits on the departing node (B), above the target (A).
-    expect(jumps[0].dotY).toBeGreaterThan(component.model.nodes[0].cy);
+    component.onNavigate('B');
+    component.onNavigate(null);
+
+    expect(emitted).toEqual(['B']);
   });
 
   it('reports no levels gracefully', () => {

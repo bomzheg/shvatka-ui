@@ -7,6 +7,7 @@ import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GraphLevel, routingGraphFromGame} from "../scenario_graph.part/scenario_graph.model";
+import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 
 @Component({
   selector: 'app-game',
@@ -73,6 +74,10 @@ export class GameComponent implements OnInit, OnDestroy {
       this.graphCacheLevels = routingGraphFromGame(game);
     }
     return this.graphCacheLevels;
+  }
+
+  onGraphLevelSelected(id: string): void {
+    scrollToLevel(id);
   }
 
   isLoading(): boolean {

@@ -11,6 +11,7 @@ import {OrganizersEditorComponent} from "./organizers-editor.component";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GraphLevel, GraphRoute, keyRouteLabel, timerRouteLabel} from "../scenario_graph.part/scenario_graph.model";
+import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
 import {
   CONTENT_TYPE_LABELS,
@@ -412,8 +413,18 @@ export class GameEditorComponent implements OnInit, OnDestroy {
         }
       }
 
-      return {title: `№${pos + 1} (${level.id})`, routes};
+      return {id: level.id, name: level.id, number: pos + 1, routes};
     });
+  }
+
+  /** Scroll to the level card with the given id and briefly highlight it. */
+  onGraphLevelSelected(id: string): void {
+    const level = this.levels.find(l => l.id === id);
+    if (level) {
+      // Keep it open past the next change detection (the card binds [open]).
+      level.expanded = true;
+    }
+    scrollToLevel(id);
   }
 
   // -------------------------------------------------------------------------

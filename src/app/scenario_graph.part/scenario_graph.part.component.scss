@@ -11,6 +11,10 @@
   gap: 0.35rem;
 }
 
+.graph-hint {
+  font-size: 0.82rem;
+}
+
 .graph-legend {
   display: flex;
   flex-wrap: wrap;
@@ -58,57 +62,15 @@
   height: auto;
 }
 
-// Edges -------------------------------------------------------------------
+// Spine -------------------------------------------------------------------
 .edge-spine {
   fill: none;
   stroke: #64748b;
   stroke-width: 2;
 }
 
-.edge-jump {
-  fill: none;
-  stroke-width: 2;
-}
-
-.edge-jump-key {
-  stroke: #2563eb;
-}
-
-.edge-jump-timer {
-  stroke: #b45309;
-  stroke-dasharray: 6 4;
-}
-
-.edge-dot {
-  stroke: none;
-}
-
-.edge-dot-key {
-  fill: #2563eb;
-}
-
-.edge-dot-timer {
-  fill: #b45309;
-}
-
 #scn-graph-arrow path {
   fill: context-stroke;
-}
-
-.edge-label {
-  font-size: 12px;
-  dominant-baseline: middle;
-  paint-order: stroke;
-  stroke: var(--app-surface);
-  stroke-width: 3px;
-}
-
-.edge-label-key {
-  fill: #2563eb;
-}
-
-.edge-label-timer {
-  fill: #b45309;
 }
 
 // Nodes -------------------------------------------------------------------
@@ -129,4 +91,49 @@
   font-weight: 600;
   text-anchor: middle;
   dominant-baseline: central;
+}
+
+// Jump stubs --------------------------------------------------------------
+.stub-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.stub-key .stub-line {
+  stroke: #2563eb;
+}
+
+.stub-timer .stub-line {
+  stroke: #b45309;
+  stroke-dasharray: 6 4;
+}
+
+.stub-trigger {
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: var(--app-surface);
+  stroke-width: 3px;
+}
+
+.stub-key .stub-trigger {
+  fill: #2563eb;
+}
+
+.stub-timer .stub-trigger {
+  fill: #b45309;
+}
+
+.stub-name {
+  font-size: 12px;
+  font-weight: 600;
+  dominant-baseline: middle;
+  fill: var(--app-text);
+}
+
+.stub-name-link {
+  fill: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
 }

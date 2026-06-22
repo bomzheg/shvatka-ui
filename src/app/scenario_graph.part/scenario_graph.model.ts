@@ -12,11 +12,17 @@ export interface GraphRoute {
    */
   target: number;
   kind: 'key' | 'timer';
+  /** Trigger description (key text or timer minutes). */
   label: string;
 }
 
 export interface GraphLevel {
-  title: string;
+  /** Stable key for navigation (the level's name_id / editor id). */
+  id: string;
+  /** Displayed name_id, e.g. "g3t1". */
+  name: string;
+  /** 1-based level number shown in the box. */
+  number: number;
   routes: GraphRoute[];
 }
 
@@ -96,6 +102,6 @@ export function routingGraphFromGame(game: FullGame): GraphLevel[] {
       }
     }
 
-    return {title: `№${entry.index + 1} (${entry.level.name_id})`, routes};
+    return {id: entry.level.name_id, name: entry.level.name_id, number: entry.index + 1, routes};
   });
 }

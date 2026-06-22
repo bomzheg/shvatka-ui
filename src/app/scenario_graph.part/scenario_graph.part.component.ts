@@ -1,10 +1,10 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon} from "../ui/icons";
 import {GraphLevel} from "./scenario_graph.model";
 
-/** A level (or the terminal "finish") box laid out on the routing graph. */
-interface GraphNode {
+/** A level box (or the terminal "finish") on the spine. */
+interface NodeBox {
   x: number;
   y: number;
   w: number;
@@ -16,53 +16,74 @@ interface GraphNode {
   isFinish: boolean;
 }
 
-/** The default, sequential "complete the level" transition between two nodes. */
+/** The default sequential transition between two boxes. */
 interface SpineEdge {
   d: string;
 }
 
-/** A non-sequential jump produced by a `next_level` routing effect. */
-interface JumpEdge {
-  d: string;
-  /** Source marker — the node the jump departs from. */
-  dotX: number;
-  dotY: number;
-  label: string;
-  labelX: number;
-  labelY: number;
+/**
+ * A labelled stub for one jump, shown beside its node. Incoming stubs sit on the
+ * left (arrow pointing into the box, naming the source); outgoing stubs sit on
+ * the right (arrow pointing out, naming the target). The same jump appears as an
+ * outgoing stub on its source and an incoming stub on its target.
+ */
+interface Stub {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  trigger: string;
+  triggerX: number;
+  triggerY: number;
+  name: string;
+  fullName: string;
+  nameX: number;
+  nameY: number;
+  nameAnchor: 'start' | 'end';
+  navId: string | null;
   kind: 'key' | 'timer';
 }
 
 interface GraphModel {
-  nodes: GraphNode[];
+  nodes: NodeBox[];
   spine: SpineEdge[];
-  jumps: JumpEdge[];
+  leftStubs: Stub[];
+  rightStubs: Stub[];
   width: number;
   height: number;
 }
 
-const NODE_W = 240;
-const NODE_H = 44;
-const ROW_H = 88;
-const TOP = 24;
-const NODE_X = 16;
-const TITLE_MAX = 28;
-// Right-hand "bus" lanes for jump arrows: each jump gets its own vertical lane
-// so arrows never overlap, with a source dot and an arrowhead making direction
-// unambiguous.
-const LANE_GAP = 22;
-const LANE_STEP = 22;
-const LABEL_CHAR_W = 7;
+const NAME_X = 10;
+const NAME_COL_W = 86;
+const LEFT_ARROW_X1 = NAME_X + NAME_COL_W;      // 96
+const BOX_X = LEFT_ARROW_X1 + 96;               // 192
+const BOX_W = 200;
+const BOX_H = 44;
+const BOX_RIGHT = BOX_X + BOX_W;                // 392
+const RIGHT_ARROW_X2 = BOX_RIGHT + 96;          // 488
+const RIGHT_NAME_X = RIGHT_ARROW_X2 + 8;        // 496
+const WIDTH = RIGHT_NAME_X + NAME_COL_W + 8;    // 590
+const SPINE_X = BOX_X + BOX_W / 2;              // 292
+
+const STUB_ROW = 30;
+const BAND_PAD = 14;
+const BAND_GAP = 22;
+const TOP = 12;
+
+const NAME_MAX = 12;
+const TRIGGER_MAX = 12;
+const TITLE_MAX = 22;
 
 /**
- * Renders the level-to-level routing of a scenario as a directed graph.
+ * Renders the level-to-level routing of a scenario.
  *
- * Input is a host-agnostic {@link GraphLevel} list (see `scenario_graph.model`),
- * so the same view serves the completed game, the running game and the editor.
- * Nodes are the levels in order plus a terminal "Финиш" node. The vertical spine
- * is the default progression — completing a level moves to the next one. Routes
- * that point somewhere other than the next level are drawn as labelled arcs, so
- * a scenario that branches or loops back becomes visible at a glance.
+ * Levels form a vertical spine of boxes (default progression, top to bottom,
+ * ending in "Финиш"). Non-sequential jumps are not drawn as crossing lines —
+ * which become unreadable once the graph is dense — but as short labelled stubs
+ * beside each box: incoming jumps fan in from the left (naming their source),
+ * outgoing jumps fan out to the right (naming their target). Every name is a
+ * link: clicking it emits {@link levelSelected} so the host can scroll to and
+ * highlight that level.
  */
 @Component({
   selector: 'app-scenario-graph-part',
@@ -77,6 +98,7 @@ export class ScenarioGraphPartComponent {
   protected readonly AppIcon = AppIcon;
 
   @Input({required: true}) levels: GraphLevel[] = [];
+  @Output() levelSelected = new EventEmitter<string>();
 
   private cachedSignature: string | undefined;
   private cachedModel: GraphModel | undefined;
@@ -90,112 +112,137 @@ export class ScenarioGraphPartComponent {
     return this.cachedModel;
   }
 
-  hasJumps(): boolean {
-    return this.model.jumps.length > 0;
-  }
-
   hasLevels(): boolean {
     return (this.levels?.length ?? 0) > 0;
   }
 
-  private build(levels: GraphLevel[]): GraphModel {
-    const finishPos = levels.length;
+  hasJumps(): boolean {
+    return this.model.rightStubs.length > 0;
+  }
 
-    const nodes: GraphNode[] = levels.map((level, pos) => this.makeNode(pos, level.title, false));
-    if (levels.length > 0) {
-      nodes.push(this.makeNode(finishPos, 'Финиш', true));
+  onNavigate(navId: string | null): void {
+    if (navId) {
+      this.levelSelected.emit(navId);
+    }
+  }
+
+  private build(levels: GraphLevel[]): GraphModel {
+    if (levels.length === 0) {
+      return {nodes: [], spine: [], leftStubs: [], rightStubs: [], width: 0, height: 0};
     }
 
+    const finishPos = levels.length;
+    const nodeCount = finishPos + 1;
+
+    // Identity (name + nav id) of every node, including the terminal finish.
+    const nodeName: string[] = levels.map(l => l.name);
+    nodeName.push('Финиш');
+    const nodeNavId: (string | null)[] = levels.map(l => l.id);
+    nodeNavId.push(null);
+
+    // Collapse duplicate jumps that share source/target/kind (e.g. several keys
+    // that all route to the same level), merging their triggers.
+    type Jump = {src: number; tgt: number; kind: 'key' | 'timer'; triggers: string[]};
+    const jumpByKey = new Map<string, Jump>();
+    levels.forEach((level, pos) => {
+      for (const route of level.routes) {
+        const tgt = route.target;
+        if (tgt < 0 || tgt > finishPos || tgt === pos + 1 || tgt === pos) {
+          continue;
+        }
+        const key = `${pos}->${tgt}:${route.kind}`;
+        const existing = jumpByKey.get(key);
+        if (existing) {
+          if (route.label && !existing.triggers.includes(route.label)) {
+            existing.triggers.push(route.label);
+          }
+        } else {
+          jumpByKey.set(key, {src: pos, tgt, kind: route.kind, triggers: route.label ? [route.label] : []});
+        }
+      }
+    });
+    const jumps = [...jumpByKey.values()];
+
+    const incoming: Jump[][] = Array.from({length: nodeCount}, () => []);
+    const outgoing: Jump[][] = Array.from({length: nodeCount}, () => []);
+    for (const jump of jumps) {
+      outgoing[jump.src].push(jump);
+      incoming[jump.tgt].push(jump);
+    }
+
+    const nodes: NodeBox[] = [];
+    const leftStubs: Stub[] = [];
+    const rightStubs: Stub[] = [];
     const spine: SpineEdge[] = [];
-    for (let pos = 0; pos < finishPos; pos++) {
+
+    let y = TOP;
+    for (let pos = 0; pos < nodeCount; pos++) {
+      const ins = incoming[pos];
+      const outs = outgoing[pos];
+      const rows = Math.max(ins.length, outs.length, 1);
+      const bandH = Math.max(BOX_H + 2 * BAND_PAD, rows * STUB_ROW + 2 * BAND_PAD);
+      const bandTop = y;
+      const isFinish = pos === finishPos;
+      // The box fills the band (minus padding) so every stub arrow enters its
+      // body rather than touching the top/bottom edge.
+      const boxH = bandH - 2 * BAND_PAD;
+
+      const node: NodeBox = {
+        x: BOX_X,
+        y: bandTop + BAND_PAD,
+        w: BOX_W,
+        h: boxH,
+        cx: SPINE_X,
+        cy: bandTop + bandH / 2,
+        title: this.truncate(isFinish ? 'Финиш' : `№${levels[pos].number} (${levels[pos].name})`, TITLE_MAX),
+        fullTitle: isFinish ? 'Финиш' : `№${levels[pos].number} (${levels[pos].name})`,
+        isFinish,
+      };
+      nodes.push(node);
+
+      ins.forEach((jump, i) => {
+        const sy = bandTop + bandH * (i + 0.5) / ins.length;
+        leftStubs.push({
+          x1: LEFT_ARROW_X1, y1: sy, x2: BOX_X, y2: sy,
+          trigger: this.truncate(jump.triggers.join(', '), TRIGGER_MAX),
+          triggerX: (LEFT_ARROW_X1 + BOX_X) / 2, triggerY: sy - 7,
+          name: this.truncate(nodeName[jump.src], NAME_MAX),
+          fullName: nodeName[jump.src],
+          nameX: NAME_X, nameY: sy, nameAnchor: 'start',
+          navId: nodeNavId[jump.src],
+          kind: jump.kind,
+        });
+      });
+
+      outs.forEach((jump, j) => {
+        const sy = bandTop + bandH * (j + 0.5) / outs.length;
+        rightStubs.push({
+          x1: BOX_RIGHT, y1: sy, x2: RIGHT_ARROW_X2, y2: sy,
+          trigger: this.truncate(jump.triggers.join(', '), TRIGGER_MAX),
+          triggerX: (BOX_RIGHT + RIGHT_ARROW_X2) / 2, triggerY: sy - 7,
+          name: this.truncate(nodeName[jump.tgt], NAME_MAX),
+          fullName: nodeName[jump.tgt],
+          nameX: RIGHT_NAME_X, nameY: sy, nameAnchor: 'start',
+          navId: nodeNavId[jump.tgt],
+          kind: jump.kind,
+        });
+      });
+
+      y = bandTop + bandH + BAND_GAP;
+    }
+
+    for (let pos = 0; pos < nodeCount - 1; pos++) {
       const a = nodes[pos];
       const b = nodes[pos + 1];
       spine.push({d: `M ${a.cx} ${a.y + a.h} L ${b.cx} ${b.y}`});
     }
 
-    // Collect the jumps (merging duplicates that share source/target/kind, e.g.
-    // several keys that all route to the same level) before laying them out.
-    const jumpByKey = new Map<string, {pos: number; target: number; kind: 'key' | 'timer'; triggers: string[]}>();
-    levels.forEach((level, pos) => {
-      for (const route of level.routes) {
-        const target = route.target;
-        if (target < 0 || target > finishPos) {
-          continue;
-        }
-        // The straight-down spine already shows the default next-level step.
-        if (target === pos + 1 || target === pos) {
-          continue;
-        }
-
-        const dedupeKey = `${pos}->${target}:${route.kind}`;
-        const existing = jumpByKey.get(dedupeKey);
-        if (existing) {
-          if (route.label && !existing.triggers.includes(route.label)) {
-            existing.triggers.push(route.label);
-          }
-          continue;
-        }
-        jumpByKey.set(dedupeKey, {pos, target, kind: route.kind, triggers: route.label ? [route.label] : []});
-      }
-    });
-
-    const right = NODE_X + NODE_W;
-    const rawJumps = [...jumpByKey.values()];
-    // Labels share one column to the right of every lane, so no connector line
-    // ever crosses label text; a label ties to its arc by colour and shared y.
-    const labelX = right + LANE_GAP + Math.max(rawJumps.length - 1, 0) * LANE_STEP + 14;
-    let maxRight = labelX;
-
-    const jumps: JumpEdge[] = rawJumps.map((jump, lane) => {
-      const laneX = right + LANE_GAP + lane * LANE_STEP;
-      const src = nodes[jump.pos];
-      const dst = nodes[jump.target];
-      const sy = src.cy;
-      const ty = dst.cy;
-      const dest = dst.isFinish ? 'Финиш' : dst.title.split(' ')[0];
-      const triggers = jump.triggers.join(', ');
-      const label = triggers ? `${triggers} → ${dest}` : `→ ${dest}`;
-
-      maxRight = Math.max(maxRight, labelX + label.length * LABEL_CHAR_W + 8);
-
-      return {
-        // Out from the source's right edge, down/up the lane, back into the target.
-        d: `M ${right} ${sy} H ${laneX} V ${ty} H ${right}`,
-        dotX: right,
-        dotY: sy,
-        label,
-        labelX,
-        labelY: (sy + ty) / 2,
-        kind: jump.kind,
-      };
-    });
-
-    const width = Math.max(maxRight, right + 60);
-    const height = nodes.length > 0
-      ? TOP + (nodes.length - 1) * ROW_H + NODE_H + 24
-      : 0;
-
-    return {nodes, spine, jumps, width, height};
-  }
-
-  private makeNode(pos: number, title: string, isFinish: boolean): GraphNode {
-    const y = TOP + pos * ROW_H;
-    return {
-      x: NODE_X,
-      y,
-      w: NODE_W,
-      h: NODE_H,
-      cx: NODE_X + NODE_W / 2,
-      cy: y + NODE_H / 2,
-      title: this.truncate(title, TITLE_MAX),
-      fullTitle: title,
-      isFinish,
-    };
+    return {nodes, spine, leftStubs, rightStubs, width: WIDTH, height: y - BAND_GAP + TOP};
   }
 
   private signature(levels: GraphLevel[] | undefined): string {
     return (levels ?? [])
-      .map(level => `${level.title}|${level.routes.map(r => `${r.target}:${r.kind}:${r.label}`).join(',')}`)
+      .map(l => `${l.id}|${l.name}|${l.number}|${l.routes.map(r => `${r.target}:${r.kind}:${r.label}`).join(',')}`)
       .join(';');
   }
 

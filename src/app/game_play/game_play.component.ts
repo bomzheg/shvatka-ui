@@ -25,6 +25,7 @@ import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.par
 import {GameScenarioCompactPartComponent} from "../game_scenario_compact.part/game_scenario_compact.part.component";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GraphLevel, routingGraphFromGame} from "../scenario_graph.part/scenario_graph.model";
+import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 import {PushToggleComponent} from "../push/push-toggle.component";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon, IconTag} from "../ui/icons";
@@ -207,6 +208,10 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       this.graphCacheLevels = routingGraphFromGame(game);
     }
     return this.graphCacheLevels;
+  }
+
+  onGraphLevelSelected(id: string): void {
+    scrollToLevel(id);
   }
 
   getCountdownToStart(): string | undefined {
