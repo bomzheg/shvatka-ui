@@ -63,11 +63,33 @@ export function routingGraphFromGame(game: FullGame): GraphLevel[] {
     .sort((a, b) => a.index - b.index);
 
   const indexToPos = new Map<number, number>();
-  ordered.forEach((entry, pos) => indexToPos.set(entry.index, pos));
+  const posByName = new Map<string, number>();
+  ordered.forEach((entry, pos) => {
+    indexToPos.set(entry.index, pos);
+    if (!posByName.has(entry.level.name_id)) {
+      posByName.set(entry.level.name_id, pos);
+    }
+  });
   const maxIndex = ordered.length > 0 ? ordered[ordered.length - 1].index : -1;
   const finishPos = ordered.length;
 
-  return ordered.map((entry) => {
+  // A winning effect's `next_level` may be a level's name_id (the usual case
+  // from the server), a numeric level index, or absent (meaning "the next
+  // level"). Resolve all three to a node position, or undefined to skip.
+  const resolveTarget = (nextLevel: number | string | null | undefined, pos: number): number | undefined => {
+    if (nextLevel === undefined || nextLevel === null) {
+      return pos + 1;
+    }
+    if (typeof nextLevel === 'string') {
+      return posByName.has(nextLevel) ? posByName.get(nextLevel)! : undefined;
+    }
+    if (indexToPos.has(nextLevel)) {
+      return indexToPos.get(nextLevel)!;
+    }
+    return nextLevel > maxIndex ? finishPos : undefined;
+  };
+
+  return ordered.map((entry, pos) => {
     const routes: GraphRoute[] = [];
     const winKeys: string[] = [];
 
@@ -82,22 +104,8 @@ export function routingGraphFromGame(game: FullGame): GraphLevel[] {
           continue;
         }
 
-        let targetIndex: number;
-        if (typeof effect.next_level === 'number') {
-          targetIndex = effect.next_level;
-        } else if (effect.next_level === undefined || effect.next_level === null) {
-          targetIndex = entry.index + 1;
-        } else {
-          // A non-numeric target can't be resolved against numeric level indices.
-          continue;
-        }
-
-        let target: number;
-        if (indexToPos.has(targetIndex)) {
-          target = indexToPos.get(targetIndex)!;
-        } else if (targetIndex > maxIndex) {
-          target = finishPos;
-        } else {
+        const target = resolveTarget(effect.next_level, pos);
+        if (target === undefined) {
           continue;
         }
 

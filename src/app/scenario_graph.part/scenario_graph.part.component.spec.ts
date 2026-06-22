@@ -46,6 +46,19 @@ describe('routingGraphFromGame', () => {
     expect(levels[0].routes[0].label).toContain('SKIP');
   });
 
+  it('resolves a string name_id next_level (server shape) to a node position', () => {
+    const jumpCondition = new ScenarioCondition(
+      ScenarioConditionType.effectsKey,
+      ['SKIP'],
+      [{id: 'e1', hints_: [], bonus_minutes: 0, level_up: true, next_level: 'lvl-2'} as any],
+    );
+    const levels = routingGraphFromGame(game([level(0, [jumpCondition]), level(1), level(2)]));
+
+    // 'lvl-2' is the name_id of the level at position 2
+    expect(levels[0].routes.length).toBe(1);
+    expect(levels[0].routes[0]).toEqual(jasmine.objectContaining({target: 2, kind: 'key'}));
+  });
+
   it('labels timer routes by minutes', () => {
     const timerCondition = new ScenarioCondition(
       ScenarioConditionType.effectsTimer,
