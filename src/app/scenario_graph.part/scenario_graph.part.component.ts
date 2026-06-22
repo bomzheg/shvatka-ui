@@ -1,10 +1,11 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, ElementRef, EventEmitter, Input, Output, QueryList, ViewChildren} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon} from "../ui/icons";
 import {GraphLevel} from "./scenario_graph.model";
 
 /** A level box (or the terminal "finish") on the spine. */
 interface NodeBox {
+  pos: number;
   x: number;
   y: number;
   w: number;
@@ -14,6 +15,8 @@ interface NodeBox {
   title: string;
   fullTitle: string;
   isFinish: boolean;
+  /** Editor/scenario nav id, or null for the terminal finish. */
+  navId: string | null;
 }
 
 /** The default sequential transition between two boxes. */
@@ -22,10 +25,11 @@ interface SpineEdge {
 }
 
 /**
- * A labelled stub for one jump, shown beside its node. Incoming stubs sit on the
- * left (arrow pointing into the box, naming the source); outgoing stubs sit on
- * the right (arrow pointing out, naming the target). The same jump appears as an
- * outgoing stub on its source and an incoming stub on its target.
+ * A labelled stub for one route, shown beside its node. Incoming routes sit on
+ * the left (arrow pointing into the box, naming the source); outgoing routes sit
+ * on the right (arrow pointing out, naming the target). The same route appears
+ * as an outgoing stub on its source and an incoming stub on its target. Every
+ * route is drawn — duplicates, self-loops and next-level hops included.
  */
 interface Stub {
   x1: number;
@@ -40,7 +44,8 @@ interface Stub {
   nameX: number;
   nameY: number;
   nameAnchor: 'start' | 'end';
-  navId: string | null;
+  /** Position of the node this stub names — clicking it highlights that box. */
+  nodePos: number;
   kind: 'key' | 'timer';
 }
 
@@ -78,12 +83,12 @@ const TITLE_MAX = 22;
  * Renders the level-to-level routing of a scenario.
  *
  * Levels form a vertical spine of boxes (default progression, top to bottom,
- * ending in "Финиш"). Non-sequential jumps are not drawn as crossing lines —
- * which become unreadable once the graph is dense — but as short labelled stubs
- * beside each box: incoming jumps fan in from the left (naming their source),
- * outgoing jumps fan out to the right (naming their target). Every name is a
- * link: clicking it emits {@link levelSelected} so the host can scroll to and
- * highlight that level.
+ * ending in "Финиш"). Every routing effect is drawn as a short labelled stub
+ * beside its box — incoming on the left (naming the source), outgoing on the
+ * right (naming the target) — so the picture stays readable however dense the
+ * routing gets. Clicking a name on a stub highlights the matching box in the
+ * graph; clicking the name inside a box emits {@link levelSelected} so the host
+ * can jump to that level's editor / scenario card.
  */
 @Component({
   selector: 'app-scenario-graph-part',
@@ -99,6 +104,12 @@ export class ScenarioGraphPartComponent {
 
   @Input({required: true}) levels: GraphLevel[] = [];
   @Output() levelSelected = new EventEmitter<string>();
+
+  @ViewChildren('nodeGroup') private nodeGroups?: QueryList<ElementRef<SVGGElement>>;
+
+  /** Box currently pulsed after a stub name was clicked. */
+  highlightedPos: number | null = null;
+  private highlightTimer: number | undefined;
 
   private cachedSignature: string | undefined;
   private cachedModel: GraphModel | undefined;
@@ -116,11 +127,20 @@ export class ScenarioGraphPartComponent {
     return (this.levels?.length ?? 0) > 0;
   }
 
-  hasJumps(): boolean {
+  hasRoutes(): boolean {
     return this.model.rightStubs.length > 0;
   }
 
-  onNavigate(navId: string | null): void {
+  /** Pulse — and, for long scenarios, scroll to — the named box in the graph. */
+  highlightNode(pos: number): void {
+    this.highlightedPos = pos;
+    this.nodeGroups?.get(pos)?.nativeElement?.scrollIntoView({behavior: 'smooth', block: 'center'});
+    window.clearTimeout(this.highlightTimer);
+    this.highlightTimer = window.setTimeout(() => (this.highlightedPos = null), 2500);
+  }
+
+  /** Open the level's editor / scenario card. */
+  onTitleClick(navId: string | null): void {
     if (navId) {
       this.levelSelected.emit(navId);
     }
@@ -134,41 +154,27 @@ export class ScenarioGraphPartComponent {
     const finishPos = levels.length;
     const nodeCount = finishPos + 1;
 
-    // Identity (name + nav id) of every node, including the terminal finish.
     const nodeName: string[] = levels.map(l => l.name);
     nodeName.push('Финиш');
     const nodeNavId: (string | null)[] = levels.map(l => l.id);
     nodeNavId.push(null);
 
-    // Collapse duplicate jumps that share source/target/kind (e.g. several keys
-    // that all route to the same level), merging their triggers.
-    type Jump = {src: number; tgt: number; kind: 'key' | 'timer'; triggers: string[]};
-    const jumpByKey = new Map<string, Jump>();
+    // Every route is kept as-is: no de-duplication, and self-loops / next-level
+    // hops are drawn too, so nothing the author wrote silently disappears.
+    type Route = {src: number; tgt: number; kind: 'key' | 'timer'; label: string};
+    const incoming: Route[][] = Array.from({length: nodeCount}, () => []);
+    const outgoing: Route[][] = Array.from({length: nodeCount}, () => []);
     levels.forEach((level, pos) => {
       for (const route of level.routes) {
         const tgt = route.target;
-        if (tgt < 0 || tgt > finishPos || tgt === pos + 1 || tgt === pos) {
+        if (tgt < 0 || tgt > finishPos) {
           continue;
         }
-        const key = `${pos}->${tgt}:${route.kind}`;
-        const existing = jumpByKey.get(key);
-        if (existing) {
-          if (route.label && !existing.triggers.includes(route.label)) {
-            existing.triggers.push(route.label);
-          }
-        } else {
-          jumpByKey.set(key, {src: pos, tgt, kind: route.kind, triggers: route.label ? [route.label] : []});
-        }
+        const entry: Route = {src: pos, tgt, kind: route.kind, label: route.label};
+        outgoing[pos].push(entry);
+        incoming[tgt].push(entry);
       }
     });
-    const jumps = [...jumpByKey.values()];
-
-    const incoming: Jump[][] = Array.from({length: nodeCount}, () => []);
-    const outgoing: Jump[][] = Array.from({length: nodeCount}, () => []);
-    for (const jump of jumps) {
-      outgoing[jump.src].push(jump);
-      incoming[jump.tgt].push(jump);
-    }
 
     const nodes: NodeBox[] = [];
     const leftStubs: Stub[] = [];
@@ -187,7 +193,8 @@ export class ScenarioGraphPartComponent {
       // body rather than touching the top/bottom edge.
       const boxH = bandH - 2 * BAND_PAD;
 
-      const node: NodeBox = {
+      nodes.push({
+        pos,
         x: BOX_X,
         y: bandTop + BAND_PAD,
         w: BOX_W,
@@ -197,34 +204,34 @@ export class ScenarioGraphPartComponent {
         title: this.truncate(isFinish ? 'Финиш' : `№${levels[pos].number} (${levels[pos].name})`, TITLE_MAX),
         fullTitle: isFinish ? 'Финиш' : `№${levels[pos].number} (${levels[pos].name})`,
         isFinish,
-      };
-      nodes.push(node);
+        navId: nodeNavId[pos],
+      });
 
-      ins.forEach((jump, i) => {
+      ins.forEach((route, i) => {
         const sy = bandTop + bandH * (i + 0.5) / ins.length;
         leftStubs.push({
           x1: LEFT_ARROW_X1, y1: sy, x2: BOX_X, y2: sy,
-          trigger: this.truncate(jump.triggers.join(', '), TRIGGER_MAX),
+          trigger: this.truncate(route.label, TRIGGER_MAX),
           triggerX: (LEFT_ARROW_X1 + BOX_X) / 2, triggerY: sy - 7,
-          name: this.truncate(nodeName[jump.src], NAME_MAX),
-          fullName: nodeName[jump.src],
+          name: this.truncate(nodeName[route.src], NAME_MAX),
+          fullName: nodeName[route.src],
           nameX: NAME_X, nameY: sy, nameAnchor: 'start',
-          navId: nodeNavId[jump.src],
-          kind: jump.kind,
+          nodePos: route.src,
+          kind: route.kind,
         });
       });
 
-      outs.forEach((jump, j) => {
+      outs.forEach((route, j) => {
         const sy = bandTop + bandH * (j + 0.5) / outs.length;
         rightStubs.push({
           x1: BOX_RIGHT, y1: sy, x2: RIGHT_ARROW_X2, y2: sy,
-          trigger: this.truncate(jump.triggers.join(', '), TRIGGER_MAX),
+          trigger: this.truncate(route.label, TRIGGER_MAX),
           triggerX: (BOX_RIGHT + RIGHT_ARROW_X2) / 2, triggerY: sy - 7,
-          name: this.truncate(nodeName[jump.tgt], NAME_MAX),
-          fullName: nodeName[jump.tgt],
+          name: this.truncate(nodeName[route.tgt], NAME_MAX),
+          fullName: nodeName[route.tgt],
           nameX: RIGHT_NAME_X, nameY: sy, nameAnchor: 'start',
-          navId: nodeNavId[jump.tgt],
-          kind: jump.kind,
+          nodePos: route.tgt,
+          kind: route.kind,
         });
       });
 

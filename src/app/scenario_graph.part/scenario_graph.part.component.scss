@@ -93,6 +93,32 @@
   dominant-baseline: central;
 }
 
+.node-text-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.node-text-link:hover {
+  fill: var(--app-accent);
+}
+
+// Box pulsed after its name is clicked from a stub.
+.node-highlight .node-box {
+  stroke: var(--app-accent);
+  stroke-width: 2.5;
+  animation: scn-node-pulse 2.5s ease-out;
+}
+
+@keyframes scn-node-pulse {
+  0% {
+    filter: drop-shadow(0 0 7px var(--app-accent));
+  }
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
 // Jump stubs --------------------------------------------------------------
 .stub-line {
   fill: none;

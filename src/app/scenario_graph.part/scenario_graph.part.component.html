@@ -6,7 +6,7 @@
       <span class="legend-swatch legend-spine"></span>
       обычный переход (по ключу)
     </span>
-    @if (hasJumps()) {
+    @if (hasRoutes()) {
       <span class="legend-item">
         <span class="legend-swatch legend-key"></span>
         переход по ключу с эффектом
@@ -18,15 +18,15 @@
     }
   </div>
 
-  @if (!hasJumps()) {
+  @if (!hasRoutes()) {
     <p class="graph-note">
       <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.jump"/>
-      В сценарии нет переходов «через уровень» — игра идёт строго по порядку.
+      В сценарии нет переходов-эффектов — игра идёт строго по порядку.
     </p>
   } @else {
     <p class="graph-note graph-hint">
       Слева — откуда можно попасть на уровень, справа — куда он ведёт.
-      Нажмите на имя уровня, чтобы перейти к нему.
+      Имя на стрелке подсвечивает уровень в графе; имя в рамке открывает уровень.
     </p>
   }
 
@@ -55,31 +55,15 @@
         <path class="edge-spine" [attr.d]="edge.d" marker-end="url(#scn-graph-arrow)"/>
       }
 
-      @for (node of model.nodes; track $index) {
-        <g class="node" [class.node-finish]="node.isFinish">
-          <rect
-            class="node-box"
-            [attr.x]="node.x"
-            [attr.y]="node.y"
-            [attr.width]="node.w"
-            [attr.height]="node.h"
-            rx="9"
-            ry="9"/>
-          <text class="node-text" [attr.x]="node.cx" [attr.y]="node.cy">{{ node.title }}
-            <title>{{ node.fullTitle }}</title>
-          </text>
-        </g>
-      }
-
       @for (stub of model.leftStubs; track $index) {
         <g class="stub" [class.stub-key]="stub.kind === 'key'" [class.stub-timer]="stub.kind === 'timer'">
           <path class="stub-line"
             [attr.d]="'M ' + stub.x1 + ' ' + stub.y1 + ' L ' + stub.x2 + ' ' + stub.y2"
             marker-end="url(#scn-graph-arrow)"/>
           <text class="stub-trigger" [attr.x]="stub.triggerX" [attr.y]="stub.triggerY">{{ stub.trigger }}</text>
-          <text class="stub-name" [class.stub-name-link]="stub.navId"
+          <text class="stub-name stub-name-link"
             [attr.x]="stub.nameX" [attr.y]="stub.nameY" [attr.text-anchor]="stub.nameAnchor"
-            (click)="onNavigate(stub.navId)">{{ stub.name }}
+            (click)="highlightNode(stub.nodePos)">{{ stub.name }}
             <title>{{ stub.fullName }}</title>
           </text>
         </g>
@@ -91,10 +75,29 @@
             [attr.d]="'M ' + stub.x1 + ' ' + stub.y1 + ' L ' + stub.x2 + ' ' + stub.y2"
             marker-end="url(#scn-graph-arrow)"/>
           <text class="stub-trigger" [attr.x]="stub.triggerX" [attr.y]="stub.triggerY">{{ stub.trigger }}</text>
-          <text class="stub-name" [class.stub-name-link]="stub.navId"
+          <text class="stub-name stub-name-link"
             [attr.x]="stub.nameX" [attr.y]="stub.nameY" [attr.text-anchor]="stub.nameAnchor"
-            (click)="onNavigate(stub.navId)">{{ stub.name }}
+            (click)="highlightNode(stub.nodePos)">{{ stub.name }}
             <title>{{ stub.fullName }}</title>
+          </text>
+        </g>
+      }
+
+      @for (node of model.nodes; track $index) {
+        <g #nodeGroup class="node" [class.node-finish]="node.isFinish"
+           [class.node-highlight]="node.pos === highlightedPos">
+          <rect
+            class="node-box"
+            [attr.x]="node.x"
+            [attr.y]="node.y"
+            [attr.width]="node.w"
+            [attr.height]="node.h"
+            rx="9"
+            ry="9"/>
+          <text class="node-text" [class.node-text-link]="node.navId"
+            [attr.x]="node.cx" [attr.y]="node.cy"
+            (click)="onTitleClick(node.navId)">{{ node.title }}
+            <title>{{ node.navId ? 'Открыть уровень ' + node.fullTitle : node.fullTitle }}</title>
           </text>
         </g>
       }

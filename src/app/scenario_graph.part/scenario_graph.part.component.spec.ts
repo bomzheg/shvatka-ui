@@ -86,7 +86,10 @@ describe('ScenarioGraphPartComponent', () => {
     expect(model.nodes[model.nodes.length - 1].isFinish).toBeTrue();
     // 3 levels -> 3 sequential transitions (incl. last level -> finish).
     expect(model.spine.length).toBe(3);
-    expect(component.hasJumps()).toBeFalse();
+    expect(component.hasRoutes()).toBeFalse();
+    // level boxes carry a nav id for the editor link; finish does not.
+    expect(model.nodes[0].navId).toBe('A');
+    expect(model.nodes[3].navId).toBeNull();
   });
 
   it('renders a skip-ahead jump as an outgoing stub on the source and an incoming stub on the target', () => {
@@ -99,30 +102,52 @@ describe('ScenarioGraphPartComponent', () => {
 
     expect(model.rightStubs.length).toBe(1);
     expect(model.leftStubs.length).toBe(1);
-    // outgoing stub on A names its target C, incoming stub on C names its source A
-    expect(model.rightStubs[0]).toEqual(jasmine.objectContaining({name: 'C', navId: 'C', kind: 'key'}));
+    // outgoing stub on A names its target C (nodePos 2), incoming stub on C names source A (nodePos 0)
+    expect(model.rightStubs[0]).toEqual(jasmine.objectContaining({name: 'C', nodePos: 2, kind: 'key'}));
     expect(model.rightStubs[0].trigger).toContain('SKIP');
-    expect(model.leftStubs[0]).toEqual(jasmine.objectContaining({name: 'A', navId: 'A'}));
+    expect(model.leftStubs[0]).toEqual(jasmine.objectContaining({name: 'A', nodePos: 0}));
   });
 
-  it('does not create a stub when a route points to the next sequential level', () => {
+  it('also draws routes to the next sequential level and timer routes', () => {
     component.levels = [
-      gl('A', 1, [{target: 1, kind: 'key', label: 'NEXT'}]),
+      gl('A', 1, [{target: 1, kind: 'key', label: 'NEXT'}, {target: 2, kind: 'timer', label: '15 мин'}]),
+      gl('B', 2),
+    ];
+    const model = component.model;
+
+    expect(component.hasRoutes()).toBeTrue();
+    expect(model.rightStubs.length).toBe(2);
+    expect(model.rightStubs.some(s => s.kind === 'timer' && s.trigger.includes('мин'))).toBeTrue();
+  });
+
+  it('does not de-duplicate routes that share a source and target', () => {
+    component.levels = [
+      gl('A', 1, [
+        {target: 0, kind: 'key', label: 'K1'},
+        {target: 0, kind: 'key', label: 'K2'},
+      ]),
       gl('B', 2),
     ];
 
-    expect(component.hasJumps()).toBeFalse();
-    expect(component.model.leftStubs.length).toBe(0);
+    // both self-routes are kept as separate arrows
+    expect(component.model.rightStubs.length).toBe(2);
+    expect(component.model.rightStubs.map(s => s.trigger)).toEqual(['K1', 'K2']);
   });
 
-  it('emits the level id when a stub name is activated', () => {
+  it('emits the level id when a box title is activated', () => {
     const emitted: string[] = [];
     component.levelSelected.subscribe(id => emitted.push(id));
 
-    component.onNavigate('B');
-    component.onNavigate(null);
+    component.onTitleClick('B');
+    component.onTitleClick(null);
 
     expect(emitted).toEqual(['B']);
+  });
+
+  it('marks a box as highlighted when a stub name is clicked', () => {
+    component.levels = [gl('A', 1), gl('B', 2)];
+    component.highlightNode(1);
+    expect(component.highlightedPos).toBe(1);
   });
 
   it('reports no levels gracefully', () => {
