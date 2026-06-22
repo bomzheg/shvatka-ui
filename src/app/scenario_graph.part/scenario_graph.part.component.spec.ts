@@ -132,6 +132,24 @@ describe('ScenarioGraphPartComponent', () => {
     expect(component.hasRoutes()).toBeTrue();
   });
 
+  it('draws a backward route to the previous level as an upward vertical', () => {
+    component.levels = [
+      gl('A', 1),
+      gl('B', 2, [{target: 0, kind: 'key', label: 'BACK'}]),
+      gl('C', 3),
+    ];
+    const model = component.model;
+
+    // an adjacent back-step is a vertical, not a side stub
+    expect(model.leftStubs.length).toBe(0);
+    expect(model.rightStubs.length).toBe(0);
+    const back = model.verticals.find(v => v.label === 'BACK');
+    expect(back).toBeTruthy();
+    // up arrow ends higher than it starts (arrowhead into the upper box)
+    const [, y1, , y2] = back!.d.match(/[\d.]+/g)!.map(Number);
+    expect(y2).toBeLessThan(y1);
+  });
+
   it('draws a route back to the same level as a self-arc', () => {
     component.levels = [
       gl('A', 1, [

@@ -181,9 +181,12 @@ export class ScenarioGraphPartComponent {
     nodeNavId.push(null);
 
     type Route = {src: number; tgt: number; kind: 'key' | 'timer'; label: string};
-    // Forward routes (to the next level) become verticals; self-routes become
-    // arcs; everything else is a left/right jump stub. No de-duplication.
-    const nextOut: Route[][] = Array.from({length: nodeCount}, () => []);
+    // Adjacent routes become verticals in the gap between the two boxes —
+    // forward (to next) points down, backward (to previous) points up. A
+    // self-route becomes an arc; anything farther is a left/right jump stub.
+    // Gap arrays are indexed by the upper level's position.
+    const gapDown: Route[][] = Array.from({length: nodeCount}, () => []);
+    const gapUp: Route[][] = Array.from({length: nodeCount}, () => []);
     const selfLoops: Route[][] = Array.from({length: nodeCount}, () => []);
     const jumpsIn: Route[][] = Array.from({length: nodeCount}, () => []);
     const jumpsOut: Route[][] = Array.from({length: nodeCount}, () => []);
@@ -195,7 +198,9 @@ export class ScenarioGraphPartComponent {
         }
         const entry: Route = {src: pos, tgt, kind: route.kind, label: route.label};
         if (tgt === pos + 1) {
-          nextOut[pos].push(entry);
+          gapDown[pos].push(entry);
+        } else if (tgt === pos - 1) {
+          gapUp[pos - 1].push(entry);
         } else if (tgt === pos) {
           selfLoops[pos].push(entry);
         } else {
@@ -283,28 +288,33 @@ export class ScenarioGraphPartComponent {
       y = bandTop + bandH + VGAP;
     }
 
-    // Forward (to-next) verticals, one per gap, fanned out across the box width.
+    // Verticals per gap, fanned out across the box width: the default win path
+    // plus forward routes point down; backward routes point up.
     const verticals: VerticalArrow[] = [];
     for (let g = 0; g < nodeCount - 1; g++) {
-      const forward: {kind: 'win' | 'key' | 'timer'; label: string}[] = [
-        {kind: 'win', label: levels[g].winLabel ?? ''},
-        ...nextOut[g].map(r => ({kind: r.kind, label: r.label})),
+      const items: {dir: 'down' | 'up'; kind: 'win' | 'key' | 'timer'; label: string}[] = [
+        {dir: 'down', kind: 'win', label: levels[g].winLabel ?? ''},
+        ...gapDown[g].map(r => ({dir: 'down' as const, kind: r.kind, label: r.label})),
+        ...gapUp[g].map(r => ({dir: 'up' as const, kind: r.kind, label: r.label})),
       ];
-      if (forward.length > 1) {
+      if (items.length > 1) {
         hasRoutes = true;
       }
 
-      const count = forward.length;
+      const count = items.length;
       const dx = count > 1 ? Math.min(VERT_DX, VERT_SPAN / (count - 1)) : 0;
       const startX = SPINE_X - (count - 1) * dx / 2;
       const boxBottom = nodes[g].y + nodes[g].h;
       const nextTop = nodes[g + 1].y;
       const midY = (boxBottom + nextTop) / 2;
 
-      forward.forEach((v, k) => {
+      items.forEach((v, k) => {
         const x = startX + k * dx;
+        const d = v.dir === 'down'
+          ? `M ${x} ${boxBottom} L ${x} ${nextTop}`
+          : `M ${x} ${nextTop} L ${x} ${boxBottom}`;
         verticals.push({
-          d: `M ${x} ${boxBottom} L ${x} ${nextTop}`,
+          d,
           label: this.truncate(v.label, VLABEL_MAX),
           labelX: x + 5,
           labelY: midY,
