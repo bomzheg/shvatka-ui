@@ -62,11 +62,59 @@
   height: auto;
 }
 
-// Spine -------------------------------------------------------------------
-.edge-spine {
+// Forward (to-next) verticals --------------------------------------------
+.vert-line {
   fill: none;
-  stroke: #64748b;
   stroke-width: 2;
+}
+
+.vert-label {
+  font-size: 10px;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: var(--app-surface);
+  stroke-width: 3px;
+}
+
+.vert-win .vert-line {
+  stroke: #64748b;
+}
+
+.vert-win .vert-label {
+  fill: #64748b;
+}
+
+.vert-key .vert-line {
+  stroke: #2563eb;
+}
+
+.vert-key .vert-label {
+  fill: #2563eb;
+}
+
+.vert-timer .vert-line {
+  stroke: #b45309;
+  stroke-dasharray: 6 4;
+}
+
+.vert-timer .vert-label {
+  fill: #b45309;
+}
+
+// Self-loops --------------------------------------------------------------
+.self-arc {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 2;
+}
+
+.self-label {
+  font-size: 11px;
+  dominant-baseline: middle;
+  fill: #2563eb;
+  paint-order: stroke;
+  stroke: var(--app-surface);
+  stroke-width: 3px;
 }
 
 #scn-graph-arrow path {

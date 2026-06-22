@@ -413,7 +413,14 @@ export class GameEditorComponent implements OnInit, OnDestroy {
         }
       }
 
-      return {id: level.id, name: level.id, number: pos + 1, routes};
+      const winKeys = parseKeys(level.winKeysText);
+      return {
+        id: level.id,
+        name: level.id,
+        number: pos + 1,
+        winLabel: winKeys.length > 0 ? keyRouteLabel(winKeys) : undefined,
+        routes,
+      };
     });
   }
 

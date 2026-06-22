@@ -51,8 +51,21 @@
         </marker>
       </defs>
 
-      @for (edge of model.spine; track $index) {
-        <path class="edge-spine" [attr.d]="edge.d" marker-end="url(#scn-graph-arrow)"/>
+      @for (v of model.verticals; track $index) {
+        <g class="vert"
+           [class.vert-win]="v.kind === 'win'"
+           [class.vert-key]="v.kind === 'key'"
+           [class.vert-timer]="v.kind === 'timer'">
+          <path class="vert-line" [attr.d]="v.d" marker-end="url(#scn-graph-arrow)"/>
+          <text class="vert-label" [attr.x]="v.labelX" [attr.y]="v.labelY">{{ v.label }}</text>
+        </g>
+      }
+
+      @for (arc of model.selfArcs; track $index) {
+        <g class="self">
+          <path class="self-arc" [attr.d]="arc.d" marker-end="url(#scn-graph-arrow)"/>
+          <text class="self-label" [attr.x]="arc.labelX" [attr.y]="arc.labelY">{{ arc.label }}</text>
+        </g>
       }
 
       @for (stub of model.leftStubs; track $index) {

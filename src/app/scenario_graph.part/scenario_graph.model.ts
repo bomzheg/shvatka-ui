@@ -23,6 +23,8 @@ export interface GraphLevel {
   name: string;
   /** 1-based level number shown in the box. */
   number: number;
+  /** Win-key trigger label for the default progression to the next level. */
+  winLabel?: string;
   routes: GraphRoute[];
 }
 
@@ -67,8 +69,13 @@ export function routingGraphFromGame(game: FullGame): GraphLevel[] {
 
   return ordered.map((entry) => {
     const routes: GraphRoute[] = [];
+    const winKeys: string[] = [];
 
     for (const condition of (entry.level.scenario?.conditions ?? [])) {
+      if (condition.type === ScenarioConditionType.winKey) {
+        winKeys.push(...(Array.isArray(condition.keys) ? condition.keys : []));
+        continue;
+      }
       const isTimer = condition.type === ScenarioConditionType.effectsTimer;
       for (const effect of Effects.normalize(condition.effects)) {
         if (effect.level_up !== true) {
@@ -102,6 +109,12 @@ export function routingGraphFromGame(game: FullGame): GraphLevel[] {
       }
     }
 
-    return {id: entry.level.name_id, name: entry.level.name_id, number: entry.index + 1, routes};
+    return {
+      id: entry.level.name_id,
+      name: entry.level.name_id,
+      number: entry.index + 1,
+      winLabel: winKeys.length > 0 ? keyRouteLabel(winKeys) : undefined,
+      routes,
+    };
   });
 }

@@ -78,18 +78,29 @@ describe('ScenarioGraphPartComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('builds a node per level plus a finish node and a connecting spine', () => {
+  it('builds a node per level plus a finish node, with a vertical per gap', () => {
     component.levels = [gl('A', 1), gl('B', 2), gl('C', 3)];
     const model = component.model;
 
     expect(model.nodes.length).toBe(4);
     expect(model.nodes[model.nodes.length - 1].isFinish).toBeTrue();
-    // 3 levels -> 3 sequential transitions (incl. last level -> finish).
-    expect(model.spine.length).toBe(3);
+    // 3 gaps (incl. last level -> finish), one default win vertical each.
+    expect(model.verticals.length).toBe(3);
+    expect(model.verticals.every(v => v.kind === 'win')).toBeTrue();
     expect(component.hasRoutes()).toBeFalse();
     // level boxes carry a nav id for the editor link; finish does not.
     expect(model.nodes[0].navId).toBe('A');
     expect(model.nodes[3].navId).toBeNull();
+  });
+
+  it('labels the default vertical with the win keys', () => {
+    component.levels = [{...gl('A', 1), winLabel: 'WINKEY'}, gl('B', 2)];
+    const model = component.model;
+
+    // one vertical per gap: A -> B and B -> finish
+    expect(model.verticals.length).toBe(2);
+    expect(model.verticals[0]).toEqual(jasmine.objectContaining({kind: 'win', label: 'WINKEY'}));
+    expect(component.hasRoutes()).toBeFalse();
   });
 
   it('renders a skip-ahead jump as an outgoing stub on the source and an incoming stub on the target', () => {
@@ -102,25 +113,26 @@ describe('ScenarioGraphPartComponent', () => {
 
     expect(model.rightStubs.length).toBe(1);
     expect(model.leftStubs.length).toBe(1);
-    // outgoing stub on A names its target C (nodePos 2), incoming stub on C names source A (nodePos 0)
     expect(model.rightStubs[0]).toEqual(jasmine.objectContaining({name: 'C', nodePos: 2, kind: 'key'}));
     expect(model.rightStubs[0].trigger).toContain('SKIP');
     expect(model.leftStubs[0]).toEqual(jasmine.objectContaining({name: 'A', nodePos: 0}));
   });
 
-  it('also draws routes to the next sequential level and timer routes', () => {
+  it('draws a forward route to the next level as an extra vertical, including timers', () => {
     component.levels = [
-      gl('A', 1, [{target: 1, kind: 'key', label: 'NEXT'}, {target: 2, kind: 'timer', label: '15 мин'}]),
+      gl('A', 1, [{target: 1, kind: 'key', label: 'NEXT'}, {target: 1, kind: 'timer', label: '15 мин'}]),
       gl('B', 2),
     ];
     const model = component.model;
 
+    // gap A->B has win + the two forward routes; gap B->finish has the win default
+    expect(model.verticals.length).toBe(4);
+    expect(model.verticals.some(v => v.kind === 'timer' && v.label.includes('мин'))).toBeTrue();
+    expect(model.rightStubs.length).toBe(0);
     expect(component.hasRoutes()).toBeTrue();
-    expect(model.rightStubs.length).toBe(2);
-    expect(model.rightStubs.some(s => s.kind === 'timer' && s.trigger.includes('мин'))).toBeTrue();
   });
 
-  it('does not de-duplicate routes that share a source and target', () => {
+  it('draws a route back to the same level as a self-arc', () => {
     component.levels = [
       gl('A', 1, [
         {target: 0, kind: 'key', label: 'K1'},
@@ -129,9 +141,10 @@ describe('ScenarioGraphPartComponent', () => {
       gl('B', 2),
     ];
 
-    // both self-routes are kept as separate arrows
-    expect(component.model.rightStubs.length).toBe(2);
-    expect(component.model.rightStubs.map(s => s.trigger)).toEqual(['K1', 'K2']);
+    // both self-routes kept (no de-dup), drawn as arcs not stubs
+    expect(component.model.selfArcs.length).toBe(2);
+    expect(component.model.selfArcs.map(a => a.label)).toEqual(['K1', 'K2']);
+    expect(component.model.rightStubs.length).toBe(0);
   });
 
   it('emits the level id when a box title is activated', () => {
