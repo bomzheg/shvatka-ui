@@ -51,6 +51,7 @@ export interface TeamMember {
   role: string;
   permissions: TeamMemberPermissions;
   date_joined: string;
+  played_games_count: number;
 }
 
 export interface TeamDetails {
@@ -58,6 +59,7 @@ export interface TeamDetails {
   name: string;
   description: string | null;
   captain: PlayerRef | null;
+  played_games_count?: number;
 }
 
 export interface PlayerSearchResult {
