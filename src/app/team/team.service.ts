@@ -4,15 +4,22 @@ import {Observable} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
 import {environment} from '../../environments/environment';
 import {
+  Items,
+  PlayedGame,
   PlayerProfile,
   PlayerSearchResult,
+  PlayerStat,
   TeamDetails,
   TeamMember,
   TeamMemberPermissions,
 } from './team.models';
 
-interface ItemsResponse<T> {
-  items: T[];
+type ItemsResponse<T> = Items<T>;
+
+export interface TeamListFilters {
+  active?: boolean;
+  archive?: boolean;
+  search?: string;
 }
 
 @Injectable({providedIn: 'root'})
@@ -24,6 +31,27 @@ export class TeamService {
 
   getPlayer(id: number): Observable<PlayerProfile> {
     return this.http.get<PlayerProfile>(`/users/${id}/details`);
+  }
+
+  getPlayerStat(id: number): Observable<PlayerStat> {
+    return this.http.get<PlayerStat>(`/users/${id}/stat`);
+  }
+
+  listTeams(filters: TeamListFilters = {}): Observable<ItemsResponse<TeamDetails>> {
+    const params = new URLSearchParams();
+    if (filters.active !== undefined) params.set('active', String(filters.active));
+    if (filters.archive !== undefined) params.set('archive', String(filters.archive));
+    if (filters.search) params.set('search', filters.search);
+    const qs = params.toString();
+    return this.http.get<ItemsResponse<TeamDetails>>(`/teams${qs ? `?${qs}` : ''}`);
+  }
+
+  getTeamStat(teamId: number): Observable<ItemsResponse<PlayedGame>> {
+    return this.http.get<ItemsResponse<PlayedGame>>(`/teams/${teamId}/stat`);
+  }
+
+  getTeam(teamId: number): Observable<TeamDetails> {
+    return this.http.get<TeamDetails>(`/teams/${teamId}`);
   }
 
   searchPlayers(query: string): Observable<ItemsResponse<PlayerSearchResult>> {

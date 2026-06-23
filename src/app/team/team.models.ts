@@ -65,3 +65,38 @@ export interface PlayerSearchResult {
   can_be_author: boolean;
   name_mention: string;
 }
+
+export interface Items<T> {
+  items: T[];
+}
+
+/** A published game a team or player took part in (see `GET /teams/{id}/stat`, played_games). */
+export interface PlayedGame {
+  id: number;
+  author: PlayerRef;
+  name: string;
+  status: string;
+  start_at: string | null;
+  number: number | null;
+}
+
+/** One membership entry from a player's team history (`GET /users/{id}/stat`). */
+export interface TeamPlayerHistory {
+  team_player_id: number;
+  team: TeamDetails | null;
+  date_joined: string;
+  date_left: string | null;
+  role: string;
+  emoji: string | null;
+}
+
+/** Aggregated player statistics (`GET /users/{id}/stat`). */
+export interface PlayerStat {
+  id: number;
+  username: string | null;
+  can_be_author: boolean;
+  typed_keys_count: number;
+  typed_correct_keys_count: number;
+  team_history: TeamPlayerHistory[];
+  played_games: PlayedGame[];
+}

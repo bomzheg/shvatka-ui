@@ -1,0 +1,79 @@
+@use '../../styles/component-mixins' as cm;
+
+.teams-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0.5rem 0.75rem 2rem;
+}
+
+h1 {
+  margin-top: 0;
+  margin-bottom: 1.25rem;
+  color: inherit;
+}
+
+.status-message {
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.search-input {
+  @include cm.input-control();
+  flex: 1 1 14rem;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.teams-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.teams-list-item {
+  @include cm.surface-card(12px, 0);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(16, 24, 40, 0.08);
+  }
+
+  a {
+    text-decoration: none;
+    color: var(--app-text);
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.8rem 1rem;
+  }
+}
+
+.team-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.team-captain {
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+  overflow-wrap: anywhere;
+}
