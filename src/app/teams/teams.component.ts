@@ -59,7 +59,11 @@ export class TeamsComponent implements OnInit, OnDestroy {
     })
       .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe({
-        next: (res) => { this.teams = res.items; },
+        next: (res) => {
+          this.teams = [...res.items].sort(
+            (a, b) => (b.played_games_count ?? 0) - (a.played_games_count ?? 0),
+          );
+        },
         error: () => {
           this.loadFailed = true;
           this.snackbar.error('Не удалось загрузить список команд');

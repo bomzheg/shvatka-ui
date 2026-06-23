@@ -36,6 +36,9 @@
             @if (team.captain) {
               <span class="team-captain">Капитан: {{ team.captain.name_mention }}</span>
             }
+            @if (team.played_games_count !== undefined) {
+              <span class="team-games-count">Сыграно игр: {{ team.played_games_count }}</span>
+            }
           </a>
         </li>
       }

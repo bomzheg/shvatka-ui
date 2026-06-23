@@ -61,8 +61,9 @@ h1 {
     text-decoration: none;
     color: var(--app-text);
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 1rem;
     padding: 0.8rem 1rem;
   }
 }
@@ -70,10 +71,19 @@ h1 {
 .team-name {
   font-weight: 600;
   overflow-wrap: anywhere;
+  // Push the captain / games-count metadata to the right on one line (desktop),
+  // while still wrapping under the name on narrow screens.
+  margin-right: auto;
 }
 
 .team-captain {
   font-size: 0.85rem;
   color: var(--tg-theme-hint-color, #6b7280);
   overflow-wrap: anywhere;
+}
+
+.team-games-count {
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+  white-space: nowrap;
 }

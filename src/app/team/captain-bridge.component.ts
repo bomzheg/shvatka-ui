@@ -14,6 +14,7 @@ import {
 } from './team.models';
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon} from "../ui/icons";
+import {memberEmoji} from "../ui/role-emoji";
 
 export interface PermissionLabel {
   key: keyof TeamMemberPermissions;
@@ -162,6 +163,10 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
     return member.username ?? `#${member.id}`;
   }
 
+  memberEmoji(member: TeamMember): string {
+    return memberEmoji(member.emoji, member.role);
+  }
+
   getPermissionValue(key: keyof TeamMemberPermissions): boolean {
     return this.editMemberPermissions[key];
   }
@@ -249,7 +254,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
   startEditMember(member: TeamMember): void {
     this.editingMemberId = member.id;
     this.editMemberRole = member.role;
-    this.editMemberEmoji = member.emoji ?? '';
+    this.editMemberEmoji = this.memberEmoji(member);
     this.editMemberPermissions = {...member.permissions};
   }
 

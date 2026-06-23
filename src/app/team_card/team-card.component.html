@@ -24,21 +24,20 @@
         <p class="status-message">Список участников пуст.</p>
       } @else {
         <ul class="members-list">
-          @for (member of members; track member.id) {
+          @for (member of sortedMembers; track member.id) {
             <li class="member-row">
               <a class="player-link member-identity" [routerLink]="['/players', member.id]">
-                @if (member.emoji) {
-                  <span class="member-emoji" aria-hidden="true">{{ member.emoji }}</span>
-                }
+                <span class="member-emoji" aria-hidden="true">{{ memberEmoji(member) }}</span>
                 <span class="member-name">{{ getMemberDisplayName(member) }}</span>
               </a>
               <span class="member-badges">
-                @if (member.role) {
-                  <span class="badge badge-role">{{ member.role }}</span>
-                }
                 @if (isCaptain(member)) {
                   <span class="badge badge-captain">капитан</span>
                 }
+                @if (member.role) {
+                  <span class="badge badge-role">{{ member.role }}</span>
+                }
+                <span class="badge badge-games" title="Сыграно игр за всё время">{{ playedGamesLabel(member.played_games_count) }}</span>
               </span>
             </li>
           }
