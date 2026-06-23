@@ -4,6 +4,7 @@ import {Subscription} from 'rxjs';
 import {TeamService} from '../team/team.service';
 import {PlayedGame, TeamDetails, TeamMember} from '../team/team.models';
 import {SnackbarService} from '../snackbar/snackbar.service';
+import {pluralizeGames} from '../ui/plural-ru';
 
 @Component({
   selector: 'app-team-card',
@@ -49,6 +50,10 @@ export class TeamCardComponent implements OnInit, OnDestroy {
 
   getMemberDisplayName(member: TeamMember): string {
     return member.username ?? `#${member.id}`;
+  }
+
+  playedGamesLabel(count: number): string {
+    return `${count} ${pluralizeGames(count)}`;
   }
 
   private load(teamId: number): void {

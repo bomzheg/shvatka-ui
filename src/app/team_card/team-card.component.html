@@ -39,7 +39,7 @@
                 @if (isCaptain(member)) {
                   <span class="badge badge-captain">капитан</span>
                 }
-                <span class="badge badge-games" title="Сыграно игр за всё время">{{ member.played_games_count }} игр</span>
+                <span class="badge badge-games" title="Сыграно игр за всё время">{{ playedGamesLabel(member.played_games_count) }}</span>
               </span>
             </li>
           }
