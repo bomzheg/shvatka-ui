@@ -57,3 +57,85 @@ td {
   border: 1px solid #d1d5db;
   padding: 0.45rem;
 }
+
+.game-waivers-body {
+  text-align: left;
+}
+
+.game-waivers-status,
+.game-waivers-empty {
+  margin: 0.25rem 0;
+  color: var(--app-muted-text);
+}
+
+.game-waivers-teams {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.game-waivers-team {
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  padding: 0.6rem 0.7rem;
+  background: color-mix(in srgb, var(--app-accent) 7%, transparent);
+}
+
+.game-waivers-team-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.game-waivers-team-name {
+  font-weight: 700;
+  color: var(--app-accent);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.game-waivers-team-count {
+  flex-shrink: 0;
+  min-width: 1.5rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--app-accent) 20%, transparent);
+  color: var(--app-accent);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.game-waivers-players {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.game-waivers-player {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  color: var(--app-text);
+  font-size: 0.85rem;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    border-color: var(--app-accent);
+    color: var(--app-accent);
+  }
+}

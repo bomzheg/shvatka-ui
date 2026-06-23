@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {GameService} from "./game.service";
-import {FullGame, GameStat, Keys, Level} from "../domain/game.models";
-import {ActivatedRoute, ParamMap} from "@angular/router";
+import {FullGame, GameStat, GameWaivers, Keys, Level, Team, VotedPlayer} from "../domain/game.models";
+import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
@@ -12,6 +12,7 @@ import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.par
   imports: [
     GameLogPartComponent,
     GameScenarioPartComponent,
+    RouterLink,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
@@ -62,6 +63,32 @@ export class GameComponent implements OnInit, OnDestroy {
 
   hasLoadedData(): boolean {
     return this.gameService.hasLoadedCurrentGameData();
+  }
+
+  onWaiversToggle(event: Event): void {
+    if ((event.target as HTMLDetailsElement).open) {
+      this.gameService.loadWaivers();
+    }
+  }
+
+  isWaiversLoading(): boolean {
+    return this.gameService.isWaiversLoading();
+  }
+
+  hasWaiversError(): boolean {
+    return this.gameService.hasWaiversError();
+  }
+
+  getWaivers(): GameWaivers | undefined {
+    return this.gameService.getWaivers();
+  }
+
+  getWaiverTeams(): Team[] {
+    return this.getWaivers()?.teams ?? [];
+  }
+
+  getTeamVotedPlayers(teamId: number): VotedPlayer[] {
+    return this.getWaivers()?.waivers?.[String(teamId)] ?? [];
   }
 
 }

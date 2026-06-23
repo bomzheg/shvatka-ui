@@ -272,3 +272,17 @@ export class GameStat {
   ) {
   }
 }
+
+/** A player who voted for a game (WaiversDto.waivers values). */
+export interface VotedPlayer {
+  player: Player;
+}
+
+/** Response of `GET /waivers/game/{id}` (WaiversDto). */
+export class GameWaivers {
+  constructor(
+    public teams: Team[],
+    public waivers: Record<string, VotedPlayer[]>,
+  ) {
+  }
+}

@@ -16,5 +16,40 @@
     <app-game-scenario-part [game]="getGame()!"></app-game-scenario-part>
   </details>
 
+  <details class="game-waivers" (toggle)="onWaiversToggle($event)">
+    <summary class="game-scn-spoiler">Вейверы</summary>
+    <div class="game-waivers-body">
+      @if (isWaiversLoading()) {
+        <p class="game-waivers-status">Загрузка вейверов…</p>
+      } @else if (hasWaiversError()) {
+        <p class="game-waivers-status">Не удалось загрузить вейверы.</p>
+      } @else if (getWaiverTeams().length === 0) {
+        <p class="game-waivers-status">Вейверов нет.</p>
+      } @else {
+        <ul class="game-waivers-teams">
+          @for (team of getWaiverTeams(); track team.id) {
+            <li class="game-waivers-team">
+              <div class="game-waivers-team-head">
+                <a class="game-waivers-team-name" [routerLink]="['/teams', team.id]">{{ team.name }}</a>
+                <span class="game-waivers-team-count">{{ getTeamVotedPlayers(team.id).length }}</span>
+              </div>
+              @if (getTeamVotedPlayers(team.id).length > 0) {
+                <ul class="game-waivers-players">
+                  @for (voted of getTeamVotedPlayers(team.id); track voted.player.id) {
+                    <li>
+                      <a class="game-waivers-player" [routerLink]="['/players', voted.player.id]">{{ voted.player.name_mention }}</a>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="game-waivers-empty">Нет вейверов</p>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </details>
+
   <app-game-log-part [keys]="getKeys()" [stat]="getStat()" [levels]="getLevels()" [isCompleted]="true"></app-game-log-part>
 }

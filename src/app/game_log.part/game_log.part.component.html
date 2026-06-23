@@ -61,7 +61,9 @@
                   @if (results[1].length > 0) {
                     <tr>
                       <td class="stat-level-column">{{ getCurrentLevelLabel(results[1]) }}</td>
-                      <td>{{ results[1][0].team.name }}</td>
+                      <td>
+                        <a class="team-link" [routerLink]="['/teams', results[1][0].team.id]">{{ results[1][0].team.name }}</a>
+                      </td>
                       <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
                     </tr>
                   }
@@ -97,7 +99,9 @@
             <tbody>
               @for (row of pivotData; track row.teamName) {
                 <tr>
-                  <td class="team-name-cell">{{ row.teamName }}</td>
+                  <td class="team-name-cell">
+                    <a class="team-link" [routerLink]="['/teams', row.teamId]">{{ row.teamName }}</a>
+                  </td>
                   @for (lvl of allLevelNumbers; track lvl) {
                     <td [class.min-duration]="isMinAbsoluteTime(lvl, row.absoluteTimeMs.get(lvl))">{{ row.absoluteTimes.get(lvl) ?? '—' }}</td>
                   }
@@ -126,7 +130,9 @@
             <tbody>
               @for (row of pivotData; track row.teamName) {
                 <tr>
-                  <td class="team-name-cell">{{ row.teamName }}</td>
+                  <td class="team-name-cell">
+                    <a class="team-link" [routerLink]="['/teams', row.teamId]">{{ row.teamName }}</a>
+                  </td>
                   @for (lvl of allLevelNumbers; track lvl) {
                     <td [class.min-duration]="isMinDuration(lvl, row.durationMs.get(lvl))">
                       {{ row.durations.get(lvl) ?? '—' }}
