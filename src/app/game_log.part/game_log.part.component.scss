@@ -139,6 +139,16 @@ td {
   font-weight: 600;
 }
 
+.team-link {
+  color: var(--app-accent);
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 @media (max-width: 768px) {
   table {
     min-width: 0;

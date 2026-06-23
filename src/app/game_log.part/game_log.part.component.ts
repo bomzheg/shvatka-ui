@@ -1,9 +1,11 @@
 import {Component, Input} from '@angular/core';
 import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game.models";
 import {MatIcon} from "@angular/material/icon";
+import {RouterLink} from "@angular/router";
 import {AppIcon} from "../ui/icons";
 
 interface TeamPivotData {
+  teamId: number;
   teamName: string;
   absoluteTimes: Map<number, string>;
   absoluteTimeMs: Map<number, number>;
@@ -14,7 +16,7 @@ interface TeamPivotData {
 @Component({
   selector: 'app-game-log-part',
   standalone: true,
-  imports: [MatIcon],
+  imports: [MatIcon, RouterLink],
   templateUrl: './game_log.part.component.html',
   styleUrl: './game_log.part.component.scss',
 })
@@ -152,6 +154,7 @@ export class GameLogPartComponent {
       }
 
       pivotRows.push({
+        teamId: sorted[0].team.id,
         teamName: sorted[0].team.name,
         absoluteTimes,
         absoluteTimeMs,
