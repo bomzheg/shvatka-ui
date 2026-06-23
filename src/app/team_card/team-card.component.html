@@ -1,0 +1,67 @@
+<section class="team-card-page">
+  @if (isLoading) {
+    <p class="status-message">Загрузка...</p>
+  } @else if (notFound) {
+    <p class="status-message">Команда не найдена.</p>
+  } @else if (team) {
+
+    <header class="team-head">
+      <h1 class="team-name">{{ team.name }}</h1>
+      @if (team.description) {
+        <p class="team-description">{{ team.description }}</p>
+      }
+      @if (team.captain) {
+        <p class="team-captain">
+          Капитан:
+          <a class="player-link" [routerLink]="['/players', team.captain.id]">{{ team.captain.name_mention }}</a>
+        </p>
+      }
+    </header>
+
+    <div class="section-card">
+      <h2 class="section-title">Состав ({{ members.length }})</h2>
+      @if (members.length === 0) {
+        <p class="status-message">Список участников пуст.</p>
+      } @else {
+        <ul class="members-list">
+          @for (member of members; track member.id) {
+            <li class="member-row">
+              <a class="player-link member-identity" [routerLink]="['/players', member.id]">
+                @if (member.emoji) {
+                  <span class="member-emoji" aria-hidden="true">{{ member.emoji }}</span>
+                }
+                <span class="member-name">{{ getMemberDisplayName(member) }}</span>
+              </a>
+              <span class="member-badges">
+                @if (member.role) {
+                  <span class="badge badge-role">{{ member.role }}</span>
+                }
+                @if (isCaptain(member)) {
+                  <span class="badge badge-captain">капитан</span>
+                }
+              </span>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+    <div class="section-card">
+      <h2 class="section-title">Сыгранные игры ({{ games.length }})</h2>
+      @if (games.length === 0) {
+        <p class="status-message">Команда ещё не сыграла ни одной игры.</p>
+      } @else {
+        <ul class="games-numbers">
+          @for (game of games; track game.id) {
+            <li>
+              <a class="game-number" [routerLink]="['/games', game.id]" [title]="game.name">
+                {{ game.number ?? '—' }}
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+
+  }
+</section>

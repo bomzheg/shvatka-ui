@@ -1,0 +1,118 @@
+<section class="player-card-page">
+  @if (isLoading) {
+    <p class="status-message">Загрузка...</p>
+  } @else if (notFound) {
+    <p class="status-message">Игрок не найден.</p>
+  } @else {
+
+    <header class="player-head">
+      <h1 class="player-name">{{ displayName }}</h1>
+      @if (canBeAuthor) {
+        <p class="author-note">Может создавать команды и писать игры</p>
+      }
+    </header>
+
+    @if (profile?.tg; as tg) {
+      <div class="section-card">
+        <h2 class="section-title">Telegram</h2>
+        <dl class="info-grid">
+          @if (tg.username) {
+            <dt>Username</dt>
+            <dd>
+              @if (tgLink(tg); as link) {
+                <a class="ext-link" [href]="link" target="_blank" rel="noopener">&#64;{{ tg.username }}</a>
+              } @else {
+                &#64;{{ tg.username }}
+              }
+            </dd>
+          }
+          @if (tgFullName(tg)) {
+            <dt>Имя</dt>
+            <dd>{{ tgFullName(tg) }}</dd>
+          }
+          <dt>ID</dt>
+          <dd>
+            @if (!tg.username && tgLink(tg); as link) {
+              <a class="ext-link" [href]="link" target="_blank" rel="noopener">{{ tg.tg_id }}</a>
+            } @else {
+              {{ tg.tg_id }}
+            }
+          </dd>
+        </dl>
+      </div>
+    }
+
+    @if (stat) {
+      <div class="section-card">
+        <h2 class="section-title">Ключи</h2>
+        <div class="key-stats">
+          <div class="key-stat">
+            <span class="key-stat-value">{{ stat.typed_keys_count }}</span>
+            <span class="key-stat-label">введено</span>
+          </div>
+          <div class="key-stat">
+            <span class="key-stat-value">{{ stat.typed_correct_keys_count }}</span>
+            <span class="key-stat-label">верных</span>
+          </div>
+          <div class="key-stat">
+            <span class="key-stat-value">{{ correctKeysPercent }}%</span>
+            <span class="key-stat-label">доля верных</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <h2 class="section-title">История команд</h2>
+        @if (stat.team_history.length === 0) {
+          <p class="status-message">Игрок не состоял ни в одной команде.</p>
+        } @else {
+          <ul class="history-list">
+            @for (entry of stat.team_history; track entry.team_player_id) {
+              <li class="history-row">
+                <div class="history-team">
+                  @if (entry.emoji) {
+                    <span class="member-emoji" aria-hidden="true">{{ entry.emoji }}</span>
+                  }
+                  @if (entry.team) {
+                    <a class="player-link" [routerLink]="['/teams', entry.team.id]">{{ entry.team.name }}</a>
+                  } @else {
+                    <span class="member-name">Команда удалена</span>
+                  }
+                  @if (entry.role) {
+                    <span class="badge badge-role">{{ entry.role }}</span>
+                  }
+                </div>
+                <div class="history-dates">
+                  {{ entry.date_joined | date:'dd.MM.yyyy' }} —
+                  @if (entry.date_left) {
+                    {{ entry.date_left | date:'dd.MM.yyyy' }}
+                  } @else {
+                    <span class="badge badge-active">сейчас</span>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="section-card">
+        <h2 class="section-title">Сыгранные игры ({{ stat.played_games.length }})</h2>
+        @if (stat.played_games.length === 0) {
+          <p class="status-message">Игрок ещё не сыграл ни одной игры.</p>
+        } @else {
+          <ul class="games-numbers">
+            @for (game of stat.played_games; track game.id) {
+              <li>
+                <a class="game-number" [routerLink]="['/games', game.id]" [title]="game.name">
+                  {{ game.number ?? '—' }}
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+  }
+</section>

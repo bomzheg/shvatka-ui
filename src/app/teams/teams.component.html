@@ -1,0 +1,44 @@
+<section class="teams-page">
+  <h1>Команды</h1>
+
+  <div class="filters">
+    <label class="filter-toggle">
+      <input type="checkbox" name="active" [(ngModel)]="active" (ngModelChange)="onFilterChange()"/>
+      Активные
+    </label>
+    <label class="filter-toggle">
+      <input type="checkbox" name="archive" [(ngModel)]="archive" (ngModelChange)="onFilterChange()"/>
+      Архивные
+    </label>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Поиск по названию..."
+      name="search"
+      autocomplete="off"
+      [ngModel]="search"
+      (ngModelChange)="onSearchChange($event)"
+    />
+  </div>
+
+  @if (isLoading) {
+    <p class="status-message">Загрузка...</p>
+  } @else if (loadFailed) {
+    <p class="status-message">Не удалось загрузить список команд.</p>
+  } @else if (teams.length === 0) {
+    <p class="status-message">Команды не найдены.</p>
+  } @else {
+    <ul class="teams-list">
+      @for (team of teams; track team.id) {
+        <li class="teams-list-item">
+          <a [routerLink]="[team.id]">
+            <span class="team-name">{{ team.name }}</span>
+            @if (team.captain) {
+              <span class="team-captain">Капитан: {{ team.captain.name_mention }}</span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>

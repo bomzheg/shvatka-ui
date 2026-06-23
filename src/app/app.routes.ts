@@ -8,6 +8,9 @@ import {OneTimeTokenComponent} from "./auth/one-time-token.component";
 import {ConstructorComponent} from "./constructor/constructor.component";
 import {GameEditorComponent} from "./constructor/game-editor.component";
 import {CaptainBridgeComponent} from "./team/captain-bridge.component";
+import {TeamsComponent} from "./teams/teams.component";
+import {TeamCardComponent} from "./team_card/team-card.component";
+import {PlayerCardComponent} from "./player_card/player-card.component";
 
 
 export const routes: Routes = [
@@ -18,6 +21,9 @@ export const routes: Routes = [
   {path: "games/constructor/:id", component: GameEditorComponent},
   {path: "games/:id", component: GameComponent},
   {path: "team", component: CaptainBridgeComponent},
+  {path: "teams", component: TeamsComponent},
+  {path: "teams/:id", component: TeamCardComponent},
+  {path: "players/:id", component: PlayerCardComponent},
   {path: "profile", component: ProfileComponent},
   {path: "auth/one-time-token", component: OneTimeTokenComponent},
 ];

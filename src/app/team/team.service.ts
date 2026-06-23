@@ -1,18 +1,25 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
+import {map, Observable, shareReplay} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
 import {environment} from '../../environments/environment';
 import {
+  Items,
+  PlayedGame,
   PlayerProfile,
   PlayerSearchResult,
+  PlayerStat,
   TeamDetails,
   TeamMember,
   TeamMemberPermissions,
 } from './team.models';
 
-interface ItemsResponse<T> {
-  items: T[];
+type ItemsResponse<T> = Items<T>;
+
+export interface TeamListFilters {
+  active?: boolean;
+  archive?: boolean;
+  search?: string;
 }
 
 @Injectable({providedIn: 'root'})
@@ -22,8 +29,36 @@ export class TeamService {
     private httpClient: HttpClient,
   ) {}
 
+  private allTeams$: Observable<ItemsResponse<TeamDetails>> | undefined;
+
   getPlayer(id: number): Observable<PlayerProfile> {
     return this.http.get<PlayerProfile>(`/users/${id}/details`);
+  }
+
+  getPlayerStat(id: number): Observable<PlayerStat> {
+    return this.http.get<PlayerStat>(`/users/${id}/stat`);
+  }
+
+  listTeams(filters: TeamListFilters = {}): Observable<ItemsResponse<TeamDetails>> {
+    const params = new URLSearchParams();
+    if (filters.active !== undefined) params.set('active', String(filters.active));
+    if (filters.archive !== undefined) params.set('archive', String(filters.archive));
+    if (filters.search) params.set('search', filters.search);
+    const qs = params.toString();
+    return this.http.get<ItemsResponse<TeamDetails>>(`/teams${qs ? `?${qs}` : ''}`);
+  }
+
+  getTeamStat(teamId: number): Observable<ItemsResponse<PlayedGame>> {
+    return this.http.get<ItemsResponse<PlayedGame>>(`/teams/${teamId}/stat`);
+  }
+
+  // There is no single-team GET endpoint, so look the team up in the full list
+  // (active + archived). The result is cached for the session to keep navigation snappy.
+  getTeamById(teamId: number): Observable<TeamDetails | undefined> {
+    if (!this.allTeams$) {
+      this.allTeams$ = this.listTeams({active: true, archive: true}).pipe(shareReplay(1));
+    }
+    return this.allTeams$.pipe(map(res => res.items.find(t => t.id === teamId)));
   }
 
   searchPlayers(query: string): Observable<ItemsResponse<PlayerSearchResult>> {
