@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {map, Observable, shareReplay} from 'rxjs';
+import {Observable} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
 import {environment} from '../../environments/environment';
 import {
@@ -29,8 +29,6 @@ export class TeamService {
     private httpClient: HttpClient,
   ) {}
 
-  private allTeams$: Observable<ItemsResponse<TeamDetails>> | undefined;
-
   getPlayer(id: number): Observable<PlayerProfile> {
     return this.http.get<PlayerProfile>(`/users/${id}/details`);
   }
@@ -52,13 +50,8 @@ export class TeamService {
     return this.http.get<ItemsResponse<PlayedGame>>(`/teams/${teamId}/stat`);
   }
 
-  // There is no single-team GET endpoint, so look the team up in the full list
-  // (active + archived). The result is cached for the session to keep navigation snappy.
-  getTeamById(teamId: number): Observable<TeamDetails | undefined> {
-    if (!this.allTeams$) {
-      this.allTeams$ = this.listTeams({active: true, archive: true}).pipe(shareReplay(1));
-    }
-    return this.allTeams$.pipe(map(res => res.items.find(t => t.id === teamId)));
+  getTeam(teamId: number): Observable<TeamDetails> {
+    return this.http.get<TeamDetails>(`/teams/${teamId}`);
   }
 
   searchPlayers(query: string): Observable<ItemsResponse<PlayerSearchResult>> {

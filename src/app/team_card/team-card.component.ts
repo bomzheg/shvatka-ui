@@ -58,13 +58,9 @@ export class TeamCardComponent implements OnInit, OnDestroy {
     this.members = [];
     this.games = [];
 
-    this.teamService.getTeamById(teamId).subscribe({
+    this.teamService.getTeam(teamId).subscribe({
       next: (team) => {
         this.isLoading = false;
-        if (!team) {
-          this.notFound = true;
-          return;
-        }
         this.team = team;
       },
       error: () => {
