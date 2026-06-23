@@ -12,43 +12,6 @@
           <div class="game-name"><span>{{game.name}}</span></div>
         </button>
       }
-      <details class="game-waivers" (toggle)="onWaiversToggle(game, $event)">
-        <summary class="game-waivers-summary">Вейверы</summary>
-        <div class="game-waivers-body">
-          @if (isWaiversLoading(game.id)) {
-            <p class="game-waivers-status">Загрузка вейверов…</p>
-          } @else if (hasWaiversError(game.id)) {
-            <p class="game-waivers-status">Не удалось загрузить вейверы.</p>
-          } @else if (getWaiverTeams(game.id).length === 0) {
-            <p class="game-waivers-status">Вейверов нет.</p>
-          } @else {
-            <ul class="game-waivers-teams">
-              @for (team of getWaiverTeams(game.id); track team.id) {
-                <li class="game-waivers-team">
-                  <h5 class="game-waivers-team-name">
-                    {{ team.name }}
-                    <span class="game-waivers-team-count">{{ getTeamVotedPlayers(game.id, team.id).length }}</span>
-                  </h5>
-                  @if (getTeamVotedPlayers(game.id, team.id).length > 0) {
-                    <ul class="game-waivers-players">
-                      @for (player of getTeamVotedPlayers(game.id, team.id); track player.id) {
-                        <li class="game-waivers-player">
-                          <span class="game-waivers-player-name">{{ player.name_mention }}</span>
-                          @if (getPlayedLabel(player.played)) {
-                            <span class="game-waivers-player-status">{{ getPlayedLabel(player.played) }}</span>
-                          }
-                        </li>
-                      }
-                    </ul>
-                  } @else {
-                    <p class="game-waivers-empty">Нет вейверов</p>
-                  }
-                </li>
-              }
-            </ul>
-          }
-        </div>
-      </details>
     </li>
   }
 </ul>

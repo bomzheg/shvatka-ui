@@ -57,3 +57,54 @@ td {
   border: 1px solid #d1d5db;
   padding: 0.45rem;
 }
+
+.game-waivers-status,
+.game-waivers-empty {
+  margin: 0.25rem 0;
+  color: #6b7280;
+}
+
+.game-waivers-teams {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.game-waivers-team-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.3rem;
+}
+
+.game-waivers-team-count {
+  background: #e7f7ec;
+  color: #17603a;
+  border-radius: 999px;
+  padding: 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.game-waivers-players {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.game-waivers-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.game-waivers-player-status {
+  font-size: 0.8rem;
+  color: #6b7280;
+  white-space: nowrap;
+}

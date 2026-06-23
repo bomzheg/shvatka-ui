@@ -3,11 +3,12 @@ import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {SnackbarService} from "../snackbar/snackbar.service";
 
-import {FullGame, GameStat, Keys} from "../domain/game.models";
+import {FullGame, GameStat, GameWaivers, Keys} from "../domain/game.models";
 type GameCacheItem = {
   game?: FullGame;
   keys?: Keys;
   stat?: GameStat;
+  waivers?: GameWaivers;
 };
 
 @Injectable({
@@ -17,6 +18,7 @@ export class GameService {
   private game: FullGame | undefined;
   private keys: Keys | undefined;
   private stat: GameStat | undefined;
+  private waivers: GameWaivers | undefined;
   private currentGameId: number | undefined;
   private requestVersion = 0;
   private cache = new Map<number, GameCacheItem>();
@@ -24,6 +26,8 @@ export class GameService {
   private isGameLoading = false;
   private isKeysLoading = false;
   private isStatLoading = false;
+  private isWaiversLoadingFlag = false;
+  private waiversErrorFlag = false;
 
   constructor(private http: HttpAdapter, private snackbar: SnackbarService) { }
 
@@ -35,10 +39,44 @@ export class GameService {
     this.game = cached?.game;
     this.keys = cached?.keys;
     this.stat = cached?.stat;
+    this.waivers = cached?.waivers;
+    this.isWaiversLoadingFlag = false;
+    this.waiversErrorFlag = false;
 
     this.fetchGame(id, version, !cached?.game);
     this.fetchKeys(id, version, !cached?.keys);
     this.fetchStat(id, version, !cached?.stat);
+  }
+
+  loadWaivers() {
+    const id = this.currentGameId;
+    if (id === undefined || this.waivers || this.isWaiversLoadingFlag) {
+      return;
+    }
+
+    const version = this.requestVersion;
+    this.isWaiversLoadingFlag = true;
+    this.waiversErrorFlag = false;
+    this.http.get<GameWaivers>(`/waivers/game/${id}`)
+      .subscribe({
+        next: w => {
+          this.upsertCache(id, {waivers: w});
+          if (this.shouldApply(id, version)) {
+            this.waivers = w;
+            this.isWaiversLoadingFlag = false;
+          }
+        },
+        error: error => {
+          if (this.shouldApply(id, version)) {
+            this.isWaiversLoadingFlag = false;
+            this.waiversErrorFlag = true;
+          }
+
+          if (!(error instanceof HttpErrorResponse && error.status === 401)) {
+            throw error;
+          }
+        }
+      });
   }
 
   private fetchGame(id: number, version: number, shouldFetch: boolean) {
@@ -154,5 +192,17 @@ export class GameService {
 
   getStat(): GameStat | undefined {
     return this.stat;
+  }
+
+  getWaivers(): GameWaivers | undefined {
+    return this.waivers;
+  }
+
+  isWaiversLoading(): boolean {
+    return this.isWaiversLoadingFlag;
+  }
+
+  hasWaiversError(): boolean {
+    return this.waiversErrorFlag;
   }
 }

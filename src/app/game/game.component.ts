@@ -1,6 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {GameService} from "./game.service";
-import {FullGame, GameStat, Keys, Level} from "../domain/game.models";
+import {FullGame, GameStat, GameWaivers, Keys, Level, Team, VotedPlayer} from "../domain/game.models";
 import {ActivatedRoute, ParamMap} from "@angular/router";
 import {Subscription} from "rxjs";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
@@ -62,6 +62,49 @@ export class GameComponent implements OnInit, OnDestroy {
 
   hasLoadedData(): boolean {
     return this.gameService.hasLoadedCurrentGameData();
+  }
+
+  onWaiversToggle(event: Event): void {
+    if ((event.target as HTMLDetailsElement).open) {
+      this.gameService.loadWaivers();
+    }
+  }
+
+  isWaiversLoading(): boolean {
+    return this.gameService.isWaiversLoading();
+  }
+
+  hasWaiversError(): boolean {
+    return this.gameService.hasWaiversError();
+  }
+
+  getWaivers(): GameWaivers | undefined {
+    return this.gameService.getWaivers();
+  }
+
+  getWaiverTeams(): Team[] {
+    return this.getWaivers()?.teams ?? [];
+  }
+
+  getTeamVotedPlayers(teamId: number): VotedPlayer[] {
+    return this.getWaivers()?.waivers?.[String(teamId)] ?? [];
+  }
+
+  getPlayedLabel(played: string | null | undefined): string {
+    switch (played) {
+      case "yes":
+        return "Играл";
+      case "no":
+        return "Отказался";
+      case "think":
+        return "Не решил";
+      case "revoked":
+        return "Не допущен капитаном";
+      case "not_allowed":
+        return "Не допущен организаторами";
+      default:
+        return "";
+    }
   }
 
 }
