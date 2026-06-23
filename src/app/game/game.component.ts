@@ -90,21 +90,4 @@ export class GameComponent implements OnInit, OnDestroy {
     return this.getWaivers()?.waivers?.[String(teamId)] ?? [];
   }
 
-  getPlayedLabel(played: string | null | undefined): string {
-    switch (played) {
-      case "yes":
-        return "Играл";
-      case "no":
-        return "Отказался";
-      case "think":
-        return "Не решил";
-      case "revoked":
-        return "Не допущен капитаном";
-      case "not_allowed":
-        return "Не допущен организаторами";
-      default:
-        return "";
-    }
-  }
-
 }

@@ -35,12 +35,9 @@
               </h4>
               @if (getTeamVotedPlayers(team.id).length > 0) {
                 <ul class="game-waivers-players">
-                  @for (player of getTeamVotedPlayers(team.id); track player.id) {
+                  @for (voted of getTeamVotedPlayers(team.id); track voted.player.id) {
                     <li class="game-waivers-player">
-                      <span class="game-waivers-player-name">{{ player.name_mention }}</span>
-                      @if (getPlayedLabel(player.played)) {
-                        <span class="game-waivers-player-status">{{ getPlayedLabel(player.played) }}</span>
-                      }
+                      <span class="game-waivers-player-name">{{ voted.player.name_mention }}</span>
                     </li>
                   }
                 </ul>
