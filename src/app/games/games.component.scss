@@ -61,3 +61,74 @@
 .game-name {
   text-align: left;
 }
+
+.game-waivers {
+  border-top: 1px solid #d1e7d7;
+}
+
+.game-waivers-summary {
+  cursor: pointer;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #17603a;
+  user-select: none;
+}
+
+.game-waivers-body {
+  padding: 0 0.8rem 0.8rem;
+}
+
+.game-waivers-status,
+.game-waivers-empty {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  color: var(--app-text-muted, #667085);
+}
+
+.game-waivers-teams {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.game-waivers-team-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 0.25rem;
+  font-size: 0.9rem;
+}
+
+.game-waivers-team-count {
+  background: #e7f7ec;
+  color: #17603a;
+  border-radius: 999px;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.game-waivers-players {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.game-waivers-player {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.game-waivers-player-status {
+  font-size: 0.75rem;
+  color: var(--app-text-muted, #667085);
+  white-space: nowrap;
+}
