@@ -103,8 +103,12 @@ td {
   gap: 0.5rem;
 }
 
-.game-waivers-player-status {
-  font-size: 0.8rem;
-  color: #6b7280;
-  white-space: nowrap;
+.game-waivers-link {
+  color: var(--app-accent, #2563eb);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }

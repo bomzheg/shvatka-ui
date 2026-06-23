@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {GameService} from "./game.service";
 import {FullGame, GameStat, GameWaivers, Keys, Level, Team, VotedPlayer} from "../domain/game.models";
-import {ActivatedRoute, ParamMap} from "@angular/router";
+import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
@@ -12,6 +12,7 @@ import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.par
   imports: [
     GameLogPartComponent,
     GameScenarioPartComponent,
+    RouterLink,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
