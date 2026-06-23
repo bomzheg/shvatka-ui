@@ -5,6 +5,7 @@ import {TeamService} from '../team/team.service';
 import {PlayedGame, TeamDetails, TeamMember} from '../team/team.models';
 import {SnackbarService} from '../snackbar/snackbar.service';
 import {pluralizeGames} from '../ui/plural-ru';
+import {memberEmoji} from '../ui/role-emoji';
 
 @Component({
   selector: 'app-team-card',
@@ -44,12 +45,27 @@ export class TeamCardComponent implements OnInit, OnDestroy {
     this.routeSub?.unsubscribe();
   }
 
+  // Captain first, then by played games count descending.
+  get sortedMembers(): TeamMember[] {
+    const captainId = this.team?.captain?.id;
+    return [...this.members].sort((a, b) => {
+      const aCap = a.id === captainId ? 0 : 1;
+      const bCap = b.id === captainId ? 0 : 1;
+      if (aCap !== bCap) return aCap - bCap;
+      return b.played_games_count - a.played_games_count;
+    });
+  }
+
   isCaptain(member: TeamMember): boolean {
     return this.team?.captain?.id === member.id;
   }
 
   getMemberDisplayName(member: TeamMember): string {
     return member.username ?? `#${member.id}`;
+  }
+
+  memberEmoji(member: TeamMember): string {
+    return memberEmoji(member.emoji, member.role);
   }
 
   playedGamesLabel(count: number): string {

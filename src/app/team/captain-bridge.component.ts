@@ -14,6 +14,7 @@ import {
 } from './team.models';
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon} from "../ui/icons";
+import {memberEmoji} from "../ui/role-emoji";
 
 export interface PermissionLabel {
   key: keyof TeamMemberPermissions;
@@ -160,6 +161,10 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
 
   getMemberDisplayName(member: TeamMember): string {
     return member.username ?? `#${member.id}`;
+  }
+
+  memberEmoji(member: TeamMember): string {
+    return memberEmoji(member.emoji, member.role);
   }
 
   getPermissionValue(key: keyof TeamMemberPermissions): boolean {

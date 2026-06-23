@@ -76,9 +76,7 @@
               <div class="member-row">
                 <div class="member-info">
                   <div class="member-identity">
-                    @if (member.emoji) {
-                      <span class="member-emoji" aria-hidden="true">{{ member.emoji }}</span>
-                    }
+                    <span class="member-emoji" aria-hidden="true">{{ memberEmoji(member) }}</span>
                     <span class="member-name">{{ getMemberDisplayName(member) }}</span>
                   </div>
                   @if (member.role || isCaptainMember(member) || isSelf(member)) {

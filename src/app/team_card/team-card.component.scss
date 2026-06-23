@@ -91,8 +91,17 @@
 
 .member-badges {
   display: flex;
+  align-items: center;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 0.35rem;
+}
+
+// Keep the games-count badge a consistent width so the counts line up in a
+// column across rows (right-aligned within the badge group).
+.badge-games {
+  min-width: 4.5rem;
+  text-align: center;
 }
 
 .badge {
