@@ -254,7 +254,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
   startEditMember(member: TeamMember): void {
     this.editingMemberId = member.id;
     this.editMemberRole = member.role;
-    this.editMemberEmoji = member.emoji ?? '';
+    this.editMemberEmoji = this.memberEmoji(member);
     this.editMemberPermissions = {...member.permissions};
   }
 
