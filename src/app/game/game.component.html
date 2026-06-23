@@ -29,15 +29,15 @@
         <ul class="game-waivers-teams">
           @for (team of getWaiverTeams(); track team.id) {
             <li class="game-waivers-team">
-              <h4 class="game-waivers-team-name">
-                <a class="game-waivers-link" [routerLink]="['/teams', team.id]">{{ team.name }}</a>
+              <div class="game-waivers-team-head">
+                <a class="game-waivers-team-name" [routerLink]="['/teams', team.id]">{{ team.name }}</a>
                 <span class="game-waivers-team-count">{{ getTeamVotedPlayers(team.id).length }}</span>
-              </h4>
+              </div>
               @if (getTeamVotedPlayers(team.id).length > 0) {
                 <ul class="game-waivers-players">
                   @for (voted of getTeamVotedPlayers(team.id); track voted.player.id) {
-                    <li class="game-waivers-player">
-                      <a class="game-waivers-link" [routerLink]="['/players', voted.player.id]">{{ voted.player.name_mention }}</a>
+                    <li>
+                      <a class="game-waivers-player" [routerLink]="['/players', voted.player.id]">{{ voted.player.name_mention }}</a>
                     </li>
                   }
                 </ul>
