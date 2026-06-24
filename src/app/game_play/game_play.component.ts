@@ -61,6 +61,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   isSubmitting = false;
   authorScenario: FullGame | undefined;
   isAuthorScenarioLoading = false;
+  scenarioTab: 'compact' | 'full' | 'graph' = 'compact';
   private loadedScenarioGameId: number | undefined;
   private myRoleListenerUnsubscribe: (() => void) | undefined;
   isWaiverModalOpen = false;
@@ -212,6 +213,10 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   onGraphLevelSelected(id: string): void {
     scrollToLevel(id);
+  }
+
+  setScenarioTab(tab: 'compact' | 'full' | 'graph'): void {
+    this.scenarioTab = tab;
   }
 
   getCountdownToStart(): string | undefined {
