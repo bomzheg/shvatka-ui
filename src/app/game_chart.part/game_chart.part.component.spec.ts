@@ -74,9 +74,9 @@ describe('GameChartPartComponent', () => {
     expect(model.series[0].color).not.toBe(model.series[1].color);
   });
 
-  it('places x gridlines on round clock hours anchored at start_at', () => {
+  it('places x gridlines on round clock times anchored at start_at', () => {
     const a = team(1, 'Alpha');
-    // Game starts at a ragged minute; spans ~3h so it should tick on whole hours.
+    // Game starts at a ragged minute; ~3h span ticks on half hours.
     const startAt = '2024-01-01T09:37:00';
     const start = Date.parse(startAt);
     const c = makeComponent();
@@ -90,9 +90,9 @@ describe('GameChartPartComponent', () => {
     });
 
     const labels = c.model.xTicks.map(t => t.label);
-    // First tick is the next whole hour after 09:37, then each following hour.
+    // First tick is the next round clock time after 09:37, then every half hour.
     expect(labels[0]).toBe('10:00');
-    expect(labels).toEqual(['10:00', '11:00', '12:00']);
+    expect(labels.slice(0, 3)).toEqual(['10:00', '10:30', '11:00']);
   });
 
   it('ignores the minute-0 prompt when drawing hint stairs', () => {
@@ -111,6 +111,32 @@ describe('GameChartPartComponent', () => {
     // The extra (minute-10) hint adds two stair vertices; the minute-0 one does not.
     const segments = (d: string) => d.split(/(?=[ML])/).length;
     expect(segments(withHint.model.series[0].d)).toBe(segments(noHint.model.series[0].d) + 2);
+  });
+
+  it('records level spans and fired hints for the hover tooltip', () => {
+    const a = team(1, 'Alpha');
+    const start = Date.parse(START);
+    const c = makeComponent();
+    // Level 0 has a real hint at 10 min; team spends 30 min there, then finishes.
+    c.levels = [level(0, [0, 10]), level(1, [0])];
+    c.gameStartAt = START;
+    c.stat = stat({
+      '1': [
+        new LevelTime(0, game([]), a, 0, 'lvl-0', new Date(start), false),
+        new LevelTime(1, game([]), a, 1, 'lvl-1', new Date(start + 30 * 60_000), false),
+      ],
+    });
+
+    const spans = c.model.series[0].spans;
+    expect(spans[0].level).toBe(1);
+    expect(spans[0].startMin).toBe(0);
+    expect(spans[0].endMin).toBe(30);
+    expect(spans[0].firedHints.length).toBe(1);
+    expect(spans[0].firedHints[0].minute).toBe(10);
+    expect(spans[0].firedHints[0].atMin).toBe(10);
+    // Last span (level 2) has no exit time and no fired hints.
+    expect(spans[1].level).toBe(2);
+    expect(spans[1].endMin).toBeUndefined();
   });
 
   it('isolates / multi-selects / clears teams from the legend', () => {

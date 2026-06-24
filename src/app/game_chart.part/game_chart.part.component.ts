@@ -1,19 +1,52 @@
 import {Component, Input} from '@angular/core';
 import {GameStat, Level, LevelTime} from "../domain/game.models";
 
-/** A polyline for one team's progress, plus its legend entry. */
+/** A single time-hint that fired while a team sat on a level. */
+interface FiredHint {
+  /** Elapsed minutes (from game start) when the hint was shown. */
+  atMin: number;
+  /** The hint's own schedule, i.e. minutes after entering the level. */
+  minute: number;
+  /** Line height (level units) right after this hint's stair. */
+  yAfter: number;
+}
+
+/** One level a team occupied, used for snap-to-line hit testing. */
+interface LevelSpan {
+  /** Displayed level number (1-based). */
+  level: number;
+  startMin: number;
+  /** Elapsed minutes when the team left the level, or undefined for the last. */
+  endMin: number | undefined;
+  firedHints: FiredHint[];
+}
+
+/** A polyline for one team's progress, plus its legend entry and hit-test data. */
 interface ChartSeries {
   teamId: number;
   teamName: string;
   color: string;
   /** SVG path data in plot coordinates. */
   d: string;
+  spans: LevelSpan[];
 }
 
 /** A gridline + label on an axis, already placed in SVG coordinates. */
 interface AxisTick {
   pos: number;
   label: string;
+}
+
+/** Snapped crosshair readout for the team line nearest the cursor. */
+interface HoverInfo {
+  x: number;
+  y: number;
+  color: string;
+  team: string;
+  time: string;
+  level: string;
+  labelX: number;
+  labelAnchor: 'start' | 'end';
 }
 
 interface ChartModel {
@@ -26,6 +59,10 @@ interface ChartModel {
   plotRight: number;
   plotTop: number;
   plotBottom: number;
+  /** Inverse-scale inputs so pointer coordinates can be mapped back to data. */
+  xMaxDomain: number;
+  yMaxDomain: number;
+  originMs: number;
   hasData: boolean;
 }
 
@@ -125,6 +162,7 @@ export class GameChartPartComponent {
     }
 
     this.selectedTeams = this.selectedTeams.has(teamId) ? new Set() : new Set([teamId]);
+    this.hover = null;
   }
 
   hasSelection(): boolean {
@@ -143,6 +181,106 @@ export class GameChartPartComponent {
   private invalidate(): void {
     this.cachedModel = undefined;
     this.selectedTeams = new Set();
+    this.hover = null;
+  }
+
+  /** Snapped crosshair readout, or null when the pointer is off the plot. */
+  hover: HoverInfo | null = null;
+
+  /**
+   * Tracks the pointer over the plot, snaps to the nearest visible team line at
+   * the cursor's time, and builds the crosshair readout (team, clock time, level
+   * and active hint). Works for mouse and for touch-drag.
+   */
+  onPointerMove(event: PointerEvent): void {
+    const model = this.model;
+    if (!model.hasData) {
+      return;
+    }
+    const svg = event.currentTarget as SVGSVGElement;
+    const rect = svg.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      return;
+    }
+    const svgX = (event.clientX - rect.left) * (model.width / rect.width);
+    const svgY = (event.clientY - rect.top) * (model.height / rect.height);
+    if (svgX < model.plotLeft || svgX > model.plotRight || svgY < model.plotTop || svgY > model.plotBottom) {
+      this.hover = null;
+      return;
+    }
+
+    const plotW = model.plotRight - model.plotLeft;
+    const plotH = model.plotBottom - model.plotTop;
+    const xMin = ((svgX - model.plotLeft) / plotW) * model.xMaxDomain;
+    const toSvgY = (level: number) => model.plotBottom - ((level - 1) / (model.yMaxDomain - 1)) * plotH;
+
+    let best: {series: ChartSeries; y: number; level: number; hintMinute: number | null; svgY: number} | null = null;
+    for (const series of model.series) {
+      if (!this.isVisible(series.teamId)) {
+        continue;
+      }
+      const at = this.evalAt(series, xMin);
+      if (!at) {
+        continue;
+      }
+      const candidateSvgY = toSvgY(at.y);
+      if (best === null || Math.abs(candidateSvgY - svgY) < Math.abs(best.svgY - svgY)) {
+        best = {series, y: at.y, level: at.level, hintMinute: at.hintMinute, svgY: candidateSvgY};
+      }
+    }
+    if (best === null) {
+      this.hover = null;
+      return;
+    }
+
+    const snapX = model.plotLeft + (xMin / model.xMaxDomain) * plotW;
+    const nearRightEdge = snapX > model.plotRight - 140;
+    this.hover = {
+      x: snapX,
+      y: best.svgY,
+      color: best.series.color,
+      team: best.series.teamName,
+      time: this.formatClock(model.originMs + xMin * MIN_MS),
+      level: `Ур.${best.level}` + (best.hintMinute !== null ? ` h${best.hintMinute}` : ''),
+      labelX: nearRightEdge ? snapX - 8 : snapX + 8,
+      labelAnchor: nearRightEdge ? 'end' : 'start',
+    };
+  }
+
+  onPointerLeave(): void {
+    this.hover = null;
+  }
+
+  /** Level height (and active hint) of a team's step line at a given elapsed minute. */
+  private evalAt(series: ChartSeries, xMin: number): {y: number; level: number; hintMinute: number | null} | null {
+    const spans = series.spans;
+    if (spans.length === 0) {
+      return null;
+    }
+    if (xMin < spans[0].startMin) {
+      return {y: spans[0].level, level: spans[0].level, hintMinute: null};
+    }
+
+    let span = spans[spans.length - 1];
+    for (const candidate of spans) {
+      const end = candidate.endMin ?? Number.POSITIVE_INFINITY;
+      if (xMin >= candidate.startMin && xMin < end) {
+        span = candidate;
+        break;
+      }
+    }
+
+    let y = span.level;
+    let hintMinute: number | null = null;
+    for (const fired of span.firedHints) {
+      if (fired.atMin <= xMin) {
+        y = fired.yAfter;
+        hintMinute = fired.minute;
+      } else {
+        break;
+      }
+    }
+    return {y, level: span.level, hintMinute};
   }
 
   private emptyModel(): ChartModel {
@@ -152,6 +290,7 @@ export class GameChartPartComponent {
       height: PAD_TOP + PLOT_H + PAD_BOTTOM,
       plotLeft: PAD_LEFT, plotRight: PAD_LEFT + PLOT_W,
       plotTop: PAD_TOP, plotBottom: PAD_TOP + PLOT_H,
+      xMaxDomain: 1, yMaxDomain: 2, originMs: 0,
       hasData: false,
     };
   }
@@ -181,7 +320,7 @@ export class GameChartPartComponent {
 
     let xMax = 0;
     let yMax = 1;
-    const raw: {teamId: number; teamName: string; points: [number, number][]}[] = [];
+    const raw: {teamId: number; teamName: string; points: [number, number][]; spans: LevelSpan[]}[] = [];
 
     for (const [, levelTimes] of entries) {
       const sorted = [...levelTimes].sort((a, b) => {
@@ -194,6 +333,7 @@ export class GameChartPartComponent {
       }
 
       const points: [number, number][] = [];
+      const spans: LevelSpan[] = [];
       for (let i = 0; i < sorted.length; i++) {
         const lt = sorted[i];
         const startMs = this.parseMs(lt.start_at);
@@ -215,6 +355,13 @@ export class GameChartPartComponent {
         const n = hints.length;
         const inc = n <= 5 ? 0.1 : 0.5 / n;
 
+        const span: LevelSpan = {
+          level: base,
+          startMin: x,
+          endMin: nextMs !== undefined ? (nextMs - origin) / MIN_MS : undefined,
+          firedHints: [],
+        };
+
         let curY = base;
         for (const minute of hints) {
           const hintMs = startMs + minute * MIN_MS;
@@ -227,7 +374,9 @@ export class GameChartPartComponent {
           points.push([hx, curY]);
           curY += inc;
           points.push([hx, curY]);
+          span.firedHints.push({atMin: hx, minute, yAfter: curY});
         }
+        spans.push(span);
 
         if (nextMs !== undefined) {
           const xNext = (nextMs - origin) / MIN_MS;
@@ -239,7 +388,7 @@ export class GameChartPartComponent {
       }
 
       if (points.length > 0) {
-        raw.push({teamId: this.teamIdOf(levelTimes), teamName: this.teamNameOf(levelTimes), points});
+        raw.push({teamId: this.teamIdOf(levelTimes), teamName: this.teamNameOf(levelTimes), points, spans});
       }
     }
 
@@ -267,6 +416,7 @@ export class GameChartPartComponent {
       d: s.points
         .map(([x, y], k) => `${k === 0 ? 'M' : 'L'} ${sx(x).toFixed(1)} ${sy(y).toFixed(1)}`)
         .join(' '),
+      spans: s.spans,
     }));
 
     // Gridlines sit on round clock boundaries (e.g. whole hours), not on the
@@ -297,6 +447,7 @@ export class GameChartPartComponent {
       width: PAD_LEFT + PLOT_W + PAD_RIGHT,
       height: PAD_TOP + PLOT_H + PAD_BOTTOM,
       plotLeft, plotRight, plotTop, plotBottom,
+      xMaxDomain, yMaxDomain, originMs: origin,
       hasData: true,
     };
   }
@@ -337,13 +488,13 @@ export class GameChartPartComponent {
 
   /**
    * Picks a clock-friendly tick interval (minutes). Every candidate divides a
-   * day, so ticks land on round clock times. Games of two hours or more use
-   * whole-hour steps so the axis reads 10:00, 11:00, 12:00…
+   * day, so ticks land on round clock times — half hours (10:00, 10:30, 11:00…)
+   * for a few-hour game, whole hours for longer ones, finer steps for short ones.
    */
   private niceXStep(xMax: number): number {
-    const candidates = xMax >= 120 ? [60, 120, 180, 240, 360] : [5, 10, 15, 30, 60];
+    const candidates = [5, 10, 15, 30, 60, 120, 180, 240, 360];
     for (const step of candidates) {
-      if (xMax / step <= 7) {
+      if (xMax / step <= 8) {
         return step;
       }
     }
