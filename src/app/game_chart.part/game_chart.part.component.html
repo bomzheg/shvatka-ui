@@ -1,0 +1,85 @@
+@if (hasData()) {
+  <div class="chart-scroll">
+    <svg
+      class="chart-svg"
+      [attr.viewBox]="'0 0 ' + model.width + ' ' + model.height"
+      [attr.width]="model.width"
+      [attr.height]="model.height"
+      role="img"
+      aria-label="График прохождения уровней командами"
+    >
+      <!-- Horizontal gridlines + level labels -->
+      @for (tick of model.yTicks; track tick.label) {
+        <line
+          class="grid-line"
+          [attr.x1]="model.plotLeft" [attr.y1]="tick.pos"
+          [attr.x2]="model.plotRight" [attr.y2]="tick.pos"
+        />
+        <text
+          class="axis-label axis-label-y"
+          [attr.x]="model.plotLeft - 8" [attr.y]="tick.pos"
+        >{{ tick.label }}</text>
+      }
+
+      <!-- Vertical gridlines + elapsed-time labels -->
+      @for (tick of model.xTicks; track tick.label) {
+        <line
+          class="grid-line"
+          [attr.x1]="tick.pos" [attr.y1]="model.plotTop"
+          [attr.x2]="tick.pos" [attr.y2]="model.plotBottom"
+        />
+        <text
+          class="axis-label axis-label-x"
+          [attr.x]="tick.pos" [attr.y]="model.plotBottom + 18"
+        >{{ tick.label }}</text>
+      }
+
+      <!-- Plot frame -->
+      <rect
+        class="plot-frame"
+        [attr.x]="model.plotLeft" [attr.y]="model.plotTop"
+        [attr.width]="model.plotRight - model.plotLeft"
+        [attr.height]="model.plotBottom - model.plotTop"
+      />
+
+      <!-- Axis titles -->
+      <text
+        class="axis-title"
+        [attr.transform]="'translate(14 ' + (model.plotTop + (model.plotBottom - model.plotTop) / 2) + ') rotate(-90)'"
+      >Уровень</text>
+      <text
+        class="axis-title"
+        [attr.x]="model.plotLeft + (model.plotRight - model.plotLeft) / 2"
+        [attr.y]="model.height - 4"
+      >Время от старта</text>
+
+      <!-- Team progress lines -->
+      @for (s of model.series; track s.teamId) {
+        @if (isVisible(s.teamId)) {
+          <path class="series-line" [attr.d]="s.d" [attr.stroke]="s.color" />
+        }
+      }
+    </svg>
+  </div>
+
+  <ul class="chart-legend">
+    @for (s of model.series; track s.teamId) {
+      <li>
+        <button
+          type="button"
+          class="legend-item"
+          [class.legend-item-dim]="hasSelection() && !isSelected(s.teamId)"
+          [class.legend-item-active]="isSelected(s.teamId)"
+          [attr.aria-pressed]="isSelected(s.teamId)"
+          title="Клик — показать только эту команду; Ctrl/⌘+клик — добавить к выбору"
+          (click)="onLegendClick(s.teamId, $event)"
+        >
+          <span class="legend-swatch" [style.background-color]="s.color"></span>
+          <span class="legend-name">{{ s.teamName }}</span>
+        </button>
+      </li>
+    }
+  </ul>
+} @else {
+  <p class="chart-empty">Недостаточно данных для построения графика.</p>
+}

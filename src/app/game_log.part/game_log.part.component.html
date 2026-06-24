@@ -46,6 +46,27 @@
     <details [open]="statDetailsOpen" (toggle)="onStatDetailsToggle($any($event.target).open)">
       <summary class="game-stat-spoiler">Результаты игры@if (statLoading) {<span class="spoiler-loading"><span class="spoiler-loader"></span>обновление…</span>}</summary>
 
+      @if (showCompletedTabs()) {
+        <div class="stat-tabs" role="tablist">
+          <button
+            type="button"
+            class="stat-tab"
+            role="tab"
+            [class.stat-tab-active]="completedTab === 'table'"
+            [attr.aria-selected]="completedTab === 'table'"
+            (click)="setCompletedTab('table')"
+          >Таблица</button>
+          <button
+            type="button"
+            class="stat-tab"
+            role="tab"
+            [class.stat-tab-active]="completedTab === 'chart'"
+            [attr.aria-selected]="completedTab === 'chart'"
+            (click)="setCompletedTab('chart')"
+          >График</button>
+        </div>
+      }
+
       @if (showStatTabs()) {
         <div class="stat-tabs" role="tablist">
           <button
@@ -164,6 +185,16 @@
           </table>
         </div>
       </div>
+      }
+
+      @if (showCompletedChart()) {
+        <div class="game-stat">
+          <app-game-chart-part
+            [stat]="stat"
+            [levels]="levels"
+            [gameStartAt]="gameStartAt"
+          ></app-game-chart-part>
+        </div>
       }
     </details>
   }
