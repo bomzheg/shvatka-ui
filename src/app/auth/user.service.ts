@@ -7,6 +7,7 @@ import {AuthStateService} from "./auth-state.service";
 
 export class UserData {
   id: number | undefined;
+  username: string | undefined;
   name_mention: string | undefined;
   can_be_author: boolean | undefined;
 }
