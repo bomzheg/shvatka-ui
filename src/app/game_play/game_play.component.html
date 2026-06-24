@@ -392,34 +392,47 @@
 
 @if (canViewScenario()) {
   <details class="author-scenario-spoiler">
-    <summary class="game-scn-spoiler">Ключи и таймеры (кратко)</summary>
+    <summary class="game-scn-spoiler">Сценарий</summary>
     @if (isAuthorScenarioLoading) {
       <p class="status-message">Загрузка сценария...</p>
     } @else if (shouldShowAuthorScenario()) {
-      <app-game-scenario-compact-part [game]="authorScenario!"></app-game-scenario-compact-part>
-    } @else {
-      <p class="status-message">Не удалось загрузить сценарий.</p>
-    }
-  </details>
+      <div class="scenario-tabs" role="tablist">
+        <button
+          type="button"
+          class="scenario-tab"
+          role="tab"
+          [class.scenario-tab-active]="scenarioTab === 'compact'"
+          [attr.aria-selected]="scenarioTab === 'compact'"
+          (click)="setScenarioTab('compact')"
+        >Ключи и таймеры</button>
+        <button
+          type="button"
+          class="scenario-tab"
+          role="tab"
+          [class.scenario-tab-active]="scenarioTab === 'full'"
+          [attr.aria-selected]="scenarioTab === 'full'"
+          (click)="setScenarioTab('full')"
+        >Сценарий</button>
+        <button
+          type="button"
+          class="scenario-tab"
+          role="tab"
+          [class.scenario-tab-active]="scenarioTab === 'graph'"
+          [attr.aria-selected]="scenarioTab === 'graph'"
+          (click)="setScenarioTab('graph')"
+        >Граф переходов</button>
+      </div>
 
-  <details class="author-scenario-spoiler">
-    <summary class="game-scn-spoiler">Сценарий текущей игры</summary>
-    @if (isAuthorScenarioLoading) {
-      <p class="status-message">Загрузка сценария...</p>
-    } @else if (shouldShowAuthorScenario()) {
-      <app-game-scenario-part [game]="authorScenario!"></app-game-scenario-part>
-    } @else {
-      <p class="status-message">Не удалось загрузить сценарий.</p>
-    }
-  </details>
-
-  <details class="author-scenario-spoiler">
-    <summary class="game-scn-spoiler">Граф переходов</summary>
-    @if (isAuthorScenarioLoading) {
-      <p class="status-message">Загрузка сценария...</p>
-    } @else if (shouldShowAuthorScenario()) {
-      <app-scenario-graph-part [levels]="getScenarioGraphLevels()"
-                               (levelSelected)="onGraphLevelSelected($event)"></app-scenario-graph-part>
+      <div class="scenario-tab-panel" role="tabpanel">
+        @if (scenarioTab === 'compact') {
+          <app-game-scenario-compact-part [game]="authorScenario!"></app-game-scenario-compact-part>
+        } @else if (scenarioTab === 'full') {
+          <app-game-scenario-part [game]="authorScenario!"></app-game-scenario-part>
+        } @else {
+          <app-scenario-graph-part [levels]="getScenarioGraphLevels()"
+                                   (levelSelected)="onGraphLevelSelected($event)"></app-scenario-graph-part>
+        }
+      </div>
     } @else {
       <p class="status-message">Не удалось загрузить сценарий.</p>
     }
