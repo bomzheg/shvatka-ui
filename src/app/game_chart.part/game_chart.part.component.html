@@ -7,6 +7,8 @@
       [attr.height]="model.height"
       role="img"
       aria-label="График прохождения уровней командами"
+      (pointermove)="onPointerMove($event)"
+      (pointerleave)="onPointerLeave()"
     >
       <!-- Horizontal gridlines + level labels -->
       @for (tick of model.yTicks; track tick.label) {
@@ -51,13 +53,38 @@
         class="axis-title"
         [attr.x]="model.plotLeft + (model.plotRight - model.plotLeft) / 2"
         [attr.y]="model.height - 4"
-      >Время от старта</text>
+      >Время</text>
 
       <!-- Team progress lines -->
       @for (s of model.series; track s.teamId) {
         @if (isVisible(s.teamId)) {
           <path class="series-line" [attr.d]="s.d" [attr.stroke]="s.color" />
         }
+      }
+
+      <!-- Hover crosshair snapped to the nearest team line -->
+      @if (hover) {
+        <line
+          class="crosshair-line"
+          [attr.x1]="hover.x" [attr.y1]="model.plotTop"
+          [attr.x2]="hover.x" [attr.y2]="model.plotBottom"
+        />
+        <line
+          class="crosshair-line"
+          [attr.x1]="model.plotLeft" [attr.y1]="hover.y"
+          [attr.x2]="model.plotRight" [attr.y2]="hover.y"
+        />
+        <circle class="crosshair-dot" [attr.cx]="hover.x" [attr.cy]="hover.y" r="4" [attr.fill]="hover.color" />
+        <text
+          class="crosshair-time"
+          [attr.x]="hover.x" [attr.y]="model.plotBottom + 18"
+        >{{ hover.time }}</text>
+        <text
+          class="crosshair-label"
+          [attr.x]="hover.labelX" [attr.y]="hover.y - 10"
+          [attr.text-anchor]="hover.labelAnchor"
+          [attr.fill]="hover.color"
+        >{{ hover.team }} · {{ hover.level }}</text>
       }
     </svg>
   </div>

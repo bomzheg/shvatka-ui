@@ -8,6 +8,43 @@
   max-width: 100%;
   height: auto;
   min-width: 320px;
+  // Let a touch-drag inspect the chart instead of scrolling the page.
+  touch-action: none;
+}
+
+.crosshair-line {
+  stroke: var(--tg-theme-hint-color, #6b7280);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+  pointer-events: none;
+}
+
+.crosshair-dot {
+  stroke: var(--app-surface, #fff);
+  stroke-width: 1.5;
+  pointer-events: none;
+}
+
+.crosshair-time {
+  fill: var(--tg-theme-text-color, #374151);
+  font-size: 12px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: hanging;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--app-surface, #fff);
+  stroke-width: 3;
+}
+
+.crosshair-label {
+  font-size: 12px;
+  font-weight: 600;
+  dominant-baseline: middle;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: var(--app-surface, #fff);
+  stroke-width: 3;
 }
 
 .grid-line {
