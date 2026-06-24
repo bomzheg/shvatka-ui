@@ -3,6 +3,7 @@ import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game
 import {MatIcon} from "@angular/material/icon";
 import {RouterLink} from "@angular/router";
 import {AppIcon} from "../ui/icons";
+import {GameChartPartComponent} from "../game_chart.part/game_chart.part.component";
 
 interface TeamPivotData {
   teamId: number;
@@ -16,7 +17,7 @@ interface TeamPivotData {
 @Component({
   selector: 'app-game-log-part',
   standalone: true,
-  imports: [MatIcon, RouterLink],
+  imports: [MatIcon, RouterLink, GameChartPartComponent],
   templateUrl: './game_log.part.component.html',
   styleUrl: './game_log.part.component.scss',
 })
@@ -54,6 +55,7 @@ export class GameLogPartComponent {
   }
 
   @Input() levels: Level[] = [];
+  @Input() gameStartAt: string | undefined;
   @Input() openKeys = false;
   @Input() openStat = false;
   @Input() isCompleted = false;
@@ -72,10 +74,24 @@ export class GameLogPartComponent {
   statDetailsOpen = false;
   pivotDetailsOpen = false;
   statTab: 'results' | 'pivot' = 'results';
+  completedTab: 'table' | 'chart' = 'table';
   private teamKeysOpenState: Record<string, boolean> = {};
 
   setStatTab(tab: 'results' | 'pivot'): void {
     this.statTab = tab;
+  }
+
+  setCompletedTab(tab: 'table' | 'chart'): void {
+    this.completedTab = tab;
+  }
+
+  /** Completed games offer a table / chart switch over the same results. */
+  showCompletedTabs(): boolean {
+    return this.isCompleted && this.pivotData.length > 0;
+  }
+
+  showCompletedChart(): boolean {
+    return this.isCompleted && this.completedTab === 'chart' && this.pivotData.length > 0;
   }
 
   /** Both the standings and the per-level pivot are available, so tabs are shown. */
@@ -88,9 +104,15 @@ export class GameLogPartComponent {
     return !this.isCompleted && (this.statTab === 'results' || this.pivotData.length === 0);
   }
 
-  /** Per-level pivot table. Becomes the sole "Результаты игры" view when completed. */
+  /** Per-level pivot table. The "Таблица" tab when completed. */
   showPivotTable(): boolean {
-    return this.pivotData.length > 0 && (this.isCompleted || this.statTab === 'pivot');
+    if (this.pivotData.length === 0) {
+      return false;
+    }
+    if (this.isCompleted) {
+      return this.completedTab === 'table';
+    }
+    return this.statTab === 'pivot';
   }
 
   private buildSortedTeamKeysEntries(keys: Keys | undefined): [string, KeyTime[]][] {
