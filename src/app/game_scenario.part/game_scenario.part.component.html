@@ -1,6 +1,6 @@
 <div class="scenario">
   @for (level of game.levels; track level.db_id) {
-    <section class="level-card">
+    <section class="level-card" [attr.id]="'scn-level-' + level.name_id">
       <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
     @if (getScenarioConditions(level).length > 0) {
       @if (getWinKeyCondition(level); as winCondition) {

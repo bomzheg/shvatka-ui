@@ -1,0 +1,213 @@
+.graph-empty,
+.graph-note {
+  color: var(--app-muted-text);
+  margin: 0.25rem 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.graph-note {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.graph-hint {
+  font-size: 0.82rem;
+}
+
+.graph-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.82rem;
+  color: var(--app-muted-text);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.legend-swatch {
+  display: inline-block;
+  width: 1.4rem;
+  height: 0;
+  border-top-width: 3px;
+  border-top-style: solid;
+  border-radius: 2px;
+}
+
+.legend-spine {
+  border-top-color: #64748b;
+}
+
+.legend-key {
+  border-top-color: #2563eb;
+}
+
+.legend-timer {
+  border-top-color: #b45309;
+  border-top-style: dashed;
+}
+
+.graph-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.graph-svg {
+  max-width: 100%;
+  height: auto;
+}
+
+// Forward (to-next) verticals --------------------------------------------
+.vert-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.vert-label {
+  font-size: 10px;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: var(--app-surface);
+  stroke-width: 3px;
+}
+
+.vert-win .vert-line {
+  stroke: #64748b;
+}
+
+.vert-win .vert-label {
+  fill: #64748b;
+}
+
+.vert-key .vert-line {
+  stroke: #2563eb;
+}
+
+.vert-key .vert-label {
+  fill: #2563eb;
+}
+
+.vert-timer .vert-line {
+  stroke: #b45309;
+  stroke-dasharray: 6 4;
+}
+
+.vert-timer .vert-label {
+  fill: #b45309;
+}
+
+// Self-loops --------------------------------------------------------------
+.self-arc {
+  fill: none;
+  stroke: #2563eb;
+  stroke-width: 2;
+}
+
+.self-label {
+  font-size: 11px;
+  dominant-baseline: middle;
+  fill: #2563eb;
+  paint-order: stroke;
+  stroke: var(--app-surface);
+  stroke-width: 3px;
+}
+
+#scn-graph-arrow path {
+  fill: context-stroke;
+}
+
+// Nodes -------------------------------------------------------------------
+.node-box {
+  fill: var(--app-surface);
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+}
+
+.node-finish .node-box {
+  fill: color-mix(in srgb, var(--app-accent) 22%, var(--app-surface));
+  stroke: var(--app-accent);
+}
+
+.node-text {
+  fill: var(--app-text);
+  font-size: 13px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.node-text-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+.node-text-link:hover {
+  fill: var(--app-accent);
+}
+
+// Box pulsed after its name is clicked from a stub.
+.node-highlight .node-box {
+  stroke: var(--app-accent);
+  stroke-width: 2.5;
+  animation: scn-node-pulse 2.5s ease-out;
+}
+
+@keyframes scn-node-pulse {
+  0% {
+    filter: drop-shadow(0 0 7px var(--app-accent));
+  }
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+}
+
+// Jump stubs --------------------------------------------------------------
+.stub-line {
+  fill: none;
+  stroke-width: 2;
+}
+
+.stub-key .stub-line {
+  stroke: #2563eb;
+}
+
+.stub-timer .stub-line {
+  stroke: #b45309;
+  stroke-dasharray: 6 4;
+}
+
+.stub-trigger {
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: var(--app-surface);
+  stroke-width: 3px;
+}
+
+.stub-key .stub-trigger {
+  fill: #2563eb;
+}
+
+.stub-timer .stub-trigger {
+  fill: #b45309;
+}
+
+.stub-name {
+  font-size: 12px;
+  font-weight: 600;
+  dominant-baseline: middle;
+  fill: var(--app-text);
+}
+
+.stub-name-link {
+  fill: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+}

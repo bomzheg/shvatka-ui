@@ -51,5 +51,11 @@
     </div>
   </details>
 
+  <details>
+    <summary class="game-graph-spoiler">Граф переходов</summary>
+    <app-scenario-graph-part [levels]="getGraphLevels()"
+                             (levelSelected)="onGraphLevelSelected($event)"></app-scenario-graph-part>
+  </details>
+
   <app-game-log-part [keys]="getKeys()" [stat]="getStat()" [levels]="getLevels()" [isCompleted]="true"></app-game-log-part>
 }

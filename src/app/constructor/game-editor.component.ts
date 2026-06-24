@@ -9,6 +9,9 @@ import {HintTypePickerComponent} from "./hint-type-picker.component";
 import {EffectsEditorComponent} from "./effects-editor.component";
 import {OrganizersEditorComponent} from "./organizers-editor.component";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
+import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
+import {GraphLevel, GraphRoute, keyRouteLabel, timerRouteLabel} from "../scenario_graph.part/scenario_graph.model";
+import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
 import {
   CONTENT_TYPE_LABELS,
@@ -72,6 +75,7 @@ type FilePreviewKind = "image" | "video" | "audio" | "none";
     EffectsEditorComponent,
     OrganizersEditorComponent,
     ImageLightboxComponent,
+    ScenarioGraphPartComponent,
     MatIcon,
   ],
   templateUrl: "./game-editor.component.html",
@@ -361,6 +365,73 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
   allLevelIds(): string[] {
     return this.levels.map(l => l.id);
+  }
+
+  /**
+   * Live routing graph of the levels being edited. Recomputed on each change
+   * detection from the current editor state so the graph tracks edits; the
+   * graph component memoizes the layout by content so this stays cheap.
+   *
+   * The default win (win key) is the sequential spine the graph already draws,
+   * so only the explicit `next_level` jumps are emitted here: the winning timer
+   * ("автозавершение") and any EFFECTS_KEY condition whose effect advances the
+   * level. Non-winning timers never advance, so they contribute no routes.
+   */
+  getGraphLevels(): GraphLevel[] {
+    const idToPos = new Map<string, number>();
+    this.levels.forEach((level, pos) => {
+      if (!idToPos.has(level.id)) {
+        idToPos.set(level.id, pos);
+      }
+    });
+
+    const resolveTarget = (nextLevel: string | null, pos: number): number | undefined => {
+      if (nextLevel && nextLevel.length > 0) {
+        return idToPos.get(nextLevel);
+      }
+      // No explicit target on a winning effect means "the next level".
+      return pos + 1;
+    };
+
+    return this.levels.map((level, pos) => {
+      const routes: GraphRoute[] = [];
+
+      if (level.autoFinishTime != null) {
+        const target = resolveTarget(level.autoFinishEffects.next_level, pos);
+        if (target !== undefined) {
+          routes.push({target, kind: 'timer', label: timerRouteLabel(Number(level.autoFinishTime))});
+        }
+      }
+
+      for (const condition of level.keyConditions) {
+        if (condition.effects.level_up !== true) {
+          continue;
+        }
+        const target = resolveTarget(condition.effects.next_level, pos);
+        if (target !== undefined) {
+          routes.push({target, kind: 'key', label: keyRouteLabel(parseKeys(condition.keysText))});
+        }
+      }
+
+      const winKeys = parseKeys(level.winKeysText);
+      return {
+        id: level.id,
+        name: level.id,
+        number: pos + 1,
+        winLabel: winKeys.length > 0 ? keyRouteLabel(winKeys) : undefined,
+        routes,
+      };
+    });
+  }
+
+  /** Scroll to the level card with the given id and briefly highlight it. */
+  onGraphLevelSelected(id: string): void {
+    const level = this.levels.find(l => l.id === id);
+    if (level) {
+      // Keep it open past the next change detection (the card binds [open]).
+      level.expanded = true;
+    }
+    scrollToLevel(id);
   }
 
   // -------------------------------------------------------------------------

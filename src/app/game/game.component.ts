@@ -5,6 +5,9 @@ import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
+import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
+import {GraphLevel, routingGraphFromGame} from "../scenario_graph.part/scenario_graph.model";
+import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 
 @Component({
   selector: 'app-game',
@@ -13,6 +16,7 @@ import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.par
     GameLogPartComponent,
     GameScenarioPartComponent,
     RouterLink,
+    ScenarioGraphPartComponent,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
@@ -55,6 +59,25 @@ export class GameComponent implements OnInit, OnDestroy {
 
   getLevels(): Level[] {
     return this.getGame()?.levels ?? [];
+  }
+
+  private graphCacheGame: FullGame | undefined;
+  private graphCacheLevels: GraphLevel[] = [];
+
+  getGraphLevels(): GraphLevel[] {
+    const game = this.getGame();
+    if (!game) {
+      return [];
+    }
+    if (this.graphCacheGame !== game) {
+      this.graphCacheGame = game;
+      this.graphCacheLevels = routingGraphFromGame(game);
+    }
+    return this.graphCacheLevels;
+  }
+
+  onGraphLevelSelected(id: string): void {
+    scrollToLevel(id);
   }
 
   isLoading(): boolean {
