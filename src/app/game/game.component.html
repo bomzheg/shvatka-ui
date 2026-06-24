@@ -12,8 +12,44 @@
 @if (hasLoadedData()) {
   <h2 class="game-name">{{ getGame()!.name }}</h2>
   <details>
-    <summary class="game-scn-spoiler">Сценарий игры</summary>
-    <app-game-scenario-part [game]="getGame()!"></app-game-scenario-part>
+    <summary class="game-scn-spoiler">Сценарий</summary>
+    <div class="scenario-tabs" role="tablist">
+      <button
+        type="button"
+        class="scenario-tab"
+        role="tab"
+        [class.scenario-tab-active]="scenarioTab === 'compact'"
+        [attr.aria-selected]="scenarioTab === 'compact'"
+        (click)="setScenarioTab('compact')"
+      >Ключи и таймеры</button>
+      <button
+        type="button"
+        class="scenario-tab"
+        role="tab"
+        [class.scenario-tab-active]="scenarioTab === 'full'"
+        [attr.aria-selected]="scenarioTab === 'full'"
+        (click)="setScenarioTab('full')"
+      >Сценарий</button>
+      <button
+        type="button"
+        class="scenario-tab"
+        role="tab"
+        [class.scenario-tab-active]="scenarioTab === 'graph'"
+        [attr.aria-selected]="scenarioTab === 'graph'"
+        (click)="setScenarioTab('graph')"
+      >Граф переходов</button>
+    </div>
+
+    <div class="scenario-tab-panel" role="tabpanel">
+      @if (scenarioTab === 'compact') {
+        <app-game-scenario-compact-part [game]="getGame()!"></app-game-scenario-compact-part>
+      } @else if (scenarioTab === 'full') {
+        <app-game-scenario-part [game]="getGame()!"></app-game-scenario-part>
+      } @else {
+        <app-scenario-graph-part [levels]="getGraphLevels()"
+                                 (levelSelected)="onGraphLevelSelected($event)"></app-scenario-graph-part>
+      }
+    </div>
   </details>
 
   <details class="game-waivers" (toggle)="onWaiversToggle($event)">
@@ -49,12 +85,6 @@
         </ul>
       }
     </div>
-  </details>
-
-  <details>
-    <summary class="game-graph-spoiler">Граф переходов</summary>
-    <app-scenario-graph-part [levels]="getGraphLevels()"
-                             (levelSelected)="onGraphLevelSelected($event)"></app-scenario-graph-part>
   </details>
 
   <app-game-log-part [keys]="getKeys()" [stat]="getStat()" [levels]="getLevels()" [isCompleted]="true"></app-game-log-part>

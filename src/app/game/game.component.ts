@@ -5,6 +5,7 @@ import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {Subscription} from "rxjs";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
+import {GameScenarioCompactPartComponent} from "../game_scenario_compact.part/game_scenario_compact.part.component";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GraphLevel, routingGraphFromGame} from "../scenario_graph.part/scenario_graph.model";
 import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
@@ -15,6 +16,7 @@ import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
   imports: [
     GameLogPartComponent,
     GameScenarioPartComponent,
+    GameScenarioCompactPartComponent,
     RouterLink,
     ScenarioGraphPartComponent,
   ],
@@ -23,6 +25,7 @@ import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 })
 export class GameComponent implements OnInit, OnDestroy {
   private routeSubscription: Subscription | undefined;
+  scenarioTab: 'compact' | 'full' | 'graph' = 'compact';
 
   constructor(
     private gameService: GameService,
@@ -78,6 +81,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
   onGraphLevelSelected(id: string): void {
     scrollToLevel(id);
+  }
+
+  setScenarioTab(tab: 'compact' | 'full' | 'graph'): void {
+    this.scenarioTab = tab;
   }
 
   isLoading(): boolean {
