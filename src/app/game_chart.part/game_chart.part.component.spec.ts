@@ -92,6 +92,45 @@ describe('GameChartPartComponent', () => {
     expect(segments(withHint.model.series[0].d)).toBe(segments(noHint.model.series[0].d) + 2);
   });
 
+  it('isolates / multi-selects / clears teams from the legend', () => {
+    const a = team(1, 'Alpha');
+    const b = team(2, 'Bravo');
+    const c = team(3, 'Charlie');
+    const cmp = makeComponent();
+    cmp.levels = [level(0, [0]), level(1, [0])];
+    cmp.gameStartAt = START;
+    cmp.stat = stat({
+      '1': [levelTime(a, 0, 'lvl-0', 0), levelTime(a, 1, 'lvl-1', 10)],
+      '2': [levelTime(b, 0, 'lvl-0', 0), levelTime(b, 1, 'lvl-1', 20)],
+      '3': [levelTime(c, 0, 'lvl-0', 0), levelTime(c, 1, 'lvl-1', 30)],
+    });
+
+    // No selection: everything visible.
+    expect([1, 2, 3].every(id => cmp.isVisible(id))).toBeTrue();
+    expect(cmp.hasSelection()).toBeFalse();
+
+    // Plain click isolates one team.
+    cmp.onLegendClick(1, new MouseEvent('click'));
+    expect(cmp.isVisible(1)).toBeTrue();
+    expect(cmp.isVisible(2)).toBeFalse();
+    expect(cmp.isVisible(3)).toBeFalse();
+
+    // Ctrl+click adds a second team.
+    cmp.onLegendClick(3, new MouseEvent('click', {ctrlKey: true}));
+    expect(cmp.isVisible(1)).toBeTrue();
+    expect(cmp.isVisible(3)).toBeTrue();
+    expect(cmp.isVisible(2)).toBeFalse();
+
+    // Ctrl+click an active team removes it again.
+    cmp.onLegendClick(3, new MouseEvent('click', {ctrlKey: true}));
+    expect(cmp.isVisible(3)).toBeFalse();
+
+    // Plain click on the (now sole) selected team clears the filter -> all shown.
+    cmp.onLegendClick(1, new MouseEvent('click'));
+    expect(cmp.hasSelection()).toBeFalse();
+    expect([1, 2, 3].every(id => cmp.isVisible(id))).toBeTrue();
+  });
+
   it('drops hints the team never reached before leveling up', () => {
     const a = team(1, 'Alpha');
     // Hint scheduled at 40 min but the team solves the level after 20 min.

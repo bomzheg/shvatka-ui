@@ -59,7 +59,7 @@
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.35rem 0.9rem;
+  gap: 0.35rem 0.6rem;
 }
 
 .legend-item {
@@ -67,6 +67,27 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
+  padding: 0.15rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.legend-item:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
+.legend-item-active {
+  border-color: #cbd5e1;
+  background: rgba(127, 127, 127, 0.12);
+  font-weight: 600;
+}
+
+.legend-item-dim {
+  opacity: 0.4;
 }
 
 .legend-swatch {

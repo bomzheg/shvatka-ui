@@ -103,8 +103,47 @@ export class GameChartPartComponent {
     return this.model.hasData;
   }
 
+  /** Teams the user has isolated via the legend. Empty means "show all". */
+  private selectedTeams = new Set<number>();
+
+  /**
+   * Legend click filtering:
+   * - plain click on an unselected team isolates it (shows only that team);
+   * - plain click on an already-selected team clears the filter (shows all);
+   * - ctrl/⌘+click toggles a team in or out of the current selection.
+   */
+  onLegendClick(teamId: number, event: MouseEvent): void {
+    const multi = event.ctrlKey || event.metaKey;
+    if (multi) {
+      const next = new Set(this.selectedTeams);
+      if (next.has(teamId)) {
+        next.delete(teamId);
+      } else {
+        next.add(teamId);
+      }
+      this.selectedTeams = next;
+      return;
+    }
+
+    this.selectedTeams = this.selectedTeams.has(teamId) ? new Set() : new Set([teamId]);
+  }
+
+  hasSelection(): boolean {
+    return this.selectedTeams.size > 0;
+  }
+
+  isSelected(teamId: number): boolean {
+    return this.selectedTeams.has(teamId);
+  }
+
+  /** A team's line is drawn when nothing is filtered, or it is in the selection. */
+  isVisible(teamId: number): boolean {
+    return this.selectedTeams.size === 0 || this.selectedTeams.has(teamId);
+  }
+
   private invalidate(): void {
     this.cachedModel = undefined;
+    this.selectedTeams = new Set();
   }
 
   private emptyModel(): ChartModel {

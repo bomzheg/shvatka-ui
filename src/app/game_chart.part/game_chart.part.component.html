@@ -55,16 +55,28 @@
 
       <!-- Team progress lines -->
       @for (s of model.series; track s.teamId) {
-        <path class="series-line" [attr.d]="s.d" [attr.stroke]="s.color" />
+        @if (isVisible(s.teamId)) {
+          <path class="series-line" [attr.d]="s.d" [attr.stroke]="s.color" />
+        }
       }
     </svg>
   </div>
 
   <ul class="chart-legend">
     @for (s of model.series; track s.teamId) {
-      <li class="legend-item">
-        <span class="legend-swatch" [style.background-color]="s.color"></span>
-        <span class="legend-name">{{ s.teamName }}</span>
+      <li>
+        <button
+          type="button"
+          class="legend-item"
+          [class.legend-item-dim]="hasSelection() && !isSelected(s.teamId)"
+          [class.legend-item-active]="isSelected(s.teamId)"
+          [attr.aria-pressed]="isSelected(s.teamId)"
+          title="Клик — показать только эту команду; Ctrl/⌘+клик — добавить к выбору"
+          (click)="onLegendClick(s.teamId, $event)"
+        >
+          <span class="legend-swatch" [style.background-color]="s.color"></span>
+          <span class="legend-name">{{ s.teamName }}</span>
+        </button>
       </li>
     }
   </ul>
