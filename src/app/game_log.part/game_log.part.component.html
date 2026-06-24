@@ -42,43 +42,63 @@
 }
 
 @if (stat) {
-  @if (!isCompleted) {
+  @if (!isCompleted || pivotData.length > 0) {
     <details [open]="statDetailsOpen" (toggle)="onStatDetailsToggle($any($event.target).open)">
       <summary class="game-stat-spoiler">Результаты игры@if (statLoading) {<span class="spoiler-loading"><span class="spoiler-loader"></span>обновление…</span>}</summary>
-      <div class="game-stat">
-        @if (sortedStatEntries.length > 0) {
-          <div class="table-wrap">
-            <table>
-              <thead>
-              <tr>
-                <th class="stat-level-column">№</th>
-                <th>Команда</th>
-                <th>Время на уровне</th>
-              </tr>
-              </thead>
-              <tbody>
-                @for (results of sortedStatEntries; track results[0]) {
-                  @if (results[1].length > 0) {
-                    <tr>
-                      <td class="stat-level-column">{{ getCurrentLevelLabel(results[1]) }}</td>
-                      <td>
-                        <a class="team-link" [routerLink]="['/teams', results[1][0].team.id]">{{ results[1][0].team.name }}</a>
-                      </td>
-                      <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
-                    </tr>
-                  }
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </div>
-    </details>
-  }
 
-  @if (pivotData.length > 0) {
-    <details [open]="pivotDetailsOpen" (toggle)="onPivotDetailsToggle($any($event.target).open)">
-      <summary class="game-stat-spoiler">{{ isCompleted ? 'Результаты игры' : 'Статистика по уровням' }}@if (statLoading) {<span class="spoiler-loading"><span class="spoiler-loader"></span>обновление…</span>}</summary>
+      @if (showStatTabs()) {
+        <div class="stat-tabs" role="tablist">
+          <button
+            type="button"
+            class="stat-tab"
+            role="tab"
+            [class.stat-tab-active]="statTab === 'results'"
+            [attr.aria-selected]="statTab === 'results'"
+            (click)="setStatTab('results')"
+          >Результаты игры</button>
+          <button
+            type="button"
+            class="stat-tab"
+            role="tab"
+            [class.stat-tab-active]="statTab === 'pivot'"
+            [attr.aria-selected]="statTab === 'pivot'"
+            (click)="setStatTab('pivot')"
+          >Статистика по уровням</button>
+        </div>
+      }
+
+      @if (showCurrentStandings()) {
+        <div class="game-stat">
+          @if (sortedStatEntries.length > 0) {
+            <div class="table-wrap">
+              <table>
+                <thead>
+                <tr>
+                  <th class="stat-level-column">№</th>
+                  <th>Команда</th>
+                  <th>Время на уровне</th>
+                </tr>
+                </thead>
+                <tbody>
+                  @for (results of sortedStatEntries; track results[0]) {
+                    @if (results[1].length > 0) {
+                      <tr>
+                        <td class="stat-level-column">{{ getCurrentLevelLabel(results[1]) }}</td>
+                        <td>
+                          <a class="team-link" [routerLink]="['/teams', results[1][0].team.id]">{{ results[1][0].team.name }}</a>
+                        </td>
+                        <td [title]="getLevelStartedAtTitle(results[1])">{{ getCurrentLevelDuration(results[1]) }}</td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
+
+      @if (showPivotTable()) {
       <div class="game-stat">
         <h4 class="pivot-title">Время прохождения</h4>
         <div class="table-wrap">
@@ -144,6 +164,7 @@
           </table>
         </div>
       </div>
+      }
     </details>
   }
 }

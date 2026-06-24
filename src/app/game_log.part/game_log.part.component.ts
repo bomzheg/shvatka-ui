@@ -71,7 +71,27 @@ export class GameLogPartComponent {
   keysDetailsOpen = false;
   statDetailsOpen = false;
   pivotDetailsOpen = false;
+  statTab: 'results' | 'pivot' = 'results';
   private teamKeysOpenState: Record<string, boolean> = {};
+
+  setStatTab(tab: 'results' | 'pivot'): void {
+    this.statTab = tab;
+  }
+
+  /** Both the standings and the per-level pivot are available, so tabs are shown. */
+  showStatTabs(): boolean {
+    return !this.isCompleted && this.pivotData.length > 0;
+  }
+
+  /** Current-level standings table (hidden once the game is completed). */
+  showCurrentStandings(): boolean {
+    return !this.isCompleted && (this.statTab === 'results' || this.pivotData.length === 0);
+  }
+
+  /** Per-level pivot table. Becomes the sole "Результаты игры" view when completed. */
+  showPivotTable(): boolean {
+    return this.pivotData.length > 0 && (this.isCompleted || this.statTab === 'pivot');
+  }
 
   private buildSortedTeamKeysEntries(keys: Keys | undefined): [string, KeyTime[]][] {
     if (!keys) {

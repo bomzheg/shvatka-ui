@@ -18,6 +18,30 @@ summary {
   margin-bottom: 0.5rem;
 }
 
+.stat-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.stat-tab {
+  flex: 1 1 auto;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  background: #e5e7eb;
+  color: #111827;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.stat-tab-active {
+  background: #2f8f4e;
+  color: var(--tg-theme-button-text-color, #fff);
+  border-color: #2f8f4e;
+}
+
 .spoiler-loading {
   display: inline-flex;
   align-items: center;
