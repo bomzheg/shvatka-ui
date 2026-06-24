@@ -44,13 +44,12 @@ const PALETTE = [
   '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf',
 ];
 
-const X_STEPS_MIN = [5, 10, 15, 20, 30, 45, 60, 90, 120, 180, 240, 360];
-
 /**
  * Draws each team's level progress over a completed game as a step line:
- * x is minutes since the game start, y is the level the team is on. While a team
- * sits on a level, every time-hint it was shown raises the line a little — a small
- * "stair" — so a long climb of stairs reads as a team that was stuck.
+ * x is wall-clock time (the plot is anchored at the game's start_at and the
+ * gridlines fall on round clock boundaries), y is the level the team is on.
+ * While a team sits on a level, every time-hint it was shown raises the line a
+ * little — a small "stair" — so a long climb of stairs reads as a team stuck.
  *
  * Hint stair height follows the game rules: 0.1 of a level per hint when a level
  * has up to 5 hints, otherwise the hints share 0.5 of a level between them. The
@@ -249,7 +248,8 @@ export class GameChartPartComponent {
     }
 
     const xStep = this.niceXStep(xMax);
-    const xMaxDomain = Math.max(Math.ceil(xMax / xStep) * xStep, xStep);
+    // Domain spans from the game start (elapsed 0) to a little past the last point.
+    const xMaxDomain = Math.max(xMax * 1.02, xStep / 4, 1);
     const yMaxDomain = Math.max(yMax, 2);
 
     const plotLeft = PAD_LEFT;
@@ -269,9 +269,22 @@ export class GameChartPartComponent {
         .join(' '),
     }));
 
+    // Gridlines sit on round clock boundaries (e.g. whole hours), not on the
+    // game start: a 9:37 start still gets its first tick at 10:00, then 11:00…
     const xTicks: AxisTick[] = [];
-    for (let t = 0; t <= xMaxDomain + 1e-6; t += xStep) {
-      xTicks.push({pos: sx(t), label: this.formatElapsed(t)});
+    const stepMs = xStep * MIN_MS;
+    const originDate = new Date(origin);
+    const localMidnight = new Date(
+      originDate.getFullYear(), originDate.getMonth(), originDate.getDate(),
+    ).getTime();
+    const domainEndMs = origin + xMaxDomain * MIN_MS;
+    let tickMs = localMidnight + Math.ceil((origin - localMidnight) / stepMs) * stepMs;
+    for (; tickMs <= domainEndMs + 1; tickMs += stepMs) {
+      const elapsed = (tickMs - origin) / MIN_MS;
+      if (elapsed < -1e-6) {
+        continue;
+      }
+      xTicks.push({pos: sx(elapsed), label: this.formatClock(tickMs)});
     }
 
     const yTicks: AxisTick[] = [];
@@ -322,21 +335,25 @@ export class GameChartPartComponent {
     return times[0]?.team?.name ?? '—';
   }
 
+  /**
+   * Picks a clock-friendly tick interval (minutes). Every candidate divides a
+   * day, so ticks land on round clock times. Games of two hours or more use
+   * whole-hour steps so the axis reads 10:00, 11:00, 12:00…
+   */
   private niceXStep(xMax: number): number {
-    for (const step of X_STEPS_MIN) {
-      if (xMax / step <= 8) {
+    const candidates = xMax >= 120 ? [60, 120, 180, 240, 360] : [5, 10, 15, 30, 60];
+    for (const step of candidates) {
+      if (xMax / step <= 7) {
         return step;
       }
     }
-    return X_STEPS_MIN[X_STEPS_MIN.length - 1];
+    return candidates[candidates.length - 1];
   }
 
-  /** Elapsed minutes since start, formatted as H:MM (e.g. 90 -> "1:30"). */
-  private formatElapsed(minutes: number): string {
-    const total = Math.round(minutes);
-    const h = Math.floor(total / 60);
-    const m = total % 60;
-    return `${h}:${String(m).padStart(2, '0')}`;
+  /** Local wall-clock time of an absolute instant, as HH:MM (e.g. "13:00"). */
+  private formatClock(ms: number): string {
+    const d = new Date(ms);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
   }
 
   private parseMs(value: string | Date | undefined): number | undefined {

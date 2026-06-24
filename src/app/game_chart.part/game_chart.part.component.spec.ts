@@ -74,6 +74,27 @@ describe('GameChartPartComponent', () => {
     expect(model.series[0].color).not.toBe(model.series[1].color);
   });
 
+  it('places x gridlines on round clock hours anchored at start_at', () => {
+    const a = team(1, 'Alpha');
+    // Game starts at a ragged minute; spans ~3h so it should tick on whole hours.
+    const startAt = '2024-01-01T09:37:00';
+    const start = Date.parse(startAt);
+    const c = makeComponent();
+    c.levels = [level(0, [0]), level(1, [0])];
+    c.gameStartAt = startAt;
+    c.stat = stat({
+      '1': [
+        new LevelTime(0, game([]), a, 0, 'lvl-0', new Date(start), false),
+        new LevelTime(1, game([]), a, 1, 'lvl-1', new Date(start + 190 * 60_000), false),
+      ],
+    });
+
+    const labels = c.model.xTicks.map(t => t.label);
+    // First tick is the next whole hour after 09:37, then each following hour.
+    expect(labels[0]).toBe('10:00');
+    expect(labels).toEqual(['10:00', '11:00', '12:00']);
+  });
+
   it('ignores the minute-0 prompt when drawing hint stairs', () => {
     const a = team(1, 'Alpha');
     // Level 0 has a prompt at 0 and a real hint at 10 min; team stays 30 min.
