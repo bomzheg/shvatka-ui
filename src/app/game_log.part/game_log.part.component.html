@@ -1,15 +1,34 @@
 @if (keys) {
   <details [open]="keysDetailsOpen" (toggle)="onKeysDetailsToggle($any($event.target).open)">
     <summary class="game-keys-spoiler">Ключи@if (keysLoading) {<span class="spoiler-loading"><span class="spoiler-loader"></span>обновление…</span>}</summary>
-    <div class="keys-filters">
-      <label class="keys-filter">
-        <input type="checkbox" [checked]="showWrongKeys" (change)="onToggleShowWrongKeys($any($event.target).checked)">
-        Показывать неверные ключи
-      </label>
-      <label class="keys-filter">
-        <input type="checkbox" [checked]="showDuplicateKeys" (change)="onToggleShowDuplicateKeys($any($event.target).checked)">
-        Показывать повторные ключи
-      </label>
+    <div class="keys-filters-bar">
+      <button
+        type="button"
+        class="keys-filters-toggle"
+        [class.keys-filters-toggle-active]="filtersExpanded"
+        [attr.aria-expanded]="filtersExpanded"
+        (click)="toggleFilters()"
+      >Фильтры</button>
+      @if (filtersExpanded) {
+        <div class="keys-filters">
+          <label class="keys-filter">
+            <input type="checkbox" [checked]="showCorrectKeys" (change)="onToggleShowCorrectKeys($any($event.target).checked)">
+            верные
+          </label>
+          <label class="keys-filter">
+            <input type="checkbox" [checked]="showWrongKeys" (change)="onToggleShowWrongKeys($any($event.target).checked)">
+            неверные
+          </label>
+          <label class="keys-filter">
+            <input type="checkbox" [checked]="showEffectsKeys" (change)="onToggleShowEffectsKeys($any($event.target).checked)">
+            эффекты
+          </label>
+          <label class="keys-filter">
+            <input type="checkbox" [checked]="showDuplicateKeys" (change)="onToggleShowDuplicateKeys($any($event.target).checked)">
+            дубли
+          </label>
+        </div>
+      }
     </div>
     <div class="keys-log">
       @for (teamKeys of displayedTeamKeysEntries; track teamKeys[0]) {

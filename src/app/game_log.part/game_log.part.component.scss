@@ -104,11 +104,34 @@ td {
   display: none;
 }
 
+.keys-filters-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.keys-filters-toggle {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  background: #e5e7eb;
+  color: #111827;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.keys-filters-toggle-active {
+  background: #2f8f4e;
+  color: var(--tg-theme-button-text-color, #fff);
+  border-color: #2f8f4e;
+}
+
 .keys-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem 1rem;
-  margin-bottom: 0.75rem;
 }
 
 .keys-filter {

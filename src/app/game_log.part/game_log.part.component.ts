@@ -72,7 +72,10 @@ export class GameLogPartComponent {
   minAbsoluteTimePerLevel: Map<number, number> = new Map();
   levelNameIds: Map<number, string> = new Map();
 
+  filtersExpanded = false;
   showWrongKeys = true;
+  showCorrectKeys = true;
+  showEffectsKeys = true;
   showDuplicateKeys = true;
 
   keysDetailsOpen = false;
@@ -133,15 +136,24 @@ export class GameLogPartComponent {
       ]);
   }
 
-  /** A key is hidden when its category filter (wrong / duplicate) is switched off. */
+  /**
+   * A key must pass every category it belongs to. The duplicate flag is
+   * independent of the key type, so a wrong duplicate is hidden when either
+   * "неверные" or "дубли" is off, a correct duplicate when "верные" or "дубли"
+   * is off, and so on.
+   */
   private isKeyVisible(key: KeyTime): boolean {
-    if (key.is_duplicate) {
-      return this.showDuplicateKeys;
+    if (key.is_duplicate && !this.showDuplicateKeys) {
+      return false;
     }
-    if (key.type_ === KeyType.wrong) {
-      return this.showWrongKeys;
+    switch (key.type_) {
+      case KeyType.wrong:
+        return this.showWrongKeys;
+      case KeyType.effects:
+        return this.showEffectsKeys;
+      default:
+        return this.showCorrectKeys;
     }
-    return true;
   }
 
   private applyKeyFilters(): void {
@@ -149,8 +161,22 @@ export class GameLogPartComponent {
       .map(([teamId, teamKeys]) => [teamId, teamKeys.filter(key => this.isKeyVisible(key))] as [string, KeyTime[]]);
   }
 
+  toggleFilters(): void {
+    this.filtersExpanded = !this.filtersExpanded;
+  }
+
   onToggleShowWrongKeys(value: boolean): void {
     this.showWrongKeys = value;
+    this.applyKeyFilters();
+  }
+
+  onToggleShowCorrectKeys(value: boolean): void {
+    this.showCorrectKeys = value;
+    this.applyKeyFilters();
+  }
+
+  onToggleShowEffectsKeys(value: boolean): void {
+    this.showEffectsKeys = value;
     this.applyKeyFilters();
   }
 
