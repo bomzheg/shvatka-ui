@@ -1,8 +1,37 @@
 @if (keys) {
   <details [open]="keysDetailsOpen" (toggle)="onKeysDetailsToggle($any($event.target).open)">
     <summary class="game-keys-spoiler">Ключи@if (keysLoading) {<span class="spoiler-loading"><span class="spoiler-loader"></span>обновление…</span>}</summary>
+    <div class="keys-filters-bar">
+      <button
+        type="button"
+        class="keys-filters-toggle"
+        [class.keys-filters-toggle-active]="filtersExpanded"
+        [attr.aria-expanded]="filtersExpanded"
+        (click)="toggleFilters()"
+      >Фильтры</button>
+      @if (filtersExpanded) {
+        <div class="keys-filters">
+          <label class="keys-filter">
+            <input type="checkbox" [checked]="showCorrectKeys" (change)="onToggleShowCorrectKeys($any($event.target).checked)">
+            верные
+          </label>
+          <label class="keys-filter">
+            <input type="checkbox" [checked]="showWrongKeys" (change)="onToggleShowWrongKeys($any($event.target).checked)">
+            неверные
+          </label>
+          <label class="keys-filter">
+            <input type="checkbox" [checked]="showEffectsKeys" (change)="onToggleShowEffectsKeys($any($event.target).checked)">
+            эффекты
+          </label>
+          <label class="keys-filter">
+            <input type="checkbox" [checked]="showDuplicateKeys" (change)="onToggleShowDuplicateKeys($any($event.target).checked)">
+            дубли
+          </label>
+        </div>
+      }
+    </div>
     <div class="keys-log">
-      @for (teamKeys of sortedTeamKeysEntries; track teamKeys[0]) {
+      @for (teamKeys of displayedTeamKeysEntries; track teamKeys[0]) {
         @if (teamKeys[1].length > 0) {
           <details [open]="isTeamKeysOpen(teamKeys[0], teamKeys[1].length)" (toggle)="onTeamKeysToggle(teamKeys[0], $any($event.target).open)">
             <summary>{{ teamKeys[1][0].team.name }} ({{ teamKeys[1].length }})</summary>
@@ -18,7 +47,7 @@
                 <tbody>
                   @for (key of teamKeys[1]; track key) {
                     <tr>
-                      <td class="key-time">{{ toLocalHm(key.at) }}</td>
+                      <td class="key-time"><span class="key-time-full">{{ toLocalHms(key.at) }}</span><span class="key-time-short">{{ toLocalHm(key.at) }}</span></td>
                       <td>
                         <span class="key-type-inline" [class]="keyTypeClass(key)"><mat-icon class="app-icon-inline" [svgIcon]="keyTypeIcon(key)"/></span>{{ key.text }}
                       </td>

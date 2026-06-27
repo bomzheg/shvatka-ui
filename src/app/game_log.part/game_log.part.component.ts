@@ -30,6 +30,7 @@ export class GameLogPartComponent {
   set keys(value: Keys | undefined) {
     this._keys = value;
     this.sortedTeamKeysEntries = this.buildSortedTeamKeysEntries(value);
+    this.applyKeyFilters();
     if (value) {
       this.keysDetailsOpen = this.keysDetailsOpen || this.openKeys;
     }
@@ -63,12 +64,19 @@ export class GameLogPartComponent {
   @Input() statLoading = false;
 
   sortedTeamKeysEntries: [string, KeyTime[]][] = [];
+  displayedTeamKeysEntries: [string, KeyTime[]][] = [];
   sortedStatEntries: [string, LevelTime[]][] = [];
   pivotData: TeamPivotData[] = [];
   allLevelNumbers: number[] = [];
   minDurationPerLevel: Map<number, number> = new Map();
   minAbsoluteTimePerLevel: Map<number, number> = new Map();
   levelNameIds: Map<number, string> = new Map();
+
+  filtersExpanded = false;
+  showWrongKeys = true;
+  showCorrectKeys = true;
+  showEffectsKeys = true;
+  showDuplicateKeys = true;
 
   keysDetailsOpen = false;
   statDetailsOpen = false;
@@ -126,6 +134,55 @@ export class GameLogPartComponent {
         teamId,
         [...teamKeys].sort((a, b) => (this.parseDate(b.at) ?? 0) - (this.parseDate(a.at) ?? 0)),
       ]);
+  }
+
+  /**
+   * A key must pass every category it belongs to. The duplicate flag is
+   * independent of the key type, so a wrong duplicate is hidden when either
+   * "неверные" or "дубли" is off, a correct duplicate when "верные" or "дубли"
+   * is off, and so on.
+   */
+  private isKeyVisible(key: KeyTime): boolean {
+    if (key.is_duplicate && !this.showDuplicateKeys) {
+      return false;
+    }
+    switch (key.type_) {
+      case KeyType.wrong:
+        return this.showWrongKeys;
+      case KeyType.effects:
+        return this.showEffectsKeys;
+      default:
+        return this.showCorrectKeys;
+    }
+  }
+
+  private applyKeyFilters(): void {
+    this.displayedTeamKeysEntries = this.sortedTeamKeysEntries
+      .map(([teamId, teamKeys]) => [teamId, teamKeys.filter(key => this.isKeyVisible(key))] as [string, KeyTime[]]);
+  }
+
+  toggleFilters(): void {
+    this.filtersExpanded = !this.filtersExpanded;
+  }
+
+  onToggleShowWrongKeys(value: boolean): void {
+    this.showWrongKeys = value;
+    this.applyKeyFilters();
+  }
+
+  onToggleShowCorrectKeys(value: boolean): void {
+    this.showCorrectKeys = value;
+    this.applyKeyFilters();
+  }
+
+  onToggleShowEffectsKeys(value: boolean): void {
+    this.showEffectsKeys = value;
+    this.applyKeyFilters();
+  }
+
+  onToggleShowDuplicateKeys(value: boolean): void {
+    this.showDuplicateKeys = value;
+    this.applyKeyFilters();
   }
 
   private buildSortedStatEntries(stat: GameStat | undefined): [string, LevelTime[]][] {
