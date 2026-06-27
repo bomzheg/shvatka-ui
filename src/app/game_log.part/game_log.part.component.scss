@@ -94,9 +94,34 @@ td {
 }
 
 .key-time {
-  width: 3.7rem;
-  min-width: 3.7rem;
+  width: 4.7rem;
+  min-width: 4.7rem;
   white-space: nowrap;
+}
+
+// PC has room for seconds; phones fall back to HH:MM (see media query below).
+.key-time-short {
+  display: none;
+}
+
+.keys-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.keys-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+
+  input {
+    cursor: pointer;
+  }
 }
 
 .key-type-inline {
@@ -205,6 +230,14 @@ td {
   .key-time {
     width: 3.2rem;
     min-width: 3.2rem;
+  }
+
+  .key-time-full {
+    display: none;
+  }
+
+  .key-time-short {
+    display: inline;
   }
 
   .pivot-table .team-name-cell {

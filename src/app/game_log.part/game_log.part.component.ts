@@ -30,6 +30,7 @@ export class GameLogPartComponent {
   set keys(value: Keys | undefined) {
     this._keys = value;
     this.sortedTeamKeysEntries = this.buildSortedTeamKeysEntries(value);
+    this.applyKeyFilters();
     if (value) {
       this.keysDetailsOpen = this.keysDetailsOpen || this.openKeys;
     }
@@ -63,12 +64,16 @@ export class GameLogPartComponent {
   @Input() statLoading = false;
 
   sortedTeamKeysEntries: [string, KeyTime[]][] = [];
+  displayedTeamKeysEntries: [string, KeyTime[]][] = [];
   sortedStatEntries: [string, LevelTime[]][] = [];
   pivotData: TeamPivotData[] = [];
   allLevelNumbers: number[] = [];
   minDurationPerLevel: Map<number, number> = new Map();
   minAbsoluteTimePerLevel: Map<number, number> = new Map();
   levelNameIds: Map<number, string> = new Map();
+
+  showWrongKeys = true;
+  showDuplicateKeys = true;
 
   keysDetailsOpen = false;
   statDetailsOpen = false;
@@ -126,6 +131,32 @@ export class GameLogPartComponent {
         teamId,
         [...teamKeys].sort((a, b) => (this.parseDate(b.at) ?? 0) - (this.parseDate(a.at) ?? 0)),
       ]);
+  }
+
+  /** A key is hidden when its category filter (wrong / duplicate) is switched off. */
+  private isKeyVisible(key: KeyTime): boolean {
+    if (key.is_duplicate) {
+      return this.showDuplicateKeys;
+    }
+    if (key.type_ === KeyType.wrong) {
+      return this.showWrongKeys;
+    }
+    return true;
+  }
+
+  private applyKeyFilters(): void {
+    this.displayedTeamKeysEntries = this.sortedTeamKeysEntries
+      .map(([teamId, teamKeys]) => [teamId, teamKeys.filter(key => this.isKeyVisible(key))] as [string, KeyTime[]]);
+  }
+
+  onToggleShowWrongKeys(value: boolean): void {
+    this.showWrongKeys = value;
+    this.applyKeyFilters();
+  }
+
+  onToggleShowDuplicateKeys(value: boolean): void {
+    this.showDuplicateKeys = value;
+    this.applyKeyFilters();
   }
 
   private buildSortedStatEntries(stat: GameStat | undefined): [string, LevelTime[]][] {
