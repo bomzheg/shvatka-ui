@@ -1,13 +1,14 @@
 .chart-scroll {
   width: 100%;
-  overflow-x: auto;
 }
 
 .chart-svg {
   display: block;
-  max-width: 100%;
+  // Always fill the available width; the viewBox keeps the aspect ratio so the
+  // chart scales down on phones and grows to fill the column on desktop instead
+  // of being pinned to its intrinsic pixel size.
+  width: 100%;
   height: auto;
-  min-width: 320px;
   // Let a touch-drag inspect the chart instead of scrolling the page.
   touch-action: none;
 }

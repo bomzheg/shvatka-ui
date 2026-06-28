@@ -18,6 +18,29 @@ summary {
   margin-bottom: 0.5rem;
 }
 
+.chart-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.chart-view-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: var(--app-accent);
+  text-decoration: none;
+  background: none;
+}
+
+.chart-view-link:hover {
+  background: rgba(127, 127, 127, 0.12);
+}
+
 .stat-tabs {
   display: flex;
   flex-wrap: wrap;

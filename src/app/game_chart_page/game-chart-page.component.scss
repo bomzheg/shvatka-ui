@@ -1,0 +1,39 @@
+.chart-page-title {
+  text-align: center;
+  margin: 0 0 1rem;
+}
+
+.chart-page-body {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: var(--app-surface);
+  padding: 0.75rem;
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.loading-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: chart-page-spin 0.8s linear infinite;
+}
+
+@keyframes chart-page-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  color: #6b7280;
+}
