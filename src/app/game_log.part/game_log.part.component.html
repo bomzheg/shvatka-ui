@@ -218,6 +218,15 @@
 
       @if (showCompletedChart()) {
         <div class="game-stat">
+          @if (gameId !== undefined) {
+            <div class="chart-toolbar">
+              <a
+                class="chart-view-link"
+                [routerLink]="['/games', gameId, 'chart']"
+                title="Открыть график на отдельной странице"
+              ><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.openInFull"/>Открыть отдельно</a>
+            </div>
+          }
           <app-game-chart-part
             [stat]="stat"
             [levels]="levels"

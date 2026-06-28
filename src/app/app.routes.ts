@@ -2,6 +2,7 @@ import {Routes} from '@angular/router';
 import {GamesComponent} from "./games/games.component";
 import {HomeComponent} from "./home/home.component";
 import {GameComponent} from "./game/game.component";
+import {GameChartPageComponent} from "./game_chart_page/game-chart-page.component";
 import {GamePlayComponent} from "./game_play/game_play.component";
 import {ProfileComponent} from "./profile/profile.component";
 import {OneTimeTokenComponent} from "./auth/one-time-token.component";
@@ -19,6 +20,7 @@ export const routes: Routes = [
   {path: "games/running", component: GamePlayComponent},
   {path: "games/constructor", component: ConstructorComponent},
   {path: "games/constructor/:id", component: GameEditorComponent},
+  {path: "games/:id/chart", component: GameChartPageComponent},
   {path: "games/:id", component: GameComponent},
   {path: "team", component: CaptainBridgeComponent},
   {path: "teams", component: TeamsComponent},

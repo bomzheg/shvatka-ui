@@ -9,6 +9,7 @@ import {GameScenarioCompactPartComponent} from "../game_scenario_compact.part/ga
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GraphLevel, routingGraphFromGame} from "../scenario_graph.part/scenario_graph.model";
 import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
+import {BreadcrumbsComponent, Breadcrumb} from "../ui/breadcrumbs/breadcrumbs.component";
 
 @Component({
   selector: 'app-game',
@@ -19,6 +20,7 @@ import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
     GameScenarioCompactPartComponent,
     RouterLink,
     ScenarioGraphPartComponent,
+    BreadcrumbsComponent,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
@@ -26,6 +28,7 @@ import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 export class GameComponent implements OnInit, OnDestroy {
   private routeSubscription: Subscription | undefined;
   scenarioTab: 'compact' | 'full' | 'graph' = 'compact';
+  gameId: number | undefined;
 
   constructor(
     private gameService: GameService,
@@ -40,6 +43,7 @@ export class GameComponent implements OnInit, OnDestroy {
         return;
       }
 
+      this.gameId = gameId;
       this.gameService.loadGame(gameId);
     });
   }
@@ -50,6 +54,13 @@ export class GameComponent implements OnInit, OnDestroy {
 
   getGame(): FullGame | undefined {
     return this.gameService.getGame();
+  }
+
+  getBreadcrumbs(): Breadcrumb[] {
+    return [
+      {label: 'Игры', link: ['/games']},
+      {label: this.getGame()?.name ?? 'Игра'},
+    ];
   }
 
   getKeys(): Keys | undefined {

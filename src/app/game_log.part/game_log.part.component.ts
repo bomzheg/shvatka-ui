@@ -57,6 +57,8 @@ export class GameLogPartComponent {
 
   @Input() levels: Level[] = [];
   @Input() gameStartAt: string | undefined;
+  /** When set, the chart tab offers a link to its standalone full-page view. */
+  @Input() gameId: number | undefined;
   @Input() openKeys = false;
   @Input() openStat = false;
   @Input() isCompleted = false;

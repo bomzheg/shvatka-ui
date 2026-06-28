@@ -1,0 +1,23 @@
+<app-breadcrumbs [crumbs]="getBreadcrumbs()"></app-breadcrumbs>
+
+@if (isLoading() && !hasLoadedData()) {
+  <div class="loading-state" aria-live="polite">
+    <span class="loading-spinner"></span>
+    Загрузка данных игры...
+  </div>
+}
+
+@if (!isLoading() && !hasLoadedData()) {
+  <p class="empty-state">Не удалось загрузить данные игры.</p>
+}
+
+@if (hasLoadedData()) {
+  <h2 class="chart-page-title">{{ getGame()!.name }} — график</h2>
+  <div class="chart-page-body">
+    <app-game-chart-part
+      [stat]="getStat()"
+      [levels]="getLevels()"
+      [gameStartAt]="getGame()!.start_at"
+    ></app-game-chart-part>
+  </div>
+}

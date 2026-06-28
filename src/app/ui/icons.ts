@@ -49,6 +49,7 @@ export enum AppIcon {
   up = "arrow-upward",
   down = "arrow-downward",
   duplicate = "snooze",
+  openInFull = "open-in-full",
   unknown = "help",
   effects = "auto-awesome",
   clock = "schedule",
