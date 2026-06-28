@@ -40,6 +40,7 @@ interface HintPartArgs {
   foursquare_id?: string | undefined
   foursquare_type?: string | undefined
   caption?: string | undefined
+  show_caption_above_media?: boolean | undefined
   file_guid?: string | undefined
   thumb_guid?: string | undefined
   phone_number?: string | undefined
@@ -59,6 +60,7 @@ export class HintPart {
     public foursquare_id: string | undefined = undefined,
     public foursquare_type: string | undefined = undefined,
     public caption: string | undefined = undefined,
+    public show_caption_above_media: boolean | undefined = undefined,
     public file_guid: string | undefined = undefined,
     public thumb_guid: string | undefined = undefined,
     public phone_number: string | undefined = undefined,
@@ -77,6 +79,7 @@ export class HintPart {
     foursquare_id,
     foursquare_type,
     caption,
+    show_caption_above_media,
     file_guid,
     thumb_guid,
     phone_number,
@@ -94,6 +97,7 @@ export class HintPart {
       foursquare_id,
       foursquare_type,
       caption,
+      show_caption_above_media,
       file_guid,
       thumb_guid,
       phone_number,

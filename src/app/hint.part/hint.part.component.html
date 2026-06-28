@@ -1,4 +1,7 @@
 <div class="hint-part">
+  @if (hint.caption && hint.show_caption_above_media) {
+    <p class="hint-caption" [innerHTML]="toHtml(hint.caption)"></p>
+  }
   @switch (hint.type) {
     @case (HintType.text) {
       <p class="hint-text" [innerHTML]="toHtml(hint.text)"></p>
@@ -56,7 +59,7 @@
       <pre>{{ JSON.stringify(hint) }}</pre>
     }
   }
-  @if (hint.caption) {
-    <p [innerHTML]="toHtml(hint.caption)"></p>
+  @if (hint.caption && !hint.show_caption_above_media) {
+    <p class="hint-caption" [innerHTML]="toHtml(hint.caption)"></p>
   }
 </div>
