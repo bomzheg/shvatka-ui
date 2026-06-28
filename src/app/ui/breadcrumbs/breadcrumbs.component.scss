@@ -21,7 +21,7 @@
 }
 
 .breadcrumbs-link {
-  color: var(--tg-theme-link-color, #2563eb);
+  color: var(--app-accent);
   text-decoration: none;
 }
 
@@ -29,8 +29,11 @@
   text-decoration: underline;
 }
 
+.breadcrumbs-text {
+  color: var(--app-muted-text, #6b7280);
+}
+
 .breadcrumbs-current {
-  color: var(--tg-theme-hint-color, #6b7280);
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -39,5 +42,5 @@
 }
 
 .breadcrumbs-sep {
-  color: var(--tg-theme-hint-color, #9ca3af);
+  color: var(--app-muted-text, #9ca3af);
 }

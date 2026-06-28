@@ -2,10 +2,14 @@
   <ol class="breadcrumbs-list">
     @for (crumb of crumbs; track $index) {
       <li class="breadcrumbs-item">
-        @if (crumb.link && !isLast($index)) {
-          <a class="breadcrumbs-link" [routerLink]="crumb.link">{{ crumb.label }}</a>
+        @if (!isLast($index)) {
+          @if (crumb.link) {
+            <a class="breadcrumbs-link" [routerLink]="crumb.link">{{ crumb.label }}</a>
+          } @else {
+            <span class="breadcrumbs-text">{{ crumb.label }}</span>
+          }
         } @else {
-          <span class="breadcrumbs-current" aria-current="page">{{ crumb.label }}</span>
+          <a class="breadcrumbs-link breadcrumbs-current" href="" aria-current="page" (click)="reloadCurrent($event)">{{ crumb.label }}</a>
         }
         @if (!isLast($index)) {
           <span class="breadcrumbs-sep" aria-hidden="true">/</span>
