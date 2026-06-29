@@ -23,6 +23,7 @@ export enum AppIcon {
   levelUp = "check-circle",
   level = "extension",
   remove = "delete",
+  add = "add",
   // files
   files = "folder",
   upload = "upload",

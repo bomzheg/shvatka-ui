@@ -70,6 +70,35 @@
     <!-- Add organizer via search -->
     <div class="add-org">
       <h3>Добавить организатора</h3>
+
+      <!-- Quick add from the author's team -->
+      @if (quickAddCandidates.length > 0) {
+        <div class="team-quick-add">
+          <p class="quick-add-label">
+            Из команды@if (teamName) { «{{ teamName }}»}:
+          </p>
+          <div class="team-chips">
+            @for (member of quickAddCandidates; track member.id) {
+              <button
+                type="button"
+                class="team-chip"
+                [disabled]="addingPlayerId !== null"
+                [title]="'Добавить ' + getMemberName(member) + ' в организаторы'"
+                (click)="quickAddFromTeam(member)"
+              >
+                <span class="team-chip-emoji">{{ memberEmoji(member.emoji, member.role) }}</span>
+                <span class="team-chip-name">{{ getMemberName(member) }}</span>
+                @if (addingPlayerId === member.id) {
+                  <span class="loading-spinner"></span>
+                } @else {
+                  <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.add"/>
+                }
+              </button>
+            }
+          </div>
+        </div>
+      }
+
       <div class="search-wrap">
         <div class="search-input-row">
           <input
