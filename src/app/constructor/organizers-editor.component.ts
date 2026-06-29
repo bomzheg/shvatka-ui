@@ -1,11 +1,15 @@
 import {Component, Input, OnDestroy, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
-import {finalize} from "rxjs";
+import {finalize, of, switchMap} from "rxjs";
 import {MatIcon} from "@angular/material/icon";
 import {ConstructorService} from "./constructor.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {describeError} from "./constructor.models";
 import {AppIcon} from "../ui/icons";
+import {TeamService} from "../team/team.service";
+import {TeamMember} from "../team/team.models";
+import {UserService} from "../auth/user.service";
+import {memberEmoji} from "../ui/role-emoji";
 import {
   GameOrganizer,
   ORG_PERMISSION_LABELS,
@@ -30,6 +34,7 @@ import {
 export class OrganizersEditorComponent implements OnInit, OnDestroy {
   protected readonly AppIcon = AppIcon;
   protected readonly permissionLabels: OrgPermissionLabel[] = ORG_PERMISSION_LABELS;
+  protected readonly memberEmoji = memberEmoji;
 
   @Input({required: true}) gameId!: number;
 
@@ -45,16 +50,26 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
   selectedPlayer: OrgPlayer | null = null;
   isAdding = false;
 
+  /** Author's own team, for quick-adding teammates as organizers. */
+  teamName: string | null = null;
+  teamPlayers: TeamMember[] = [];
+  isLoadingTeam = false;
+  /** player id currently being quick-added, to disable just that chip. */
+  addingPlayerId: number | null = null;
+
   private searchTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     private constructorService: ConstructorService,
+    private teamService: TeamService,
+    private userService: UserService,
     private snackbar: SnackbarService,
   ) {
   }
 
   ngOnInit(): void {
     this.load();
+    this.loadTeam();
   }
 
   ngOnDestroy(): void {
@@ -85,6 +100,47 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
   /** Active secondary organizers — soft-deleted ones are hidden. */
   get secondaryOrganizers(): GameOrganizer[] {
     return this.organizers.filter(o => o.org_id !== null && !o.deleted);
+  }
+
+  /** Load the author's current team and its members for quick-add. */
+  loadTeam(): void {
+    const me = this.userService.getMe();
+    if (!me?.id) {
+      return;
+    }
+    this.isLoadingTeam = true;
+    this.teamService.getPlayer(me.id)
+      .pipe(
+        switchMap(profile => {
+          const team = profile.player_in_team?.team;
+          this.teamName = team?.name ?? null;
+          return team ? this.teamService.getTeamPlayers(team.id) : of({items: [] as TeamMember[]});
+        }),
+        finalize(() => { this.isLoadingTeam = false; }),
+      )
+      .subscribe({
+        next: res => { this.teamPlayers = res.items; },
+        error: () => { this.snackbar.error("Не удалось загрузить команду автора"); },
+      });
+  }
+
+  /**
+   * Teammates that aren't already organizers — the candidates shown as
+   * one-click quick-add chips. The author is filtered out via the org list
+   * (they are the primary organizer).
+   */
+  get quickAddCandidates(): TeamMember[] {
+    const existing = new Set(
+      this.organizers
+        .filter(o => !o.deleted)
+        .map(o => o.player?.id)
+        .filter((id): id is number => id != null),
+    );
+    return this.teamPlayers.filter(m => !existing.has(m.id));
+  }
+
+  getMemberName(member: TeamMember): string {
+    return member.username ?? `#${member.id}`;
   }
 
   isBusy(org: GameOrganizer): boolean {
@@ -199,17 +255,36 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
           this.clearSelectedPlayer();
           this.snackbar.success(`${this.getPlayerName(org)} добавлен в организаторы`);
         },
-        error: err => {
-          const type = (err?.error as { type?: string } | null)?.type;
-          if (type === "PlayerAlreadyOrganizer") {
-            this.snackbar.error("Этот игрок уже является организатором игры");
-          } else if (type === "GameHasAnotherAuthor") {
-            this.snackbar.error("Управлять организаторами может только автор игры");
-          } else {
-            this.snackbar.error(`Не удалось добавить организатора: ${describeError(err)}`);
-          }
-        },
+        error: err => { this.handleAddError(err); },
       });
+  }
+
+  /** One-click add of a teammate as a secondary organizer. */
+  quickAddFromTeam(member: TeamMember): void {
+    if (this.addingPlayerId !== null) {
+      return;
+    }
+    this.addingPlayerId = member.id;
+    this.constructorService.addOrganizer(this.gameId, member.id)
+      .pipe(finalize(() => { this.addingPlayerId = null; }))
+      .subscribe({
+        next: org => {
+          this.replaceOrg(org);
+          this.snackbar.success(`${this.getPlayerName(org)} добавлен в организаторы`);
+        },
+        error: err => { this.handleAddError(err); },
+      });
+  }
+
+  private handleAddError(err: unknown): void {
+    const type = ((err as { error?: { type?: string } } | null)?.error)?.type;
+    if (type === "PlayerAlreadyOrganizer") {
+      this.snackbar.error("Этот игрок уже является организатором игры");
+    } else if (type === "GameHasAnotherAuthor") {
+      this.snackbar.error("Управлять организаторами может только автор игры");
+    } else {
+      this.snackbar.error(`Не удалось добавить организатора: ${describeError(err)}`);
+    }
   }
 
   // -------------------------------------------------------------------------
