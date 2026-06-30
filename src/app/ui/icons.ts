@@ -27,6 +27,7 @@ export enum AppIcon {
   // files
   files = "folder",
   upload = "upload",
+  download = "download",
   // hint part types
   text = "description",
   gps = "location-on",
@@ -40,6 +41,7 @@ export enum AppIcon {
   videoNote = "videocam",
   contact = "person",
   sticker = "image",
+  phone = "call",
   // generic UI
   close = "close",
   check = "check",

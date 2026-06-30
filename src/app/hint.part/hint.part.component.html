@@ -7,16 +7,29 @@
       <p class="hint-text" [innerHTML]="toHtml(hint.text)"></p>
     }
     @case (HintType.gps) {
-      <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
-        {{ hint.latitude }},{{ hint.longitude }}
+      <a class="hint-card hint-location" [href]="mapUrl()" target="_blank" rel="noopener">
+        <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.gps"/>
+        <span class="hint-card-body">
+          <span class="hint-card-title">Геопозиция</span>
+          <span class="hint-card-sub">{{ hint.latitude }}, {{ hint.longitude }}</span>
+        </span>
+        <span class="hint-card-action">На карте</span>
       </a>
     }
     @case (HintType.venue) {
-      <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
-        {{ hint.latitude }},{{ hint.longitude }}
+      <a class="hint-card hint-location" [href]="mapUrl()" target="_blank" rel="noopener">
+        <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.venue"/>
+        <span class="hint-card-body">
+          @if (hint.title) {
+            <span class="hint-card-title">{{ hint.title }}</span>
+          }
+          @if (hint.address) {
+            <span class="hint-card-sub">{{ hint.address }}</span>
+          }
+          <span class="hint-card-sub hint-card-coords">{{ hint.latitude }}, {{ hint.longitude }}</span>
+        </span>
+        <span class="hint-card-action">На карте</span>
       </a>
-      <p>название: {{ hint.title }}</p>
-      <p>адресс: {{ hint.address }}</p>
     }
     @case (HintType.photo) {
       <img [src]="fileUrl!" alt="">
@@ -47,13 +60,33 @@
       </audio>
     }
     @case (HintType.document) {
-      <a [href]="fileUrl!" download>скачать</a>
+      <a class="hint-card hint-document" [href]="fileUrl!" download>
+        <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.document"/>
+        <span class="hint-card-body">
+          <span class="hint-card-title">Документ</span>
+          <span class="hint-card-sub">Нажмите, чтобы скачать</span>
+        </span>
+        <mat-icon class="hint-card-action-icon" [svgIcon]="AppIcon.download"/>
+      </a>
     }
     @case (HintType.sticker) {
-      <p>sorry, stickers are not supported on web view now</p>
+      <img class="hint-sticker" [src]="fileUrl!" alt="Стикер">
     }
     @case (HintType.contact) {
-      <p>{{ hint.phone_number }} {{ hint.first_name }} {{ hint.last_name }}</p>
+      <div class="hint-card hint-contact">
+        <mat-icon class="hint-card-icon hint-contact-avatar" [svgIcon]="AppIcon.contact"/>
+        <span class="hint-card-body">
+          @if (contactName()) {
+            <span class="hint-card-title">{{ contactName() }}</span>
+          }
+          @if (hint.phone_number) {
+            <a class="hint-card-sub hint-contact-phone" [href]="'tel:' + hint.phone_number">
+              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.phone"/>
+              {{ hint.phone_number }}
+            </a>
+          }
+        </span>
+      </div>
     }
     @default {
       <pre>{{ JSON.stringify(hint) }}</pre>
