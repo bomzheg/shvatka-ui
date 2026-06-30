@@ -395,7 +395,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   getThumbUrl(hint: HintPart) {
-    if (hint.thumb_guid === undefined) {
+    if (!hint.thumb_guid) {
       return undefined;
     }
     return this.http.getFileUrl(this.getCurrentHints()!.game_id, hint.thumb_guid)

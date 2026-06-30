@@ -85,8 +85,8 @@
     }
     @case (HintType.audio) {
       <div class="hint-audio">
-        @if (thumbUrl) {
-          <img class="hint-audio-cover" [src]="thumbUrl" alt="">
+        @if (hasThumb()) {
+          <img class="hint-audio-cover" [src]="thumbUrl" alt="" (error)="onThumbError()">
         }
         <audio controls>
           <source [src]="fileUrl!" type="audio/mp4">
@@ -95,8 +95,8 @@
     }
     @case (HintType.voice) {
       <div class="hint-audio">
-        @if (thumbUrl) {
-          <img class="hint-audio-cover" [src]="thumbUrl" alt="">
+        @if (hasThumb()) {
+          <img class="hint-audio-cover" [src]="thumbUrl" alt="" (error)="onThumbError()">
         }
         <audio controls>
           <source [src]="fileUrl!" type="audio/ogg">
@@ -105,8 +105,8 @@
     }
     @case (HintType.document) {
       <a class="hint-card hint-document" [href]="fileUrl!" download>
-        @if (thumbUrl) {
-          <img class="hint-document-thumb" [src]="thumbUrl" alt="">
+        @if (hasThumb()) {
+          <img class="hint-document-thumb" [src]="thumbUrl" alt="" (error)="onThumbError()">
         } @else {
           <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.document"/>
         }

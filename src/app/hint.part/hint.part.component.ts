@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {HintPart, HintType} from "../domain/game.models";
 import {AppIcon} from "../ui/icons";
@@ -11,7 +11,7 @@ import {AppIcon} from "../ui/icons";
   templateUrl: './hint.part.component.html',
   styleUrl: './hint.part.component.scss'
 })
-export class HintPartComponent {
+export class HintPartComponent implements OnChanges {
   @Input()
   hint!: HintPart;
   @Input()
@@ -28,6 +28,24 @@ export class HintPartComponent {
   videoNotePlaying = false;
   /** Briefly true right after the coordinates are copied, for UI feedback. */
   coordsCopied = false;
+  /** Set when the thumbnail fails to load, so we fall back to a placeholder. */
+  thumbBroken = false;
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['thumbUrl']) {
+      this.thumbBroken = false;
+    }
+  }
+
+  /** Whether a usable thumbnail is available (present and not broken). */
+  hasThumb(): boolean {
+    return !!this.thumbUrl && !this.thumbBroken;
+  }
+
+  /** Fall back to the icon placeholder when the thumbnail can't be loaded. */
+  onThumbError(): void {
+    this.thumbBroken = true;
+  }
 
   /** Full name assembled from the contact's first/last name. */
   contactName(): string {

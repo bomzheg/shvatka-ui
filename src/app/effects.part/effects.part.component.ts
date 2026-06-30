@@ -67,7 +67,7 @@ export class EffectsPartComponent {
   }
 
   getHintThumbUrl(hint: HintPart): string | undefined {
-    if (hint.thumb_guid === undefined || this.gameId === undefined) {
+    if (!hint.thumb_guid || this.gameId === undefined) {
       return undefined;
     }
 

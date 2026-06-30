@@ -39,14 +39,14 @@
 
 .video-note-btn {
   position: absolute;
+  top: 50%;
   left: 50%;
-  bottom: 12px;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -71,8 +71,8 @@
 
 .video-note-btn mat-icon,
 .video-note-btn svg {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
 }
 
 // Stickers keep their natural size instead of stretching full width.

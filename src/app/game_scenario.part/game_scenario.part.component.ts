@@ -63,7 +63,7 @@ export class GameScenarioPartComponent {
   }
 
   getThumbUrl(hint: HintPart) {
-    if (hint.thumb_guid === undefined) {
+    if (!hint.thumb_guid) {
       return undefined;
     }
 
