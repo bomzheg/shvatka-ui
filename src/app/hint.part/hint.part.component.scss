@@ -17,3 +17,220 @@
   width: 100%;
   max-width: 100%;
 }
+
+// Telegram video notes are square and shown as a circle. The native controls
+// would be clipped by the circle, so we hide them and use a custom play button.
+.video-note-wrap {
+  position: relative;
+  width: 240px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.hint-part video.video-note {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  background: #000;
+}
+
+.video-note-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.55);
+  transition: opacity 0.2s ease, background 0.15s ease;
+}
+
+.video-note-btn:hover {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+// While playing, keep the button out of the way until the user hovers.
+.video-note-btn.playing {
+  opacity: 0;
+}
+
+.video-note-wrap:hover .video-note-btn.playing {
+  opacity: 1;
+}
+
+.video-note-btn mat-icon,
+.video-note-btn svg {
+  width: 30px;
+  height: 30px;
+}
+
+// Stickers keep their natural size instead of stretching full width.
+.hint-part img.hint-sticker {
+  width: auto;
+  max-width: 200px;
+  max-height: 200px;
+}
+
+// ---------------------------------------------------------------------------
+// Cards for non-media hints (gps, venue, document, contact)
+// ---------------------------------------------------------------------------
+.hint-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 360px;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--app-border);
+  border-radius: 12px;
+  background: var(--app-surface);
+  color: inherit;
+  text-decoration: none;
+}
+
+a.hint-card {
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+a.hint-card:hover,
+.hint-card:has(.hint-card-link:hover) {
+  border-color: var(--app-accent);
+  background: color-mix(in srgb, var(--app-surface) 88%, var(--app-accent));
+}
+
+// The clickable area inside a card that also carries side actions (gps/venue).
+.hint-card-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.hint-card-icon {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--app-accent-contrast);
+  background: var(--app-accent);
+}
+
+.hint-card-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.hint-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.hint-card-title {
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.hint-card-sub {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  overflow-wrap: anywhere;
+}
+
+.hint-card-coords {
+  font-variant-numeric: tabular-nums;
+}
+
+.hint-card-action-icon {
+  flex: 0 0 auto;
+  color: var(--app-accent);
+}
+
+// Square icon button used for the "copy coordinates" action.
+.hint-icon-btn {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--app-accent);
+  background: transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.hint-icon-btn:hover {
+  border-color: var(--app-accent);
+  background: color-mix(in srgb, var(--app-surface) 88%, var(--app-accent));
+}
+
+.hint-icon-btn mat-icon,
+.hint-icon-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+// Document thumbnail replaces the generic icon when the file ships a preview.
+.hint-part img.hint-document-thumb {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+// Audio/voice cover art shown next to the player.
+.hint-audio {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 360px;
+}
+
+.hint-audio audio {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hint-part img.hint-audio-cover {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.hint-contact-phone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: fit-content;
+  color: var(--app-accent);
+  text-decoration: none;
+}
+
+.hint-contact-phone:hover {
+  text-decoration: underline;
+}

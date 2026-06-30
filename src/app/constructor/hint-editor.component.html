@@ -79,6 +79,9 @@
       @case ("video") {
         <video class="preview" [src]="previewUrl()" controls preload="metadata"></video>
       }
+      @case ("video_note") {
+        <video class="preview preview-circle" [src]="previewUrl()" controls preload="metadata"></video>
+      }
       @case ("audio") {
         <audio class="preview-audio" [src]="previewUrl()" controls preload="metadata"></audio>
       }
@@ -108,6 +111,9 @@
           <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
         }
       </select>
+    }
+    @if (thumbPreviewUrl(); as thumbSrc) {
+      <app-image-lightbox [src]="thumbSrc"></app-image-lightbox>
     }
   }
 

@@ -7,53 +7,134 @@
       <p class="hint-text" [innerHTML]="toHtml(hint.text)"></p>
     }
     @case (HintType.gps) {
-      <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
-        {{ hint.latitude }},{{ hint.longitude }}
-      </a>
+      <div class="hint-card hint-location">
+        <a class="hint-card-link" [href]="mapUrl()" target="_blank" rel="noopener" aria-label="Открыть на карте">
+          <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.gps"/>
+          <span class="hint-card-body">
+            <span class="hint-card-title">Геопозиция</span>
+            <span class="hint-card-sub hint-card-coords">{{ coords() }}</span>
+          </span>
+        </a>
+        <button
+          type="button"
+          class="hint-icon-btn"
+          (click)="copyCoords()"
+          [attr.aria-label]="coordsCopied ? 'Скопировано' : 'Скопировать координаты'">
+          <mat-icon [svgIcon]="coordsCopied ? AppIcon.check : AppIcon.copy"/>
+        </button>
+      </div>
     }
     @case (HintType.venue) {
-      <a [href]="'https://maps.yandex.ru/?ll=' + hint.longitude + ',' + hint.latitude + '&z=18'">
-        {{ hint.latitude }},{{ hint.longitude }}
-      </a>
-      <p>название: {{ hint.title }}</p>
-      <p>адресс: {{ hint.address }}</p>
+      <div class="hint-card hint-location">
+        <a class="hint-card-link" [href]="mapUrl()" target="_blank" rel="noopener" aria-label="Открыть на карте">
+          <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.venue"/>
+          <span class="hint-card-body">
+            @if (hint.title) {
+              <span class="hint-card-title">{{ hint.title }}</span>
+            }
+            @if (hint.address) {
+              <span class="hint-card-sub">{{ hint.address }}</span>
+            }
+            <span class="hint-card-sub hint-card-coords">{{ coords() }}</span>
+          </span>
+        </a>
+        <button
+          type="button"
+          class="hint-icon-btn"
+          (click)="copyCoords()"
+          [attr.aria-label]="coordsCopied ? 'Скопировано' : 'Скопировать координаты'">
+          <mat-icon [svgIcon]="coordsCopied ? AppIcon.check : AppIcon.copy"/>
+        </button>
+      </div>
     }
     @case (HintType.photo) {
       <img [src]="fileUrl!" alt="">
     }
     @case (HintType.animation) {
-      <video autoplay loop controls>
+      <video autoplay loop controls [poster]="thumbUrl || null">
         <source [src]="fileUrl!" type="video/mp4">
       </video>
     }
     @case (HintType.video) {
-      <video controls>
+      <video controls [poster]="thumbUrl || null">
         <source [src]="fileUrl!" type="video/mp4"/>
       </video>
     }
     @case (HintType.video_note) {
-      <video controls>
-        <source [src]="fileUrl!" type="video/mp4"/>
-      </video>
+      <div class="video-note-wrap">
+        <video
+          #videoNoteEl
+          class="video-note"
+          [poster]="thumbUrl || null"
+          (click)="toggleVideoNote(videoNoteEl)"
+          (play)="videoNotePlaying = true"
+          (pause)="videoNotePlaying = false"
+          (ended)="videoNotePlaying = false"
+          playsinline>
+          <source [src]="fileUrl!" type="video/mp4"/>
+        </video>
+        <button
+          type="button"
+          class="video-note-btn"
+          [class.playing]="videoNotePlaying"
+          (click)="toggleVideoNote(videoNoteEl)"
+          [attr.aria-label]="videoNotePlaying ? 'Пауза' : 'Воспроизвести'">
+          <mat-icon [svgIcon]="videoNotePlaying ? AppIcon.pause : AppIcon.play"/>
+        </button>
+      </div>
     }
     @case (HintType.audio) {
-      <audio controls>
-        <source [src]="fileUrl!" type="audio/mp4">
-      </audio>
+      <div class="hint-audio">
+        @if (hasThumb()) {
+          <img class="hint-audio-cover" [src]="thumbUrl" alt="" (error)="onThumbError()">
+        }
+        <audio controls>
+          <source [src]="fileUrl!" type="audio/mp4">
+        </audio>
+      </div>
     }
     @case (HintType.voice) {
-      <audio controls>
-        <source [src]="fileUrl!" type="audio/ogg">
-      </audio>
+      <div class="hint-audio">
+        @if (hasThumb()) {
+          <img class="hint-audio-cover" [src]="thumbUrl" alt="" (error)="onThumbError()">
+        }
+        <audio controls>
+          <source [src]="fileUrl!" type="audio/ogg">
+        </audio>
+      </div>
     }
     @case (HintType.document) {
-      <a [href]="fileUrl!" download>скачать</a>
+      <a class="hint-card hint-document" [href]="fileUrl!" download>
+        @if (hasThumb()) {
+          <img class="hint-document-thumb" [src]="thumbUrl" alt="" (error)="onThumbError()">
+        } @else {
+          <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.document"/>
+        }
+        <span class="hint-card-body">
+          <span class="hint-card-title">Документ</span>
+          <span class="hint-card-sub">Нажмите, чтобы скачать</span>
+        </span>
+        <mat-icon class="hint-card-action-icon" [svgIcon]="AppIcon.download"/>
+      </a>
     }
     @case (HintType.sticker) {
-      <p>sorry, stickers are not supported on web view now</p>
+      <img class="hint-sticker" [src]="fileUrl!" alt="Стикер">
     }
     @case (HintType.contact) {
-      <p>{{ hint.phone_number }} {{ hint.first_name }} {{ hint.last_name }}</p>
+      <div class="hint-card hint-contact">
+        <mat-icon class="hint-card-icon hint-contact-avatar" [svgIcon]="AppIcon.contact"/>
+        <span class="hint-card-body">
+          @if (contactName()) {
+            <span class="hint-card-title">{{ contactName() }}</span>
+          }
+          @if (hint.phone_number) {
+            <a class="hint-card-sub hint-contact-phone" [href]="'tel:' + hint.phone_number">
+              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.phone"/>
+              {{ hint.phone_number }}
+            </a>
+          }
+        </span>
+      </div>
     }
     @default {
       <pre>{{ JSON.stringify(hint) }}</pre>

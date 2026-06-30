@@ -394,6 +394,13 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.http.getFileUrl(this.getCurrentHints()!.game_id, hint.file_guid)
   }
 
+  getThumbUrl(hint: HintPart) {
+    if (!hint.thumb_guid) {
+      return undefined;
+    }
+    return this.http.getFileUrl(this.getCurrentHints()!.game_id, hint.thumb_guid)
+  }
+
   toLocal(dt: string): string {
     return new Date(Date.parse(dt)).toLocaleTimeString();
   }
