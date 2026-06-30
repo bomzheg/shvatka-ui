@@ -42,6 +42,9 @@ export enum AppIcon {
   contact = "person",
   sticker = "image",
   phone = "call",
+  play = "play-arrow",
+  pause = "pause",
+  copy = "content-copy",
   // generic UI
   close = "close",
   check = "check",

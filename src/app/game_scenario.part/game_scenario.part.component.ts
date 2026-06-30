@@ -61,4 +61,12 @@ export class GameScenarioPartComponent {
 
     return this.http.getFileUrl(this.game.id, hint.file_guid);
   }
+
+  getThumbUrl(hint: HintPart) {
+    if (hint.thumb_guid === undefined) {
+      return undefined;
+    }
+
+    return this.http.getFileUrl(this.game.id, hint.thumb_guid);
+  }
 }

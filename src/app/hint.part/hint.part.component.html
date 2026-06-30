@@ -7,61 +7,109 @@
       <p class="hint-text" [innerHTML]="toHtml(hint.text)"></p>
     }
     @case (HintType.gps) {
-      <a class="hint-card hint-location" [href]="mapUrl()" target="_blank" rel="noopener">
-        <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.gps"/>
-        <span class="hint-card-body">
-          <span class="hint-card-title">Геопозиция</span>
-          <span class="hint-card-sub">{{ hint.latitude }}, {{ hint.longitude }}</span>
-        </span>
-        <span class="hint-card-action">На карте</span>
-      </a>
+      <div class="hint-card hint-location">
+        <a class="hint-card-link" [href]="mapUrl()" target="_blank" rel="noopener" aria-label="Открыть на карте">
+          <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.gps"/>
+          <span class="hint-card-body">
+            <span class="hint-card-title">Геопозиция</span>
+            <span class="hint-card-sub hint-card-coords">{{ coords() }}</span>
+          </span>
+        </a>
+        <button
+          type="button"
+          class="hint-icon-btn"
+          (click)="copyCoords()"
+          [attr.aria-label]="coordsCopied ? 'Скопировано' : 'Скопировать координаты'">
+          <mat-icon [svgIcon]="coordsCopied ? AppIcon.check : AppIcon.copy"/>
+        </button>
+      </div>
     }
     @case (HintType.venue) {
-      <a class="hint-card hint-location" [href]="mapUrl()" target="_blank" rel="noopener">
-        <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.venue"/>
-        <span class="hint-card-body">
-          @if (hint.title) {
-            <span class="hint-card-title">{{ hint.title }}</span>
-          }
-          @if (hint.address) {
-            <span class="hint-card-sub">{{ hint.address }}</span>
-          }
-          <span class="hint-card-sub hint-card-coords">{{ hint.latitude }}, {{ hint.longitude }}</span>
-        </span>
-        <span class="hint-card-action">На карте</span>
-      </a>
+      <div class="hint-card hint-location">
+        <a class="hint-card-link" [href]="mapUrl()" target="_blank" rel="noopener" aria-label="Открыть на карте">
+          <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.venue"/>
+          <span class="hint-card-body">
+            @if (hint.title) {
+              <span class="hint-card-title">{{ hint.title }}</span>
+            }
+            @if (hint.address) {
+              <span class="hint-card-sub">{{ hint.address }}</span>
+            }
+            <span class="hint-card-sub hint-card-coords">{{ coords() }}</span>
+          </span>
+        </a>
+        <button
+          type="button"
+          class="hint-icon-btn"
+          (click)="copyCoords()"
+          [attr.aria-label]="coordsCopied ? 'Скопировано' : 'Скопировать координаты'">
+          <mat-icon [svgIcon]="coordsCopied ? AppIcon.check : AppIcon.copy"/>
+        </button>
+      </div>
     }
     @case (HintType.photo) {
       <img [src]="fileUrl!" alt="">
     }
     @case (HintType.animation) {
-      <video autoplay loop controls>
+      <video autoplay loop controls [poster]="thumbUrl || null">
         <source [src]="fileUrl!" type="video/mp4">
       </video>
     }
     @case (HintType.video) {
-      <video controls>
+      <video controls [poster]="thumbUrl || null">
         <source [src]="fileUrl!" type="video/mp4"/>
       </video>
     }
     @case (HintType.video_note) {
-      <video class="video-note" controls>
-        <source [src]="fileUrl!" type="video/mp4"/>
-      </video>
+      <div class="video-note-wrap">
+        <video
+          #videoNoteEl
+          class="video-note"
+          [poster]="thumbUrl || null"
+          (click)="toggleVideoNote(videoNoteEl)"
+          (play)="videoNotePlaying = true"
+          (pause)="videoNotePlaying = false"
+          (ended)="videoNotePlaying = false"
+          playsinline>
+          <source [src]="fileUrl!" type="video/mp4"/>
+        </video>
+        <button
+          type="button"
+          class="video-note-btn"
+          [class.playing]="videoNotePlaying"
+          (click)="toggleVideoNote(videoNoteEl)"
+          [attr.aria-label]="videoNotePlaying ? 'Пауза' : 'Воспроизвести'">
+          <mat-icon [svgIcon]="videoNotePlaying ? AppIcon.pause : AppIcon.play"/>
+        </button>
+      </div>
     }
     @case (HintType.audio) {
-      <audio controls>
-        <source [src]="fileUrl!" type="audio/mp4">
-      </audio>
+      <div class="hint-audio">
+        @if (thumbUrl) {
+          <img class="hint-audio-cover" [src]="thumbUrl" alt="">
+        }
+        <audio controls>
+          <source [src]="fileUrl!" type="audio/mp4">
+        </audio>
+      </div>
     }
     @case (HintType.voice) {
-      <audio controls>
-        <source [src]="fileUrl!" type="audio/ogg">
-      </audio>
+      <div class="hint-audio">
+        @if (thumbUrl) {
+          <img class="hint-audio-cover" [src]="thumbUrl" alt="">
+        }
+        <audio controls>
+          <source [src]="fileUrl!" type="audio/ogg">
+        </audio>
+      </div>
     }
     @case (HintType.document) {
       <a class="hint-card hint-document" [href]="fileUrl!" download>
-        <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.document"/>
+        @if (thumbUrl) {
+          <img class="hint-document-thumb" [src]="thumbUrl" alt="">
+        } @else {
+          <mat-icon class="hint-card-icon" [svgIcon]="AppIcon.document"/>
+        }
         <span class="hint-card-body">
           <span class="hint-card-title">Документ</span>
           <span class="hint-card-sub">Нажмите, чтобы скачать</span>

@@ -66,4 +66,12 @@ export class EffectsPartComponent {
     return this.http.getFileUrl(this.gameId, hint.file_guid);
   }
 
+  getHintThumbUrl(hint: HintPart): string | undefined {
+    if (hint.thumb_guid === undefined || this.gameId === undefined) {
+      return undefined;
+    }
+
+    return this.http.getFileUrl(this.gameId, hint.thumb_guid);
+  }
+
 }
