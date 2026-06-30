@@ -18,63 +18,6 @@
   max-width: 100%;
 }
 
-// Telegram video notes are square and shown as a circle. The native controls
-// would be clipped by the circle, so we hide them and use a custom play button.
-.video-note-wrap {
-  position: relative;
-  width: 240px;
-  max-width: 100%;
-  aspect-ratio: 1 / 1;
-}
-
-.hint-part video.video-note {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
-  object-fit: cover;
-  cursor: pointer;
-  background: #000;
-}
-
-.video-note-btn {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 56px;
-  height: 56px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  color: #fff;
-  background: rgba(0, 0, 0, 0.55);
-  transition: opacity 0.2s ease, background 0.15s ease;
-}
-
-.video-note-btn:hover {
-  background: rgba(0, 0, 0, 0.75);
-}
-
-// While playing, keep the button out of the way until the user hovers.
-.video-note-btn.playing {
-  opacity: 0;
-}
-
-.video-note-wrap:hover .video-note-btn.playing {
-  opacity: 1;
-}
-
-.video-note-btn mat-icon,
-.video-note-btn svg {
-  width: 30px;
-  height: 30px;
-}
-
 // Stickers keep their natural size instead of stretching full width.
 .hint-part img.hint-sticker {
   width: auto;

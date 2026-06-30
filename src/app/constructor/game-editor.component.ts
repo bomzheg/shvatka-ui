@@ -9,6 +9,7 @@ import {HintTypePickerComponent} from "./hint-type-picker.component";
 import {EffectsEditorComponent} from "./effects-editor.component";
 import {OrganizersEditorComponent} from "./organizers-editor.component";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
+import {VideoNoteComponent} from "../ui/video-note.component";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GraphLevel, GraphRoute, keyRouteLabel, timerRouteLabel} from "../scenario_graph.part/scenario_graph.model";
 import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
@@ -75,6 +76,7 @@ type FilePreviewKind = "image" | "video" | "video_note" | "audio" | "none";
     EffectsEditorComponent,
     OrganizersEditorComponent,
     ImageLightboxComponent,
+    VideoNoteComponent,
     ScenarioGraphPartComponent,
     MatIcon,
   ],

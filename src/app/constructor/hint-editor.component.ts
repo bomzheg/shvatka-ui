@@ -17,6 +17,7 @@ import {HttpAdapter} from "../http/http.adapter";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {AppIcon, HINT_TYPE_ICON} from "../ui/icons";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
+import {VideoNoteComponent} from "../ui/video-note.component";
 import {MatIcon} from "@angular/material/icon";
 import {HintTextEditorComponent} from "./hint-text-editor.component";
 
@@ -25,7 +26,7 @@ type PreviewKind = "image" | "video" | "video_note" | "audio" | "none";
 @Component({
   selector: "app-hint-editor",
   standalone: true,
-  imports: [FormsModule, ImageLightboxComponent, MatIcon, HintTextEditorComponent],
+  imports: [FormsModule, ImageLightboxComponent, VideoNoteComponent, MatIcon, HintTextEditorComponent],
   templateUrl: "./hint-editor.component.html",
   styleUrl: "./hint-editor.component.scss",
 })
