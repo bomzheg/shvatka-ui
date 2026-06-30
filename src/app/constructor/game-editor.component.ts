@@ -61,7 +61,7 @@ interface EditorLevel {
   time_hints: EditorTimeHint[];
 }
 
-type FilePreviewKind = "image" | "video" | "audio" | "none";
+type FilePreviewKind = "image" | "video" | "video_note" | "audio" | "none";
 
 @Component({
   selector: "app-game-editor",
@@ -582,10 +582,15 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   filePreviewKind(file: UploadedFile): FilePreviewKind {
     switch (file.content_type) {
       case "photo":
+      case "sticker":
         return "image";
       case "video":
+      case "animation":
         return "video";
+      case "video_note":
+        return "video_note";
       case "audio":
+      case "voice":
         return "audio";
       default:
         return "none";

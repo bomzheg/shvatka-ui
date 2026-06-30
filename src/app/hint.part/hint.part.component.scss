@@ -17,3 +17,13 @@
   width: 100%;
   max-width: 100%;
 }
+
+// Telegram video notes are square and shown as a circle.
+.hint-part video.video-note {
+  width: 240px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 50%;
+  object-fit: cover;
+}

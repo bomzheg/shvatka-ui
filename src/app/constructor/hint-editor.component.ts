@@ -20,7 +20,7 @@ import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {MatIcon} from "@angular/material/icon";
 import {HintTextEditorComponent} from "./hint-text-editor.component";
 
-type PreviewKind = "image" | "video" | "audio" | "none";
+type PreviewKind = "image" | "video" | "video_note" | "audio" | "none";
 
 @Component({
   selector: "app-hint-editor",
@@ -161,8 +161,9 @@ export class HintEditorComponent {
         return "image";
       case HintType.video:
       case HintType.animation:
-      case HintType.video_note:
         return "video";
+      case HintType.video_note:
+        return "video_note";
       case HintType.audio:
       case HintType.voice:
         return "audio";

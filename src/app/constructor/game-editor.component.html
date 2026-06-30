@@ -259,6 +259,9 @@
                 @case ("video") {
                   <video class="file-preview" [src]="fileUrl(f)" controls preload="none"></video>
                 }
+                @case ("video_note") {
+                  <video class="file-preview file-preview-circle" [src]="fileUrl(f)" controls preload="none"></video>
+                }
                 @case ("audio") {
                   <audio class="file-preview-audio" [src]="fileUrl(f)" controls preload="none"></audio>
                 }
