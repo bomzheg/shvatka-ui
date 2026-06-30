@@ -112,6 +112,9 @@
         }
       </select>
     }
+    @if (thumbPreviewUrl(); as thumbSrc) {
+      <app-image-lightbox [src]="thumbSrc"></app-image-lightbox>
+    }
   }
 
   @if (needsCaption()) {

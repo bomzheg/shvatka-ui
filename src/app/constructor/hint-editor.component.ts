@@ -173,7 +173,15 @@ export class HintEditorComponent {
   }
 
   previewUrl(): string | undefined {
-    const guid = this.hint.file_guid;
+    return this.fileUrlFor(this.hint.file_guid);
+  }
+
+  /** Thumbnails are always images, so they get an image preview when set. */
+  thumbPreviewUrl(): string | undefined {
+    return this.fileUrlFor(this.hint.thumb_guid);
+  }
+
+  private fileUrlFor(guid: string | undefined): string | undefined {
     if (!guid) {
       return undefined;
     }
