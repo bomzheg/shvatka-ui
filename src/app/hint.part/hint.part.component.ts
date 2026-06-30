@@ -2,12 +2,13 @@ import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {MatIcon} from "@angular/material/icon";
 import {HintPart, HintType} from "../domain/game.models";
 import {AppIcon} from "../ui/icons";
+import {VideoNoteComponent} from "../ui/video-note.component";
 
 
 @Component({
   selector: 'app-hint-part',
   standalone: true,
-  imports: [MatIcon],
+  imports: [MatIcon, VideoNoteComponent],
   templateUrl: './hint.part.component.html',
   styleUrl: './hint.part.component.scss'
 })
@@ -24,8 +25,6 @@ export class HintPartComponent implements OnChanges {
     protected readonly AppIcon = AppIcon;
     protected readonly JSON = JSON;
 
-  /** Whether the circular video-note is currently playing. */
-  videoNotePlaying = false;
   /** Briefly true right after the coordinates are copied, for UI feedback. */
   coordsCopied = false;
   /** Set when the thumbnail fails to load, so we fall back to a placeholder. */
@@ -75,15 +74,6 @@ export class HintPartComponent implements OnChanges {
       this.coordsCopied = true;
       setTimeout(() => (this.coordsCopied = false), 1500);
     });
-  }
-
-  /** Toggle playback of the circular video-note (it has no native controls). */
-  toggleVideoNote(video: HTMLVideoElement): void {
-    if (video.paused) {
-      video.play();
-    } else {
-      video.pause();
-    }
   }
 
   /**

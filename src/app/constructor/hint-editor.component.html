@@ -80,7 +80,7 @@
         <video class="preview" [src]="previewUrl()" controls preload="metadata"></video>
       }
       @case ("video_note") {
-        <video class="preview preview-circle" [src]="previewUrl()" controls preload="metadata"></video>
+        <app-video-note [src]="previewUrl()" [poster]="thumbPreviewUrl()"></app-video-note>
       }
       @case ("audio") {
         <audio class="preview-audio" [src]="previewUrl()" controls preload="metadata"></audio>

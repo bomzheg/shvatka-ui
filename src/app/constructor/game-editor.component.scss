@@ -332,16 +332,6 @@ input.time-input {
   align-self: flex-start;
 }
 
-// Telegram video notes are square and shown as a circle.
-.file-preview-circle {
-  width: 200px;
-  height: 200px;
-  max-width: none;
-  max-height: none;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
 .file-preview-audio {
   width: 100%;
   max-width: 320px;

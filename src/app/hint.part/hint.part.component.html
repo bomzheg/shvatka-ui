@@ -61,27 +61,7 @@
       </video>
     }
     @case (HintType.video_note) {
-      <div class="video-note-wrap">
-        <video
-          #videoNoteEl
-          class="video-note"
-          [poster]="thumbUrl || null"
-          (click)="toggleVideoNote(videoNoteEl)"
-          (play)="videoNotePlaying = true"
-          (pause)="videoNotePlaying = false"
-          (ended)="videoNotePlaying = false"
-          playsinline>
-          <source [src]="fileUrl!" type="video/mp4"/>
-        </video>
-        <button
-          type="button"
-          class="video-note-btn"
-          [class.playing]="videoNotePlaying"
-          (click)="toggleVideoNote(videoNoteEl)"
-          [attr.aria-label]="videoNotePlaying ? 'Пауза' : 'Воспроизвести'">
-          <mat-icon [svgIcon]="videoNotePlaying ? AppIcon.pause : AppIcon.play"/>
-        </button>
-      </div>
+      <app-video-note [src]="fileUrl" [poster]="thumbUrl" [size]="240"></app-video-note>
     }
     @case (HintType.audio) {
       <div class="hint-audio">
