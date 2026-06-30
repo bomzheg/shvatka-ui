@@ -94,13 +94,13 @@
         <app-image-lightbox [src]="previewUrl()!"></app-image-lightbox>
       }
       @case ("video") {
-        <video class="preview" [src]="previewUrl()" controls preload="metadata"></video>
+        <video class="preview" [src]="previewUrl()" controls preload="metadata" [appMediaError]="'видео'"></video>
       }
       @case ("video_note") {
         <app-video-note [src]="previewUrl()" [poster]="thumbPreviewUrl()"></app-video-note>
       }
       @case ("audio") {
-        <audio class="preview-audio" [src]="previewUrl()" controls preload="metadata"></audio>
+        <audio class="preview-audio" [src]="previewUrl()" controls preload="metadata" [appMediaError]="'аудио'"></audio>
       }
     }
   }

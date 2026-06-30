@@ -10,6 +10,7 @@ import {EffectsEditorComponent} from "./effects-editor.component";
 import {OrganizersEditorComponent} from "./organizers-editor.component";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {VideoNoteComponent} from "../ui/video-note.component";
+import {MediaErrorDirective} from "../ui/media-error.directive";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
 import {toPreviewGame} from "./scenario-preview";
@@ -85,6 +86,7 @@ type FilePreviewKind = "image" | "video" | "video_note" | "audio" | "none";
     OrganizersEditorComponent,
     ImageLightboxComponent,
     VideoNoteComponent,
+    MediaErrorDirective,
     ScenarioGraphPartComponent,
     GameScenarioPartComponent,
     MatIcon,

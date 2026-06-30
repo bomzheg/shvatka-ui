@@ -353,13 +353,13 @@
                   <app-image-lightbox [src]="fileUrl(f)"></app-image-lightbox>
                 }
                 @case ("video") {
-                  <video class="file-preview" [src]="fileUrl(f)" controls preload="none"></video>
+                  <video class="file-preview" [src]="fileUrl(f)" controls preload="none" [appMediaError]="'видео'"></video>
                 }
                 @case ("video_note") {
                   <app-video-note [src]="fileUrl(f)"></app-video-note>
                 }
                 @case ("audio") {
-                  <audio class="file-preview-audio" [src]="fileUrl(f)" controls preload="none"></audio>
+                  <audio class="file-preview-audio" [src]="fileUrl(f)" controls preload="none" [appMediaError]="'аудио'"></audio>
                 }
               }
             </li>
