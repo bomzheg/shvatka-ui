@@ -249,7 +249,10 @@
               @if (renamingGuid === f.guid) {
                 <div class="file-rename">
                   <input type="text" [(ngModel)]="renameValue" [disabled]="isRenaming"
-                         placeholder="Имя файла" (keydown.enter)="confirmRename(f)" (keydown.escape)="cancelRename()" />
+                         placeholder="Имя файла без расширения" (keydown.enter)="confirmRename(f)" (keydown.escape)="cancelRename()" />
+                  @if (f.extension) {
+                    <span class="file-extension">{{ f.extension }}</span>
+                  }
                   <button type="button" class="ghost-button icon" (click)="confirmRename(f)" [disabled]="isRenaming" title="Сохранить"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/></button>
                   <button type="button" class="ghost-button icon" (click)="cancelRename()" [disabled]="isRenaming" title="Отмена"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
                 </div>

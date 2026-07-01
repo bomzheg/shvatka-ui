@@ -564,13 +564,12 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   renameValue = "";
   isRenaming = false;
 
-  /** Full editable filename (name + extension) of a file, empty if unnamed. */
+  /** Editable base filename (without extension) of a file, empty if unnamed.
+   *  The extension is a separate server-managed field (e.g. `.tar.gz`) and is
+   *  not part of what we rename. */
   currentFilename(file: UploadedFile): string {
     const hasName = file.original_filename && file.original_filename !== file.guid;
-    if (!hasName) {
-      return "";
-    }
-    return `${file.original_filename}${file.extension || ""}`;
+    return hasName ? file.original_filename : "";
   }
 
   startRename(file: UploadedFile) {
@@ -610,7 +609,8 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   /** Update the local file entry after a rename. Prefer the server's echo of
-   *  the file; fall back to splitting the entered filename ourselves. */
+   *  the file; fall back to the entered base name, keeping the existing
+   *  extension (the server manages it as a separate field). */
   private applyRenamed(guid: string, updated: UploadedFile | null, filename: string) {
     this.files = this.files.map(f => {
       if (f.guid !== guid) {
@@ -619,11 +619,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       if (updated && updated.guid) {
         return {...f, ...updated};
       }
-      const dot = filename.lastIndexOf(".");
-      const [name, extension] = dot > 0
-        ? [filename.slice(0, dot), filename.slice(dot)]
-        : [filename, ""];
-      return {...f, original_filename: name, extension};
+      return {...f, original_filename: filename};
     });
   }
 

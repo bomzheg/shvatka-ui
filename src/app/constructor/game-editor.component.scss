@@ -330,6 +330,11 @@ input.time-input {
   }
 }
 
+.file-extension {
+  color: var(--app-muted-text);
+  white-space: nowrap;
+}
+
 .file-type {
   font-size: 0.8rem;
   color: var(--app-muted-text);
