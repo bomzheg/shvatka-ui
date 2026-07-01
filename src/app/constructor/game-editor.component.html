@@ -151,6 +151,7 @@
                     [allowLevelUp]="true"
                     [levelIds]="allLevelIds()"
                     (fileUploaded)="onHintFileUploaded($event)"
+                    (fileRenamed)="onHintFileRenamed($event)"
                   ></app-effects-editor>
                 </div>
               }
@@ -185,6 +186,7 @@
                     [disabled]="!isEditable"
                     [allowLevelUp]="false"
                     (fileUploaded)="onHintFileUploaded($event)"
+                    (fileRenamed)="onHintFileRenamed($event)"
                   ></app-effects-editor>
                 </div>
               }
@@ -223,6 +225,7 @@
                         [disabled]="!isEditable"
                         (remove)="removeHint(th, hi)"
                         (fileUploaded)="onHintFileUploaded($event)"
+                        (fileRenamed)="onHintFileRenamed($event)"
                       ></app-hint-editor>
                     }
                   </div>

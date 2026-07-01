@@ -25,6 +25,7 @@ export class EffectsEditorComponent {
   /** Ids of the other levels — targets for the next_level jump. */
   @Input() levelIds: string[] = [];
   @Output() fileUploaded = new EventEmitter<UploadedFile>();
+  @Output() fileRenamed = new EventEmitter<UploadedFile>();
 
   protected readonly AppIcon = AppIcon;
 
@@ -44,5 +45,9 @@ export class EffectsEditorComponent {
 
   onFileUploaded(file: UploadedFile) {
     this.fileUploaded.emit(file);
+  }
+
+  onFileRenamed(file: UploadedFile) {
+    this.fileRenamed.emit(file);
   }
 }

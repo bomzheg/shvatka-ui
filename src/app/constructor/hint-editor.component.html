@@ -50,7 +50,24 @@
   @if (needsFile()) {
     <label>Файл</label>
     @if (currentFileLabel()) {
-      <span class="current-file">{{ currentFileLabel() }}</span>
+      @if (showRename) {
+        <div class="file-rename">
+          <input type="text" [(ngModel)]="renameValue" [disabled]="isRenaming"
+                 placeholder="Имя файла без расширения" (keydown.enter)="confirmRename()" (keydown.escape)="cancelRename()" />
+          @if (currentFile()?.extension) {
+            <span class="file-extension">{{ currentFile()?.extension }}</span>
+          }
+          <button type="button" class="ghost-button icon" (click)="confirmRename()" [disabled]="isRenaming" title="Сохранить"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/></button>
+          <button type="button" class="ghost-button icon" (click)="cancelRename()" [disabled]="isRenaming" title="Отмена"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
+        </div>
+      } @else {
+        <span class="current-file">
+          {{ currentFileLabel() }}
+          @if (!disabled && currentFile()) {
+            <button type="button" class="ghost-button icon" (click)="startRename()" title="Переименовать"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
+          }
+        </span>
+      }
     }
     @if (!disabled) {
       <div class="file-actions">

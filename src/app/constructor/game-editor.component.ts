@@ -551,6 +551,14 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.addFile(file);
   }
 
+  /** A file renamed from inside a hint editor — update the shared list. */
+  onHintFileRenamed(file: UploadedFile) {
+    if (!file || !file.guid) {
+      return;
+    }
+    this.files = this.files.map(f => (f.guid === file.guid ? {...f, ...file} : f));
+  }
+
   private addFile(file: UploadedFile) {
     if (!file || !file.guid) {
       this.snackbar.error("Сервер вернул файл без идентификатора");

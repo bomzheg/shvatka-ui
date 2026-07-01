@@ -38,6 +38,7 @@ export class HintEditorComponent {
   @Input() disabled = false;
   @Output() remove = new EventEmitter<void>();
   @Output() fileUploaded = new EventEmitter<UploadedFile>();
+  @Output() fileRenamed = new EventEmitter<UploadedFile>();
 
   protected readonly HintType = HintType;
   protected readonly AppIcon = AppIcon;
@@ -46,6 +47,11 @@ export class HintEditorComponent {
   /** "выбрать из загруженных" toggles the file/thumb picker dropdowns. */
   showFileBrowser = false;
   showThumbBrowser = false;
+
+  /** Inline rename of the current main file. */
+  isRenaming = false;
+  showRename = false;
+  renameValue = "";
 
   constructor(
     private constructorService: ConstructorService,
@@ -212,5 +218,69 @@ export class HintEditorComponent {
   currentThumbLabel(): string | undefined {
     const f = this.files.find(file => file.guid === this.hint.thumb_guid);
     return f ? this.fileLabel(f) : undefined;
+  }
+
+  // ---------------------------------------------------------------------
+  // Rename the current main file
+  // ---------------------------------------------------------------------
+
+  /** The uploaded-file entry the main hint file points at, if known. */
+  currentFile(): UploadedFile | undefined {
+    return this.files.find(file => file.guid === this.hint.file_guid);
+  }
+
+  /** Editable base name (without the server-managed extension). */
+  private baseName(file: UploadedFile): string {
+    const hasName = file.original_filename && file.original_filename !== file.guid;
+    return hasName ? file.original_filename : "";
+  }
+
+  startRename() {
+    const file = this.currentFile();
+    if (!file) {
+      return;
+    }
+    this.renameValue = this.baseName(file);
+    this.showRename = true;
+  }
+
+  cancelRename() {
+    this.showRename = false;
+    this.renameValue = "";
+  }
+
+  confirmRename() {
+    const file = this.currentFile();
+    if (!file || this.gameId === undefined) {
+      return;
+    }
+    const filename = this.renameValue.trim();
+    if (!filename) {
+      this.snackbar.error("Имя файла не может быть пустым");
+      return;
+    }
+    if (filename === this.baseName(file)) {
+      this.cancelRename();
+      return;
+    }
+
+    this.isRenaming = true;
+    this.constructorService.renameFile(this.gameId, file.guid, filename).subscribe({
+      next: updated => {
+        // Prefer the server echo; fall back to the entered base name, keeping
+        // the existing extension (the server stores it as a separate field).
+        const result: UploadedFile = updated && updated.guid
+          ? {...file, ...updated}
+          : {...file, original_filename: filename};
+        this.isRenaming = false;
+        this.cancelRename();
+        this.fileRenamed.emit(result);
+        this.snackbar.success("Файл переименован");
+      },
+      error: err => {
+        this.isRenaming = false;
+        this.snackbar.error(`Не удалось переименовать файл: ${describeError(err)}`);
+      },
+    });
   }
 }
