@@ -314,6 +314,22 @@ input.time-input {
   font-weight: 600;
 }
 
+.file-info-right {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.file-rename {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  input[type="text"] {
+    flex: 1;
+  }
+}
+
 .file-type {
   font-size: 0.8rem;
   color: var(--app-muted-text);

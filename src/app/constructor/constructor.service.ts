@@ -60,6 +60,15 @@ export class ConstructorService {
     );
   }
 
+  /** §1.8 — rename an already uploaded file. */
+  renameFile(id: number, guid: string, filename: string): Observable<UploadedFile> {
+    return this.httpClient.patch<UploadedFile>(
+      `${environment.cdnUrl}/games/${id}/files/${guid}`,
+      {filename},
+      {withCredentials: true},
+    );
+  }
+
   // -------------------------------------------------------------------------
   // Organizers (Game Organizers API)
   // -------------------------------------------------------------------------

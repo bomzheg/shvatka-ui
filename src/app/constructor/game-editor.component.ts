@@ -559,6 +559,74 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.files = [...this.files.filter(f => f.guid !== file.guid), file];
   }
 
+  /** guid of the file currently being renamed inline, or null. */
+  renamingGuid: string | null = null;
+  renameValue = "";
+  isRenaming = false;
+
+  /** Full editable filename (name + extension) of a file, empty if unnamed. */
+  currentFilename(file: UploadedFile): string {
+    const hasName = file.original_filename && file.original_filename !== file.guid;
+    if (!hasName) {
+      return "";
+    }
+    return `${file.original_filename}${file.extension || ""}`;
+  }
+
+  startRename(file: UploadedFile) {
+    this.renamingGuid = file.guid;
+    this.renameValue = this.currentFilename(file);
+  }
+
+  cancelRename() {
+    this.renamingGuid = null;
+    this.renameValue = "";
+  }
+
+  confirmRename(file: UploadedFile) {
+    const filename = this.renameValue.trim();
+    if (!filename) {
+      this.snackbar.error("Имя файла не может быть пустым");
+      return;
+    }
+    if (filename === this.currentFilename(file)) {
+      this.cancelRename();
+      return;
+    }
+
+    this.isRenaming = true;
+    this.constructorService.renameFile(this.gameId, file.guid, filename).subscribe({
+      next: updated => {
+        this.applyRenamed(file.guid, updated, filename);
+        this.isRenaming = false;
+        this.cancelRename();
+        this.snackbar.success("Файл переименован");
+      },
+      error: err => {
+        this.isRenaming = false;
+        this.snackbar.error(`Не удалось переименовать файл: ${describeError(err)}`);
+      },
+    });
+  }
+
+  /** Update the local file entry after a rename. Prefer the server's echo of
+   *  the file; fall back to splitting the entered filename ourselves. */
+  private applyRenamed(guid: string, updated: UploadedFile | null, filename: string) {
+    this.files = this.files.map(f => {
+      if (f.guid !== guid) {
+        return f;
+      }
+      if (updated && updated.guid) {
+        return {...f, ...updated};
+      }
+      const dot = filename.lastIndexOf(".");
+      const [name, extension] = dot > 0
+        ? [filename.slice(0, dot), filename.slice(dot)]
+        : [filename, ""];
+      return {...f, original_filename: name, extension};
+    });
+  }
+
   fileLabel(file: UploadedFile): string {
     const hasName = file.original_filename && file.original_filename !== file.guid;
     if (!hasName) {
