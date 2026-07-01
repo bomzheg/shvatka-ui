@@ -151,6 +151,7 @@
                     [allowLevelUp]="true"
                     [levelIds]="allLevelIds()"
                     (fileUploaded)="onHintFileUploaded($event)"
+                    (fileRenamed)="onHintFileRenamed($event)"
                   ></app-effects-editor>
                 </div>
               }
@@ -185,6 +186,7 @@
                     [disabled]="!isEditable"
                     [allowLevelUp]="false"
                     (fileUploaded)="onHintFileUploaded($event)"
+                    (fileRenamed)="onHintFileRenamed($event)"
                   ></app-effects-editor>
                 </div>
               }
@@ -223,6 +225,7 @@
                         [disabled]="!isEditable"
                         (remove)="removeHint(th, hi)"
                         (fileUploaded)="onHintFileUploaded($event)"
+                        (fileRenamed)="onHintFileRenamed($event)"
                       ></app-hint-editor>
                     }
                   </div>
@@ -246,12 +249,29 @@
         <ul class="files-list">
           @for (f of files; track f.guid) {
             <li>
-              <div class="file-info">
-                <span class="file-name"><mat-icon class="app-icon-inline" [svgIcon]="fileIcon(f)"/> {{ fileLabel(f) }}</span>
-                @if (fileContentTypeLabel(f)) {
-                  <span class="file-type">{{ fileContentTypeLabel(f) }}</span>
-                }
-              </div>
+              @if (renamingGuid === f.guid) {
+                <div class="file-rename">
+                  <input type="text" [(ngModel)]="renameValue" [disabled]="isRenaming"
+                         placeholder="Имя файла без расширения" (keydown.enter)="confirmRename(f)" (keydown.escape)="cancelRename()" />
+                  @if (f.extension) {
+                    <span class="file-extension">{{ f.extension }}</span>
+                  }
+                  <button type="button" class="ghost-button icon" (click)="confirmRename(f)" [disabled]="isRenaming" title="Сохранить"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.check"/></button>
+                  <button type="button" class="ghost-button icon" (click)="cancelRename()" [disabled]="isRenaming" title="Отмена"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
+                </div>
+              } @else {
+                <div class="file-info">
+                  <span class="file-name"><mat-icon class="app-icon-inline" [svgIcon]="fileIcon(f)"/> {{ fileLabel(f) }}</span>
+                  <div class="file-info-right">
+                    @if (fileContentTypeLabel(f)) {
+                      <span class="file-type">{{ fileContentTypeLabel(f) }}</span>
+                    }
+                    @if (isEditable) {
+                      <button type="button" class="ghost-button icon" (click)="startRename(f)" title="Переименовать"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
+                    }
+                  </div>
+                </div>
+              }
               @switch (filePreviewKind(f)) {
                 @case ("image") {
                   <app-image-lightbox [src]="fileUrl(f)"></app-image-lightbox>

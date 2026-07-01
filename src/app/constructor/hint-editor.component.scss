@@ -93,6 +93,25 @@ select {
 .current-file {
   font-size: 0.85rem;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.file-rename {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  input[type="text"] {
+    flex: 1;
+  }
+}
+
+.file-extension {
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+  white-space: nowrap;
 }
 
 .preview {
@@ -119,6 +138,11 @@ select {
 .ghost-button.danger {
   color: #c62828;
   border-color: #c62828;
+}
+
+.ghost-button.icon {
+  padding: 0.3rem 0.5rem;
+  line-height: 1;
 }
 
 .hint-note {

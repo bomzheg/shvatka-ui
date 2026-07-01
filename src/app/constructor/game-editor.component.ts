@@ -551,12 +551,84 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.addFile(file);
   }
 
+  /** A file renamed from inside a hint editor — update the shared list. */
+  onHintFileRenamed(file: UploadedFile) {
+    if (!file || !file.guid) {
+      return;
+    }
+    this.files = this.files.map(f => (f.guid === file.guid ? {...f, ...file} : f));
+  }
+
   private addFile(file: UploadedFile) {
     if (!file || !file.guid) {
       this.snackbar.error("Сервер вернул файл без идентификатора");
       return;
     }
     this.files = [...this.files.filter(f => f.guid !== file.guid), file];
+  }
+
+  /** guid of the file currently being renamed inline, or null. */
+  renamingGuid: string | null = null;
+  renameValue = "";
+  isRenaming = false;
+
+  /** Editable base filename (without extension) of a file, empty if unnamed.
+   *  The extension is a separate server-managed field (e.g. `.tar.gz`) and is
+   *  not part of what we rename. */
+  currentFilename(file: UploadedFile): string {
+    const hasName = file.original_filename && file.original_filename !== file.guid;
+    return hasName ? file.original_filename : "";
+  }
+
+  startRename(file: UploadedFile) {
+    this.renamingGuid = file.guid;
+    this.renameValue = this.currentFilename(file);
+  }
+
+  cancelRename() {
+    this.renamingGuid = null;
+    this.renameValue = "";
+  }
+
+  confirmRename(file: UploadedFile) {
+    const filename = this.renameValue.trim();
+    if (!filename) {
+      this.snackbar.error("Имя файла не может быть пустым");
+      return;
+    }
+    if (filename === this.currentFilename(file)) {
+      this.cancelRename();
+      return;
+    }
+
+    this.isRenaming = true;
+    this.constructorService.renameFile(this.gameId, file.guid, filename).subscribe({
+      next: updated => {
+        this.applyRenamed(file.guid, updated, filename);
+        this.isRenaming = false;
+        this.cancelRename();
+        this.snackbar.success("Файл переименован");
+      },
+      error: err => {
+        this.isRenaming = false;
+        this.snackbar.error(`Не удалось переименовать файл: ${describeError(err)}`);
+      },
+    });
+  }
+
+  /** Update the local file entry after a rename. Prefer the server's echo of
+   *  the file; fall back to the entered base name, keeping the existing
+   *  extension (the server manages it as a separate field). */
+  private applyRenamed(guid: string, updated: UploadedFile | null, filename: string) {
+    this.files = this.files.map(f => {
+      if (f.guid !== guid) {
+        return f;
+      }
+      if (updated && updated.guid) {
+        return {...f, ...updated};
+      }
+      return {...f, original_filename: filename};
+    });
   }
 
   fileLabel(file: UploadedFile): string {
