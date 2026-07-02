@@ -5,28 +5,15 @@
 
     @switch (mode) {
       @case ('login') {
-        <form class="mode-form" (ngSubmit)="login(username, password)">
-          <label for="username">Имя пользователя</label>
-          <input type="text" id="username" name="username" [(ngModel)]="username" autocomplete="username">
+        <form class="mode-form" (ngSubmit)="login()">
+          <label for="loginIdentifier">Имя пользователя или email</label>
+          <input type="text" id="loginIdentifier" name="loginIdentifier" [(ngModel)]="loginIdentifier" autocomplete="username">
 
-          <label for="password">Пароль</label>
-          <input type="password" id="password" name="password" [(ngModel)]="password" autocomplete="current-password">
+          <label for="loginPassword">Пароль</label>
+          <input type="password" id="loginPassword" name="loginPassword" [(ngModel)]="loginPassword" autocomplete="current-password">
 
-          <div class="actions">
-            <button type="submit" class="primary">Войти</button>
-          </div>
-        </form>
-      }
-      @case ('emailLogin') {
-        <form class="mode-form" (ngSubmit)="loginWithEmail()">
-          <label for="loginEmail">Email</label>
-          <input type="email" id="loginEmail" name="loginEmail" [(ngModel)]="loginEmail" autocomplete="email">
-
-          <label for="loginEmailPassword">Пароль</label>
-          <input type="password" id="loginEmailPassword" name="loginEmailPassword" [(ngModel)]="loginEmailPassword" autocomplete="current-password">
-
-          @if (loginEmailError) {
-            <p class="field-error">{{ loginEmailError }}</p>
+          @if (loginError) {
+            <p class="field-error">{{ loginError }}</p>
           }
 
           <div class="actions">
@@ -35,9 +22,11 @@
             </button>
           </div>
 
-          <button type="button" class="link-button" (click)="requestConfirmationCode()">
-            Не подтвердили email? Получить код
-          </button>
+          @if (isEmailLogin()) {
+            <button type="button" class="link-button" (click)="requestConfirmationCode()">
+              Не подтвердили email? Получить код
+            </button>
+          }
         </form>
       }
       @case ('register') {
@@ -81,18 +70,13 @@
     <div class="mode-switch">
       @switch (mode) {
         @case ('login') {
-          <button type="button" class="link-button" (click)="switchMode('emailLogin')">Войти по email</button>
-          <button type="button" class="link-button" (click)="switchMode('register')">Регистрация</button>
-        }
-        @case ('emailLogin') {
-          <button type="button" class="link-button" (click)="switchMode('login')">Войти по имени пользователя</button>
           <button type="button" class="link-button" (click)="switchMode('register')">Регистрация</button>
         }
         @case ('register') {
           <button type="button" class="link-button" (click)="switchMode('login')">Уже есть аккаунт? Войти</button>
         }
         @case ('confirm') {
-          <button type="button" class="link-button" (click)="switchMode('emailLogin')">Назад ко входу</button>
+          <button type="button" class="link-button" (click)="switchMode('login')">Назад ко входу</button>
         }
       }
     </div>

@@ -9,7 +9,7 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {EmailConfirmFormComponent} from "./email-confirm-form.component";
 import {errorDetail, isValidEmail, isValidUsername, normalizeEmail} from "./auth-validation";
 
-export type AuthFormMode = 'login' | 'emailLogin' | 'register' | 'confirm';
+export type AuthFormMode = 'login' | 'register' | 'confirm';
 
 @Component({
   selector: 'app-auth',
@@ -23,12 +23,9 @@ export type AuthFormMode = 'login' | 'emailLogin' | 'register' | 'confirm';
   styleUrl: './auth.component.scss',
 })
 export class AuthComponent implements AfterViewInit, OnInit {
-  username: string | undefined;
-  password: string | undefined;
-
-  loginEmail: string = '';
-  loginEmailPassword: string = '';
-  loginEmailError: string = '';
+  loginIdentifier: string = '';
+  loginPassword: string = '';
+  loginError: string = '';
 
   registerUsername: string = '';
   registerEmail: string = '';
@@ -53,54 +50,49 @@ export class AuthComponent implements AfterViewInit, OnInit {
     authService.registerCallback(this);
   }
 
-  login(username: string | undefined, password: string | undefined) {
-      this.authService.login(username!, password!)
-        .subscribe({
-          next: () => {
-            this.completeLogin();
-          },
-          error: (err) => {
-            if (err instanceof HttpErrorResponse && err.status === 401) {
-              console.error("auth error " + err.message);
-              console.log(JSON.stringify(err));
-              this.snackbar.error('Неверные имя пользователя или пароль');
-            } else {
-              throw err;
-            }
-          },
-        });
-
+  // A username can't contain "@" and an email always does,
+  // so one field is enough to pick the right login endpoint.
+  isEmailLogin(): boolean {
+    return this.loginIdentifier.includes('@');
   }
 
-  loginWithEmail() {
-    const email = normalizeEmail(this.loginEmail);
-    if (!isValidEmail(email)) {
-      this.loginEmailError = 'Введите корректный email';
+  login() {
+    const identifier = this.loginIdentifier.trim();
+    if (!identifier) {
+      this.loginError = 'Введите имя пользователя или email';
       return;
     }
-    if (!this.loginEmailPassword) {
-      this.loginEmailError = 'Введите пароль';
+    if (this.isEmailLogin() && !isValidEmail(normalizeEmail(identifier))) {
+      this.loginError = 'Введите корректный email';
+      return;
+    }
+    if (!this.loginPassword) {
+      this.loginError = 'Введите пароль';
       return;
     }
 
-    this.loginEmailError = '';
+    this.loginError = '';
     this.isSubmitting = true;
-    this.authService.loginWithEmail(email, this.loginEmailPassword)
-      .subscribe({
-        next: () => {
-          this.isSubmitting = false;
-          this.completeLogin();
-        },
-        error: (err) => {
-          this.isSubmitting = false;
-          if (err instanceof HttpErrorResponse && err.status === 401) {
-            this.loginEmailError = 'Неверный email или пароль. Если вы не подтвердили email — получите код по ссылке ниже.';
-            return;
-          }
+    const request = this.isEmailLogin()
+      ? this.authService.loginWithEmail(normalizeEmail(identifier), this.loginPassword)
+      : this.authService.login(identifier, this.loginPassword);
+    request.subscribe({
+      next: () => {
+        this.isSubmitting = false;
+        this.completeLogin();
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        if (err instanceof HttpErrorResponse && err.status === 401) {
+          this.loginError = this.isEmailLogin()
+            ? 'Неверный email или пароль. Если вы не подтвердили email — получите код по ссылке ниже.'
+            : 'Неверные имя пользователя или пароль';
+          return;
+        }
 
-          this.snackbar.error('Не удалось войти');
-        },
-      });
+        this.snackbar.error('Не удалось войти');
+      },
+    });
   }
 
   register() {
@@ -148,15 +140,15 @@ export class AuthComponent implements AfterViewInit, OnInit {
 
   onEmailConfirmed() {
     this.snackbar.success('Email подтверждён — теперь можно войти');
-    this.loginEmail = this.confirmationEmail;
-    this.loginEmailPassword = '';
-    this.switchMode('emailLogin');
+    this.loginIdentifier = this.confirmationEmail;
+    this.loginPassword = '';
+    this.switchMode('login');
   }
 
   requestConfirmationCode() {
-    const email = normalizeEmail(this.loginEmail);
+    const email = normalizeEmail(this.loginIdentifier);
     if (!isValidEmail(email)) {
-      this.loginEmailError = 'Введите email, чтобы получить код подтверждения';
+      this.loginError = 'Введите email, чтобы получить код подтверждения';
       return;
     }
 
@@ -172,7 +164,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
 
   switchMode(mode: AuthFormMode) {
     this.mode = mode;
-    this.loginEmailError = '';
+    this.loginError = '';
     this.registerUsernameError = '';
     this.registerEmailError = '';
     this.registerPasswordError = '';
@@ -182,8 +174,6 @@ export class AuthComponent implements AfterViewInit, OnInit {
     switch (this.mode) {
       case 'login':
         return 'Авторизация';
-      case 'emailLogin':
-        return 'Вход по email';
       case 'register':
         return 'Регистрация';
       case 'confirm':
