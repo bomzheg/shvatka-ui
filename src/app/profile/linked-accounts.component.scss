@@ -1,0 +1,75 @@
+@use '../../styles/component-mixins' as cm;
+
+.link-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.link-block + .link-block {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--app-border);
+}
+
+.link-title {
+  margin: 0;
+  font-size: 1rem;
+  color: inherit;
+}
+
+.link-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--app-muted-text);
+}
+
+.link-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+label {
+  font-size: 0.9rem;
+  color: inherit;
+}
+
+input {
+  @include cm.input-control();
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #dc2626;
+}
+
+.primary {
+  margin-top: 0.75rem;
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  align-self: flex-start;
+}
+
+.primary:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--app-accent);
+  text-decoration: underline;
+  align-self: flex-start;
+}
+
+.tg-link-widget {
+  display: flex;
+  justify-content: flex-start;
+}

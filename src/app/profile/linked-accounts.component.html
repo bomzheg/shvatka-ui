@@ -1,0 +1,41 @@
+<div class="link-block">
+  <h3 class="link-title">Email</h3>
+
+  @if (isEmailLinked) {
+    <p class="link-hint">Email <strong>{{ email }}</strong> привязан к аккаунту.</p>
+    <p class="link-hint">Чтобы входить по email, установите пароль в разделе «Смена пароля».</p>
+  } @else if (isAwaitingCode) {
+    <app-email-confirm-form [email]="email" (confirmed)="onEmailConfirmed()"/>
+    <button type="button" class="link-button" (click)="cancelEmailConfirmation()">Изменить email</button>
+  } @else {
+    <p class="link-hint">Привяжите email, чтобы входить без Telegram. После подтверждения понадобится установить пароль.</p>
+    <form class="link-form" (ngSubmit)="linkEmail()">
+      <label for="linkEmail">Email</label>
+      <input
+        id="linkEmail"
+        name="linkEmail"
+        type="email"
+        [(ngModel)]="email"
+        autocomplete="email"
+      />
+      @if (emailError) {
+        <p class="field-error">{{ emailError }}</p>
+      }
+
+      <button class="primary" type="submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? 'Отправляем...' : 'Привязать email' }}
+      </button>
+    </form>
+  }
+</div>
+
+<div class="link-block">
+  <h3 class="link-title">Telegram</h3>
+  <p class="link-hint">
+    Привяжите Telegram, чтобы входить через Telegram и получать уведомления от бота.
+    Если Telegram уже привязан, повторная привязка не требуется.
+  </p>
+  <div class="tg-link-widget">
+    <div #linkScript></div>
+  </div>
+</div>

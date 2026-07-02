@@ -4,50 +4,61 @@
   @if (isAuthenticated) {
     <p class="username">Пользователь: <strong>{{ username }}</strong></p>
 
-    <form class="username-form" (ngSubmit)="changeUsername()">
-      <label for="newUsername">Новое имя пользователя</label>
-      <input
-        id="newUsername"
-        name="newUsername"
-        type="text"
-        [(ngModel)]="newUsername"
-        autocomplete="username"
-      />
+    <div class="profile-section">
+      <h2 class="section-title">Имя пользователя</h2>
+      <form class="section-form" (ngSubmit)="changeUsername()">
+        <label for="newUsername">Новое имя пользователя</label>
+        <input
+          id="newUsername"
+          name="newUsername"
+          type="text"
+          [(ngModel)]="newUsername"
+          autocomplete="username"
+        />
 
-      <button class="primary" type="submit" [disabled]="isUsernameSubmitting">
-        {{ isUsernameSubmitting ? 'Сохраняем...' : 'Изменить имя' }}
-      </button>
-    </form>
+        <button class="primary" type="submit" [disabled]="isUsernameSubmitting">
+          {{ isUsernameSubmitting ? 'Сохраняем...' : 'Изменить имя' }}
+        </button>
+      </form>
+    </div>
 
-    <div class="notifications-block">
-      <h2 class="notifications-title">Уведомления</h2>
+    <div class="profile-section">
+      <h2 class="section-title">Уведомления</h2>
       <app-push-toggle></app-push-toggle>
     </div>
 
-    <form class="password-form" (ngSubmit)="changePassword()">
-      <label for="newPassword">Новый пароль</label>
-      <input
-        id="newPassword"
-        name="newPassword"
-        type="password"
-        [(ngModel)]="newPassword"
-        autocomplete="new-password"
-      />
+    <div class="profile-section">
+      <h2 class="section-title">Смена пароля</h2>
+      <form class="section-form" (ngSubmit)="changePassword()">
+        <label for="newPassword">Новый пароль</label>
+        <input
+          id="newPassword"
+          name="newPassword"
+          type="password"
+          [(ngModel)]="newPassword"
+          autocomplete="new-password"
+        />
 
-      <label for="confirmPassword">Повторите пароль</label>
-      <input
-        id="confirmPassword"
-        name="confirmPassword"
-        type="password"
-        [(ngModel)]="confirmPassword"
-        autocomplete="new-password"
-      />
+        <label for="confirmPassword">Повторите пароль</label>
+        <input
+          id="confirmPassword"
+          name="confirmPassword"
+          type="password"
+          [(ngModel)]="confirmPassword"
+          autocomplete="new-password"
+        />
 
-      <button class="primary" type="submit" [disabled]="isSubmitting">
-        {{ isSubmitting ? 'Сохраняем...' : 'Изменить пароль' }}
-      </button>
-    </form>
+        <button class="primary" type="submit" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Сохраняем...' : 'Изменить пароль' }}
+        </button>
+      </form>
+    </div>
+
+    <div class="profile-section">
+      <h2 class="section-title">Связанные аккаунты</h2>
+      <app-linked-accounts></app-linked-accounts>
+    </div>
   } @else {
-    <p>Авторизуйтесь, чтобы изменить пароль.</p>
+    <p>Авторизуйтесь, чтобы управлять профилем.</p>
   }
 </section>

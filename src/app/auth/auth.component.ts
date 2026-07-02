@@ -2,10 +2,14 @@ import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/
 import {AuthService} from "./auth.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {FormsModule} from "@angular/forms";
-import {NgClass, NgIf, NgStyle} from "@angular/common";
+import {NgClass} from "@angular/common";
 import {UserService} from "./user.service";
 import {ShvatkaConfig} from "../app.config";
 import {HttpErrorResponse} from "@angular/common/http";
+import {EmailConfirmFormComponent} from "./email-confirm-form.component";
+import {errorDetail, isValidEmail, isValidUsername, normalizeEmail} from "./auth-validation";
+
+export type AuthFormMode = 'login' | 'emailLogin' | 'register' | 'confirm';
 
 @Component({
   selector: 'app-auth',
@@ -13,8 +17,7 @@ import {HttpErrorResponse} from "@angular/common/http";
   imports: [
     FormsModule,
     NgClass,
-    NgIf,
-    NgStyle,
+    EmailConfirmFormComponent,
   ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
@@ -22,7 +25,23 @@ import {HttpErrorResponse} from "@angular/common/http";
 export class AuthComponent implements AfterViewInit, OnInit {
   username: string | undefined;
   password: string | undefined;
+
+  loginEmail: string = '';
+  loginEmailPassword: string = '';
+  loginEmailError: string = '';
+
+  registerUsername: string = '';
+  registerEmail: string = '';
+  registerPassword: string = '';
+  registerUsernameError: string = '';
+  registerEmailError: string = '';
+  registerPasswordError: string = '';
+
+  confirmationEmail: string = '';
+
+  mode: AuthFormMode = 'login';
   isVisible: boolean = false;
+  isSubmitting: boolean = false;
   @ViewChild('script', {static: true}) script: ElementRef | undefined;
 
   constructor(
@@ -38,10 +57,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
       this.authService.login(username!, password!)
         .subscribe({
           next: () => {
-            this.updateUser().then(() => {
-              this.closeLoginForm();
-              window.location.reload();
-            })
+            this.completeLogin();
           },
           error: (err) => {
             if (err instanceof HttpErrorResponse && err.status === 401) {
@@ -54,6 +70,125 @@ export class AuthComponent implements AfterViewInit, OnInit {
           },
         });
 
+  }
+
+  loginWithEmail() {
+    const email = normalizeEmail(this.loginEmail);
+    if (!isValidEmail(email)) {
+      this.loginEmailError = 'Введите корректный email';
+      return;
+    }
+    if (!this.loginEmailPassword) {
+      this.loginEmailError = 'Введите пароль';
+      return;
+    }
+
+    this.loginEmailError = '';
+    this.isSubmitting = true;
+    this.authService.loginWithEmail(email, this.loginEmailPassword)
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.completeLogin();
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          if (err instanceof HttpErrorResponse && err.status === 401) {
+            this.loginEmailError = 'Неверный email или пароль. Если вы не подтвердили email — получите код по ссылке ниже.';
+            return;
+          }
+
+          this.snackbar.error('Не удалось войти');
+        },
+      });
+  }
+
+  register() {
+    const username = this.registerUsername.trim();
+    const email = normalizeEmail(this.registerEmail);
+
+    this.registerUsernameError = isValidUsername(username)
+      ? ''
+      : 'Имя пользователя: 3-50 символов, только латиница, цифры и «_»';
+    this.registerEmailError = isValidEmail(email) ? '' : 'Введите корректный email';
+    this.registerPasswordError = this.registerPassword ? '' : 'Введите пароль';
+    if (this.registerUsernameError || this.registerEmailError || this.registerPasswordError) {
+      return;
+    }
+
+    this.isSubmitting = true;
+    this.authService.registerWithEmail(username, email, this.registerPassword)
+      .subscribe({
+        next: () => {
+          this.isSubmitting = false;
+          this.snackbar.success(`Код подтверждения отправлен на ${email}`);
+          this.openConfirmation(email);
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          if (!(err instanceof HttpErrorResponse)) {
+            throw err;
+          }
+
+          const detail = errorDetail(err);
+          if (err.status === 409 && detail === 'email already exists') {
+            this.registerEmailError = 'Этот email уже используется';
+          } else if (err.status === 409 && detail === 'username already occupied') {
+            this.registerUsernameError = 'Это имя пользователя уже занято';
+          } else if (err.status === 422 && detail === 'invalid email') {
+            this.registerEmailError = 'Введите корректный email';
+          } else if (err.status === 422 && detail === 'invalid username') {
+            this.registerUsernameError = 'Имя пользователя: 3-50 символов, только латиница, цифры и «_»';
+          } else {
+            this.snackbar.error('Не удалось зарегистрироваться');
+          }
+        },
+      });
+  }
+
+  onEmailConfirmed() {
+    this.snackbar.success('Email подтверждён — теперь можно войти');
+    this.loginEmail = this.confirmationEmail;
+    this.loginEmailPassword = '';
+    this.switchMode('emailLogin');
+  }
+
+  requestConfirmationCode() {
+    const email = normalizeEmail(this.loginEmail);
+    if (!isValidEmail(email)) {
+      this.loginEmailError = 'Введите email, чтобы получить код подтверждения';
+      return;
+    }
+
+    this.authService.resendEmailCode(email)
+      .subscribe({
+        next: () => {
+          this.snackbar.info('Если этот email зарегистрирован, код отправлен');
+          this.openConfirmation(email);
+        },
+        error: () => this.snackbar.error('Не удалось отправить код'),
+      });
+  }
+
+  switchMode(mode: AuthFormMode) {
+    this.mode = mode;
+    this.loginEmailError = '';
+    this.registerUsernameError = '';
+    this.registerEmailError = '';
+    this.registerPasswordError = '';
+  }
+
+  formTitle(): string {
+    switch (this.mode) {
+      case 'login':
+        return 'Авторизация';
+      case 'emailLogin':
+        return 'Вход по email';
+      case 'register':
+        return 'Регистрация';
+      case 'confirm':
+        return 'Подтверждение email';
+    }
   }
 
   closeLoginForm() {
@@ -97,5 +232,17 @@ export class AuthComponent implements AfterViewInit, OnInit {
 
   ngAfterViewInit() {
     this.convertToScript();
+  }
+
+  private openConfirmation(email: string) {
+    this.confirmationEmail = email;
+    this.switchMode('confirm');
+  }
+
+  private completeLogin() {
+    this.updateUser().then(() => {
+      this.closeLoginForm();
+      window.location.reload();
+    });
   }
 }
