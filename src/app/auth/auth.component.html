@@ -31,6 +31,13 @@
       }
       @case ('register') {
         <form class="mode-form" (ngSubmit)="register()">
+          <p class="register-warning">
+            Уже играли через Telegram-бота? Не регистрируйтесь заново —
+            войдите в свою учётку кнопкой Telegram на экране входа, иначе
+            потеряете связь с командой и историей игр.
+            <a href="https://bomzheg.github.io/Shvatka/shvatka/player/auth.html" target="_blank" rel="noopener">Подробнее о входе</a>
+          </p>
+
           <label for="registerUsername">Имя пользователя</label>
           <input type="text" id="registerUsername" name="registerUsername" [(ngModel)]="registerUsername" autocomplete="username">
           @if (registerUsernameError) {

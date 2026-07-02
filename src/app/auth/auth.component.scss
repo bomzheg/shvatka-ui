@@ -82,6 +82,20 @@ button {
   color: #dc2626;
 }
 
+.register-warning {
+  margin: 0 0 0.4rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  font-size: 0.9rem;
+  color: var(--app-text);
+}
+
+.register-warning a {
+  color: var(--app-accent);
+}
+
 .link-button {
   border: none;
   background: none;
