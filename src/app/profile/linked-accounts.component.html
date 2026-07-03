@@ -1,12 +1,16 @@
 <div class="link-block">
   <h3 class="link-title">Email</h3>
 
-  @if (isEmailLinked) {
-    <p class="link-hint">Email <strong>{{ email }}</strong> привязан к аккаунту.</p>
+  @if (linkedEmail && linkedEmail.is_verified) {
+    <p class="link-hint">Email <strong>{{ linkedEmail.email }}</strong> привязан и подтверждён.</p>
     <p class="link-hint">Чтобы входить по email, установите пароль в разделе «Смена пароля».</p>
-  } @else if (isAwaitingCode) {
-    <app-email-confirm-form [email]="email" (confirmed)="onEmailConfirmed()"/>
-    <button type="button" class="link-button" (click)="cancelEmailConfirmation()">Изменить email</button>
+  } @else if (linkedEmail && !showEmailForm) {
+    <p class="link-hint pending-hint">
+      Email <strong>{{ linkedEmail.email }}</strong> ещё не подтверждён —
+      вход по email не будет работать, пока вы не введёте код из письма.
+    </p>
+    <app-email-confirm-form [email]="linkedEmail.email || ''" (confirmed)="onEmailConfirmed()"/>
+    <button type="button" class="link-button" (click)="changeEmail()">Указать другой email</button>
   } @else {
     <p class="link-hint">Привяжите email, чтобы входить без Telegram. После подтверждения понадобится установить пароль.</p>
     <form class="link-form" (ngSubmit)="linkEmail()">
@@ -31,11 +35,21 @@
 
 <div class="link-block">
   <h3 class="link-title">Telegram</h3>
-  <p class="link-hint">
-    Привяжите Telegram, чтобы входить через Telegram и получать уведомления от бота.
-    Если Telegram уже привязан, повторная привязка не требуется.
-  </p>
-  <div class="tg-link-widget">
+  @if (linkedTg) {
+    <p class="link-hint">Telegram <strong>{{ tgDisplayName() }}</strong> привязан к аккаунту.</p>
+  } @else {
+    <p class="link-hint">
+      Привяжите Telegram, чтобы входить через Telegram и получать уведомления от бота.
+    </p>
+  }
+  <div class="tg-link-widget" [class.hidden-widget]="!!linkedTg">
     <div #linkScript></div>
   </div>
 </div>
+
+@if (forumName) {
+  <div class="link-block">
+    <h3 class="link-title">Форум</h3>
+    <p class="link-hint">Аккаунт форума <strong>{{ forumName }}</strong> привязан.</p>
+  </div>
+}

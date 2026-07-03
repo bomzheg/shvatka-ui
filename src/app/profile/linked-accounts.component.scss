@@ -69,7 +69,19 @@ input {
   align-self: flex-start;
 }
 
+.pending-hint {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--app-text);
+}
+
 .tg-link-widget {
   display: flex;
   justify-content: flex-start;
+}
+
+.tg-link-widget.hidden-widget {
+  display: none;
 }

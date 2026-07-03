@@ -2,6 +2,7 @@ import {AfterViewInit, Component, ElementRef, NgZone, OnInit, ViewChild} from '@
 import {FormsModule} from '@angular/forms';
 import {HttpErrorResponse} from '@angular/common/http';
 import {AuthService} from '../auth/auth.service';
+import {EmailIdentity, TgIdentity, UserService} from '../auth/user.service';
 import {SnackbarService} from '../snackbar/snackbar.service';
 import {ShvatkaConfig} from '../app.config';
 import {EmailConfirmFormComponent} from '../auth/email-confirm-form.component';
@@ -18,16 +19,40 @@ export class LinkedAccountsComponent implements OnInit, AfterViewInit {
   email = '';
   emailError = '';
   isSubmitting = false;
-  isAwaitingCode = false;
-  isEmailLinked = false;
+  // Set when the user wants to replace a pending (unverified) email with another one.
+  showEmailForm = false;
   @ViewChild('linkScript', {static: true}) linkScript: ElementRef | undefined;
 
   constructor(
     private authService: AuthService,
+    private userService: UserService,
     private snackbar: SnackbarService,
     private config: ShvatkaConfig,
     private zone: NgZone,
   ) {
+  }
+
+  get linkedEmail(): EmailIdentity | null {
+    return this.userService.getMe()?.email ?? null;
+  }
+
+  get linkedTg(): TgIdentity | null {
+    return this.userService.getMe()?.tg ?? null;
+  }
+
+  get forumName(): string | null {
+    return this.userService.getMe()?.forum?.name ?? null;
+  }
+
+  tgDisplayName(): string {
+    const tg = this.linkedTg;
+    if (!tg) {
+      return '';
+    }
+    if (tg.username) {
+      return `@${tg.username}`;
+    }
+    return [tg.first_name, tg.last_name].filter(v => !!v).join(' ') || `id ${tg.tg_id}`;
   }
 
   linkEmail() {
@@ -41,11 +66,12 @@ export class LinkedAccountsComponent implements OnInit, AfterViewInit {
     this.isSubmitting = true;
     this.authService.linkEmail(email)
       .subscribe({
-        next: () => {
+        next: async () => {
           this.isSubmitting = false;
-          this.email = email;
-          this.isAwaitingCode = true;
+          this.showEmailForm = false;
           this.snackbar.success(`Код подтверждения отправлен на ${email}`);
+          // Refresh identities: the unverified email now renders the confirm form.
+          await this.userService.loadMe();
         },
         error: (err) => {
           this.isSubmitting = false;
@@ -66,14 +92,14 @@ export class LinkedAccountsComponent implements OnInit, AfterViewInit {
       });
   }
 
-  onEmailConfirmed() {
-    this.isAwaitingCode = false;
-    this.isEmailLinked = true;
+  async onEmailConfirmed() {
     this.snackbar.success('Email привязан к аккаунту');
+    await this.userService.loadMe();
   }
 
-  cancelEmailConfirmation() {
-    this.isAwaitingCode = false;
+  changeEmail() {
+    this.email = '';
+    this.showEmailForm = true;
   }
 
   ngOnInit(): void {
@@ -83,13 +109,18 @@ export class LinkedAccountsComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.convertToScript();
+    if (!this.linkedTg) {
+      this.convertToScript();
+    }
   }
 
   private linkTelegram(tgUser: any) {
     this.authService.linkTelegram(tgUser)
       .subscribe({
-        next: () => this.snackbar.success('Telegram привязан к аккаунту'),
+        next: async () => {
+          this.snackbar.success('Telegram привязан к аккаунту');
+          await this.userService.loadMe();
+        },
         error: (err) => {
           if (!(err instanceof HttpErrorResponse)) {
             throw err;
