@@ -37,6 +37,7 @@
   <h3 class="link-title">Telegram</h3>
   @if (linkedTg) {
     <p class="link-hint">Telegram <strong>{{ tgDisplayName() }}</strong> привязан к аккаунту.</p>
+    <p class="link-hint tg-id-hint">ID: {{ linkedTg.tg_id }}</p>
   } @else {
     <p class="link-hint">
       Привяжите Telegram, чтобы входить через Telegram и получать уведомления от бота.

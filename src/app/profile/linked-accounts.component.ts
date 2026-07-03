@@ -52,7 +52,7 @@ export class LinkedAccountsComponent implements OnInit, AfterViewInit {
     if (tg.username) {
       return `@${tg.username}`;
     }
-    return [tg.first_name, tg.last_name].filter(v => !!v).join(' ') || `id ${tg.tg_id}`;
+    return [tg.first_name, tg.last_name].filter(v => !!v).join(' ') || `ID ${tg.tg_id}`;
   }
 
   linkEmail() {
