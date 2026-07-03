@@ -58,6 +58,13 @@ export class AuthService {
     );
   }
 
+  forgotPassword(email: string) {
+    return this.http.postWithoutCookies<any>(
+      '/auth/forgot-password',
+      {email},
+    );
+  }
+
   linkEmail(email: string) {
     return this.http.post<any>(
       '/auth/email/link',

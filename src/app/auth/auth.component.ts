@@ -7,9 +7,10 @@ import {UserService} from "./user.service";
 import {ShvatkaConfig} from "../app.config";
 import {HttpErrorResponse} from "@angular/common/http";
 import {EmailConfirmFormComponent} from "./email-confirm-form.component";
+import {ForgotPasswordFormComponent} from "./forgot-password-form.component";
 import {errorDetail, isValidEmail, isValidUsername, normalizeEmail} from "./auth-validation";
 
-export type AuthFormMode = 'login' | 'register' | 'confirm' | 'linkTg';
+export type AuthFormMode = 'login' | 'register' | 'confirm' | 'linkTg' | 'forgotPassword';
 
 @Component({
   selector: 'app-auth',
@@ -18,6 +19,7 @@ export type AuthFormMode = 'login' | 'register' | 'confirm' | 'linkTg';
     FormsModule,
     NgClass,
     EmailConfirmFormComponent,
+    ForgotPasswordFormComponent,
   ],
   templateUrl: './auth.component.html',
   styleUrl: './auth.component.scss',
@@ -35,6 +37,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
   registerPasswordError: string = '';
 
   confirmationEmail: string = '';
+  forgotPasswordEmail: string = '';
 
   mode: AuthFormMode = 'login';
   isVisible: boolean = false;
@@ -163,6 +166,13 @@ export class AuthComponent implements AfterViewInit, OnInit {
       });
   }
 
+  openForgotPassword() {
+    // Prefill the email if the login field already holds one.
+    const identifier = normalizeEmail(this.loginIdentifier);
+    this.forgotPasswordEmail = isValidEmail(identifier) ? identifier : '';
+    this.switchMode('forgotPassword');
+  }
+
   switchMode(mode: AuthFormMode) {
     this.mode = mode;
     this.loginError = '';
@@ -181,6 +191,8 @@ export class AuthComponent implements AfterViewInit, OnInit {
         return 'Подтверждение email';
       case 'linkTg':
         return 'Привязка Telegram';
+      case 'forgotPassword':
+        return 'Сброс пароля';
     }
   }
 

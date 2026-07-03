@@ -66,6 +66,9 @@
       @case ('confirm') {
         <app-email-confirm-form [email]="confirmationEmail" (confirmed)="onEmailConfirmed()"/>
       }
+      @case ('forgotPassword') {
+        <app-forgot-password-form [email]="forgotPasswordEmail"/>
+      }
       @case ('linkTg') {
         <p class="link-tg-hint">
           Нажмите кнопку Telegram ниже, чтобы привязать Telegram-аккаунт к текущему профилю.
@@ -83,12 +86,16 @@
       <div class="mode-switch">
         @switch (mode) {
           @case ('login') {
+            <button type="button" class="link-button" (click)="openForgotPassword()">Забыли пароль?</button>
             <button type="button" class="link-button" (click)="switchMode('register')">Регистрация</button>
           }
           @case ('register') {
             <button type="button" class="link-button" (click)="switchMode('login')">Уже есть аккаунт? Войти</button>
           }
           @case ('confirm') {
+            <button type="button" class="link-button" (click)="switchMode('login')">Назад ко входу</button>
+          }
+          @case ('forgotPassword') {
             <button type="button" class="link-button" (click)="switchMode('login')">Назад ко входу</button>
           }
         }
