@@ -1,12 +1,11 @@
-import {AfterViewInit, Component, ElementRef, NgZone, OnInit, ViewChild} from '@angular/core';
+import {Component} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {HttpErrorResponse} from '@angular/common/http';
 import {AuthService} from '../auth/auth.service';
 import {EmailIdentity, TgIdentity, UserService} from '../auth/user.service';
 import {SnackbarService} from '../snackbar/snackbar.service';
-import {ShvatkaConfig} from '../app.config';
 import {EmailConfirmFormComponent} from '../auth/email-confirm-form.component';
-import {errorDetail, isValidEmail, normalizeEmail} from '../auth/auth-validation';
+import {isValidEmail, normalizeEmail} from '../auth/auth-validation';
 
 @Component({
   selector: 'app-linked-accounts',
@@ -15,20 +14,17 @@ import {errorDetail, isValidEmail, normalizeEmail} from '../auth/auth-validation
   templateUrl: './linked-accounts.component.html',
   styleUrl: './linked-accounts.component.scss',
 })
-export class LinkedAccountsComponent implements OnInit, AfterViewInit {
+export class LinkedAccountsComponent {
   email = '';
   emailError = '';
   isSubmitting = false;
   // Set when the user wants to replace a pending (unverified) email with another one.
   showEmailForm = false;
-  @ViewChild('linkScript', {static: true}) linkScript: ElementRef | undefined;
 
   constructor(
     private authService: AuthService,
     private userService: UserService,
     private snackbar: SnackbarService,
-    private config: ShvatkaConfig,
-    private zone: NgZone,
   ) {
   }
 
@@ -102,55 +98,7 @@ export class LinkedAccountsComponent implements OnInit, AfterViewInit {
     this.showEmailForm = true;
   }
 
-  ngOnInit(): void {
-    // The Telegram widget calls this callback outside the Angular zone.
-    // @ts-ignore
-    window['tgOnLinkTg'] = (user: any) => this.zone.run(() => this.linkTelegram(user));
-  }
-
-  ngAfterViewInit(): void {
-    if (!this.linkedTg) {
-      this.convertToScript();
-    }
-  }
-
-  private linkTelegram(tgUser: any) {
-    this.authService.linkTelegram(tgUser)
-      .subscribe({
-        next: async () => {
-          this.snackbar.success('Telegram привязан к аккаунту');
-          await this.userService.loadMe();
-        },
-        error: (err) => {
-          if (!(err instanceof HttpErrorResponse)) {
-            throw err;
-          }
-
-          const detail = errorDetail(err);
-          if (err.status === 409 && detail === 'player already has linked telegram') {
-            this.snackbar.error('К вашему аккаунту уже привязан Telegram');
-          } else if (err.status === 409 && detail === 'this telegram account is linked to another player') {
-            this.snackbar.error('Этот Telegram-аккаунт уже привязан к другому игроку');
-          } else if (err.status === 401) {
-            this.snackbar.error('Не удалось проверить данные Telegram. Войдите в аккаунт и попробуйте ещё раз.');
-          } else {
-            this.snackbar.error('Не удалось привязать Telegram');
-          }
-        },
-      });
-  }
-
-  private convertToScript() {
-    const element = this.linkScript?.nativeElement;
-    if (!element?.parentElement) {
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://telegram.org/js/telegram-widget.js?23';
-    script.setAttribute('data-telegram-login', this.config.botUsername);
-    script.setAttribute('data-size', 'medium');
-    script.setAttribute('data-request-access', 'write');
-    script.setAttribute('data-onauth', 'tgOnLinkTg(user)');
-    element.parentElement.replaceChild(script, element);
+  openTgLinkForm() {
+    this.authService.showTgLinkForm();
   }
 }

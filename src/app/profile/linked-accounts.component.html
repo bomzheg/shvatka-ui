@@ -42,10 +42,8 @@
     <p class="link-hint">
       Привяжите Telegram, чтобы входить через Telegram и получать уведомления от бота.
     </p>
+    <button class="primary" type="button" (click)="openTgLinkForm()">Привязать Telegram</button>
   }
-  <div class="tg-link-widget" [class.hidden-widget]="!!linkedTg">
-    <div #linkScript></div>
-  </div>
 </div>
 
 @if (forumName) {

@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, NgZone, OnInit, ViewChild} from '@angular/core';
 import {AuthService} from "./auth.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {FormsModule} from "@angular/forms";
@@ -9,7 +9,7 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {EmailConfirmFormComponent} from "./email-confirm-form.component";
 import {errorDetail, isValidEmail, isValidUsername, normalizeEmail} from "./auth-validation";
 
-export type AuthFormMode = 'login' | 'register' | 'confirm';
+export type AuthFormMode = 'login' | 'register' | 'confirm' | 'linkTg';
 
 @Component({
   selector: 'app-auth',
@@ -46,6 +46,7 @@ export class AuthComponent implements AfterViewInit, OnInit {
     private userService: UserService,
     private config: ShvatkaConfig,
     private snackbar: SnackbarService,
+    private zone: NgZone,
   ) {
     authService.registerCallback(this);
   }
@@ -178,14 +179,26 @@ export class AuthComponent implements AfterViewInit, OnInit {
         return 'Регистрация';
       case 'confirm':
         return 'Подтверждение email';
+      case 'linkTg':
+        return 'Привязка Telegram';
     }
   }
 
   closeLoginForm() {
     this.isVisible = false;
+    if (this.mode === 'linkTg') {
+      this.switchMode('login');
+    }
   }
 
   public openLoginForm() {
+    this.isVisible = true;
+  }
+
+  // The profile page reuses the modal's Telegram widget for account linking:
+  // a second widget instance injected after page load does not render reliably.
+  public openTgLinkForm() {
+    this.switchMode('linkTg');
     this.isVisible = true;
   }
 
@@ -205,8 +218,14 @@ export class AuthComponent implements AfterViewInit, OnInit {
   }
 
   ngOnInit(): void {
+    // The Telegram widget calls this outside the Angular zone. In linkTg mode
+    // the payload attaches Telegram to the current account instead of logging in.
     // @ts-ignore
-    window["tgOnLogin"] = (user: any) => {
+    window["tgOnLogin"] = (user: any) => this.zone.run(() => {
+      if (this.mode === 'linkTg') {
+        this.linkTelegram(user);
+        return;
+      }
       this.authService.authenticate(user)
         .subscribe(() => {
           this.updateUser()
@@ -217,11 +236,39 @@ export class AuthComponent implements AfterViewInit, OnInit {
               window.location.reload();
             });
         });
-    };
+    });
   }
 
   ngAfterViewInit() {
     this.convertToScript();
+  }
+
+  private linkTelegram(tgUser: any) {
+    this.authService.linkTelegram(tgUser)
+      .subscribe({
+        next: async () => {
+          this.closeLoginForm();
+          this.snackbar.success('Telegram привязан к аккаунту');
+          await this.userService.loadMe();
+        },
+        error: (err) => {
+          if (!(err instanceof HttpErrorResponse)) {
+            throw err;
+          }
+
+          this.closeLoginForm();
+          const detail = errorDetail(err);
+          if (err.status === 409 && detail === 'player already has linked telegram') {
+            this.snackbar.error('К вашему аккаунту уже привязан Telegram');
+          } else if (err.status === 409 && detail === 'this telegram account is linked to another player') {
+            this.snackbar.error('Этот Telegram-аккаунт уже привязан к другому игроку');
+          } else if (err.status === 401) {
+            this.snackbar.error('Не удалось проверить данные Telegram. Войдите в аккаунт и попробуйте ещё раз.');
+          } else {
+            this.snackbar.error('Не удалось привязать Telegram');
+          }
+        },
+      });
   }
 
   private openConfirmation(email: string) {

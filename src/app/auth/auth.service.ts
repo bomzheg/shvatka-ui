@@ -88,6 +88,10 @@ export class AuthService {
     this.authComponent?.openLoginForm();
   }
 
+  showTgLinkForm() {
+    this.authComponent?.openTgLinkForm();
+  }
+
   logout() {
     return this.http.post<any>("/auth/logout", {});
   }
