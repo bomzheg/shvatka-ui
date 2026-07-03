@@ -5,9 +5,10 @@ import {AuthService} from "./auth.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {isValidEmail, normalizeEmail} from "./auth-validation";
 
-// The backend rate-limits password-reset emails to one per 2 minutes and
-// answers early retries with HTTP 429. Mirror that window client-side so the
-// button stays disabled until a new request is allowed.
+// The backend allows one password-reset email per 2 minutes. After a successful
+// send we mirror that window client-side so the button stays disabled until the
+// next request is allowed. We do NOT start the countdown on a 429: the remaining
+// wait is unknown (e.g. the user reloaded the page), so we only show an error.
 const RESEND_COOLDOWN_SECONDS = 120;
 
 @Component({
@@ -56,8 +57,7 @@ export class ForgotPasswordFormComponent implements OnDestroy {
         error: (err) => {
           this.isSubmitting = false;
           if (err instanceof HttpErrorResponse && err.status === 429) {
-            this.emailError = 'Слишком часто. Подождите перед повторной отправкой.';
-            this.startCooldown(RESEND_COOLDOWN_SECONDS);
+            this.emailError = 'Слишком часто. Повторите попытку через пару минут.';
             return;
           }
 

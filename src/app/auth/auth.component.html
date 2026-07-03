@@ -27,10 +27,6 @@
               Не подтвердили email? Получить код
             </button>
           }
-
-          <button type="button" class="link-button" (click)="openForgotPassword()">
-            Забыли пароль?
-          </button>
         </form>
       }
       @case ('register') {
@@ -90,6 +86,7 @@
       <div class="mode-switch">
         @switch (mode) {
           @case ('login') {
+            <button type="button" class="link-button" (click)="openForgotPassword()">Забыли пароль?</button>
             <button type="button" class="link-button" (click)="switchMode('register')">Регистрация</button>
           }
           @case ('register') {
