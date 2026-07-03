@@ -1,0 +1,26 @@
+<form class="confirm-form" (ngSubmit)="confirm()">
+  <p class="confirm-hint">Мы отправили 6-значный код на <strong>{{ email }}</strong>. Код действует 30 минут.</p>
+
+  <label for="confirmationCode">Код из письма</label>
+  <input
+    id="confirmationCode"
+    name="confirmationCode"
+    type="text"
+    inputmode="numeric"
+    maxlength="6"
+    autocomplete="one-time-code"
+    [(ngModel)]="code"
+  />
+  @if (codeError) {
+    <p class="field-error">{{ codeError }}</p>
+  }
+
+  <div class="confirm-actions">
+    <button type="submit" class="primary" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Проверяем...' : 'Подтвердить' }}
+    </button>
+    <button type="button" class="link-button" (click)="resend()" [disabled]="isResending">
+      {{ isResending ? 'Отправляем...' : 'Отправить код ещё раз' }}
+    </button>
+  </div>
+</form>

@@ -1,22 +1,98 @@
 <div class="login-overlay" [ngClass]="isVisible ? 'visible' : 'hidden'" id="loginFormBackCover" (click)="closeLoginForm()">
-  <form class="login-form" id="loginForm" (click)="$event.stopPropagation()" (ngSubmit)="login(username, password)">
+  <div class="login-form" id="loginForm" (click)="$event.stopPropagation()">
     <button type="button" class="icon-close right-top" (click)="closeLoginForm()" aria-label="Закрыть"></button>
-    <h3>Авторизация</h3>
+    <h3>{{ formTitle() }}</h3>
 
-    <label for="username">Имя пользователя</label>
-    <input type="text" id="username" name="username" [(ngModel)]="username" autocomplete="username">
+    @switch (mode) {
+      @case ('login') {
+        <form class="mode-form" (ngSubmit)="login()">
+          <label for="loginIdentifier">Имя пользователя или email</label>
+          <input type="text" id="loginIdentifier" name="loginIdentifier" [(ngModel)]="loginIdentifier" autocomplete="username">
 
-    <label for="password">Пароль</label>
-    <input type="password" id="password" name="password" [(ngModel)]="password" autocomplete="current-password">
+          <label for="loginPassword">Пароль</label>
+          <input type="password" id="loginPassword" name="loginPassword" [(ngModel)]="loginPassword" autocomplete="current-password">
 
-    <div class="actions">
-      <button type="submit" class="primary">Войти</button>
-    </div>
+          @if (loginError) {
+            <p class="field-error">{{ loginError }}</p>
+          }
 
-    <div class="tg-login-widget">
+          <div class="actions">
+            <button type="submit" class="primary" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'Входим...' : 'Войти' }}
+            </button>
+          </div>
+
+          @if (isEmailLogin()) {
+            <button type="button" class="link-button" (click)="requestConfirmationCode()">
+              Не подтвердили email? Получить код
+            </button>
+          }
+        </form>
+      }
+      @case ('register') {
+        <form class="mode-form" (ngSubmit)="register()">
+          <p class="register-warning">
+            Уже играли через Telegram-бота? Не регистрируйтесь заново —
+            войдите в свою учётку кнопкой Telegram на экране входа, иначе
+            потеряете связь с командой и историей игр.
+            <a href="https://bomzheg.github.io/Shvatka/shvatka/player/auth.html" target="_blank" rel="noopener">Подробнее о входе</a>
+          </p>
+
+          <label for="registerUsername">Имя пользователя</label>
+          <input type="text" id="registerUsername" name="registerUsername" [(ngModel)]="registerUsername" autocomplete="username">
+          @if (registerUsernameError) {
+            <p class="field-error">{{ registerUsernameError }}</p>
+          }
+
+          <label for="registerEmail">Email</label>
+          <input type="email" id="registerEmail" name="registerEmail" [(ngModel)]="registerEmail" autocomplete="email">
+          @if (registerEmailError) {
+            <p class="field-error">{{ registerEmailError }}</p>
+          }
+
+          <label for="registerPassword">Пароль</label>
+          <input type="password" id="registerPassword" name="registerPassword" [(ngModel)]="registerPassword" autocomplete="new-password">
+          @if (registerPasswordError) {
+            <p class="field-error">{{ registerPasswordError }}</p>
+          }
+
+          <div class="actions">
+            <button type="submit" class="primary" [disabled]="isSubmitting">
+              {{ isSubmitting ? 'Регистрируем...' : 'Зарегистрироваться' }}
+            </button>
+          </div>
+        </form>
+      }
+      @case ('confirm') {
+        <app-email-confirm-form [email]="confirmationEmail" (confirmed)="onEmailConfirmed()"/>
+      }
+      @case ('linkTg') {
+        <p class="link-tg-hint">
+          Нажмите кнопку Telegram ниже, чтобы привязать Telegram-аккаунт к текущему профилю.
+        </p>
+      }
+    }
+
+    <div class="tg-login-widget" [class.hidden-widget]="mode !== 'login' && mode !== 'linkTg'">
       <div #script style='{display: none}'>
         <ng-content></ng-content>
       </div>
     </div>
-  </form>
+
+    @if (mode !== 'linkTg') {
+      <div class="mode-switch">
+        @switch (mode) {
+          @case ('login') {
+            <button type="button" class="link-button" (click)="switchMode('register')">Регистрация</button>
+          }
+          @case ('register') {
+            <button type="button" class="link-button" (click)="switchMode('login')">Уже есть аккаунт? Войти</button>
+          }
+          @case ('confirm') {
+            <button type="button" class="link-button" (click)="switchMode('login')">Назад ко входу</button>
+          }
+        }
+      </div>
+    }
+  </div>
 </div>

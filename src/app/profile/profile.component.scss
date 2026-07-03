@@ -16,29 +16,28 @@ h1 {
   color: inherit;
 }
 
-.notifications-block {
+.profile-section {
   margin-bottom: 1.25rem;
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--app-border);
 }
 
-.notifications-title {
+.profile-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.section-title {
   margin: 0 0 0.6rem;
   font-size: 1.05rem;
   color: inherit;
 }
 
-.username-form,
-.password-form {
+.section-form {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-
-.username-form {
-  margin-bottom: 1.25rem;
-  padding-bottom: 1.25rem;
-  border-bottom: 1px solid var(--app-border);
 }
 
 label {

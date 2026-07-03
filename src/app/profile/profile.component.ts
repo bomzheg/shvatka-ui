@@ -1,15 +1,15 @@
 import {Component, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {NgIf} from '@angular/common';
 import {HttpErrorResponse} from '@angular/common/http';
 import {UserService} from '../auth/user.service';
 import {SnackbarService} from '../snackbar/snackbar.service';
 import {PushToggleComponent} from '../push/push-toggle.component';
+import {LinkedAccountsComponent} from './linked-accounts.component';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [FormsModule, NgIf, PushToggleComponent],
+  imports: [FormsModule, PushToggleComponent, LinkedAccountsComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })

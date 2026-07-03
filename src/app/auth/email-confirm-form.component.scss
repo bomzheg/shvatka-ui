@@ -1,0 +1,62 @@
+@use '../../styles/component-mixins' as cm;
+
+.confirm-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.confirm-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--app-muted-text);
+}
+
+label {
+  font-size: 0.9rem;
+  color: var(--app-muted-text);
+}
+
+input {
+  @include cm.input-control();
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #dc2626;
+}
+
+.confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.primary {
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+}
+
+.primary:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--app-accent);
+  text-decoration: underline;
+}
+
+.link-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}

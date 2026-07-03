@@ -63,3 +63,61 @@ button {
   display: flex;
   justify-content: center;
 }
+
+// The Telegram widget script is injected once, so the container stays in the
+// DOM and is only hidden when another form mode is shown.
+.tg-login-widget.hidden-widget {
+  display: none;
+}
+
+.mode-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #dc2626;
+}
+
+.link-tg-hint {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--app-muted-text);
+}
+
+.register-warning {
+  margin: 0 0 0.4rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.12);
+  font-size: 0.9rem;
+  color: var(--app-text);
+}
+
+.register-warning a {
+  color: var(--app-accent);
+}
+
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--app-accent);
+  text-decoration: underline;
+  align-self: flex-start;
+}
+
+.mode-switch {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--app-border);
+}

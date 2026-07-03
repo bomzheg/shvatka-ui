@@ -5,11 +5,30 @@ import {Observable} from "rxjs";
 import {AuthService} from "./auth.service";
 import {AuthStateService} from "./auth-state.service";
 
+export class TgIdentity {
+  tg_id: number | undefined;
+  username: string | null | undefined;
+  first_name: string | null | undefined;
+  last_name: string | null | undefined;
+}
+
+export class ForumIdentity {
+  name: string | undefined;
+}
+
+export class EmailIdentity {
+  email: string | undefined;
+  is_verified: boolean | undefined;
+}
+
 export class UserData {
   id: number | undefined;
   username: string | undefined;
   name_mention: string | undefined;
   can_be_author: boolean | undefined;
+  tg: TgIdentity | null | undefined;
+  forum: ForumIdentity | null | undefined;
+  email: EmailIdentity | null | undefined;
 }
 
 @Injectable({
