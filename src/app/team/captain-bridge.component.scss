@@ -41,7 +41,19 @@ h1 {
     margin: 0;
     font-size: 0.9rem;
     color: var(--app-text);
+
+    a {
+      color: inherit;
+    }
   }
+}
+
+.edit-form + .create-team-notice {
+  margin-top: 1rem;
+}
+
+.web-only-hint {
+  margin-bottom: 1rem;
 }
 
 // ── Shared card layout ─────────────────────────────────────────────────────────

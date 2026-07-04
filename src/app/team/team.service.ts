@@ -54,6 +54,10 @@ export class TeamService {
     return this.http.get<TeamDetails>(`/teams/${teamId}`);
   }
 
+  createTeam(name: string, description: string | null): Observable<TeamDetails> {
+    return this.http.post<TeamDetails>('/teams', {name, description});
+  }
+
   searchPlayers(query: string): Observable<ItemsResponse<PlayerSearchResult>> {
     const qs = new URLSearchParams({username: query}).toString();
     return this.http.get<ItemsResponse<PlayerSearchResult>>(`/users?${qs}`);
