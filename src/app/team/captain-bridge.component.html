@@ -8,12 +8,56 @@
   } @else if (!team) {
     <div class="no-team-card">
       <p class="no-team-text">Вы не состоите ни в одной команде.</p>
-      <div class="create-team-notice">
-        <span class="notice-icon">ℹ️</span>
-        <p>Создание команды через сайт пока недоступно — оно привязано к Telegram-чату. Обратитесь к организаторам.</p>
-      </div>
+      @if (canCreateTeam) {
+        <form class="edit-form" (ngSubmit)="createTeam()">
+          <h2 class="section-title">Создать команду</h2>
+          <label for="create-team-name">Название</label>
+          <input
+            id="create-team-name"
+            type="text"
+            name="createTeamName"
+            [(ngModel)]="createTeamName"
+            required
+          />
+
+          <label for="create-team-desc">Описание (необязательно)</label>
+          <input
+            id="create-team-desc"
+            type="text"
+            name="createTeamDescription"
+            [(ngModel)]="createTeamDescription"
+          />
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary" [disabled]="isCreatingTeam || !createTeamName.trim()">
+              {{ isCreatingTeam ? 'Создание...' : 'Создать команду' }}
+            </button>
+          </div>
+        </form>
+        <div class="create-team-notice">
+          <span class="notice-icon">ℹ️</span>
+          <p>Вы станете капитаном новой команды. Команда сможет играть через сайт; позже капитан сможет привязать Telegram-чат в боте.</p>
+        </div>
+      } @else {
+        <div class="create-team-notice">
+          <span class="notice-icon">ℹ️</span>
+          <p>Создавать команды могут только игроки с правами автора. Если вы хотите создать команду, обратитесь к администраторам.</p>
+        </div>
+      }
     </div>
   } @else {
+
+    @if (showWebOnlyTeamHint) {
+      <div class="create-team-notice web-only-hint">
+        <span class="notice-icon">ℹ️</span>
+        <p>
+          Команда создана! Пока она играет только через сайт. Чтобы привязать Telegram-чат,
+          откройте личный чат с ботом <a [href]="botLink" target="_blank" rel="noopener">&#64;{{ botUsername }}</a>,
+          выполните /manage_team и выберите «🔀Перенести в другой чат» (целевой чат — супергруппа с добавленным ботом).
+        </p>
+        <button type="button" class="btn-clear" (click)="dismissWebOnlyTeamHint()" aria-label="Скрыть подсказку"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
+      </div>
+    }
 
     <!-- Team info card -->
     <div class="section-card team-card">

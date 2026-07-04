@@ -5,6 +5,7 @@ import {finalize} from 'rxjs';
 import {TeamService} from './team.service';
 import {UserService} from '../auth/user.service';
 import {SnackbarService} from '../snackbar/snackbar.service';
+import {ShvatkaConfig} from '../app.config';
 import {
   PlayerProfile,
   PlayerSearchResult,
@@ -40,6 +41,11 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
   editTeamDescription = '';
   isSavingTeam = false;
 
+  createTeamName = '';
+  createTeamDescription = '';
+  isCreatingTeam = false;
+  showWebOnlyTeamHint = false;
+
   editingMemberId: number | null = null;
   editMemberRole = '';
   editMemberEmoji = '';
@@ -70,6 +76,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
     private teamService: TeamService,
     private userService: UserService,
     private snackbar: SnackbarService,
+    private config: ShvatkaConfig,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -93,6 +100,18 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
 
   get userId(): number | undefined {
     return this.userService.getMe()?.id;
+  }
+
+  get canCreateTeam(): boolean {
+    return (this.playerProfile?.can_be_author ?? this.userService.getMe()?.can_be_author) === true;
+  }
+
+  get botUsername(): string {
+    return this.config.botUsername;
+  }
+
+  get botLink(): string {
+    return `https://t.me/${this.config.botUsername}`;
   }
 
   get currentMember(): TeamMember | null {
@@ -215,6 +234,39 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
         next: (res) => { this.members = res.items; },
         error: () => { this.snackbar.error('Не удалось загрузить список участников'); },
       });
+  }
+
+  createTeam(): void {
+    const name = this.createTeamName.trim();
+    if (!name) {
+      this.snackbar.error('Название команды не может быть пустым');
+      return;
+    }
+
+    this.isCreatingTeam = true;
+    this.teamService.createTeam(name, this.createTeamDescription.trim() || null)
+      .pipe(finalize(() => { this.isCreatingTeam = false; }))
+      .subscribe({
+        next: (created) => {
+          this.team = created;
+          this.createTeamName = '';
+          this.createTeamDescription = '';
+          this.showWebOnlyTeamHint = true;
+          this.loadMembers(created.id);
+          this.snackbar.success(`Команда «${created.name}» создана`);
+        },
+        error: (err) => {
+          const backendError = err?.error;
+          const description = typeof backendError?.description === 'string' && backendError.description
+            ? backendError.description
+            : null;
+          this.snackbar.error(description ?? 'Не удалось создать команду');
+        },
+      });
+  }
+
+  dismissWebOnlyTeamHint(): void {
+    this.showWebOnlyTeamHint = false;
   }
 
   startEditTeam(): void {
