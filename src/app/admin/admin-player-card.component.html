@@ -1,0 +1,134 @@
+<a class="back-link" routerLink="/admin/players">← К списку игроков</a>
+
+@if (isLoading) {
+  <p class="status-message">Загрузка...</p>
+} @else if (notFound) {
+  <p class="status-message">Игрок не найден.</p>
+} @else if (player) {
+  <header class="player-header">
+    <h2>{{ displayName }}</h2>
+    <span class="player-id">#{{ player.id }}</span>
+    @if (player.is_admin) {
+      <span class="player-badge admin">админ</span>
+    }
+    @if (player.can_be_author) {
+      <span class="player-badge">автор</span>
+    }
+  </header>
+
+  <div class="detail-section">
+    <h3 class="section-title">Связанные аккаунты</h3>
+    <dl class="identities">
+      <dt>Telegram</dt>
+      <dd>
+        @if (player.tg) {
+          @if (tgLink(player.tg); as link) {
+            <a [href]="link" target="_blank" rel="noopener noreferrer">
+              {{ player.tg.username ? '@' + player.tg.username : tgFullName(player.tg) || player.tg.tg_id }}
+            </a>
+          } @else {
+            {{ tgFullName(player.tg) || player.tg.tg_id }}
+          }
+          <span class="hint">(id: {{ player.tg.tg_id }})</span>
+        } @else {
+          <span class="hint">не привязан</span>
+        }
+      </dd>
+
+      <dt>Форум</dt>
+      <dd>
+        @if (player.forum?.name) {
+          {{ player.forum?.name }}
+        } @else {
+          <span class="hint">не привязан</span>
+        }
+      </dd>
+
+      <dt>Email</dt>
+      <dd>
+        @if (player.email) {
+          {{ player.email.email }}
+          <span class="hint">{{ player.email.is_verified ? '(подтверждён)' : '(не подтверждён)' }}</span>
+        } @else {
+          <span class="hint">не задан</span>
+        }
+      </dd>
+    </dl>
+  </div>
+
+  <div class="detail-section">
+    <h3 class="section-title">Одноразовая ссылка для входа</h3>
+    <p class="hint">Игрок откроет ссылку и войдёт под своим аккаунтом. Ссылка одноразовая и быстро протухает.</p>
+    <button class="primary" type="button" (click)="createOneTimeLink()" [disabled]="isLinkCreating">
+      {{ isLinkCreating ? 'Создаём...' : 'Создать и скопировать ссылку' }}
+    </button>
+    @if (oneTimeLink) {
+      <div class="one-time-link-row">
+        <input type="text" readonly [value]="oneTimeLink" (focus)="$any($event.target).select()"/>
+        <button class="secondary" type="button" (click)="copyOneTimeLink()">Копировать</button>
+      </div>
+    }
+  </div>
+
+  <div class="detail-section">
+    <h3 class="section-title">Email</h3>
+    <form class="section-form" (ngSubmit)="submitEmail()">
+      <label for="adminEmail">Email игрока</label>
+      <input
+        id="adminEmail"
+        name="adminEmail"
+        type="email"
+        autocomplete="off"
+        [(ngModel)]="emailInput"
+      />
+      <label class="checkbox-label">
+        <input type="checkbox" name="emailVerified" [(ngModel)]="emailVerified"/>
+        Считать подтверждённым (иначе игрок подтверждает сам)
+      </label>
+      <button class="primary" type="submit" [disabled]="isEmailSubmitting">
+        {{ isEmailSubmitting ? 'Сохраняем...' : 'Сохранить email' }}
+      </button>
+    </form>
+  </div>
+
+  <div class="detail-section">
+    <h3 class="section-title">Перепривязать telegram</h3>
+    <form class="section-form" (ngSubmit)="submitTg()">
+      <label for="tgId">Telegram id</label>
+      <input
+        id="tgId"
+        name="tgId"
+        type="number"
+        autocomplete="off"
+        [(ngModel)]="tgId"
+      />
+      <label for="tgUsername">Username (без &#64;)</label>
+      <input
+        id="tgUsername"
+        name="tgUsername"
+        type="text"
+        autocomplete="off"
+        [(ngModel)]="tgUsername"
+      />
+      <label for="tgFirstName">Имя</label>
+      <input
+        id="tgFirstName"
+        name="tgFirstName"
+        type="text"
+        autocomplete="off"
+        [(ngModel)]="tgFirstName"
+      />
+      <label for="tgLastName">Фамилия</label>
+      <input
+        id="tgLastName"
+        name="tgLastName"
+        type="text"
+        autocomplete="off"
+        [(ngModel)]="tgLastName"
+      />
+      <button class="primary" type="submit" [disabled]="isTgSubmitting">
+        {{ isTgSubmitting ? 'Сохраняем...' : 'Перепривязать' }}
+      </button>
+    </form>
+  </div>
+}

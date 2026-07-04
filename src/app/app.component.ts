@@ -1,7 +1,7 @@
 import {Component, Inject, OnInit} from '@angular/core';
 import {MatIconRegistry} from '@angular/material/icon';
 import {APP_BASE_HREF, CommonModule, DOCUMENT} from '@angular/common';
-import {NavigationEnd, Router, RouterOutlet} from '@angular/router';
+import {NavigationEnd, Router, RouterLink, RouterOutlet} from '@angular/router';
 import {HeaderComponent} from "./header/header.component";
 import {environment} from "../environments/environment";
 import {DomSanitizer} from "@angular/platform-browser";
@@ -9,12 +9,13 @@ import {ThemeService} from "./theme/theme.service";
 import {filter} from "rxjs";
 import {VersionInfo, VersionService} from "./version/version.service";
 import {PushService} from "./push/push.service";
+import {UserService} from "./auth/user.service";
 import {registerAppIcons} from "./ui/icons";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, HeaderComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, HeaderComponent],
   providers: [
     {provide: APP_BASE_HREF, useValue: environment.baseHref}
   ],
@@ -37,6 +38,7 @@ export class AppComponent implements OnInit {
     private versionService: VersionService,
     private router: Router,
     private pushService: PushService,
+    private userService: UserService,
     @Inject(DOCUMENT) private document: Document,
   ) {
     this.matIconRegistry.addSvgIcon(
@@ -59,6 +61,10 @@ export class AppComponent implements OnInit {
     // Registers the push service worker and, if permission is already granted,
     // refreshes the saved subscription. Never prompts for permission on load.
     this.pushService.init();
+  }
+
+  isAdmin() {
+    return this.userService.isAdmin();
   }
 
   toggleDebugInfo() {

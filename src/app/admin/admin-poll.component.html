@@ -1,0 +1,33 @@
+<p class="hint">Голоса игроков в опросе перед текущей игрой. Удаление убирает только голос, не вейвер.</p>
+
+@if (isLoading) {
+  <p class="status-message">Загрузка...</p>
+} @else if (loadFailed) {
+  <p class="status-message">Не удалось загрузить опрос.</p>
+} @else if (!poll || poll.teams.length === 0) {
+  <p class="status-message">Пока никто не проголосовал.</p>
+} @else {
+  @for (pollTeam of poll.teams; track pollTeam.team.id) {
+    <div class="team-card">
+      <h3 class="team-name">{{ pollTeam.team.name }}</h3>
+      <ul class="entries">
+        @for (entry of pollTeam.entries; track entry.player.id) {
+          <li class="entry">
+            <a class="player-link" [routerLink]="['/admin/players', entry.player.id]">
+              {{ entry.player.username || entry.player.name_mention }}
+            </a>
+            <span class="vote vote-{{ entry.vote }}">{{ voteLabel(entry.vote) }}</span>
+            <button
+              class="remove-button"
+              type="button"
+              (click)="removeEntry(pollTeam, entry)"
+              [disabled]="removingKey === entryKey(pollTeam, entry)"
+            >
+              {{ removingKey === entryKey(pollTeam, entry) ? 'Удаляем...' : 'Удалить' }}
+            </button>
+          </li>
+        }
+      </ul>
+    </div>
+  }
+}

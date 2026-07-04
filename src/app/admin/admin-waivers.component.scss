@@ -1,0 +1,55 @@
+@use '../../styles/component-mixins' as cm;
+
+.status-message,
+.hint {
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.hint {
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.game-select-label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.game-select {
+  @include cm.input-control();
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  box-sizing: border-box;
+  margin-bottom: 1.25rem;
+}
+
+.team-card {
+  @include cm.surface-card(12px, 1rem);
+  margin-bottom: 1rem;
+}
+
+.team-name {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+}
+
+.entries {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.player-link {
+  color: var(--app-text);
+  font-weight: 600;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

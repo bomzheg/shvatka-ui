@@ -10,5 +10,8 @@
     <br/>
     BE {{ formatVersionShort(backendVersion) }} {{ formatVersionTime(backendVersion) }}
   </button>
-  <pre *ngIf="showDebugInfo" class="debug-panel">{{ debugInfo || "No tg auth debug logs yet." }}</pre>
+  <ng-container *ngIf="showDebugInfo">
+    <a *ngIf="isAdmin()" class="admin-panel-button" routerLink="/admin">Админ-панель</a>
+    <pre class="debug-panel">{{ debugInfo || "No tg auth debug logs yet." }}</pre>
+  </ng-container>
 </footer>
