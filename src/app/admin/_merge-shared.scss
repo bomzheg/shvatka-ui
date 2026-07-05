@@ -1,0 +1,208 @@
+// Shared styles for the player-merge and team-merge admin screens.
+@use '../../styles/component-mixins' as cm;
+
+.hint,
+.muted,
+.status-message {
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.hint {
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.merge-sides {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.merge-side {
+  @include cm.surface-card(12px, 1rem);
+  min-width: 0;
+
+  &.secondary {
+    border-color: color-mix(in srgb, #dc2626 45%, var(--app-border));
+  }
+}
+
+.side-title {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+}
+
+.search-input {
+  @include cm.input-control();
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.search-results {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5rem 0 0;
+  max-height: 14rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.25rem;
+
+  button {
+    @include cm.button-base(8px, 0.45rem 0.6rem);
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.6rem;
+    text-align: left;
+    font-weight: 400;
+    background: transparent;
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+
+    &:hover {
+      border-color: var(--app-accent);
+    }
+  }
+}
+
+.result-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.result-id,
+.result-extra {
+  font-size: 0.8rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.preview-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.preview-name {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--app-text);
+  overflow-wrap: anywhere;
+}
+
+.preview-id {
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.preview-badge {
+  font-size: 0.7rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+
+  &.admin {
+    background: #b45309;
+    color: #fff;
+  }
+}
+
+.clear-button {
+  @include cm.button-base(8px, 0.2rem 0.6rem);
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 400;
+  background: transparent;
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+}
+
+.preview-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.history-title {
+  margin: 0.6rem 0 0.3rem;
+  font-size: 0.9rem;
+}
+
+.history-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  font-size: 0.85rem;
+  display: grid;
+  gap: 0.2rem;
+
+  li {
+    overflow-wrap: anywhere;
+  }
+}
+
+.error-message {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.warning-message {
+  margin: 0.4rem 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: color-mix(in srgb, #f59e0b 14%, var(--app-surface));
+  border: 1px solid color-mix(in srgb, #f59e0b 50%, var(--app-border));
+}
+
+.confirm-block {
+  @include cm.surface-card(12px, 1rem);
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.confirm-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+
+  input {
+    margin-top: 0.2rem;
+  }
+}
+
+.danger {
+  @include cm.button-base();
+  width: fit-content;
+  background: #dc2626;
+  color: #fff;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}

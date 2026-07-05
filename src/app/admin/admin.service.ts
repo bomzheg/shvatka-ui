@@ -1,12 +1,13 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
-import {Items} from '../team/team.models';
+import {Items, TeamDetails} from '../team/team.models';
 import {Game, Page} from '../games/games.service';
 import {
   AdminEmail,
   AdminPlayerDetails,
   AdminPlayerListItem,
+  AdminPlayerRef,
   AdminPlayersFilters,
   AdminPoll,
   GameWaivers,
@@ -45,6 +46,22 @@ export class AdminService {
     tg: {tg_id: number; username?: string | null; first_name?: string | null; last_name?: string | null},
   ): Observable<AdminPlayerDetails> {
     return this.http.put<AdminPlayerDetails>(`/admin/players/${playerId}/tg`, tg);
+  }
+
+  /** Irreversible: folds the secondary player into the primary, then deletes the secondary. */
+  mergePlayers(primaryId: number, secondaryId: number): Observable<AdminPlayerRef> {
+    return this.http.post<AdminPlayerRef>('/admin/players/merge', {
+      primary_id: primaryId,
+      secondary_id: secondaryId,
+    });
+  }
+
+  /** Irreversible: folds the secondary team into the primary, then deletes the secondary. */
+  mergeTeams(primaryId: number, secondaryId: number): Observable<TeamDetails> {
+    return this.http.post<TeamDetails>('/admin/teams/merge', {
+      primary_id: primaryId,
+      secondary_id: secondaryId,
+    });
   }
 
   getPoll(): Observable<AdminPoll> {

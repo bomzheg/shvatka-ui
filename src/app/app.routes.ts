@@ -17,6 +17,8 @@ import {AdminPlayersComponent} from "./admin/admin-players.component";
 import {AdminPlayerCardComponent} from "./admin/admin-player-card.component";
 import {AdminPollComponent} from "./admin/admin-poll.component";
 import {AdminWaiversComponent} from "./admin/admin-waivers.component";
+import {AdminMergePlayersComponent} from "./admin/admin-merge-players.component";
+import {AdminMergeTeamsComponent} from "./admin/admin-merge-teams.component";
 import {adminGuard} from "./admin/admin.guard";
 
 
@@ -43,6 +45,8 @@ export const routes: Routes = [
       {path: "players/:id", component: AdminPlayerCardComponent},
       {path: "poll", component: AdminPollComponent},
       {path: "waivers", component: AdminWaiversComponent},
+      {path: "merge/players", component: AdminMergePlayersComponent},
+      {path: "merge/teams", component: AdminMergeTeamsComponent},
     ],
   },
   {path: "auth/one-time-token", component: OneTimeTokenComponent},
