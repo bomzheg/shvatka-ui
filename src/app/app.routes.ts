@@ -12,6 +12,14 @@ import {CaptainBridgeComponent} from "./team/captain-bridge.component";
 import {TeamsComponent} from "./teams/teams.component";
 import {TeamCardComponent} from "./team_card/team-card.component";
 import {PlayerCardComponent} from "./player_card/player-card.component";
+import {AdminComponent} from "./admin/admin.component";
+import {AdminPlayersComponent} from "./admin/admin-players.component";
+import {AdminPlayerCardComponent} from "./admin/admin-player-card.component";
+import {AdminPollComponent} from "./admin/admin-poll.component";
+import {AdminWaiversComponent} from "./admin/admin-waivers.component";
+import {AdminMergePlayersComponent} from "./admin/admin-merge-players.component";
+import {AdminMergeTeamsComponent} from "./admin/admin-merge-teams.component";
+import {adminGuard} from "./admin/admin.guard";
 
 
 export const routes: Routes = [
@@ -27,5 +35,19 @@ export const routes: Routes = [
   {path: "teams/:id", component: TeamCardComponent},
   {path: "players/:id", component: PlayerCardComponent},
   {path: "profile", component: ProfileComponent},
+  {
+    path: "admin",
+    component: AdminComponent,
+    canActivate: [adminGuard],
+    children: [
+      {path: "", pathMatch: "full", redirectTo: "players"},
+      {path: "players", component: AdminPlayersComponent},
+      {path: "players/:id", component: AdminPlayerCardComponent},
+      {path: "poll", component: AdminPollComponent},
+      {path: "waivers", component: AdminWaiversComponent},
+      {path: "merge/players", component: AdminMergePlayersComponent},
+      {path: "merge/teams", component: AdminMergeTeamsComponent},
+    ],
+  },
   {path: "auth/one-time-token", component: OneTimeTokenComponent},
 ];

@@ -1,0 +1,64 @@
+<div class="filters">
+  <input
+    type="text"
+    class="search-input"
+    placeholder="Имя пользователя (username)..."
+    name="username"
+    autocomplete="off"
+    [(ngModel)]="username"
+    (ngModelChange)="onSearchChange()"
+  />
+  <input
+    type="text"
+    class="search-input"
+    placeholder="Имя в telegram..."
+    name="name"
+    autocomplete="off"
+    [(ngModel)]="name"
+    (ngModelChange)="onSearchChange()"
+  />
+  <div class="filter-toggles">
+    <label class="filter-toggle">
+      <input type="checkbox" name="active" [(ngModel)]="active" (ngModelChange)="onFilterChange()"/>
+      Активные
+    </label>
+    <label class="filter-toggle">
+      <input type="checkbox" name="archive" [(ngModel)]="archive" (ngModelChange)="onFilterChange()"/>
+      Архивные
+    </label>
+    <label class="filter-toggle">
+      <input type="checkbox" name="onlyAuthors" [(ngModel)]="onlyAuthors" (ngModelChange)="onFilterChange()"/>
+      Только авторы
+    </label>
+  </div>
+</div>
+
+@if (isLoading) {
+  <p class="status-message">Загрузка...</p>
+} @else if (loadFailed) {
+  <p class="status-message">Не удалось загрузить список игроков.</p>
+} @else if (players.length === 0) {
+  <p class="status-message">Игроки не найдены.</p>
+} @else {
+  <ul class="players-list">
+    @for (player of players; track player.id) {
+      <li class="players-list-item">
+        <a [routerLink]="['/admin/players', player.id]">
+          <span class="player-name">{{ player.username || player.name_mention }}</span>
+          <span class="player-id">#{{ player.id }}</span>
+          @if (player.can_be_author) {
+            <span class="player-badge">автор</span>
+          }
+          @if (player.tg) {
+            <span class="player-tg">
+              tg: {{ player.tg.username ? '@' + player.tg.username : tgFullName(player.tg) || player.tg.tg_id }}
+            </span>
+          }
+          @if (player.forum?.name) {
+            <span class="player-forum">форум: {{ player.forum?.name }}</span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+}

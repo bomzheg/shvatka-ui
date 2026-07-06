@@ -1,0 +1,141 @@
+@use '../../styles/component-mixins' as cm;
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: var(--app-text);
+  text-decoration: none;
+  font-size: 0.9rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.status-message {
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.player-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  h2 {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.player-id {
+  font-size: 0.9rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.player-badge {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+
+  &.admin {
+    background: #b45309;
+    color: #fff;
+  }
+}
+
+.detail-section {
+  @include cm.surface-card(12px, 1rem);
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+  color: inherit;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.identities {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1rem;
+  margin: 0;
+
+  dt {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+
+    a {
+      color: inherit;
+    }
+  }
+}
+
+.section-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.9rem;
+  }
+
+  input:not([type="checkbox"]) {
+    @include cm.input-control();
+  }
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.one-time-link-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+
+  input {
+    @include cm.input-control();
+    flex: 1;
+    min-width: 0;
+    font-size: 0.85rem;
+  }
+}
+
+.primary {
+  @include cm.button-base();
+  width: fit-content;
+  margin-top: 0.5rem;
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+}
+
+.secondary {
+  @include cm.button-base();
+  background: var(--app-surface);
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+  white-space: nowrap;
+}

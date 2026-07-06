@@ -1,0 +1,104 @@
+<p class="hint">
+  Вливаемая команда будет объединена с основной и <strong>удалена навсегда</strong>.
+  Перед слиянием проверьте капитанов и составы обеих команд.
+</p>
+
+<div class="merge-sides">
+  @for (role of ['primary', 'secondary']; track role) {
+    <div class="merge-side" [class.secondary]="role === 'secondary'">
+      <h3 class="side-title">
+        {{ role === 'primary' ? 'Основная команда (останется)' : 'Вливаемая команда (будет удалена)' }}
+      </h3>
+
+      @if (!side($any(role)).team && !side($any(role)).loading) {
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Поиск по названию..."
+          [name]="role + 'Query'"
+          autocomplete="off"
+          [ngModel]="side($any(role)).query"
+          (ngModelChange)="onQueryChange($any(role), $event)"
+        />
+        @if (side($any(role)).searching) {
+          <p class="status-message">Ищем...</p>
+        } @else if (side($any(role)).results.length > 0) {
+          <ul class="search-results">
+            @for (team of side($any(role)).results; track team.id) {
+              <li>
+                <button type="button" (click)="select($any(role), team)">
+                  <span class="result-name">{{ team.name }}</span>
+                  <span class="result-id">#{{ team.id }}</span>
+                  @if (team.captain) {
+                    <span class="result-extra">капитан: {{ team.captain.name_mention }}</span>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        } @else if (side($any(role)).query.trim()) {
+          <p class="status-message">Ничего не нашли.</p>
+        }
+      } @else if (side($any(role)).loading) {
+        <p class="status-message">Загрузка данных команды...</p>
+      } @else {
+        <div class="team-preview">
+          <div class="preview-header">
+            <a class="preview-name" [routerLink]="['/teams', side($any(role)).team!.id]">
+              {{ side($any(role)).team!.name }}
+            </a>
+            <span class="preview-id">#{{ side($any(role)).team!.id }}</span>
+            <button class="clear-button" type="button" (click)="clear($any(role))">Выбрать другую</button>
+          </div>
+
+          <dl class="preview-facts">
+            <dt>Капитан</dt>
+            <dd>
+              @if (side($any(role)).team!.captain; as captain) {
+                <a [routerLink]="['/admin/players', captain.id]">{{ captain.name_mention }}</a>
+              } @else {
+                <span class="muted">нет</span>
+              }
+            </dd>
+            @if (side($any(role)).team!.description) {
+              <dt>Описание</dt>
+              <dd>{{ side($any(role)).team!.description }}</dd>
+            }
+            @if (side($any(role)).playedGames; as games) {
+              <dt>Сыграно игр</dt>
+              <dd>{{ games.length }}</dd>
+            }
+          </dl>
+
+          <h4 class="history-title">Состав ({{ side($any(role)).players.length }})</h4>
+          @if (side($any(role)).players.length === 0) {
+            <p class="muted">Нет игроков (или состав недоступен).</p>
+          } @else {
+            <ul class="history-list">
+              @for (member of side($any(role)).players; track member.id) {
+                <li>{{ memberLabel(member) }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (bothSelected) {
+  @if (sameId) {
+    <p class="error-message">Нельзя объединить команду с самой собой — выберите разные команды.</p>
+  } @else {
+    <div class="confirm-block">
+      <label class="confirm-label">
+        <input type="checkbox" name="confirmMerge" [(ngModel)]="confirmChecked"/>
+        Я проверил обе команды и понимаю, что слияние необратимо:
+        команда «{{ secondary.team!.name }}» будет удалена, её игроки и результаты перейдут к «{{ primary.team!.name }}».
+      </label>
+      <button class="danger" type="button" (click)="merge()" [disabled]="!confirmChecked || isMerging">
+        {{ isMerging ? 'Объединяем...' : 'Объединить команды' }}
+      </button>
+    </div>
+  }
+}

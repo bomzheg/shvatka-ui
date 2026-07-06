@@ -37,6 +37,19 @@
   opacity: 0.85;
 }
 
+.admin-panel-button {
+  display: block;
+  width: fit-content;
+  margin: 0.5rem auto 0;
+  padding: 0.4rem 1.1rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+}
+
 .debug-panel {
   margin-top: 0.5rem;
   padding: 0.75rem;

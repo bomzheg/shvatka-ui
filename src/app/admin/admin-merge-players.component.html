@@ -1,0 +1,131 @@
+<p class="hint">
+  Вливаемый игрок будет объединён с основным и <strong>удалён навсегда</strong>.
+  Перед слиянием проверьте связанные аккаунты и историю команд обоих игроков.
+</p>
+
+<div class="merge-sides">
+  @for (role of ['primary', 'secondary']; track role) {
+    <div class="merge-side" [class.secondary]="role === 'secondary'">
+      <h3 class="side-title">
+        {{ role === 'primary' ? 'Основной игрок (останется)' : 'Вливаемый игрок (будет удалён)' }}
+      </h3>
+
+      @if (!side($any(role)).detail && !side($any(role)).loading) {
+        <input
+          type="text"
+          class="search-input"
+          [placeholder]="'Поиск по имени пользователя...'"
+          [name]="role + 'Query'"
+          autocomplete="off"
+          [ngModel]="side($any(role)).query"
+          (ngModelChange)="onQueryChange($any(role), $event)"
+        />
+        @if (side($any(role)).searching) {
+          <p class="status-message">Ищем...</p>
+        } @else if (side($any(role)).results.length > 0) {
+          <ul class="search-results">
+            @for (player of side($any(role)).results; track player.id) {
+              <li>
+                <button type="button" (click)="select($any(role), player)">
+                  <span class="result-name">{{ player.username || player.name_mention }}</span>
+                  <span class="result-id">#{{ player.id }}</span>
+                  @if (player.tg) {
+                    <span class="result-extra">tg: {{ tgLabel(player.tg) }}</span>
+                  }
+                </button>
+              </li>
+            }
+          </ul>
+        } @else if (side($any(role)).query.trim()) {
+          <p class="status-message">Никого не нашли.</p>
+        }
+      } @else if (side($any(role)).loading) {
+        <p class="status-message">Загрузка данных игрока...</p>
+      } @else {
+        <div class="player-preview">
+          <div class="preview-header">
+            <a class="preview-name" [routerLink]="['/admin/players', side($any(role)).detail!.id]">
+              {{ side($any(role)).detail!.username || side($any(role)).detail!.name_mention }}
+            </a>
+            <span class="preview-id">#{{ side($any(role)).detail!.id }}</span>
+            @if (side($any(role)).detail!.is_admin) {
+              <span class="preview-badge admin">админ</span>
+            }
+            @if (side($any(role)).detail!.can_be_author) {
+              <span class="preview-badge">автор</span>
+            }
+            <button class="clear-button" type="button" (click)="clear($any(role))">Выбрать другого</button>
+          </div>
+
+          <dl class="preview-facts">
+            <dt>Telegram</dt>
+            <dd>
+              @if (side($any(role)).detail!.tg) {
+                {{ tgLabel(side($any(role)).detail!.tg!) }} (id: {{ side($any(role)).detail!.tg!.tg_id }})
+              } @else {
+                <span class="muted">не привязан</span>
+              }
+            </dd>
+            <dt>Форум</dt>
+            <dd>
+              @if (side($any(role)).detail!.forum?.name) {
+                {{ side($any(role)).detail!.forum!.name }}
+              } @else {
+                <span class="muted">не привязан</span>
+              }
+            </dd>
+            <dt>Email</dt>
+            <dd>
+              @if (side($any(role)).detail!.email) {
+                {{ side($any(role)).detail!.email!.email }}
+                <span class="muted">{{ side($any(role)).detail!.email!.is_verified ? '(подтверждён)' : '(не подтверждён)' }}</span>
+              } @else {
+                <span class="muted">не задан</span>
+              }
+            </dd>
+            @if (side($any(role)).stat; as stat) {
+              <dt>Сыграно игр</dt>
+              <dd>{{ stat.played_games.length }}</dd>
+              <dt>Введено ключей</dt>
+              <dd>{{ stat.typed_keys_count }} ({{ stat.typed_correct_keys_count }} верных)</dd>
+            }
+          </dl>
+
+          <h4 class="history-title">История команд</h4>
+          @if (side($any(role)).stat === null) {
+            <p class="muted">Статистика недоступна.</p>
+          } @else if (side($any(role)).stat!.team_history.length === 0) {
+            <p class="muted">Не состоял в командах.</p>
+          } @else {
+            <ul class="history-list">
+              @for (entry of side($any(role)).stat!.team_history; track entry.team_player_id) {
+                <li>{{ historyLabel(entry) }}</li>
+              }
+            </ul>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+@if (bothSelected) {
+  @if (sameId) {
+    <p class="error-message">Нельзя объединить игрока с самим собой — выберите разных игроков.</p>
+  } @else {
+    @for (warning of warnings; track warning) {
+      <p class="warning-message">⚠ {{ warning }}</p>
+    }
+
+    <div class="confirm-block">
+      <label class="confirm-label">
+        <input type="checkbox" name="confirmMerge" [(ngModel)]="confirmChecked"/>
+        Я проверил обоих игроков и понимаю, что слияние необратимо:
+        игрок «{{ secondary.detail!.username || secondary.detail!.name_mention }}» будет удалён.
+      </label>
+      <button class="danger" type="button" (click)="merge()" [disabled]="!confirmChecked || isMerging">
+        {{ isMerging ? 'Объединяем...' : 'Объединить игроков' }}
+      </button>
+    </div>
+  }
+}

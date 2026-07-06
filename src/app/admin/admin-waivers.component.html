@@ -1,0 +1,48 @@
+<p class="hint">Подтверждённые составы команд на игру (только просмотр).</p>
+
+<label class="game-select-label" for="waiversGame">Игра</label>
+<select
+  id="waiversGame"
+  name="waiversGame"
+  class="game-select"
+  [(ngModel)]="selectedGameId"
+  (ngModelChange)="onGameChange()"
+>
+  <option [ngValue]="null">— выберите игру —</option>
+  @for (game of games; track game.id) {
+    <option [ngValue]="game.id">
+      @if (game.number) {
+        №{{ game.number }} —
+      }
+      {{ game.name }}
+    </option>
+  }
+</select>
+
+@if (isLoading) {
+  <p class="status-message">Загрузка...</p>
+} @else if (loadFailed) {
+  <p class="status-message">Не удалось загрузить вейверы.</p>
+} @else if (waivers) {
+  @if (waivers.teams.length === 0) {
+    <p class="status-message">По этой игре нет вейверов.</p>
+  }
+  @for (team of waivers.teams; track team.id) {
+    <div class="team-card">
+      <h3 class="team-name">{{ team.name }}</h3>
+      @if (teamWaivers(team).length === 0) {
+        <p class="status-message">Нет подтверждённых игроков.</p>
+      } @else {
+        <ul class="entries">
+          @for (entry of teamWaivers(team); track entry.player.id) {
+            <li class="entry">
+              <a class="player-link" [routerLink]="['/admin/players', entry.player.id]">
+                {{ entry.player.username || entry.player.name_mention }}
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  }
+}

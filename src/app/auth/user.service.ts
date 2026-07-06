@@ -29,6 +29,7 @@ export class UserData {
   tg: TgIdentity | null | undefined;
   forum: ForumIdentity | null | undefined;
   email: EmailIdentity | null | undefined;
+  is_admin: boolean | undefined;
 }
 
 @Injectable({
@@ -78,6 +79,11 @@ export class UserService {
   public canBeAuthor() {
     // Show author tools unless the backend explicitly says the user can't.
     return this.me !== undefined && this.me.can_be_author !== false;
+  }
+
+  public isAdmin() {
+    // Rendering hint only — every /admin/* endpoint re-checks on the server.
+    return this.me?.is_admin === true;
   }
 
   public clearUser() {
