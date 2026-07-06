@@ -1,0 +1,73 @@
+<section class="notifications-page">
+  <div class="page-header">
+    <h1>Уведомления</h1>
+    @if (unreadCount() > 0) {
+      <button class="read-all-button" type="button" (click)="markAllRead()">Отметить все прочитанными</button>
+    }
+  </div>
+
+  @if (isLoading) {
+    <p class="status-message">Загрузка...</p>
+  } @else if (loadFailed) {
+    <p class="status-message">Не удалось загрузить уведомления.</p>
+  } @else if (items.length === 0) {
+    <p class="status-message">Уведомлений пока нет.</p>
+  } @else {
+    <ul class="notifications-list">
+      @for (view of items; track view.notification.id) {
+        <li
+          class="notification-item"
+          [class.unread]="view.wasUnread"
+          [class]="severityClass(view)"
+        >
+          <mat-icon class="notification-icon" aria-hidden="true" [svgIcon]="view.icon"/>
+          <div class="notification-body">
+            <p class="notification-text">{{ text(view) }}</p>
+            <span class="notification-date">{{ view.notification.created_at | date:'dd.MM.yyyy HH:mm' }}</span>
+
+            @if (requestView(view); as rv) {
+              @if (isPending(rv)) {
+                <div class="request-actions">
+                  @if (rv.direction === 'incoming') {
+                    <button
+                      class="action-button action-button--accept"
+                      type="button"
+                      [disabled]="rv.busy"
+                      (click)="respond(rv, 'accept')"
+                    >Принять</button>
+                    <button
+                      class="action-button action-button--decline"
+                      type="button"
+                      [disabled]="rv.busy"
+                      (click)="respond(rv, 'decline')"
+                    >Отклонить</button>
+                  } @else {
+                    <button
+                      class="action-button action-button--cancel"
+                      type="button"
+                      [disabled]="rv.busy"
+                      (click)="respond(rv, 'cancel')"
+                    >Отменить заявку</button>
+                  }
+                </div>
+              } @else {
+                <span class="request-status" [class]="'request-status--' + rv.request.status">
+                  {{ statusLabel(rv) }}
+                </span>
+              }
+            }
+          </div>
+          @if (view.wasUnread) {
+            <span class="unread-dot" title="Непрочитанное"></span>
+          }
+        </li>
+      }
+    </ul>
+
+    @if (hasMore) {
+      <button class="load-more-button" type="button" [disabled]="isLoadingMore" (click)="loadMore()">
+        {{ isLoadingMore ? 'Загрузка...' : 'Показать ещё' }}
+      </button>
+    }
+  }
+</section>

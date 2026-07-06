@@ -1,28 +1,30 @@
-import {Injectable} from "@angular/core";
+import {Injectable, signal} from "@angular/core";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthStateService {
-  private authenticated: boolean | undefined = undefined;
+  // Signal so that dependents (e.g. notifications polling) can react to
+  // login/logout; undefined means "not known yet".
+  private readonly authenticated = signal<boolean | undefined>(undefined);
 
   setAuthenticated() {
-    this.authenticated = true;
+    this.authenticated.set(true);
   }
 
   setUnauthenticated() {
-    this.authenticated = false;
+    this.authenticated.set(false);
   }
 
   reset() {
-    this.authenticated = undefined;
+    this.authenticated.set(undefined);
   }
 
   isAuthenticated(): boolean {
-    return this.authenticated === true;
+    return this.authenticated() === true;
   }
 
   isUnauthenticated(): boolean {
-    return this.authenticated === false;
+    return this.authenticated() === false;
   }
 }

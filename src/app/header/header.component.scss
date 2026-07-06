@@ -21,9 +21,50 @@
   min-height: 64px;
   padding: 0.75rem 1rem;
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto auto auto;
   gap: 1rem;
   align-items: center;
+}
+
+.bell-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  text-decoration: none;
+  padding: 0.35rem;
+  border-radius: 999px;
+  opacity: 0.92;
+
+  mat-icon {
+    width: 1.4rem;
+    height: 1.4rem;
+    font-size: 1.4rem;
+  }
+
+  &:hover,
+  &.active {
+    background: rgba(255, 255, 255, 0.18);
+    opacity: 1;
+  }
+}
+
+.bell-badge {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  min-width: 1.05rem;
+  height: 1.05rem;
+  padding: 0 0.25rem;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.05rem;
+  text-align: center;
 }
 
 .home-link {
@@ -151,13 +192,18 @@
 
 @media (max-width: 768px) {
   .main-header {
-    grid-template-columns: auto 1fr;
+    // menu button | title | bell (the bell stays visible on mobile)
+    grid-template-columns: auto 1fr auto;
   }
 
   .desktop-nav,
   .user-section,
   .theme-picker {
     display: none;
+  }
+
+  .bell-link {
+    justify-self: end;
   }
 
   .mobile-menu-button {

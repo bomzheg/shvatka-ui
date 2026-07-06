@@ -12,6 +12,7 @@ import {CaptainBridgeComponent} from "./team/captain-bridge.component";
 import {TeamsComponent} from "./teams/teams.component";
 import {TeamCardComponent} from "./team_card/team-card.component";
 import {PlayerCardComponent} from "./player_card/player-card.component";
+import {NotificationsComponent} from "./notifications/notifications.component";
 import {AdminComponent} from "./admin/admin.component";
 import {AdminPlayersComponent} from "./admin/admin-players.component";
 import {AdminPlayerCardComponent} from "./admin/admin-player-card.component";
@@ -35,6 +36,7 @@ export const routes: Routes = [
   {path: "teams/:id", component: TeamCardComponent},
   {path: "players/:id", component: PlayerCardComponent},
   {path: "profile", component: ProfileComponent},
+  {path: "notifications", component: NotificationsComponent},
   {
     path: "admin",
     component: AdminComponent,

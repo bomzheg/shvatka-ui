@@ -9,6 +9,7 @@ import {AppIcon} from "../ui/icons";
 import {ActiveGame, GamesService} from "../games/games.service";
 import {ThemeMode, ThemeService} from "../theme/theme.service";
 import {PushService} from "../push/push.service";
+import {NotificationsService} from "../notifications/notifications.service";
 import {DebugLogService} from "../debug/debug-log.service";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
@@ -51,6 +52,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private router: Router,
     private themeService: ThemeService,
     private pushService: PushService,
+    private notificationsService: NotificationsService,
     private debugLog: DebugLogService,
   ) {
     this.window = this._document.defaultView;
@@ -125,6 +127,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   canBeAuthor() {
     return this.userService.canBeAuthor();
+  }
+
+  unreadNotifications(): number {
+    return this.notificationsService.unreadCount();
+  }
+
+  unreadNotificationsLabel(): string {
+    const count = this.unreadNotifications();
+    return count > 99 ? "99+" : String(count);
   }
 
   async ngOnInit() {

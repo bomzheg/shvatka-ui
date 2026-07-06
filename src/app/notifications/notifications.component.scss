@@ -1,0 +1,152 @@
+@use '../../styles/component-mixins' as cm;
+
+.notifications-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0.5rem 0.75rem 2rem;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 1.25rem;
+
+  h1 {
+    margin: 0;
+    color: inherit;
+  }
+}
+
+.read-all-button {
+  @include cm.button-base();
+  background: color-mix(in srgb, var(--app-accent) 14%, transparent);
+  color: var(--app-accent);
+  font-size: 0.85rem;
+
+  &:hover {
+    background: color-mix(in srgb, var(--app-accent) 22%, transparent);
+  }
+}
+
+.status-message {
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.notifications-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.notification-item {
+  @include cm.surface-card(12px, 0.8rem 1rem);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+
+  &.unread {
+    background: color-mix(in srgb, var(--app-accent) 7%, var(--app-surface));
+  }
+
+  &.severity-important {
+    border-left: 4px solid #e53935;
+  }
+
+  &.severity-low {
+    opacity: 0.85;
+  }
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  opacity: 0.7;
+}
+
+.notification-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notification-text {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.notification-date {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.unread-dot {
+  flex-shrink: 0;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.45rem;
+  border-radius: 50%;
+  background: var(--app-accent);
+}
+
+.request-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.action-button {
+  @include cm.button-base(999px, 0.4rem 0.9rem);
+  font-size: 0.85rem;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.action-button--accept {
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+}
+
+.action-button--decline,
+.action-button--cancel {
+  background: color-mix(in srgb, var(--app-text) 10%, transparent);
+  color: var(--app-text);
+}
+
+.request-status {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--app-text) 8%, transparent);
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.request-status--accepted {
+  background: color-mix(in srgb, var(--app-accent) 14%, transparent);
+  color: var(--app-accent);
+}
+
+.load-more-button {
+  @include cm.button-base();
+  display: block;
+  margin: 1rem auto 0;
+  background: color-mix(in srgb, var(--app-text) 8%, transparent);
+  color: var(--app-text);
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}

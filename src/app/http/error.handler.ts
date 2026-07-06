@@ -10,6 +10,11 @@ import {DebugLogService} from "../debug/debug-log.service";
 export class GlobalErrorHandler implements ErrorHandler {
   private readonly knownErrorTranslations: Record<string, string> = {
     InvalidKey: "Неверный ключ",
+    RequestNotPending: "Этот запрос уже обработан",
+    RequestPermissionError: "Недостаточно прав, чтобы ответить на этот запрос",
+    RequestNotFound: "Запрос не найден",
+    PlayerAlreadyInTeam: "Игрок уже состоит в команде",
+    PermissionsError: "Недостаточно прав",
   };
   constructor(
     private snackbar: SnackbarService,

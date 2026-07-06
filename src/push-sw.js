@@ -34,6 +34,11 @@ function resolveUrl(payload) {
 // Service workers get killed between pushes, so the unread count is persisted
 // in Cache Storage (no IndexedDB schema needed for a single number) instead of
 // an in-memory variable.
+//
+// The app is the source of truth for this number: it polls
+// GET /notifications/unread-count and pushes the result here via the
+// 'set-badge-count' message. Incrementing on a background push is only an
+// approximation until the app is opened and resyncs.
 const BADGE_CACHE = 'shvatka-badge-v1';
 const BADGE_KEY = '/__badge-count__';
 
@@ -93,9 +98,10 @@ self.addEventListener('push', (event) => {
 
     await Promise.all([
       self.registration.showNotification(title, options),
-      // While the app is open and visible the user already sees the toast above,
-      // so it doesn't count toward the unread badge.
-      isAppVisible ? setBadgeCount(0) : getBadgeCount().then((count) => setBadgeCount(count + 1)),
+      // While the app is open and visible it refreshes the unread count from
+      // the server itself (triggered by the 'push' message above), so the
+      // badge is only incremented for background pushes.
+      isAppVisible ? Promise.resolve() : getBadgeCount().then((count) => setBadgeCount(count + 1)),
     ]);
   })();
 
@@ -133,5 +139,8 @@ self.addEventListener('notificationclick', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'reset-badge-count') {
     event.waitUntil(setBadgeCount(0));
+  } else if (event.data && event.data.type === 'set-badge-count') {
+    const count = Number(event.data.count);
+    event.waitUntil(setBadgeCount(Number.isFinite(count) && count > 0 ? count : 0));
   }
 });
