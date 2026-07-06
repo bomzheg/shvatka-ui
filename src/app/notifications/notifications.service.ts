@@ -34,6 +34,8 @@ export class NotificationsService {
     private authState: AuthStateService,
     private zone: NgZone,
   ) {
+    // allowSignalWrites: resetting the counter on logout is a signal write
+    // from inside an effect, which Angular forbids by default (NG0600).
     effect(() => {
       if (this.authState.isAuthenticated()) {
         this.startPolling();
@@ -41,7 +43,7 @@ export class NotificationsService {
         this.stopPolling();
         this.unreadCount.set(0);
       }
-    });
+    }, {allowSignalWrites: true});
     effect(() => {
       const count = this.unreadCount();
       // While the auth state is still unknown (app just booted), leave the
