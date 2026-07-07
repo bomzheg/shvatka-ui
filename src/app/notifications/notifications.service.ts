@@ -125,10 +125,13 @@ export class NotificationsService {
    * Creation endpoints are idempotent on the backend: if an identical request
    * is already pending, the existing one is returned instead of a duplicate.
    */
-  createTeamJoinInvite(teamId: number, playerId: number, role?: string): Observable<ActionRequest> {
+  createTeamJoinInvite(teamId: number, playerId: number, role?: string, emoji?: string): Observable<ActionRequest> {
     const body: Record<string, unknown> = {team_id: teamId, player_id: playerId};
     if (role) {
       body["role"] = role;
+    }
+    if (emoji) {
+      body["emoji"] = emoji;
     }
     return this.http.post<ActionRequest>("/requests/team-join-invite", body);
   }

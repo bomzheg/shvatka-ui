@@ -70,9 +70,9 @@ describe('NotificationsService', () => {
   });
 
   it('creates requests via the creation endpoints', () => {
-    service.createTeamJoinInvite(7, 42, 'seeker').subscribe();
+    service.createTeamJoinInvite(7, 42, 'seeker', '🔦').subscribe();
     const invite = httpMock.expectOne(req => req.url.endsWith('/requests/team-join-invite'));
-    expect(invite.request.body).toEqual({team_id: 7, player_id: 42, role: 'seeker'});
+    expect(invite.request.body).toEqual({team_id: 7, player_id: 42, role: 'seeker', emoji: '🔦'});
     invite.flush({});
 
     service.createTeamJoinInvite(7, 42).subscribe();

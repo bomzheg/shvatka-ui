@@ -424,6 +424,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
       this.team.id,
       invited.id,
       this.addPlayerRole.trim() || undefined,
+      this.addPlayerEmoji.trim() || undefined,
     )
       .pipe(finalize(() => { this.isAddingPlayer = false; }))
       .subscribe({
