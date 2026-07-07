@@ -294,18 +294,16 @@
                   [(ngModel)]="addPlayerRole"
                 />
               </div>
-              @if (hardAddPlayer) {
-                <div>
-                  <label for="add-emoji">Emoji (необязательно)</label>
-                  <input
-                    id="add-emoji"
-                    type="text"
-                    name="addEmoji"
-                    [(ngModel)]="addPlayerEmoji"
-                    placeholder="🎯"
-                  />
-                </div>
-              }
+              <div>
+                <label for="add-emoji">Emoji (необязательно)</label>
+                <input
+                  id="add-emoji"
+                  type="text"
+                  name="addEmoji"
+                  [(ngModel)]="addPlayerEmoji"
+                  placeholder="🔦"
+                />
+              </div>
             </div>
 
             <label class="hard-add-toggle">
