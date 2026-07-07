@@ -1,5 +1,5 @@
-import {notificationIcon, notificationText} from "./notification-render";
-import {AppNotification} from "./notifications.models";
+import {notificationIcon, notificationText, requestText} from "./notification-render";
+import {ActionRequest, AppNotification} from "./notifications.models";
 import {AppIcon} from "../ui/icons";
 
 function makeNotification(type: string, payload: Record<string, unknown>): AppNotification {
@@ -30,11 +30,41 @@ describe("notificationText", () => {
 
   it("addresses the reader directly when they are the invited player", () => {
     const invite = makeNotification("team_join_invite", {
-      inviter_name: "Капитан", player_id: 42, player_name: "Вася", team_name: "Сова",
+      inviter_name: "Капитан", inviter_id: 1, player_id: 42, player_name: "Вася", team_name: "Сова",
     });
 
     expect(notificationText(invite, 42)).toBe("Капитан приглашает вас в команду «Сова»");
     expect(notificationText(invite, 10)).toBe("Капитан приглашает Вася в команду «Сова»");
+  });
+
+  it("uses first person when the reader initiated the request", () => {
+    const invite = makeNotification("team_join_invite", {
+      inviter_name: "Капитан", inviter_id: 1, player_id: 42, player_name: "Вася", team_name: "Сова",
+    });
+    const ask = makeNotification("team_join_request", {
+      player_id: 42, player_name: "Вася", team_name: "Сова",
+    });
+
+    expect(notificationText(invite, 1)).toBe("Вы приглашаете Вася в команду «Сова»");
+    expect(notificationText(ask, 42)).toBe("Вы хотите вступить в команду «Сова»");
+  });
+
+  it("renders an ActionRequest through the same texts", () => {
+    const request: ActionRequest = {
+      id: 45,
+      type: "org_invite",
+      status: "pending",
+      initiator_id: 1,
+      target_player_id: 42,
+      team_id: null,
+      game_id: 5,
+      payload: {author_id: 1, author_name: "Автор", player_id: 42, player_name: "Вася", game_name: "Ночная"},
+      created_at: "2026-07-06T14:21:20+00:00",
+      responded_at: null,
+    };
+
+    expect(requestText(request, 1)).toBe("Вы приглашаете Вася организовать игру «Ночная»");
+    expect(requestText(request, 42)).toBe("Автор приглашает вас организовать игру «Ночная»");
   });
 
   it("renders request results with whatever context the payload has", () => {

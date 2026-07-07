@@ -150,3 +150,73 @@
     cursor: default;
   }
 }
+
+// ── Tabs (Лента / Заявки) ──────────────────────────────────────────────────────
+
+.tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--app-border);
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  background: transparent;
+  color: var(--app-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  opacity: 0.65;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  &.active {
+    opacity: 1;
+    color: var(--app-accent);
+    border-bottom-color: var(--app-accent);
+  }
+}
+
+.tab-badge {
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.3rem;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.15rem;
+  text-align: center;
+}
+
+// ── Requests tab ───────────────────────────────────────────────────────────────
+
+.pending-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+
+  input {
+    margin: 0;
+  }
+}
+
+.requests-subtitle {
+  margin: 1.25rem 0 0.6rem;
+  font-size: 1rem;
+  color: inherit;
+}

@@ -1,5 +1,5 @@
 import {AppIcon} from "../ui/icons";
-import {AppNotification, NotificationPayload, NotificationType} from "./notifications.models";
+import {ActionRequest, AppNotification, NotificationPayload, NotificationType} from "./notifications.models";
 
 /**
  * Pure helpers that turn a notification (`type` + denormalized `payload`)
@@ -38,12 +38,20 @@ function requestContext(payload: NotificationPayload): string {
  * («Вас приглашают…») when the reader is the target.
  */
 export function notificationText(notification: AppNotification, currentPlayerId?: number): string {
-  const payload = notification.payload ?? {};
+  return renderTypeText(notification.type, notification.payload ?? {}, currentPlayerId);
+}
+
+/** Same rendering for an ActionRequest (its payload mirrors the notification's). */
+export function requestText(request: ActionRequest, currentPlayerId?: number): string {
+  return renderTypeText(request.type, request.payload ?? {}, currentPlayerId);
+}
+
+function renderTypeText(type: string, payload: NotificationPayload, currentPlayerId?: number): string {
   const playerName = str(payload, "player_name");
   const teamName = str(payload, "team_name");
   const gameName = str(payload, "game_name");
 
-  switch (notification.type) {
+  switch (type) {
     case NotificationType.playerJoinedTeam:
       return bool(payload, "by_self")
         ? `${playerName} вступил(а) в команду «${teamName}»`
@@ -62,15 +70,24 @@ export function notificationText(notification: AppNotification, currentPlayerId?
       return "Изменилось расписание сезона";
     case NotificationType.teamJoinInvite: {
       const inviter = str(payload, "inviter_name");
+      if (currentPlayerId !== undefined && payload["inviter_id"] === currentPlayerId) {
+        return `Вы приглашаете ${playerName} в команду «${teamName}»`;
+      }
       if (currentPlayerId !== undefined && payload["player_id"] === currentPlayerId) {
         return `${inviter} приглашает вас в команду «${teamName}»`;
       }
       return `${inviter} приглашает ${playerName} в команду «${teamName}»`;
     }
     case NotificationType.teamJoinRequest:
+      if (currentPlayerId !== undefined && payload["player_id"] === currentPlayerId) {
+        return `Вы хотите вступить в команду «${teamName}»`;
+      }
       return `${playerName} хочет вступить в команду «${teamName}»`;
     case NotificationType.orgInvite: {
       const author = str(payload, "author_name");
+      if (currentPlayerId !== undefined && payload["author_id"] === currentPlayerId) {
+        return `Вы приглашаете ${playerName} организовать игру «${gameName}»`;
+      }
       if (currentPlayerId !== undefined && payload["player_id"] === currentPlayerId) {
         return `${author} приглашает вас организовать игру «${gameName}»`;
       }
@@ -87,7 +104,7 @@ export function notificationText(notification: AppNotification, currentPlayerId?
     default: {
       // Unknown type: show whatever context we can extract instead of crashing.
       const context = requestContext(payload);
-      return context ? `Уведомление ${context}` : `Уведомление: ${notification.type}`;
+      return context ? `Уведомление ${context}` : `Уведомление: ${type}`;
     }
   }
 }
@@ -106,6 +123,10 @@ const TYPE_ICONS: Record<string, AppIcon> = {
   [NotificationType.requestDeclined]: AppIcon.cancel,
 };
 
+export function typeIcon(type: string): AppIcon {
+  return TYPE_ICONS[type] ?? AppIcon.notifications;
+}
+
 export function notificationIcon(notification: AppNotification): AppIcon {
-  return TYPE_ICONS[notification.type] ?? AppIcon.notifications;
+  return typeIcon(notification.type);
 }

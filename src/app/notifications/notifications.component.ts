@@ -1,5 +1,6 @@
 import {Component, OnInit} from "@angular/core";
 import {DatePipe} from "@angular/common";
+import {FormsModule} from "@angular/forms";
 import {MatIcon} from "@angular/material/icon";
 import {HttpErrorResponse} from "@angular/common/http";
 import {finalize, forkJoin} from "rxjs";
@@ -7,7 +8,7 @@ import {AppIcon} from "../ui/icons";
 import {UserService} from "../auth/user.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {NotificationsService} from "./notifications.service";
-import {notificationIcon, notificationText} from "./notification-render";
+import {notificationIcon, notificationText, requestText, typeIcon} from "./notification-render";
 import {
   ACTIONABLE_NOTIFICATION_TYPES,
   ActionRequest,
@@ -18,6 +19,7 @@ import {
 const PAGE_SIZE = 50;
 
 type RequestAction = "accept" | "decline" | "cancel";
+type NotificationsTab = "feed" | "requests";
 
 interface RequestView {
   request: ActionRequest;
@@ -35,7 +37,7 @@ interface NotificationView {
 @Component({
   selector: "app-notifications",
   standalone: true,
-  imports: [DatePipe, MatIcon],
+  imports: [DatePipe, FormsModule, MatIcon],
   templateUrl: "./notifications.component.html",
   styleUrl: "./notifications.component.scss",
 })
@@ -45,6 +47,13 @@ export class NotificationsComponent implements OnInit {
   isLoadingMore = false;
   loadFailed = false;
   hasMore = false;
+
+  activeTab: NotificationsTab = "feed";
+  incomingRequests: RequestView[] = [];
+  outgoingRequests: RequestView[] = [];
+  isLoadingRequests = false;
+  /** Requests tab filter: show only pending (default) or the full history. */
+  pendingOnly = true;
 
   private offset = 0;
   private requestsById = new Map<number, RequestView>();
@@ -65,8 +74,41 @@ export class NotificationsComponent implements OnInit {
     return this.notificationsService.unreadCount();
   }
 
+  selectTab(tab: NotificationsTab): void {
+    this.activeTab = tab;
+  }
+
   text(view: NotificationView): string {
     return notificationText(view.notification, this.userService.getMe()?.id);
+  }
+
+  requestRowText(requestView: RequestView): string {
+    return requestText(requestView.request, this.userService.getMe()?.id);
+  }
+
+  requestRowIcon(requestView: RequestView): AppIcon {
+    return typeIcon(requestView.request.type);
+  }
+
+  visibleIncoming(): RequestView[] {
+    return this.filterRequests(this.incomingRequests);
+  }
+
+  visibleOutgoing(): RequestView[] {
+    return this.filterRequests(this.outgoingRequests);
+  }
+
+  pendingRequestsCount(): number {
+    return this.incomingRequests.concat(this.outgoingRequests)
+      .filter(view => view.request.status === RequestStatus.pending)
+      .length;
+  }
+
+  private filterRequests(views: RequestView[]): RequestView[] {
+    if (!this.pendingOnly) {
+      return views;
+    }
+    return views.filter(view => view.request.status === RequestStatus.pending);
   }
 
   severityClass(view: NotificationView): string {
@@ -201,28 +243,42 @@ export class NotificationsComponent implements OnInit {
   }
 
   /**
-   * Loads all of the caller's requests (both directions, any status) so feed
-   * items can show live Accept/Decline/Cancel actions or the final status.
+   * Loads all of the caller's requests (both directions, any status). The
+   * same RequestView objects back the "Заявки" tab lists and the feed's
+   * per-notification actions, so responding in one place updates the other.
    */
   private loadRequests(): void {
+    this.isLoadingRequests = true;
     forkJoin({
       incoming: this.notificationsService.listRequests("incoming"),
       outgoing: this.notificationsService.listRequests("outgoing"),
-    }).subscribe({
-      next: ({incoming, outgoing}) => {
-        const map = new Map<number, RequestView>();
-        // Outgoing first: for requests visible in both directions the caller
-        // is the initiator, so the "cancel" action wins over accept/decline.
-        outgoing.items.forEach(request => map.set(request.id, {request, direction: "outgoing", busy: false}));
-        incoming.items.forEach(request => {
-          if (!map.has(request.id)) {
-            map.set(request.id, {request, direction: "incoming", busy: false});
-          }
-        });
-        this.requestsById = map;
-      },
-      error: error => console.error("notifications: load requests failed", error),
-    });
+    })
+      .pipe(finalize(() => {
+        this.isLoadingRequests = false;
+      }))
+      .subscribe({
+        next: ({incoming, outgoing}) => {
+          const byDate = (a: RequestView, b: RequestView) =>
+            Date.parse(b.request.created_at) - Date.parse(a.request.created_at);
+
+          this.outgoingRequests = outgoing.items
+            .map(request => ({request, direction: "outgoing" as const, busy: false}))
+            .sort(byDate);
+          // A manager's own ask-to-join can show up in both directions; the
+          // initiator's view (cancel) wins, so drop such duplicates here.
+          const outgoingIds = new Set(this.outgoingRequests.map(view => view.request.id));
+          this.incomingRequests = incoming.items
+            .filter(request => !outgoingIds.has(request.id))
+            .map(request => ({request, direction: "incoming" as const, busy: false}))
+            .sort(byDate);
+
+          const map = new Map<number, RequestView>();
+          this.outgoingRequests.forEach(view => map.set(view.request.id, view));
+          this.incomingRequests.forEach(view => map.set(view.request.id, view));
+          this.requestsById = map;
+        },
+        error: error => console.error("notifications: load requests failed", error),
+      });
   }
 
   private handleRequestError(error: unknown): void {
