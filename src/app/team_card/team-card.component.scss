@@ -157,3 +157,23 @@
     transform: translateY(-1px);
   }
 }
+
+// ── Ask to join ────────────────────────────────────────────────────────────────
+
+.ask-to-join-button {
+  @include cm.button-base();
+  margin-top: 1rem;
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.join-requested-note {
+  margin: 1rem 0 0;
+  font-size: 0.9rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}

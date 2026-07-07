@@ -69,6 +69,28 @@ describe('NotificationsService', () => {
     request.flush(null);
   });
 
+  it('creates requests via the creation endpoints', () => {
+    service.createTeamJoinInvite(7, 42, 'seeker').subscribe();
+    const invite = httpMock.expectOne(req => req.url.endsWith('/requests/team-join-invite'));
+    expect(invite.request.body).toEqual({team_id: 7, player_id: 42, role: 'seeker'});
+    invite.flush({});
+
+    service.createTeamJoinInvite(7, 42).subscribe();
+    const inviteNoRole = httpMock.expectOne(req => req.url.endsWith('/requests/team-join-invite'));
+    expect(inviteNoRole.request.body).toEqual({team_id: 7, player_id: 42});
+    inviteNoRole.flush({});
+
+    service.createTeamJoinRequest(7).subscribe();
+    const ask = httpMock.expectOne(req => req.url.endsWith('/requests/team-join'));
+    expect(ask.request.body).toEqual({team_id: 7});
+    ask.flush({});
+
+    service.createOrgInvite(5, 42).subscribe();
+    const orgInvite = httpMock.expectOne(req => req.url.endsWith('/requests/org-invite'));
+    expect(orgInvite.request.body).toEqual({game_id: 5, player_id: 42});
+    orgInvite.flush({});
+  });
+
   it('responds to requests via the action endpoints', () => {
     service.acceptRequest(45).subscribe();
     const accept = httpMock.expectOne(req => req.url.endsWith('/requests/45/accept'));

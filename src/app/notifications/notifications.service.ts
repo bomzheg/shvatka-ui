@@ -121,6 +121,26 @@ export class NotificationsService {
     return this.http.get<ActionRequestList>(`/requests?${params.toString()}`);
   }
 
+  /**
+   * Creation endpoints are idempotent on the backend: if an identical request
+   * is already pending, the existing one is returned instead of a duplicate.
+   */
+  createTeamJoinInvite(teamId: number, playerId: number, role?: string): Observable<ActionRequest> {
+    const body: Record<string, unknown> = {team_id: teamId, player_id: playerId};
+    if (role) {
+      body["role"] = role;
+    }
+    return this.http.post<ActionRequest>("/requests/team-join-invite", body);
+  }
+
+  createTeamJoinRequest(teamId: number): Observable<ActionRequest> {
+    return this.http.post<ActionRequest>("/requests/team-join", {team_id: teamId});
+  }
+
+  createOrgInvite(gameId: number, playerId: number): Observable<ActionRequest> {
+    return this.http.post<ActionRequest>("/requests/org-invite", {game_id: gameId, player_id: playerId});
+  }
+
   acceptRequest(id: number): Observable<ActionRequest> {
     return this.http.post<ActionRequest>(`/requests/${id}/accept`, {});
   }

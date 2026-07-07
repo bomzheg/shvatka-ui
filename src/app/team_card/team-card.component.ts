@@ -4,6 +4,8 @@ import {Subscription} from 'rxjs';
 import {TeamService} from '../team/team.service';
 import {PlayedGame, TeamDetails, TeamMember} from '../team/team.models';
 import {SnackbarService} from '../snackbar/snackbar.service';
+import {UserService} from '../auth/user.service';
+import {NotificationsService} from '../notifications/notifications.service';
 import {pluralizeGames} from '../ui/plural-ru';
 import {memberEmoji} from '../ui/role-emoji';
 
@@ -22,12 +24,17 @@ export class TeamCardComponent implements OnInit, OnDestroy {
   isLoading = false;
   notFound = false;
 
+  isRequestingJoin = false;
+  joinRequested = false;
+
   private routeSub: Subscription | undefined;
 
   constructor(
     private route: ActivatedRoute,
     private teamService: TeamService,
     private snackbar: SnackbarService,
+    private userService: UserService,
+    private notificationsService: NotificationsService,
   ) {}
 
   ngOnInit(): void {
@@ -72,12 +79,51 @@ export class TeamCardComponent implements OnInit, OnDestroy {
     return `${count} ${pluralizeGames(count)}`;
   }
 
+  /**
+   * The ask-to-join button is shown to any authenticated non-member; the
+   * backend rejects the request if the caller is already in another team.
+   */
+  canAskToJoin(): boolean {
+    const myId = this.userService.getMe()?.id;
+    if (myId === undefined || !this.team || this.joinRequested) {
+      return false;
+    }
+    return !this.members.some(m => m.id === myId);
+  }
+
+  askToJoin(): void {
+    if (!this.team || this.isRequestingJoin) return;
+
+    this.isRequestingJoin = true;
+    this.notificationsService.createTeamJoinRequest(this.team.id)
+      .subscribe({
+        next: () => {
+          this.isRequestingJoin = false;
+          this.joinRequested = true;
+          this.snackbar.success('Заявка отправлена — капитан команды получит уведомление');
+        },
+        error: (err) => {
+          this.isRequestingJoin = false;
+          const backendError = (err as {error?: {type?: string; description?: string}} | null)?.error;
+          if (backendError?.type === 'PlayerAlreadyInTeam') {
+            this.snackbar.error('Вы уже состоите в команде');
+            return;
+          }
+          const description = typeof backendError?.description === 'string' && backendError.description
+            ? backendError.description
+            : null;
+          this.snackbar.error(description ?? 'Не удалось отправить заявку');
+        },
+      });
+  }
+
   private load(teamId: number): void {
     this.isLoading = true;
     this.notFound = false;
     this.team = null;
     this.members = [];
     this.games = [];
+    this.joinRequested = false;
 
     this.teamService.getTeam(teamId).subscribe({
       next: (team) => {

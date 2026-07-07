@@ -71,6 +71,17 @@
     <div class="add-org">
       <h3>Добавить организатора</h3>
 
+      <label class="hard-add-toggle">
+        <input type="checkbox" name="orgHardAdd" [(ngModel)]="hardAdd"/>
+        Добавить сразу, без подтверждения игроком
+      </label>
+      @if (hardAdd) {
+        <p class="prefer-invite-warning">
+          Лучше отправить приглашение — игрок сам решит, становиться ли организатором.
+          Добавляйте напрямую, только если игрок точно не против.
+        </p>
+      }
+
       <!-- Quick add from the author's team -->
       @if (quickAddCandidates.length > 0) {
         <div class="team-quick-add">
@@ -83,7 +94,7 @@
                 type="button"
                 class="team-chip"
                 [disabled]="addingPlayerId !== null"
-                [title]="'Добавить ' + getMemberName(member) + ' в организаторы'"
+                [title]="(hardAdd ? 'Добавить ' : 'Пригласить ') + getMemberName(member) + ' в организаторы'"
                 (click)="quickAddFromTeam(member)"
               >
                 <span class="team-chip-emoji">{{ memberEmoji(member.emoji, member.role) }}</span>
@@ -135,7 +146,11 @@
         </div>
 
         <button type="button" class="primary" [disabled]="isAdding" (click)="addOrganizer()">
-          {{ isAdding ? "Добавление..." : "Добавить в организаторы" }}
+          @if (hardAdd) {
+            {{ isAdding ? "Добавление..." : "Добавить в организаторы" }}
+          } @else {
+            {{ isAdding ? "Отправка..." : "Пригласить в организаторы" }}
+          }
         </button>
       }
     </div>

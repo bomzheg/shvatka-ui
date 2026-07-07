@@ -9,6 +9,7 @@ import {AppIcon} from "../ui/icons";
 import {TeamService} from "../team/team.service";
 import {TeamMember} from "../team/team.models";
 import {UserService} from "../auth/user.service";
+import {NotificationsService} from "../notifications/notifications.service";
 import {memberEmoji} from "../ui/role-emoji";
 import {
   GameOrganizer,
@@ -49,6 +50,8 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
   isSearching = false;
   selectedPlayer: OrgPlayer | null = null;
   isAdding = false;
+  /** false (default) → send an org invite; true → add directly like before. */
+  hardAdd = false;
 
   /** Author's own team, for quick-adding teammates as organizers. */
   teamName: string | null = null;
@@ -63,6 +66,7 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
     private constructorService: ConstructorService,
     private teamService: TeamService,
     private userService: UserService,
+    private notificationsService: NotificationsService,
     private snackbar: SnackbarService,
   ) {
   }
@@ -247,30 +251,57 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
     }
     const player = this.selectedPlayer;
     this.isAdding = true;
-    this.constructorService.addOrganizer(this.gameId, player.id)
+
+    if (this.hardAdd) {
+      this.constructorService.addOrganizer(this.gameId, player.id)
+        .pipe(finalize(() => { this.isAdding = false; }))
+        .subscribe({
+          next: org => {
+            this.replaceOrg(org);
+            this.clearSelectedPlayer();
+            this.snackbar.success(`${this.getPlayerName(org)} добавлен в организаторы`);
+          },
+          error: err => { this.handleAddError(err); },
+        });
+      return;
+    }
+
+    this.notificationsService.createOrgInvite(this.gameId, player.id)
       .pipe(finalize(() => { this.isAdding = false; }))
       .subscribe({
-        next: org => {
-          this.replaceOrg(org);
+        next: () => {
           this.clearSelectedPlayer();
-          this.snackbar.success(`${this.getPlayerName(org)} добавлен в организаторы`);
+          this.snackbar.success(`Приглашение отправлено: ${player.name_mention}`);
         },
         error: err => { this.handleAddError(err); },
       });
   }
 
-  /** One-click add of a teammate as a secondary organizer. */
+  /** One-click invite/add of a teammate as a secondary organizer. */
   quickAddFromTeam(member: TeamMember): void {
     if (this.addingPlayerId !== null) {
       return;
     }
     this.addingPlayerId = member.id;
-    this.constructorService.addOrganizer(this.gameId, member.id)
+
+    if (this.hardAdd) {
+      this.constructorService.addOrganizer(this.gameId, member.id)
+        .pipe(finalize(() => { this.addingPlayerId = null; }))
+        .subscribe({
+          next: org => {
+            this.replaceOrg(org);
+            this.snackbar.success(`${this.getPlayerName(org)} добавлен в организаторы`);
+          },
+          error: err => { this.handleAddError(err); },
+        });
+      return;
+    }
+
+    this.notificationsService.createOrgInvite(this.gameId, member.id)
       .pipe(finalize(() => { this.addingPlayerId = null; }))
       .subscribe({
-        next: org => {
-          this.replaceOrg(org);
-          this.snackbar.success(`${this.getPlayerName(org)} добавлен в организаторы`);
+        next: () => {
+          this.snackbar.success(`Приглашение отправлено: ${this.getMemberName(member)}`);
         },
         error: err => { this.handleAddError(err); },
       });
