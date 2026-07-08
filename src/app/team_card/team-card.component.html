@@ -43,6 +43,19 @@
           }
         </ul>
       }
+
+      @if (canAskToJoin()) {
+        <button
+          type="button"
+          class="ask-to-join-button"
+          [disabled]="isRequestingJoin"
+          (click)="askToJoin()"
+        >
+          {{ isRequestingJoin ? 'Отправка...' : 'Подать заявку на вступление' }}
+        </button>
+      } @else if (joinRequested) {
+        <p class="join-requested-note">Заявка отправлена — капитан команды получит уведомление.</p>
+      }
     </div>
 
     <div class="section-card">

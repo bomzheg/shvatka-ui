@@ -67,6 +67,22 @@
     </div>
   </div>
 
+  @if (isAuthenticated()) {
+    <a
+      routerLink="/notifications"
+      routerLinkActive="active"
+      class="bell-link"
+      aria-label="Уведомления"
+      title="Уведомления"
+      (click)="onNavClick('/notifications', $event)"
+    >
+      <mat-icon aria-hidden="true" [svgIcon]="AppIcon.notifications"/>
+      @if (unreadNotifications() > 0) {
+        <span class="bell-badge">{{ unreadNotificationsLabel() }}</span>
+      }
+    </a>
+  }
+
   <div class="user-section">
     @if (isAuthenticated()) {
       <div class="user-info">

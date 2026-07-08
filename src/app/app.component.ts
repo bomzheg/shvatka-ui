@@ -9,6 +9,7 @@ import {ThemeService} from "./theme/theme.service";
 import {filter} from "rxjs";
 import {VersionInfo, VersionService} from "./version/version.service";
 import {PushService} from "./push/push.service";
+import {NotificationsService} from "./notifications/notifications.service";
 import {UserService} from "./auth/user.service";
 import {registerAppIcons} from "./ui/icons";
 
@@ -38,6 +39,7 @@ export class AppComponent implements OnInit {
     private versionService: VersionService,
     private router: Router,
     private pushService: PushService,
+    private notificationsService: NotificationsService,
     private userService: UserService,
     @Inject(DOCUMENT) private document: Document,
   ) {
@@ -61,6 +63,9 @@ export class AppComponent implements OnInit {
     // Registers the push service worker and, if permission is already granted,
     // refreshes the saved subscription. Never prompts for permission on load.
     this.pushService.init();
+    // Keeps the unread-notifications counter (bell + app icon badge) fresh
+    // when the tab becomes visible or a push arrives while the app is open.
+    this.notificationsService.init();
   }
 
   isAdmin() {

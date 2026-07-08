@@ -102,6 +102,8 @@ export class HttpAdapter {
 
   private isProtectedUrl(url: string): boolean {
     return /^\/admin(\/.*)?$/.test(url)
+      || /^\/notifications([/?].*)?$/.test(url)
+      || /^\/requests([/?].*)?$/.test(url)
       || /^\/games\/\d+$/.test(url)
       || /^\/games\/my(\/.*)?$/.test(url)
       || /^\/games\/\d+\/keys$/.test(url)

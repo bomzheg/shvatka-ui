@@ -5,6 +5,7 @@ import {finalize} from 'rxjs';
 import {TeamService} from './team.service';
 import {UserService} from '../auth/user.service';
 import {SnackbarService} from '../snackbar/snackbar.service';
+import {NotificationsService} from '../notifications/notifications.service';
 import {ShvatkaConfig} from '../app.config';
 import {
   PlayerProfile,
@@ -61,6 +62,8 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
   addPlayerRole = '';
   addPlayerEmoji = '';
   isAddingPlayer = false;
+  /** false (default) → send a team-join invite; true → add directly like before. */
+  hardAddPlayer = false;
 
   readonly permissionLabels: PermissionLabel[] = [
     {key: 'can_manage_waivers', label: 'Вейверы'},
@@ -76,6 +79,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
     private teamService: TeamService,
     private userService: UserService,
     private snackbar: SnackbarService,
+    private notificationsService: NotificationsService,
     private config: ShvatkaConfig,
   ) {}
 
@@ -404,6 +408,36 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
       this.snackbar.error('Выберите игрока из списка');
       return;
     }
+    if (this.hardAddPlayer) {
+      this.hardAddSelectedPlayer();
+    } else {
+      this.inviteSelectedPlayer();
+    }
+  }
+
+  private inviteSelectedPlayer(): void {
+    if (!this.team || !this.selectedPlayer) return;
+    const invited = this.selectedPlayer;
+
+    this.isAddingPlayer = true;
+    this.notificationsService.createTeamJoinInvite(
+      this.team.id,
+      invited.id,
+      this.addPlayerRole.trim() || undefined,
+      this.addPlayerEmoji.trim() || undefined,
+    )
+      .pipe(finalize(() => { this.isAddingPlayer = false; }))
+      .subscribe({
+        next: () => {
+          this.resetAddPlayerForm();
+          this.snackbar.success(`Приглашение отправлено: ${invited.name_mention}`);
+        },
+        error: (err) => { this.handleAddPlayerError(err, 'Не удалось отправить приглашение'); },
+      });
+  }
+
+  private hardAddSelectedPlayer(): void {
+    if (!this.team || !this.selectedPlayer) return;
 
     this.isAddingPlayer = true;
     this.teamService.addPlayer(
@@ -416,21 +450,30 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (member) => {
           this.members = [...this.members, member];
-          this.selectedPlayer = null;
-          this.searchQuery = '';
-          this.addPlayerRole = '';
-          this.addPlayerEmoji = '';
+          this.resetAddPlayerForm();
           this.snackbar.success(`${this.getMemberDisplayName(member)} добавлен в команду`);
         },
-        error: (err) => {
-          const errorType = err?.error?.type;
-          if (errorType === 'PlayerAlreadyInTeam') {
-            this.snackbar.error('Этот игрок уже состоит в команде');
-          } else {
-            this.snackbar.error('Не удалось добавить игрока');
-          }
-        },
+        error: (err) => { this.handleAddPlayerError(err, 'Не удалось добавить игрока'); },
       });
+  }
+
+  private resetAddPlayerForm(): void {
+    this.selectedPlayer = null;
+    this.searchQuery = '';
+    this.addPlayerRole = '';
+    this.addPlayerEmoji = '';
+  }
+
+  private handleAddPlayerError(err: unknown, fallback: string): void {
+    const backendError = (err as {error?: {type?: string; description?: string}} | null)?.error;
+    if (backendError?.type === 'PlayerAlreadyInTeam') {
+      this.snackbar.error('Этот игрок уже состоит в команде');
+      return;
+    }
+    const description = typeof backendError?.description === 'string' && backendError.description
+      ? backendError.description
+      : null;
+    this.snackbar.error(description ?? fallback);
   }
 
   private emptyPermissions(): TeamMemberPermissions {

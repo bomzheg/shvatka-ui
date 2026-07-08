@@ -301,13 +301,28 @@
                   type="text"
                   name="addEmoji"
                   [(ngModel)]="addPlayerEmoji"
-                  placeholder="🎯"
+                  placeholder="🔦"
                 />
               </div>
             </div>
 
+            <label class="hard-add-toggle">
+              <input type="checkbox" name="hardAddPlayer" [(ngModel)]="hardAddPlayer"/>
+              Добавить сразу, без подтверждения игроком
+            </label>
+            @if (hardAddPlayer) {
+              <p class="prefer-invite-warning">
+                Лучше отправить приглашение — игрок сам решит, вступать ли в команду.
+                Добавляйте напрямую, только если игрок точно не против.
+              </p>
+            }
+
             <button type="submit" class="btn btn-primary" [disabled]="isAddingPlayer">
-              {{ isAddingPlayer ? 'Добавление...' : 'Добавить в команду' }}
+              @if (hardAddPlayer) {
+                {{ isAddingPlayer ? 'Добавление...' : 'Добавить в команду' }}
+              } @else {
+                {{ isAddingPlayer ? 'Отправка...' : 'Отправить приглашение' }}
+              }
             </button>
           </form>
         }
