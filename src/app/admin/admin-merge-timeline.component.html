@@ -1,0 +1,140 @@
+<div class="timeline-editor">
+  <h3 class="editor-title">Ручной таймлайн команд</h3>
+  <p class="hint">
+    Истории команд игроков пересекаются, поэтому итоговую историю нужно собрать вручную —
+    она <strong>заменит</strong> историю обоих игроков. Интервалы с замком зафиксированы
+    вейверами: в это время игрок обязан состоять в указанной команде.
+  </p>
+  @if (skippedDeletedTeams) {
+    <p class="hint">Записи об удалённых командах не переносятся и не показаны ниже.</p>
+  }
+
+  @if (teams.length > 0) {
+    <div class="legend">
+      @for (team of teams; track team.id) {
+        <span class="legend-item">
+          <span class="legend-dot" [style.background]="teamColor(team.id)"></span>{{ team.name }}
+        </span>
+      }
+    </div>
+  }
+
+  @if (rowBars.length > 0 || pointBars.length > 0) {
+    <div class="chart">
+      <div class="chart-section">Новый таймлайн</div>
+      @for (bar of rowBars; track $index) {
+        <div class="chart-band">
+          <div
+            class="chart-bar"
+            [class.open-ended]="bar.openEnded"
+            [class.invalid]="bar.invalid"
+            [style.left.%]="bar.leftPct"
+            [style.width.%]="bar.widthPct"
+            [style.background]="bar.color"
+            [title]="bar.title"
+          >
+            @if (!bar.labelOutside) {
+              <span class="bar-label">{{ bar.label }}</span>
+            }
+          </div>
+          @if (bar.labelOutside) {
+            <span
+              class="bar-outside-label"
+              [class.flipped]="bar.labelFlipped"
+              [style.left.%]="bar.labelFlipped ? bar.leftPct : bar.leftPct + bar.widthPct"
+              [title]="bar.title"
+            >{{ bar.label }}</span>
+          }
+        </div>
+      }
+      @if (pointBars.length > 0) {
+        <div class="chart-section">Вейверы (зафиксировано)</div>
+        @for (bar of pointBars; track $index) {
+          <div class="chart-band">
+            <div
+              class="chart-bar locked"
+              [style.left.%]="bar.leftPct"
+              [style.width.%]="bar.widthPct"
+              [style.background]="bar.color"
+              [title]="bar.title"
+            >
+              @if (!bar.labelOutside) {
+                <span class="bar-label">🔒 {{ bar.label }}</span>
+              }
+            </div>
+            @if (bar.labelOutside) {
+              <span
+                class="bar-outside-label"
+                [class.flipped]="bar.labelFlipped"
+                [style.left.%]="bar.labelFlipped ? bar.leftPct : bar.leftPct + bar.widthPct"
+                [title]="bar.title"
+              >🔒 {{ bar.label }}</span>
+            }
+          </div>
+        }
+      }
+      <div class="chart-axis">
+        @for (tick of ticks; track $index) {
+          <span class="chart-tick" [style.left.%]="tick.leftPct">{{ tick.label }}</span>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="rows">
+    @for (row of rows; track row.uid) {
+      <div class="timeline-row" [class.invalid]="row.invalid">
+        <span class="row-dot" [style.background]="teamColor(row.teamId)"></span>
+        <select
+          class="row-team"
+          [name]="'team' + row.uid"
+          [(ngModel)]="row.teamId"
+          (ngModelChange)="onRowChange()"
+        >
+          <option [ngValue]="null" disabled>— команда —</option>
+          @for (team of teams; track team.id) {
+            <option [ngValue]="team.id">{{ team.name }}</option>
+          }
+        </select>
+        <label class="row-date">
+          с
+          <input
+            type="datetime-local"
+            [name]="'joined' + row.uid"
+            [(ngModel)]="row.joined"
+            (ngModelChange)="onRowChange()"
+          />
+        </label>
+        <label class="row-date">
+          по
+          <input
+            type="datetime-local"
+            [name]="'left' + row.uid"
+            [(ngModel)]="row.left"
+            (ngModelChange)="onRowChange()"
+          />
+        </label>
+        <button class="row-remove" type="button" title="Удалить интервал" (click)="removeRow(row)">✕</button>
+      </div>
+    }
+    <p class="hint rows-hint">Пустая дата «по» означает «состоит в команде до сих пор» — так можно оставить только последний интервал.</p>
+    <div class="rows-actions">
+      <button class="ghost-button" type="button" (click)="addRow()">+ Добавить интервал</button>
+      <button class="ghost-button" type="button" (click)="reset()">Сбросить к исходным историям</button>
+    </div>
+  </div>
+
+  @if (issues.length > 0) {
+    <ul class="issues">
+      @for (issue of issues; track issue) {
+        <li>{{ issue }}</li>
+      }
+    </ul>
+  } @else if (rows.length > 0) {
+    <p class="issues-ok">✓ Таймлайн корректен и покрывает все вейверы.</p>
+  }
+
+  @if (serverError) {
+    <p class="server-error">{{ serverError }}</p>
+  }
+</div>

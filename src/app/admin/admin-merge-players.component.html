@@ -117,14 +117,34 @@
       <p class="warning-message">⚠ {{ warning }}</p>
     }
 
+    @if (canShowTimelineButton) {
+      <button class="timeline-button" type="button" (click)="openTimelineEditor()">
+        Собрать таймлайн вручную
+      </button>
+    } @else if (timelineLoading) {
+      <p class="status-message">Загружаем вейверы игроков...</p>
+    }
+
+    @if (timelineEditorOpen) {
+      <app-admin-merge-timeline
+        [history]="timelineHistory"
+        [points]="waiverPoints"
+        [serverError]="timelineServerError"
+        (timelineChange)="onTimelineChange($event)"
+      />
+      <button class="timeline-button" type="button" (click)="closeTimelineEditor()">
+        Отказаться от ручного таймлайна
+      </button>
+    }
+
     <div class="confirm-block">
       <label class="confirm-label">
         <input type="checkbox" name="confirmMerge" [(ngModel)]="confirmChecked"/>
         Я проверил обоих игроков и понимаю, что слияние необратимо:
         игрок «{{ secondary.detail!.username || secondary.detail!.name_mention }}» будет удалён.
       </label>
-      <button class="danger" type="button" (click)="merge()" [disabled]="!confirmChecked || isMerging">
-        {{ isMerging ? 'Объединяем...' : 'Объединить игроков' }}
+      <button class="danger" type="button" (click)="merge()" [disabled]="!canMerge">
+        {{ isMerging ? 'Объединяем...' : (timelineEditorOpen ? 'Объединить с ручным таймлайном' : 'Объединить игроков') }}
       </button>
     </div>
   }
