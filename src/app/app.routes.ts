@@ -21,10 +21,12 @@ import {AdminWaiversComponent} from "./admin/admin-waivers.component";
 import {AdminMergePlayersComponent} from "./admin/admin-merge-players.component";
 import {AdminMergeTeamsComponent} from "./admin/admin-merge-teams.component";
 import {adminGuard} from "./admin/admin.guard";
+import {SearchComponent} from "./search/search.component";
 
 
 export const routes: Routes = [
   {path: "", component: HomeComponent},
+  {path: "search", component: SearchComponent},
   {path: "games", component: GamesComponent},
   {path: "games/running", component: GamePlayComponent},
   {path: "games/constructor", component: ConstructorComponent},

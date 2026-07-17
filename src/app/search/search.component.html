@@ -1,0 +1,110 @@
+<section class="search-page">
+  <h1>Поиск</h1>
+
+  <form class="search-form" role="search" (submit)="onSubmit($event)">
+    <input
+      type="search"
+      class="search-input"
+      placeholder="Что ищем?"
+      name="query"
+      autocomplete="off"
+      [ngModel]="query"
+      (ngModelChange)="onQueryChange($event)"
+    />
+  </form>
+
+  <div class="filters" role="group" aria-label="Где искать">
+    <span class="filters-label">Искать в:</span>
+    <label class="filter-toggle">
+      <input type="checkbox" name="games" [(ngModel)]="scope.games" (ngModelChange)="onScopeChange()"/>
+      Игры
+    </label>
+    <label class="filter-toggle">
+      <input type="checkbox" name="levels" [(ngModel)]="scope.levels" (ngModelChange)="onScopeChange()"/>
+      Уровни
+    </label>
+    <label class="filter-toggle">
+      <input type="checkbox" name="teams" [(ngModel)]="scope.teams" (ngModelChange)="onScopeChange()"/>
+      Команды
+    </label>
+    <label class="filter-toggle">
+      <input type="checkbox" name="players" [(ngModel)]="scope.players" (ngModelChange)="onScopeChange()"/>
+      Игроки
+    </label>
+  </div>
+
+  @if (!hasQuery()) {
+    <p class="status-message">Введите запрос, чтобы начать поиск.</p>
+  } @else if (isLoading) {
+    <p class="status-message">Поиск...</p>
+  } @else if (loadFailed) {
+    <p class="status-message">Не удалось выполнить поиск. Попробуйте ещё раз.</p>
+  } @else if (totalCount() === 0) {
+    <p class="status-message">Ничего не найдено.</p>
+  } @else {
+    @if (gameResults.length > 0) {
+      <h2 class="results-heading">Игры</h2>
+      <ul class="results-list">
+        @for (result of gameResults; track $index) {
+          <li class="results-item">
+            <a [routerLink]="['/games', result.game_id]">
+              <span class="result-title">{{ gameTitle(result) }}</span>
+              @if (showSnippet(result.snippet, result.game_name)) {
+                <span class="result-snippet">{{ result.snippet }}</span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (levelResults.length > 0) {
+      <h2 class="results-heading">Уровни</h2>
+      <ul class="results-list">
+        @for (result of levelResults; track $index) {
+          <li class="results-item">
+            <a [routerLink]="['/games', result.game_id]" [queryParams]="{level: result.level_name_id}">
+              <span class="result-title">Уровень «{{ result.level_name_id }}»</span>
+              <span class="result-meta">{{ levelGameLabel(result) }}</span>
+              <span class="result-meta">{{ levelDetail(result) }}</span>
+              <span class="result-snippet">{{ result.snippet }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (teamResults.length > 0) {
+      <h2 class="results-heading">Команды</h2>
+      <ul class="results-list">
+        @for (result of teamResults; track result.team_id) {
+          <li class="results-item">
+            <a [routerLink]="['/teams', result.team_id]">
+              <span class="result-title">{{ result.team_name }}</span>
+              @if (showSnippet(result.snippet, result.team_name)) {
+                <span class="result-snippet">{{ result.snippet }}</span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (playerResults.length > 0) {
+      <h2 class="results-heading">Игроки</h2>
+      <ul class="results-list">
+        @for (result of playerResults; track result.player_id) {
+          <li class="results-item">
+            <a [routerLink]="['/players', result.player_id]">
+              <span class="result-title">{{ result.player_name }}</span>
+              <span class="result-meta">{{ playerFoundInLabel(result) }}</span>
+              @if (showSnippet(result.snippet, result.player_name)) {
+                <span class="result-snippet">{{ result.snippet }}</span>
+              }
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  }
+</section>

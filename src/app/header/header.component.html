@@ -27,6 +27,19 @@
     }
   </nav>
 
+  <form class="header-search" role="search" (submit)="onSearchSubmit(desktopSearch.value, $event)">
+    <input
+      #desktopSearch
+      type="search"
+      class="header-search__input"
+      placeholder="Поиск"
+      aria-label="Поиск"
+      autocomplete="off"
+    />
+    <button class="header-search__button" type="submit" aria-label="Искать" title="Искать">
+      <mat-icon aria-hidden="true" [svgIcon]="AppIcon.search"/>
+    </button>
+  </form>
 
   <div class="theme-picker">
     <div class="theme-toggle" role="group" [attr.aria-label]="'Тема'">
@@ -144,6 +157,20 @@
       </button>
     </div>
   </div>
+
+  <form class="mobile-search" role="search" (submit)="onSearchSubmit(mobileSearch.value, $event)">
+    <input
+      #mobileSearch
+      type="search"
+      class="mobile-search__input"
+      placeholder="Поиск"
+      aria-label="Поиск"
+      autocomplete="off"
+    />
+    <button class="mobile-search__button" type="submit" aria-label="Искать" title="Искать">
+      <mat-icon aria-hidden="true" [svgIcon]="AppIcon.search"/>
+    </button>
+  </form>
 
   @if (hasCurrentGameTab()) {
     <a routerLink="/games/running" class="mobile-link mobile-link--active-game" routerLinkActive="active" (click)="onNavClick('/games/running', $event)">

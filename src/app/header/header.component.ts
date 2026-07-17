@@ -81,6 +81,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.closeMobileMenu();
   }
 
+  onSearchSubmit(value: string, event: Event) {
+    event.preventDefault();
+    const query = value.trim();
+    if (!query) {
+      return;
+    }
+
+    this.closeMobileMenu();
+    // By default the search runs everywhere; filters live on the results page.
+    this.router.navigate(["/search"], {queryParams: {query}});
+  }
+
   onNavClick(targetUrl: string, event: MouseEvent) {
     this.closeMobileMenu();
 
