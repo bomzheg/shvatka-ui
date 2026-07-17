@@ -46,6 +46,7 @@ export enum AppIcon {
   pause = "pause",
   copy = "content-copy",
   // generic UI
+  search = "search",
   close = "close",
   check = "check",
   cancel = "cancel",
