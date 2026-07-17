@@ -97,3 +97,9 @@ h1 {
   overflow-wrap: anywhere;
   font-style: italic;
 }
+
+// The <b> match markers come from [innerHTML] (HighlightQueryPipe), so they
+// carry no view-encapsulation attribute and need ::ng-deep to be styled.
+.results-item ::ng-deep b {
+  color: var(--app-text);
+}

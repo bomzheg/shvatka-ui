@@ -2,6 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {ActivatedRoute, ParamMap, Router, RouterLink} from '@angular/router';
 import {finalize, Subscription} from 'rxjs';
+import {HighlightQueryPipe} from '../ui/highlight-query.pipe';
 import {SearchService} from './search.service';
 import {
   DEFAULT_SEARCH_SCOPE,
@@ -20,12 +21,14 @@ import {
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, HighlightQueryPipe],
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
 })
 export class SearchComponent implements OnInit, OnDestroy {
   query = '';
+  /** The query the current results were fetched for — used to highlight matches. */
+  executedQuery = '';
   scope: SearchScope = {...DEFAULT_SEARCH_SCOPE};
 
   gameResults: GameSearchResult[] = [];
@@ -92,6 +95,10 @@ export class SearchComponent implements OnInit, OnDestroy {
       + this.levelResults.length
       + this.teamResults.length
       + this.playerResults.length;
+  }
+
+  levelTitle(result: LevelSearchResult): string {
+    return `Уровень «${result.level_name_id}»`;
   }
 
   gameTitle(result: GameSearchResult): string {
@@ -175,11 +182,13 @@ export class SearchComponent implements OnInit, OnDestroy {
 
     if (!this.hasQuery()) {
       this.clearResults();
+      this.executedQuery = '';
       this.isLoading = false;
       return;
     }
 
     this.isLoading = true;
+    this.executedQuery = this.query.trim();
     this.searchSubscription = this.searchService.search(this.query, this.scope)
       .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe({
