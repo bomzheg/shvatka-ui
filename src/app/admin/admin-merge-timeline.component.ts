@@ -3,12 +3,14 @@ import {FormsModule} from '@angular/forms';
 import {TeamDetails, TeamPlayerHistory} from '../team/team.models';
 import {MergeTimelineItem, WaiverPoint} from './admin.models';
 
-/** Editable timeline entry; dates are `datetime-local` values, empty `left` = still in the team. */
+/** Editable timeline entry; dates are `datetime-local` values, `open` = still in the team. */
 interface TimelineRow {
   uid: number;
   teamId: number | null;
   joined: string;
   left: string;
+  /** "По настоящее время": the player is still in the team, `left` is ignored. */
+  open: boolean;
   invalid: boolean;
 }
 
@@ -114,6 +116,7 @@ export class AdminMergeTimelineComponent implements OnChanges {
         teamId: entry.team!.id,
         joined: isoToLocalInput(entry.date_joined),
         left: entry.date_left ? isoToLocalInput(entry.date_left) : '',
+        open: !entry.date_left,
         invalid: false,
       }));
     this.rebuild();
@@ -134,13 +137,24 @@ export class AdminMergeTimelineComponent implements OnChanges {
       teamId: seg.teamId,
       joined: isoToLocalInput(new Date(seg.from).toISOString()),
       left: seg.to === OPEN_END ? '' : isoToLocalInput(new Date(seg.to).toISOString()),
+      open: seg.to === OPEN_END,
       invalid: false,
     }));
     this.rebuild();
   }
 
   addRow(): void {
-    this.rows.push({uid: this.nextUid++, teamId: null, joined: '', left: '', invalid: false});
+    this.rows.push({uid: this.nextUid++, teamId: null, joined: '', left: '', open: false, invalid: false});
+    this.rebuild();
+  }
+
+  /** Keep the rows in chronological order; rows without a start date go last. */
+  resortRows(): void {
+    this.rows.sort((a, b) => {
+      const aMs = a.joined ? Date.parse(a.joined) : Number.POSITIVE_INFINITY;
+      const bMs = b.joined ? Date.parse(b.joined) : Number.POSITIVE_INFINITY;
+      return aMs - bMs;
+    });
     this.rebuild();
   }
 
@@ -186,15 +200,18 @@ export class AdminMergeTimelineComponent implements OnChanges {
     if (!row || at === null) return;
 
     const joinedMs = Date.parse(row.joined);
-    const leftMs = row.left ? Date.parse(row.left) : null;
+    const leftMs = !row.open && row.left ? Date.parse(row.left) : null;
     let split = snapToHour(at);
     split = Math.max(split, joinedMs + HOUR_MS);
     if (leftMs !== null) split = Math.min(split, leftMs - HOUR_MS);
     if (split <= joinedMs || (leftMs !== null && split >= leftMs)) return; // too narrow to split
 
     const splitValue = isoToLocalInput(new Date(split).toISOString());
-    const second: TimelineRow = {uid: this.nextUid++, teamId: row.teamId, joined: splitValue, left: row.left, invalid: false};
+    const second: TimelineRow = {
+      uid: this.nextUid++, teamId: row.teamId, joined: splitValue, left: row.left, open: row.open, invalid: false,
+    };
     row.left = splitValue;
+    row.open = false;
     this.rows.splice(this.rows.indexOf(row) + 1, 0, second);
     this.rebuild();
   }
@@ -210,9 +227,10 @@ export class AdminMergeTimelineComponent implements OnChanges {
       teamId: null,
       joined: isoToLocalInput(new Date(from).toISOString()),
       left: isoToLocalInput(new Date(from + 30 * DAY_MS).toISOString()),
+      open: false,
       invalid: false,
     });
-    this.rebuild();
+    this.resortRows();
   }
 
   /** Merge the selected intervals into one: earliest team, min start, max end (open if any is open). */
@@ -222,11 +240,13 @@ export class AdminMergeTimelineComponent implements OnChanges {
       .sort((a, b) => Date.parse(a.joined) - Date.parse(b.joined));
     if (chosen.length < 2) return;
     const target = chosen[0];
-    if (chosen.some((row) => !row.left)) {
+    if (chosen.some((row) => row.open || !row.left)) {
       target.left = '';
+      target.open = true;
     } else {
       // datetime-local strings compare lexicographically in chronological order
       target.left = chosen.map((row) => row.left).sort().pop()!;
+      target.open = false;
     }
     this.rows = this.rows.filter((row) => row === target || !this.selected.has(row.uid));
     this.selected.clear();
@@ -254,12 +274,13 @@ export class AdminMergeTimelineComponent implements OnChanges {
     if (!row) return;
     const at = snapToHour(this.chartStart + ((event.clientX - rect.left) / rect.width) * this.chartSpan);
     if (edge === 'left') {
-      const leftMs = row.left ? Date.parse(row.left) : null;
+      const leftMs = !row.open && row.left ? Date.parse(row.left) : null;
       const clamped = leftMs !== null ? Math.min(at, leftMs - HOUR_MS) : at;
       row.joined = isoToLocalInput(new Date(clamped).toISOString());
     } else {
       const clamped = Math.max(at, Date.parse(row.joined) + HOUR_MS);
       row.left = isoToLocalInput(new Date(clamped).toISOString());
+      row.open = false;
     }
     this.rebuild();
   }
@@ -271,7 +292,7 @@ export class AdminMergeTimelineComponent implements OnChanges {
     // pointer-capture retargeting — swallow it if it does, self-clear if it doesn't.
     this.suppressClick = true;
     setTimeout(() => (this.suppressClick = false));
-    this.rebuild(); // recompute the un-frozen time domain
+    this.resortRows(); // dates changed — reorder and recompute the un-frozen time domain
   }
 
   /** Timestamp under the cursor, or null when the chart geometry is unknown. */
@@ -315,7 +336,7 @@ export class AdminMergeTimelineComponent implements OnChanges {
       items: this.sortedCompleteRows().map((row) => ({
         team_id: row.teamId!,
         date_joined: localInputToIso(row.joined),
-        date_left: row.left ? localInputToIso(row.left) : null,
+        date_left: !row.open && row.left ? localInputToIso(row.left) : null,
       })),
       valid: this.issues.length === 0 && this.rows.length > 0,
     });
@@ -332,28 +353,30 @@ export class AdminMergeTimelineComponent implements OnChanges {
       issues.push('Таймлайн пуст — добавьте хотя бы один интервал.');
     }
 
+    const incomplete = (row: TimelineRow) => row.teamId === null || !row.joined || (!row.open && !row.left);
     for (const row of this.rows) {
-      if (row.teamId === null || !row.joined) {
+      if (incomplete(row)) {
         row.invalid = true;
-      } else if (row.left && Date.parse(row.left) <= Date.parse(row.joined)) {
+      } else if (!row.open && Date.parse(row.left) <= Date.parse(row.joined)) {
         row.invalid = true;
         issues.push(`Интервал «${this.teamName(row.teamId)}» заканчивается раньше, чем начинается.`);
       }
     }
-    if (this.rows.some((row) => row.teamId === null || !row.joined)) {
-      issues.push('У каждого интервала должны быть команда и дата вступления.');
+    if (this.rows.some(incomplete)) {
+      issues.push('У каждого интервала должны быть команда, дата вступления и дата выхода (или отметка «по настоящее время»).');
     }
 
     const sorted = this.sortedCompleteRows();
     for (let i = 0; i < sorted.length - 1; i++) {
       const current = sorted[i];
       const next = sorted[i + 1];
-      if (!current.left || Date.parse(current.left) > Date.parse(next.joined)) {
+      if (!current.open && !current.left) continue; // already flagged as incomplete
+      if (current.open || Date.parse(current.left) > Date.parse(next.joined)) {
         current.invalid = true;
         next.invalid = true;
         issues.push(
           `Интервалы «${this.teamName(current.teamId)}» и «${this.teamName(next.teamId)}» пересекаются `
-          + '(открытым может быть только последний).',
+          + '(«по настоящее время» может быть только последний).',
         );
       }
     }
@@ -362,7 +385,7 @@ export class AdminMergeTimelineComponent implements OnChanges {
       const covered = sorted.some((row) =>
         row.teamId === point.team.id
         && Date.parse(row.joined) <= Date.parse(point.at_since)
-        && (!row.left || Date.parse(row.left) >= Date.parse(point.at_until)),
+        && (row.open || (row.left !== '' && Date.parse(row.left) >= Date.parse(point.at_until))),
       );
       if (!covered) {
         issues.push(
@@ -438,7 +461,7 @@ export class AdminMergeTimelineComponent implements OnChanges {
     const stamps: number[] = [];
     for (const row of this.rows) {
       if (row.joined) stamps.push(Date.parse(row.joined));
-      if (row.left) stamps.push(Date.parse(row.left));
+      if (!row.open && row.left) stamps.push(Date.parse(row.left));
     }
     for (const point of this.points) {
       stamps.push(Date.parse(point.at_since), Date.parse(point.at_until));
@@ -469,7 +492,8 @@ export class AdminMergeTimelineComponent implements OnChanges {
       .filter((row) => row.joined)
       .map((row) => {
         const from = Date.parse(row.joined);
-        const to = row.left ? Date.parse(row.left) : domainEnd;
+        const openEnded = row.open || !row.left;
+        const to = openEnded ? domainEnd : Date.parse(row.left);
         const name = this.teamName(row.teamId);
         return withLabelPlacement({
           rowUid: row.uid,
@@ -477,8 +501,8 @@ export class AdminMergeTimelineComponent implements OnChanges {
           widthPct: Math.max(toPct(Math.max(to, from)) - toPct(from), 0.8),
           color: this.teamColor(row.teamId),
           label: name,
-          title: `${name}: ${formatMoment(row.joined)} — ${row.left ? formatMoment(row.left) : 'по настоящее время'}`,
-          openEnded: !row.left,
+          title: `${name}: ${formatMoment(row.joined)} — ${openEnded ? 'по настоящее время' : formatMoment(row.left)}`,
+          openEnded,
           invalid: row.invalid,
         });
       });

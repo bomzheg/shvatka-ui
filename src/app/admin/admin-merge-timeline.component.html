@@ -137,21 +137,36 @@
             [name]="'joined' + row.uid"
             [(ngModel)]="row.joined"
             (ngModelChange)="onRowChange()"
+            (blur)="resortRows()"
           />
         </label>
         <label class="row-date">
           по
+          @if (row.open) {
+            <span class="open-chip">настоящее время</span>
+          } @else {
+            <input
+              type="datetime-local"
+              [name]="'left' + row.uid"
+              [(ngModel)]="row.left"
+              (ngModelChange)="onRowChange()"
+              (blur)="resortRows()"
+            />
+          }
+        </label>
+        <label class="row-open" title="Игрок состоит в этой команде до сих пор">
           <input
-            type="datetime-local"
-            [name]="'left' + row.uid"
-            [(ngModel)]="row.left"
+            type="checkbox"
+            [name]="'open' + row.uid"
+            [(ngModel)]="row.open"
             (ngModelChange)="onRowChange()"
           />
+          до сих пор
         </label>
         <button class="row-remove" type="button" title="Удалить интервал" (click)="removeRow(row)">✕</button>
       </div>
     }
-    <p class="hint rows-hint">Пустая дата «по» означает «состоит в команде до сих пор» — так можно оставить только последний интервал.</p>
+    <p class="hint rows-hint">Интервал «по настоящее время» может быть только последним.</p>
     <div class="rows-actions">
       <button
         class="ghost-button accent"

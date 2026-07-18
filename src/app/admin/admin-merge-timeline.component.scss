@@ -246,7 +246,7 @@
   }
 
   select,
-  input {
+  input[type='datetime-local'] {
     @include cm.input-control();
     padding: 0.35rem 0.5rem;
     font-size: 0.85rem;
@@ -264,6 +264,25 @@
   gap: 0.35rem;
   font-size: 0.85rem;
   color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.open-chip {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--app-accent) 14%, var(--app-surface));
+  border: 1px solid color-mix(in srgb, var(--app-accent) 45%, var(--app-border));
+}
+
+.row-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  color: var(--tg-theme-hint-color, #6b7280);
+  cursor: pointer;
 }
 
 .row-remove {
