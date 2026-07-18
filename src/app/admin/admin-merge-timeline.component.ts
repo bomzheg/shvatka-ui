@@ -39,6 +39,16 @@ export interface TimelineState {
 
 const TEAM_COLORS = ['#2563eb', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db2777', '#65a30d', '#dc2626'];
 
+/** Sentinel for "still in the team" interval ends. */
+const OPEN_END = Number.MAX_SAFE_INTEGER;
+
+/** A resolved membership segment of the auto-built timeline. */
+interface AutoSegment {
+  teamId: number;
+  from: number;
+  to: number;
+}
+
 /**
  * Editor for the manual merge timeline: a chart of the proposed membership
  * intervals against the waiver-locked intervals, plus editable rows.
@@ -92,6 +102,25 @@ export class AdminMergeTimelineComponent implements OnChanges {
         left: entry.date_left ? isoToLocalInput(entry.date_left) : '',
         invalid: false,
       }));
+    this.rebuild();
+  }
+
+  /**
+   * Build a default timeline automatically: waiver points are coalesced into
+   * blocks (adjacent points of the same team are joined) that override the
+   * membership, and the time around them is filled from the players' original
+   * histories — earlier entries in `history` (the primary player) win overlaps.
+   * E.g. team1 2010—2020 with a team2 game in June 2015 becomes
+   * team1 → team2 (waiver block) → team1.
+   */
+  autoBuild(): void {
+    this.rows = this.buildAutoTimeline().map((seg) => ({
+      uid: this.nextUid++,
+      teamId: seg.teamId,
+      joined: isoToLocalInput(new Date(seg.from).toISOString()),
+      left: seg.to === OPEN_END ? '' : isoToLocalInput(new Date(seg.to).toISOString()),
+      invalid: false,
+    }));
     this.rebuild();
   }
 
@@ -202,6 +231,59 @@ export class AdminMergeTimelineComponent implements OnChanges {
     this.issues = issues;
   }
 
+  private buildAutoTimeline(): AutoSegment[] {
+    // Waiver blocks: sorted points, adjacent points of the same team joined into one block.
+    // Bounds are snapped outward to whole minutes (datetime-local precision) so the
+    // resulting intervals still cover the exact point timestamps.
+    const blocks: AutoSegment[] = [];
+    const sortedPoints = [...this.points].sort((a, b) => Date.parse(a.at_since) - Date.parse(b.at_since));
+    for (const point of sortedPoints) {
+      const since = floorToMinute(Date.parse(point.at_since));
+      const until = ceilToMinute(Date.parse(point.at_until));
+      const last = blocks[blocks.length - 1];
+      if (last && last.teamId === point.team.id) {
+        last.to = Math.max(last.to, until);
+      } else {
+        blocks.push({teamId: point.team.id, from: since, to: until});
+      }
+    }
+
+    // History entries in input order: the primary player's entries come first and win overlaps.
+    const memberships = this.history
+      .filter((entry) => entry.team !== null)
+      .map((entry) => ({
+        teamId: entry.team!.id,
+        from: floorToMinute(Date.parse(entry.date_joined)),
+        to: entry.date_left ? floorToMinute(Date.parse(entry.date_left)) : OPEN_END,
+      }));
+
+    // Sweep over elementary intervals between all boundaries; a waiver block dictates
+    // the team inside it, otherwise the first covering membership does.
+    const bounds = new Set<number>();
+    for (const seg of [...blocks, ...memberships]) {
+      bounds.add(seg.from);
+      if (seg.to !== OPEN_END) bounds.add(seg.to);
+    }
+    const sortedBounds = [...bounds].sort((a, b) => a - b);
+    if (memberships.some((m) => m.to === OPEN_END)) sortedBounds.push(OPEN_END);
+
+    const segments: AutoSegment[] = [];
+    for (let i = 0; i < sortedBounds.length - 1; i++) {
+      const from = sortedBounds[i];
+      const to = sortedBounds[i + 1];
+      const covering = blocks.find((b) => b.from <= from && b.to >= to)
+        ?? memberships.find((m) => m.from <= from && m.to >= to);
+      if (!covering) continue;
+      const last = segments[segments.length - 1];
+      if (last && last.teamId === covering.teamId && last.to === from) {
+        last.to = to;
+      } else {
+        segments.push({teamId: covering.teamId, from, to});
+      }
+    }
+    return segments;
+  }
+
   private sortedCompleteRows(): TimelineRow[] {
     return this.rows
       .filter((row) => row.teamId !== null && row.joined)
@@ -269,6 +351,14 @@ export class AdminMergeTimelineComponent implements OnChanges {
       this.ticks.push({leftPct: (i / tickCount) * 100, label: formatDay(ms)});
     }
   }
+}
+
+function floorToMinute(ms: number): number {
+  return Math.floor(ms / 60000) * 60000;
+}
+
+function ceilToMinute(ms: number): number {
+  return Math.ceil(ms / 60000) * 60000;
 }
 
 function withLabelPlacement(bar: Omit<ChartBar, 'labelOutside' | 'labelFlipped'>): ChartBar {

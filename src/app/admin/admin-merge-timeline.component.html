@@ -119,6 +119,12 @@
     }
     <p class="hint rows-hint">Пустая дата «по» означает «состоит в команде до сих пор» — так можно оставить только последний интервал.</p>
     <div class="rows-actions">
+      <button
+        class="ghost-button accent"
+        type="button"
+        title="Взять истории игроков и выделить интервалы вейверов в их команды: основная команда прерывается на время игры за другую"
+        (click)="autoBuild()"
+      >⚡ Собрать автоматически</button>
       <button class="ghost-button" type="button" (click)="addRow()">+ Добавить интервал</button>
       <button class="ghost-button" type="button" (click)="reset()">Сбросить к исходным историям</button>
     </div>

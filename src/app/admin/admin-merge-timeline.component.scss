@@ -227,6 +227,12 @@
   &:hover {
     border-color: var(--app-accent);
   }
+
+  &.accent {
+    font-weight: 600;
+    color: var(--app-accent);
+    border-color: var(--app-accent);
+  }
 }
 
 .issues {
