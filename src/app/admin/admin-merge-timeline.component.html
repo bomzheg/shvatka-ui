@@ -20,22 +20,43 @@
   }
 
   @if (rowBars.length > 0 || pointBars.length > 0) {
-    <div class="chart">
+    <div class="chart" (dblclick)="onChartDblClick($event)">
       <div class="chart-section">Новый таймлайн</div>
-      @for (bar of rowBars; track $index) {
+      @for (bar of rowBars; track bar.rowUid) {
         <div class="chart-band">
           <div
-            class="chart-bar"
+            class="chart-bar editable"
             [class.open-ended]="bar.openEnded"
             [class.invalid]="bar.invalid"
+            [class.selected]="isSelected(bar)"
             [style.left.%]="bar.leftPct"
             [style.width.%]="bar.widthPct"
             [style.background]="bar.color"
             [title]="bar.title"
+            (click)="onBarClick(bar)"
+            (dblclick)="onBarDblClick(bar, $event)"
           >
+            <span
+              class="bar-handle left"
+              (pointerdown)="startResize(bar, 'left', $event)"
+              (pointermove)="onResizeMove($event)"
+              (pointerup)="endResize()"
+              (pointercancel)="endResize()"
+              (click)="$event.stopPropagation()"
+              (dblclick)="$event.stopPropagation()"
+            ></span>
             @if (!bar.labelOutside) {
               <span class="bar-label">{{ bar.label }}</span>
             }
+            <span
+              class="bar-handle right"
+              (pointerdown)="startResize(bar, 'right', $event)"
+              (pointermove)="onResizeMove($event)"
+              (pointerup)="endResize()"
+              (pointercancel)="endResize()"
+              (click)="$event.stopPropagation()"
+              (dblclick)="$event.stopPropagation()"
+            ></span>
           </div>
           @if (bar.labelOutside) {
             <span
@@ -79,11 +100,24 @@
         }
       </div>
     </div>
+    <p class="hint chart-hint">
+      Управление на графике: клик по интервалу — выделить · двойной клик по интервалу — разделить его в этом месте ·
+      двойной клик по пустому месту — добавить интервал · потяните край интервала, чтобы изменить даты.
+    </p>
+    @if (selected.size > 0) {
+      <div class="selection-bar">
+        <span>Выбрано интервалов: {{ selected.size }}</span>
+        <button class="ghost-button" type="button" [disabled]="selected.size < 2" (click)="joinSelected()">
+          Объединить в один
+        </button>
+        <button class="ghost-button" type="button" (click)="clearSelection()">Снять выделение</button>
+      </div>
+    }
   }
 
   <div class="rows">
     @for (row of rows; track row.uid) {
-      <div class="timeline-row" [class.invalid]="row.invalid">
+      <div class="timeline-row" [class.invalid]="row.invalid" [class.selected]="isRowSelected(row)">
         <span class="row-dot" [style.background]="teamColor(row.teamId)"></span>
         <select
           class="row-team"

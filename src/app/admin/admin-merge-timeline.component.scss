@@ -40,7 +40,8 @@
 
 .chart {
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: 0.4rem;
+  user-select: none;
   padding-bottom: 1.4rem;
   border: 1px solid var(--app-border);
   border-radius: 10px;
@@ -104,6 +105,51 @@
     outline: 2px solid #dc2626;
     outline-offset: 1px;
   }
+
+  &.editable {
+    cursor: pointer;
+  }
+
+  &.selected {
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.95);
+    filter: saturate(1.35) brightness(1.08);
+  }
+}
+
+.bar-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  cursor: ew-resize;
+  touch-action: none;
+  flex-shrink: 0;
+
+  &.left {
+    left: -3px;
+  }
+
+  &.right {
+    right: -3px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 20%;
+    bottom: 20%;
+    left: 50%;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.85);
+    opacity: 0;
+    transition: opacity 0.12s;
+  }
+}
+
+.chart-bar:hover .bar-handle::after {
+  opacity: 1;
 }
 
 .bar-label {
@@ -153,6 +199,28 @@
   }
 }
 
+.chart-hint {
+  margin-bottom: 0.75rem;
+}
+
+.selection-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  background: color-mix(in srgb, var(--app-accent) 10%, var(--app-surface));
+  border: 1px solid color-mix(in srgb, var(--app-accent) 45%, var(--app-border));
+
+  button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
 .rows {
   display: grid;
   gap: 0.4rem;
@@ -170,6 +238,11 @@
   &.invalid {
     border-color: #dc2626;
     background: color-mix(in srgb, #dc2626 7%, var(--app-surface));
+  }
+
+  &.selected {
+    border-color: var(--app-accent);
+    background: color-mix(in srgb, var(--app-accent) 7%, var(--app-surface));
   }
 
   select,

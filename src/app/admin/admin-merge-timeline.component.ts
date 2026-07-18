@@ -14,6 +14,8 @@ interface TimelineRow {
 
 /** A bar on the Gantt-style chart, positioned in percent of the time domain. */
 interface ChartBar {
+  /** uid of the editable row behind the bar; absent for waiver-point bars. */
+  rowUid?: number;
   leftPct: number;
   widthPct: number;
   color: string;
@@ -41,6 +43,9 @@ const TEAM_COLORS = ['#2563eb', '#16a34a', '#d97706', '#7c3aed', '#0891b2', '#db
 
 /** Sentinel for "still in the team" interval ends. */
 const OPEN_END = Number.MAX_SAFE_INTEGER;
+
+const HOUR_MS = 3600 * 1000;
+const DAY_MS = 24 * HOUR_MS;
 
 /** A resolved membership segment of the auto-built timeline. */
 interface AutoSegment {
@@ -78,9 +83,17 @@ export class AdminMergeTimelineComponent implements OnChanges {
   pointBars: ChartBar[] = [];
   ticks: ChartTick[] = [];
   skippedDeletedTeams = false;
+  /** uids of rows selected on the chart (click), for the join action. */
+  selected = new Set<number>();
 
   private nextUid = 1;
   private teamColors = new Map<number, string>();
+  /** Time domain of the chart in ms; frozen while a resize drag is active. */
+  private chartStart = 0;
+  private chartSpan = 0;
+  private resizing: {uid: number; edge: 'left' | 'right'; rect: DOMRect} | null = null;
+  /** Swallow the synthetic click that follows a resize drag so it doesn't toggle selection. */
+  private suppressClick = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['history'] || changes['points']) {
@@ -90,6 +103,7 @@ export class AdminMergeTimelineComponent implements OnChanges {
 
   /** Rebuild the rows from the players' current histories, dropping any edits. */
   reset(): void {
+    this.selected.clear();
     this.collectTeams();
     this.skippedDeletedTeams = this.history.some((entry) => entry.team === null);
     this.rows = this.history
@@ -114,6 +128,7 @@ export class AdminMergeTimelineComponent implements OnChanges {
    * team1 → team2 (waiver block) → team1.
    */
   autoBuild(): void {
+    this.selected.clear();
     this.rows = this.buildAutoTimeline().map((seg) => ({
       uid: this.nextUid++,
       teamId: seg.teamId,
@@ -131,11 +146,140 @@ export class AdminMergeTimelineComponent implements OnChanges {
 
   removeRow(row: TimelineRow): void {
     this.rows = this.rows.filter((r) => r !== row);
+    this.selected.delete(row.uid);
     this.rebuild();
   }
 
   onRowChange(): void {
     this.rebuild();
+  }
+
+  isSelected(bar: ChartBar): boolean {
+    return bar.rowUid !== undefined && this.selected.has(bar.rowUid);
+  }
+
+  isRowSelected(row: TimelineRow): boolean {
+    return this.selected.has(row.uid);
+  }
+
+  /** Click on a bar toggles its selection (Ctrl not required, so it also works on touch). */
+  onBarClick(bar: ChartBar): void {
+    if (this.suppressClick) {
+      this.suppressClick = false;
+      return;
+    }
+    if (bar.rowUid === undefined) return;
+    if (this.selected.has(bar.rowUid)) {
+      this.selected.delete(bar.rowUid);
+    } else {
+      this.selected.add(bar.rowUid);
+    }
+  }
+
+  /** Double-click on a bar splits its interval in two at the cursor position. */
+  onBarDblClick(bar: ChartBar, event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (bar.rowUid === undefined) return;
+    const row = this.rows.find((r) => r.uid === bar.rowUid);
+    const at = this.timeAtEvent(event);
+    if (!row || at === null) return;
+
+    const joinedMs = Date.parse(row.joined);
+    const leftMs = row.left ? Date.parse(row.left) : null;
+    let split = snapToHour(at);
+    split = Math.max(split, joinedMs + HOUR_MS);
+    if (leftMs !== null) split = Math.min(split, leftMs - HOUR_MS);
+    if (split <= joinedMs || (leftMs !== null && split >= leftMs)) return; // too narrow to split
+
+    const splitValue = isoToLocalInput(new Date(split).toISOString());
+    const second: TimelineRow = {uid: this.nextUid++, teamId: row.teamId, joined: splitValue, left: row.left, invalid: false};
+    row.left = splitValue;
+    this.rows.splice(this.rows.indexOf(row) + 1, 0, second);
+    this.rebuild();
+  }
+
+  /** Double-click on empty chart space adds a month-long interval starting there. */
+  onChartDblClick(event: MouseEvent): void {
+    if ((event.target as HTMLElement).closest('.chart-bar, .bar-outside-label')) return;
+    const at = this.timeAtEvent(event);
+    if (at === null) return;
+    const from = snapToHour(at);
+    this.rows.push({
+      uid: this.nextUid++,
+      teamId: null,
+      joined: isoToLocalInput(new Date(from).toISOString()),
+      left: isoToLocalInput(new Date(from + 30 * DAY_MS).toISOString()),
+      invalid: false,
+    });
+    this.rebuild();
+  }
+
+  /** Merge the selected intervals into one: earliest team, min start, max end (open if any is open). */
+  joinSelected(): void {
+    const chosen = this.rows
+      .filter((row) => this.selected.has(row.uid) && row.joined)
+      .sort((a, b) => Date.parse(a.joined) - Date.parse(b.joined));
+    if (chosen.length < 2) return;
+    const target = chosen[0];
+    if (chosen.some((row) => !row.left)) {
+      target.left = '';
+    } else {
+      // datetime-local strings compare lexicographically in chronological order
+      target.left = chosen.map((row) => row.left).sort().pop()!;
+    }
+    this.rows = this.rows.filter((row) => row === target || !this.selected.has(row.uid));
+    this.selected.clear();
+    this.rebuild();
+  }
+
+  clearSelection(): void {
+    this.selected.clear();
+  }
+
+  startResize(bar: ChartBar, edge: 'left' | 'right', event: PointerEvent): void {
+    if (bar.rowUid === undefined) return;
+    const chart = (event.target as HTMLElement).closest('.chart');
+    if (!chart) return;
+    event.preventDefault();
+    event.stopPropagation();
+    (event.target as HTMLElement).setPointerCapture(event.pointerId);
+    this.resizing = {uid: bar.rowUid, edge, rect: chart.getBoundingClientRect()};
+  }
+
+  onResizeMove(event: PointerEvent): void {
+    if (!this.resizing || this.chartSpan <= 0) return;
+    const {uid, edge, rect} = this.resizing;
+    const row = this.rows.find((r) => r.uid === uid);
+    if (!row) return;
+    const at = snapToHour(this.chartStart + ((event.clientX - rect.left) / rect.width) * this.chartSpan);
+    if (edge === 'left') {
+      const leftMs = row.left ? Date.parse(row.left) : null;
+      const clamped = leftMs !== null ? Math.min(at, leftMs - HOUR_MS) : at;
+      row.joined = isoToLocalInput(new Date(clamped).toISOString());
+    } else {
+      const clamped = Math.max(at, Date.parse(row.joined) + HOUR_MS);
+      row.left = isoToLocalInput(new Date(clamped).toISOString());
+    }
+    this.rebuild();
+  }
+
+  endResize(): void {
+    if (!this.resizing) return;
+    this.resizing = null;
+    // The click that follows the drag may or may not reach the bar depending on
+    // pointer-capture retargeting — swallow it if it does, self-clear if it doesn't.
+    this.suppressClick = true;
+    setTimeout(() => (this.suppressClick = false));
+    this.rebuild(); // recompute the un-frozen time domain
+  }
+
+  /** Timestamp under the cursor, or null when the chart geometry is unknown. */
+  private timeAtEvent(event: MouseEvent): number | null {
+    const chart = (event.target as HTMLElement).closest('.chart');
+    if (!chart || this.chartSpan <= 0) return null;
+    const rect = chart.getBoundingClientRect();
+    return this.chartStart + ((event.clientX - rect.left) / rect.width) * this.chartSpan;
   }
 
   teamColor(teamId: number | null): string {
@@ -303,23 +447,32 @@ export class AdminMergeTimelineComponent implements OnChanges {
       this.rowBars = [];
       this.pointBars = [];
       this.ticks = [];
+      this.chartSpan = 0;
       return;
     }
 
-    const min = Math.min(...stamps);
-    const max = Math.max(Math.max(...stamps), Date.now());
-    const pad = Math.max((max - min) * 0.04, 24 * 3600 * 1000);
-    const start = min - pad;
-    const span = max + pad - start;
-    const toPct = (ms: number) => ((ms - start) / span) * 100;
+    // Keep the domain frozen during a resize drag, otherwise the domain would
+    // follow the dragged edge and the bar would chase the cursor.
+    if (!this.resizing || this.chartSpan <= 0) {
+      const min = Math.min(...stamps);
+      const max = Math.max(Math.max(...stamps), Date.now());
+      const pad = Math.max((max - min) * 0.04, DAY_MS);
+      this.chartStart = min - pad;
+      this.chartSpan = max + pad - this.chartStart;
+    }
+    const start = this.chartStart;
+    const span = this.chartSpan;
+    const domainEnd = start + span;
+    const toPct = (ms: number) => Math.min(Math.max(((ms - start) / span) * 100, 0), 100);
 
     this.rowBars = this.rows
       .filter((row) => row.joined)
       .map((row) => {
         const from = Date.parse(row.joined);
-        const to = row.left ? Date.parse(row.left) : max + pad;
+        const to = row.left ? Date.parse(row.left) : domainEnd;
         const name = this.teamName(row.teamId);
         return withLabelPlacement({
+          rowUid: row.uid,
           leftPct: toPct(from),
           widthPct: Math.max(toPct(Math.max(to, from)) - toPct(from), 0.8),
           color: this.teamColor(row.teamId),
@@ -355,6 +508,10 @@ export class AdminMergeTimelineComponent implements OnChanges {
 
 function floorToMinute(ms: number): number {
   return Math.floor(ms / 60000) * 60000;
+}
+
+function snapToHour(ms: number): number {
+  return Math.round(ms / HOUR_MS) * HOUR_MS;
 }
 
 function ceilToMinute(ms: number): number {
