@@ -163,7 +163,47 @@
           />
           до сих пор
         </label>
+        <input
+          type="text"
+          class="row-role"
+          placeholder="роль (полевой)"
+          [name]="'role' + row.uid"
+          [(ngModel)]="row.role"
+          (ngModelChange)="onRowChange()"
+        />
+        <input
+          type="text"
+          class="row-emoji"
+          placeholder="🙂"
+          maxlength="8"
+          title="Эмодзи игрока в команде"
+          [name]="'emoji' + row.uid"
+          [(ngModel)]="row.emoji"
+          (ngModelChange)="onRowChange()"
+        />
+        <button
+          class="row-perms-toggle"
+          type="button"
+          [class.active]="hasPermissions(row)"
+          [title]="'Права в команде' + (hasPermissions(row) ? ' (заданы)' : '')"
+          (click)="togglePermissions(row)"
+        >⚙ права</button>
         <button class="row-remove" type="button" title="Удалить интервал" (click)="removeRow(row)">✕</button>
+        @if (row.showPermissions) {
+          <div class="row-perms">
+            @for (def of permissionDefs; track def.key) {
+              <label class="perm-label">
+                <input
+                  type="checkbox"
+                  [name]="'perm-' + def.key + row.uid"
+                  [(ngModel)]="row.permissions[def.key]"
+                  (ngModelChange)="onRowChange()"
+                />
+                {{ def.label }}
+              </label>
+            }
+          </div>
+        }
       </div>
     }
     <p class="hint rows-hint">Интервал «по настоящее время» может быть только последним.</p>

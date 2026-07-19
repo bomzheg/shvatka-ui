@@ -246,7 +246,8 @@
   }
 
   select,
-  input[type='datetime-local'] {
+  input[type='datetime-local'],
+  input[type='text'] {
     @include cm.input-control();
     padding: 0.35rem 0.5rem;
     font-size: 0.85rem;
@@ -263,6 +264,51 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.row-role {
+  flex: 1 1 8rem;
+  min-width: 6rem;
+}
+
+.row-emoji {
+  width: 3.2rem;
+  text-align: center;
+}
+
+.row-perms-toggle {
+  @include cm.button-base(8px, 0.3rem 0.55rem);
+  font-size: 0.78rem;
+  font-weight: 400;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--tg-theme-hint-color, #6b7280);
+  border: 1px solid var(--app-border);
+
+  &.active {
+    color: var(--app-accent);
+    border-color: var(--app-accent);
+    font-weight: 600;
+  }
+}
+
+.row-perms {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.9rem;
+  padding: 0.35rem 0.2rem 0.1rem;
+  border-top: 1px dashed var(--app-border);
+}
+
+.perm-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
   color: var(--tg-theme-hint-color, #6b7280);
 }
 

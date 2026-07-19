@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnChanges, Output, SimpleChanges} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {TeamDetails, TeamPlayerHistory} from '../team/team.models';
+import {TeamDetails, TeamMemberPermissions, TeamPlayerHistory} from '../team/team.models';
 import {MergeTimelineItem, WaiverPoint} from './admin.models';
 
 /** Editable timeline entry; dates are `datetime-local` values, `open` = still in the team. */
@@ -11,7 +11,22 @@ interface TimelineRow {
   left: string;
   /** "По настоящее время": the player is still in the team, `left` is ignored. */
   open: boolean;
+  role: string;
+  emoji: string;
+  permissions: TeamMemberPermissions;
+  /** Permissions panel expanded in the UI. */
+  showPermissions: boolean;
   invalid: boolean;
+}
+
+function emptyPermissions(): TeamMemberPermissions {
+  return {
+    can_manage_waivers: false,
+    can_manage_players: false,
+    can_change_team_name: false,
+    can_add_players: false,
+    can_remove_players: false,
+  };
 }
 
 /** A bar on the Gantt-style chart, positioned in percent of the time domain. */
@@ -88,6 +103,14 @@ export class AdminMergeTimelineComponent implements OnChanges {
   /** uids of rows selected on the chart (click), for the join action. */
   selected = new Set<number>();
 
+  readonly permissionDefs: {key: keyof TeamMemberPermissions; label: string}[] = [
+    {key: 'can_manage_waivers', label: 'подавать вейверы'},
+    {key: 'can_manage_players', label: 'управлять игроками'},
+    {key: 'can_change_team_name', label: 'менять название'},
+    {key: 'can_add_players', label: 'добавлять игроков'},
+    {key: 'can_remove_players', label: 'удалять игроков'},
+  ];
+
   private nextUid = 1;
   private teamColors = new Map<number, string>();
   /** Time domain of the chart in ms; frozen while a resize drag is active. */
@@ -117,6 +140,10 @@ export class AdminMergeTimelineComponent implements OnChanges {
         joined: isoToLocalInput(entry.date_joined),
         left: entry.date_left ? isoToLocalInput(entry.date_left) : '',
         open: !entry.date_left,
+        role: entry.role ?? '',
+        emoji: entry.emoji ?? '',
+        permissions: emptyPermissions(),
+        showPermissions: false,
         invalid: false,
       }));
     this.rebuild();
@@ -132,19 +159,29 @@ export class AdminMergeTimelineComponent implements OnChanges {
    */
   autoBuild(): void {
     this.selected.clear();
-    this.rows = this.buildAutoTimeline().map((seg) => ({
-      uid: this.nextUid++,
-      teamId: seg.teamId,
-      joined: isoToLocalInput(new Date(seg.from).toISOString()),
-      left: seg.to === OPEN_END ? '' : isoToLocalInput(new Date(seg.to).toISOString()),
-      open: seg.to === OPEN_END,
-      invalid: false,
-    }));
+    this.rows = this.buildAutoTimeline().map((seg) => {
+      const source = this.latestHistoryEntry(seg.teamId);
+      return {
+        uid: this.nextUid++,
+        teamId: seg.teamId,
+        joined: isoToLocalInput(new Date(seg.from).toISOString()),
+        left: seg.to === OPEN_END ? '' : isoToLocalInput(new Date(seg.to).toISOString()),
+        open: seg.to === OPEN_END,
+        role: source?.role ?? '',
+        emoji: source?.emoji ?? '',
+        permissions: emptyPermissions(),
+        showPermissions: false,
+        invalid: false,
+      };
+    });
     this.rebuild();
   }
 
   addRow(): void {
-    this.rows.push({uid: this.nextUid++, teamId: null, joined: '', left: '', open: false, invalid: false});
+    this.rows.push({
+      uid: this.nextUid++, teamId: null, joined: '', left: '', open: false,
+      role: '', emoji: '', permissions: emptyPermissions(), showPermissions: false, invalid: false,
+    });
     this.rebuild();
   }
 
@@ -206,9 +243,11 @@ export class AdminMergeTimelineComponent implements OnChanges {
     if (leftMs !== null) split = Math.min(split, leftMs - HOUR_MS);
     if (split <= joinedMs || (leftMs !== null && split >= leftMs)) return; // too narrow to split
 
+    // Both halves keep the original interval's team, role, emoji and permissions.
     const splitValue = isoToLocalInput(new Date(split).toISOString());
     const second: TimelineRow = {
-      uid: this.nextUid++, teamId: row.teamId, joined: splitValue, left: row.left, open: row.open, invalid: false,
+      uid: this.nextUid++, teamId: row.teamId, joined: splitValue, left: row.left, open: row.open,
+      role: row.role, emoji: row.emoji, permissions: {...row.permissions}, showPermissions: false, invalid: false,
     };
     row.left = splitValue;
     row.open = false;
@@ -228,18 +267,26 @@ export class AdminMergeTimelineComponent implements OnChanges {
       joined: isoToLocalInput(new Date(from).toISOString()),
       left: isoToLocalInput(new Date(from + 30 * DAY_MS).toISOString()),
       open: false,
+      role: '',
+      emoji: '',
+      permissions: emptyPermissions(),
+      showPermissions: false,
       invalid: false,
     });
     this.resortRows();
   }
 
-  /** Merge the selected intervals into one: earliest team, min start, max end (open if any is open). */
+  /**
+   * Merge the selected intervals into one: min start, max end (open if any is
+   * open); team, role, emoji and permissions are taken from the latest interval.
+   */
   joinSelected(): void {
     const chosen = this.rows
       .filter((row) => this.selected.has(row.uid) && row.joined)
       .sort((a, b) => Date.parse(a.joined) - Date.parse(b.joined));
     if (chosen.length < 2) return;
     const target = chosen[0];
+    const latest = chosen[chosen.length - 1];
     if (chosen.some((row) => row.open || !row.left)) {
       target.left = '';
       target.open = true;
@@ -248,6 +295,10 @@ export class AdminMergeTimelineComponent implements OnChanges {
       target.left = chosen.map((row) => row.left).sort().pop()!;
       target.open = false;
     }
+    target.teamId = latest.teamId;
+    target.role = latest.role;
+    target.emoji = latest.emoji;
+    target.permissions = {...latest.permissions};
     this.rows = this.rows.filter((row) => row === target || !this.selected.has(row.uid));
     this.selected.clear();
     this.rebuild();
@@ -303,6 +354,26 @@ export class AdminMergeTimelineComponent implements OnChanges {
     return this.chartStart + ((event.clientX - rect.left) / rect.width) * this.chartSpan;
   }
 
+  hasPermissions(row: TimelineRow): boolean {
+    return Object.values(row.permissions).some(Boolean);
+  }
+
+  togglePermissions(row: TimelineRow): void {
+    row.showPermissions = !row.showPermissions;
+  }
+
+  /** Latest membership of either player in the team — the source for default role/emoji. */
+  private latestHistoryEntry(teamId: number): TeamPlayerHistory | null {
+    let latest: TeamPlayerHistory | null = null;
+    for (const entry of this.history) {
+      if (entry.team?.id !== teamId) continue;
+      if (!latest || Date.parse(entry.date_joined) > Date.parse(latest.date_joined)) {
+        latest = entry;
+      }
+    }
+    return latest;
+  }
+
   teamColor(teamId: number | null): string {
     return (teamId !== null && this.teamColors.get(teamId)) || 'var(--tg-theme-hint-color, #6b7280)';
   }
@@ -333,11 +404,17 @@ export class AdminMergeTimelineComponent implements OnChanges {
     this.validate();
     this.buildChart();
     this.timelineChange.emit({
-      items: this.sortedCompleteRows().map((row) => ({
-        team_id: row.teamId!,
-        date_joined: localInputToIso(row.joined),
-        date_left: !row.open && row.left ? localInputToIso(row.left) : null,
-      })),
+      items: this.sortedCompleteRows().map((row) => {
+        const item: MergeTimelineItem = {
+          team_id: row.teamId!,
+          date_joined: localInputToIso(row.joined),
+          date_left: !row.open && row.left ? localInputToIso(row.left) : null,
+        };
+        if (row.role.trim()) item.role = row.role.trim();
+        if (row.emoji.trim()) item.emoji = row.emoji.trim();
+        if (Object.values(row.permissions).some(Boolean)) item.permissions = {...row.permissions};
+        return item;
+      }),
       valid: this.issues.length === 0 && this.rows.length > 0,
     });
   }
@@ -495,13 +572,15 @@ export class AdminMergeTimelineComponent implements OnChanges {
         const openEnded = row.open || !row.left;
         const to = openEnded ? domainEnd : Date.parse(row.left);
         const name = this.teamName(row.teamId);
+        const label = row.emoji.trim() ? `${row.emoji.trim()} ${name}` : name;
         return withLabelPlacement({
           rowUid: row.uid,
           leftPct: toPct(from),
           widthPct: Math.max(toPct(Math.max(to, from)) - toPct(from), 0.8),
           color: this.teamColor(row.teamId),
-          label: name,
-          title: `${name}: ${formatMoment(row.joined)} — ${openEnded ? 'по настоящее время' : formatMoment(row.left)}`,
+          label,
+          title: `${label}: ${formatMoment(row.joined)} — ${openEnded ? 'по настоящее время' : formatMoment(row.left)}`
+            + (row.role.trim() ? ` · ${row.role.trim()}` : ''),
           openEnded,
           invalid: row.invalid,
         });
