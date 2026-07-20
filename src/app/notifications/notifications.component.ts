@@ -155,18 +155,28 @@ export class NotificationsComponent implements OnInit {
   }
 
   /**
-   * Merge requests are resolved by superusers; the primary player of a
+   * Merge requests are resolved by superusers regardless of who initiated
+   * them — a superuser who filed the merge themself sees it as "outgoing"
+   * (cancel) but must still be able to accept it. The primary player of a
    * `player_merge` sees the request too but may only decline it. Hidden while
    * the timeline editor is open — the editor has its own accept button.
    */
-  canAccept(requestView: RequestView): boolean {
+  showAccept(requestView: RequestView): boolean {
     if (this.isMergeEditorFor(requestView)) {
       return false;
     }
     if (ADMIN_RESOLVED_REQUEST_TYPES.includes(requestView.request.type)) {
       return this.userService.isAdmin();
     }
-    return true;
+    return requestView.direction === "incoming";
+  }
+
+  showDecline(requestView: RequestView): boolean {
+    return requestView.direction === "incoming";
+  }
+
+  showCancel(requestView: RequestView): boolean {
+    return requestView.direction === "outgoing";
   }
 
   isMergeEditorFor(requestView: RequestView): boolean {
