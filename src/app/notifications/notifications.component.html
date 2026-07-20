@@ -77,6 +77,13 @@
                         (click)="respond(rv, 'cancel')"
                       >Отменить заявку</button>
                     }
+                    @if (adminMergeLink(rv); as link) {
+                      <a
+                        class="action-button action-button--admin-link"
+                        [routerLink]="link.path"
+                        [queryParams]="link.params"
+                      >Открыть в админке</a>
+                    }
                   </div>
                 } @else {
                   <span class="request-status" [class]="'request-status--' + rv.request.status">
@@ -143,6 +150,13 @@
                         [disabled]="rv.busy"
                         (click)="respond(rv, 'cancel')"
                       >Отменить заявку</button>
+                    }
+                    @if (adminMergeLink(rv); as link) {
+                      <a
+                        class="action-button action-button--admin-link"
+                        [routerLink]="link.path"
+                        [queryParams]="link.params"
+                      >Открыть в админке</a>
                     }
                   </div>
 
@@ -225,6 +239,13 @@
                         [disabled]="rv.busy"
                         (click)="respond(rv, 'cancel')"
                       >Отменить заявку</button>
+                    }
+                    @if (adminMergeLink(rv); as link) {
+                      <a
+                        class="action-button action-button--admin-link"
+                        [routerLink]="link.path"
+                        [queryParams]="link.params"
+                      >Открыть в админке</a>
                     }
                   </div>
 

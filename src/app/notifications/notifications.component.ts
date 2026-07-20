@@ -1,6 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {DatePipe} from "@angular/common";
 import {FormsModule} from "@angular/forms";
+import {RouterLink} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {HttpErrorResponse} from "@angular/common/http";
 import {catchError, finalize, forkJoin, of} from "rxjs";
@@ -59,7 +60,7 @@ interface MergeEditor {
 @Component({
   selector: "app-notifications",
   standalone: true,
-  imports: [DatePipe, FormsModule, MatIcon, AdminMergeTimelineComponent],
+  imports: [DatePipe, FormsModule, RouterLink, MatIcon, AdminMergeTimelineComponent],
   templateUrl: "./notifications.component.html",
   styleUrl: "./notifications.component.scss",
 })
@@ -177,6 +178,36 @@ export class NotificationsComponent implements OnInit {
 
   showCancel(requestView: RequestView): boolean {
     return requestView.direction === "outgoing";
+  }
+
+  /**
+   * Deep link to the admin's manual merge page prefilled with both sides —
+   * the escape hatch when the request can't be accepted as-is (linked
+   * identities conflict, timeline can't be built, etc.). Merging there does
+   * NOT resolve the request; it has to be declined afterwards.
+   */
+  adminMergeLink(requestView: RequestView): {path: string; params: {primary: number; secondary: number}} | null {
+    if (!this.userService.isAdmin()) {
+      return null;
+    }
+    const payload = requestView.request.payload ?? {};
+    if (requestView.request.type === RequestType.playerMerge) {
+      const primary = payload["primary_player_id"] ?? requestView.request.target_player_id;
+      const secondary = payload["secondary_player_id"];
+      if (typeof primary !== "number" || typeof secondary !== "number") {
+        return null;
+      }
+      return {path: "/admin/merge/players", params: {primary, secondary}};
+    }
+    if (requestView.request.type === RequestType.teamMerge) {
+      const primary = payload["primary_team_id"] ?? requestView.request.team_id;
+      const secondary = payload["secondary_team_id"];
+      if (typeof primary !== "number" || typeof secondary !== "number") {
+        return null;
+      }
+      return {path: "/admin/merge/teams", params: {primary, secondary}};
+    }
+    return null;
   }
 
   isMergeEditorFor(requestView: RequestView): boolean {

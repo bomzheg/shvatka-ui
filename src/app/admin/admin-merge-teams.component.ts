@@ -1,6 +1,6 @@
-import {Component, OnDestroy} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {RouterLink} from '@angular/router';
+import {ActivatedRoute, RouterLink} from '@angular/router';
 import {HttpErrorResponse} from '@angular/common/http';
 import {catchError, forkJoin, of} from 'rxjs';
 import {AdminService} from './admin.service';
@@ -30,7 +30,7 @@ function emptySide(): MergeSide {
   templateUrl: './admin-merge-teams.component.html',
   styleUrl: './admin-merge-teams.component.scss',
 })
-export class AdminMergeTeamsComponent implements OnDestroy {
+export class AdminMergeTeamsComponent implements OnInit, OnDestroy {
   primary: MergeSide = emptySide();
   secondary: MergeSide = emptySide();
 
@@ -43,7 +43,21 @@ export class AdminMergeTeamsComponent implements OnDestroy {
     private adminService: AdminService,
     private teamService: TeamService,
     private snackbar: SnackbarService,
+    private route: ActivatedRoute,
   ) {}
+
+  /** `?primary=<id>&secondary=<id>` preselect both sides (deep link from a merge request). */
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+    const primary = Number(params.get('primary'));
+    const secondary = Number(params.get('secondary'));
+    if (Number.isInteger(primary) && primary > 0) {
+      this.selectById('primary', primary);
+    }
+    if (Number.isInteger(secondary) && secondary > 0) {
+      this.selectById('secondary', secondary);
+    }
+  }
 
   ngOnDestroy(): void {
     if (this.searchTimers.primary) clearTimeout(this.searchTimers.primary);
@@ -84,6 +98,19 @@ export class AdminMergeTeamsComponent implements OnDestroy {
       side.team = team;
       side.players = players.items;
       side.playedGames = stat?.items ?? null;
+    });
+  }
+
+  private selectById(role: 'primary' | 'secondary', teamId: number): void {
+    const side = this.side(role);
+    side.query = `#${teamId}`;
+    side.loading = true;
+    this.teamService.getTeam(teamId).subscribe({
+      next: (team) => this.select(role, team),
+      error: () => {
+        side.loading = false;
+        this.snackbar.error('Не удалось загрузить команду');
+      },
     });
   }
 

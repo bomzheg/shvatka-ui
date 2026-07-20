@@ -122,6 +122,13 @@
   color: var(--app-text);
 }
 
+// Anchor styled as a secondary action button (deep link to the admin merge page).
+.action-button--admin-link {
+  background: color-mix(in srgb, var(--app-accent) 14%, transparent);
+  color: var(--app-accent);
+  text-decoration: none;
+}
+
 .request-status {
   display: inline-block;
   margin-top: 0.6rem;
