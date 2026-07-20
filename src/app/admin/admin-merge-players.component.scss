@@ -1,1 +1,16 @@
+@use '../../styles/component-mixins' as cm;
 @use './merge-shared';
+
+.timeline-button {
+  @include cm.button-base(8px, 0.4rem 0.8rem);
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 400;
+  background: transparent;
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+
+  &:hover {
+    border-color: var(--app-accent);
+  }
+}

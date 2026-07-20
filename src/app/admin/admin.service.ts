@@ -11,7 +11,9 @@ import {
   AdminPlayersFilters,
   AdminPoll,
   GameWaivers,
+  MergeTimelineItem,
   OneTimeLink,
+  WaiverPoint,
 } from './admin.models';
 
 @Injectable({providedIn: 'root'})
@@ -48,12 +50,23 @@ export class AdminService {
     return this.http.put<AdminPlayerDetails>(`/admin/players/${playerId}/tg`, tg);
   }
 
-  /** Irreversible: folds the secondary player into the primary, then deletes the secondary. */
-  mergePlayers(primaryId: number, secondaryId: number): Observable<AdminPlayerRef> {
-    return this.http.post<AdminPlayerRef>('/admin/players/merge', {
+  /** Intervals where the player's team membership is fixed by waivers (constrains merge timelines). */
+  getWaiverPoints(playerId: number): Observable<Items<WaiverPoint>> {
+    return this.http.get<Items<WaiverPoint>>(`/admin/players/${playerId}/waiver-points`);
+  }
+
+  /**
+   * Irreversible: folds the secondary player into the primary, then deletes the secondary.
+   * With `timeline`, replaces the entire team history of both players by the given intervals
+   * (needed when the histories overlap and can't be merged automatically).
+   */
+  mergePlayers(primaryId: number, secondaryId: number, timeline?: MergeTimelineItem[]): Observable<AdminPlayerRef> {
+    const body: {primary_id: number; secondary_id: number; timeline?: MergeTimelineItem[]} = {
       primary_id: primaryId,
       secondary_id: secondaryId,
-    });
+    };
+    if (timeline) body.timeline = timeline;
+    return this.http.post<AdminPlayerRef>('/admin/players/merge', body);
   }
 
   /** Irreversible: folds the secondary team into the primary, then deletes the secondary. */

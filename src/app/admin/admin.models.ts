@@ -1,4 +1,4 @@
-import {PlayerTg, TeamDetails} from '../team/team.models';
+import {PlayedGame, PlayerTg, TeamDetails, TeamMemberPermissions} from '../team/team.models';
 
 /** Compact player as returned inside admin poll/waiver structures. */
 export interface AdminPlayerRef {
@@ -63,6 +63,33 @@ export interface AdminPoll {
 
 export interface WaiverEntry {
   player: AdminPlayerRef;
+}
+
+/**
+ * `GET /admin/players/{id}/waiver-points` — interval around a played game
+ * (start − 12h … start + 48h) in which the player's team membership is fixed
+ * by a waiver and a manual merge timeline must keep them in `team`.
+ */
+export interface WaiverPoint {
+  game: PlayedGame;
+  team: TeamDetails;
+  at_since: string;
+  at_until: string;
+}
+
+/**
+ * One entry of the manual timeline for `POST /admin/players/merge`.
+ * Datetimes must carry an explicit timezone offset. The backend does not
+ * inherit role/emoji/permissions from the old history — omitted fields fall
+ * back to the defaults («полевой», no emoji, no permissions).
+ */
+export interface MergeTimelineItem {
+  team_id: number;
+  date_joined: string;
+  date_left: string | null;
+  role?: string;
+  emoji?: string;
+  permissions?: TeamMemberPermissions;
 }
 
 /** `GET /admin/waivers/game/{id}` — waiver entries are keyed by team id. */

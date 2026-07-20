@@ -1,0 +1,235 @@
+<div class="timeline-editor">
+  <h3 class="editor-title">Ручной таймлайн команд</h3>
+  <p class="hint">
+    Истории команд игроков пересекаются, поэтому итоговую историю нужно собрать вручную —
+    она <strong>заменит</strong> историю обоих игроков. Интервалы с замком зафиксированы
+    вейверами: в это время игрок обязан состоять в указанной команде.
+  </p>
+  @if (skippedDeletedTeams) {
+    <p class="hint">Записи об удалённых командах не переносятся и не показаны ниже.</p>
+  }
+
+  @if (teams.length > 0) {
+    <div class="legend">
+      @for (team of teams; track team.id) {
+        <span class="legend-item">
+          <span class="legend-dot" [style.background]="teamColor(team.id)"></span>{{ team.name }}
+        </span>
+      }
+    </div>
+  }
+
+  @if (rowBars.length > 0 || pointBars.length > 0) {
+    <div class="chart" (dblclick)="onChartDblClick($event)">
+      <div class="chart-section">Новый таймлайн</div>
+      @for (bar of rowBars; track bar.rowUid) {
+        <div class="chart-band">
+          <div
+            class="chart-bar editable"
+            [class.open-ended]="bar.openEnded"
+            [class.invalid]="bar.invalid"
+            [class.selected]="isSelected(bar)"
+            [style.left.%]="bar.leftPct"
+            [style.width.%]="bar.widthPct"
+            [style.background]="bar.color"
+            [title]="bar.title"
+            (click)="onBarClick(bar)"
+            (dblclick)="onBarDblClick(bar, $event)"
+          >
+            <span
+              class="bar-handle left"
+              (pointerdown)="startResize(bar, 'left', $event)"
+              (pointermove)="onResizeMove($event)"
+              (pointerup)="endResize()"
+              (pointercancel)="endResize()"
+              (click)="$event.stopPropagation()"
+              (dblclick)="$event.stopPropagation()"
+            ></span>
+            @if (!bar.labelOutside) {
+              <span class="bar-label">{{ bar.label }}</span>
+            }
+            <span
+              class="bar-handle right"
+              (pointerdown)="startResize(bar, 'right', $event)"
+              (pointermove)="onResizeMove($event)"
+              (pointerup)="endResize()"
+              (pointercancel)="endResize()"
+              (click)="$event.stopPropagation()"
+              (dblclick)="$event.stopPropagation()"
+            ></span>
+          </div>
+          @if (bar.labelOutside) {
+            <span
+              class="bar-outside-label"
+              [class.flipped]="bar.labelFlipped"
+              [style.left.%]="bar.labelFlipped ? bar.leftPct : bar.leftPct + bar.widthPct"
+              [title]="bar.title"
+            >{{ bar.label }}</span>
+          }
+        </div>
+      }
+      @if (pointBars.length > 0) {
+        <div class="chart-section">Вейверы (зафиксировано)</div>
+        @for (bar of pointBars; track $index) {
+          <div class="chart-band">
+            <div
+              class="chart-bar locked"
+              [style.left.%]="bar.leftPct"
+              [style.width.%]="bar.widthPct"
+              [style.background]="bar.color"
+              [title]="bar.title"
+            >
+              @if (!bar.labelOutside) {
+                <span class="bar-label">🔒 {{ bar.label }}</span>
+              }
+            </div>
+            @if (bar.labelOutside) {
+              <span
+                class="bar-outside-label"
+                [class.flipped]="bar.labelFlipped"
+                [style.left.%]="bar.labelFlipped ? bar.leftPct : bar.leftPct + bar.widthPct"
+                [title]="bar.title"
+              >🔒 {{ bar.label }}</span>
+            }
+          </div>
+        }
+      }
+      <div class="chart-axis">
+        @for (tick of ticks; track $index) {
+          <span class="chart-tick" [style.left.%]="tick.leftPct">{{ tick.label }}</span>
+        }
+      </div>
+    </div>
+    <p class="hint chart-hint">
+      Управление на графике: клик по интервалу — выделить · двойной клик по интервалу — разделить его в этом месте ·
+      двойной клик по пустому месту — добавить интервал · потяните край интервала, чтобы изменить даты.
+    </p>
+    @if (selected.size > 0) {
+      <div class="selection-bar">
+        <span>Выбрано интервалов: {{ selected.size }}</span>
+        <button class="ghost-button" type="button" [disabled]="selected.size < 2" (click)="joinSelected()">
+          Объединить в один
+        </button>
+        <button class="ghost-button" type="button" (click)="clearSelection()">Снять выделение</button>
+      </div>
+    }
+  }
+
+  <div class="rows">
+    @for (row of rows; track row.uid) {
+      <div class="timeline-row" [class.invalid]="row.invalid" [class.selected]="isRowSelected(row)">
+        <span class="row-dot" [style.background]="teamColor(row.teamId)"></span>
+        <select
+          class="row-team"
+          [name]="'team' + row.uid"
+          [(ngModel)]="row.teamId"
+          (ngModelChange)="onRowChange()"
+        >
+          <option [ngValue]="null" disabled>— команда —</option>
+          @for (team of teams; track team.id) {
+            <option [ngValue]="team.id">{{ team.name }}</option>
+          }
+        </select>
+        <label class="row-date">
+          с
+          <input
+            type="datetime-local"
+            [name]="'joined' + row.uid"
+            [(ngModel)]="row.joined"
+            (ngModelChange)="onRowChange()"
+            (blur)="resortRows()"
+          />
+        </label>
+        <label class="row-date">
+          по
+          @if (row.open) {
+            <span class="open-chip">настоящее время</span>
+          } @else {
+            <input
+              type="datetime-local"
+              [name]="'left' + row.uid"
+              [(ngModel)]="row.left"
+              (ngModelChange)="onRowChange()"
+              (blur)="resortRows()"
+            />
+          }
+        </label>
+        <label class="row-open" title="Игрок состоит в этой команде до сих пор">
+          <input
+            type="checkbox"
+            [name]="'open' + row.uid"
+            [(ngModel)]="row.open"
+            (ngModelChange)="onRowChange()"
+          />
+          до сих пор
+        </label>
+        <input
+          type="text"
+          class="row-role"
+          placeholder="роль (полевой)"
+          [name]="'role' + row.uid"
+          [(ngModel)]="row.role"
+          (ngModelChange)="onRowChange()"
+        />
+        <input
+          type="text"
+          class="row-emoji"
+          placeholder="🙂"
+          maxlength="8"
+          title="Эмодзи игрока в команде"
+          [name]="'emoji' + row.uid"
+          [(ngModel)]="row.emoji"
+          (ngModelChange)="onRowChange()"
+        />
+        <button
+          class="row-perms-toggle"
+          type="button"
+          [class.active]="hasPermissions(row)"
+          [title]="'Права в команде' + (hasPermissions(row) ? ' (заданы)' : '')"
+          (click)="togglePermissions(row)"
+        >⚙ права</button>
+        <button class="row-remove" type="button" title="Удалить интервал" (click)="removeRow(row)">✕</button>
+        @if (row.showPermissions) {
+          <div class="row-perms">
+            @for (def of permissionDefs; track def.key) {
+              <label class="perm-label">
+                <input
+                  type="checkbox"
+                  [name]="'perm-' + def.key + row.uid"
+                  [(ngModel)]="row.permissions[def.key]"
+                  (ngModelChange)="onRowChange()"
+                />
+                {{ def.label }}
+              </label>
+            }
+          </div>
+        }
+      </div>
+    }
+    <p class="hint rows-hint">Интервал «по настоящее время» может быть только последним.</p>
+    <div class="rows-actions">
+      <button
+        class="ghost-button accent"
+        type="button"
+        title="Взять истории игроков и выделить интервалы вейверов в их команды: основная команда прерывается на время игры за другую"
+        (click)="autoBuild()"
+      >⚡ Собрать автоматически</button>
+      <button class="ghost-button" type="button" (click)="addRow()">+ Добавить интервал</button>
+      <button class="ghost-button" type="button" (click)="reset()">Сбросить к исходным историям</button>
+    </div>
+  </div>
+
+  @if (issues.length > 0) {
+    <ul class="issues">
+      @for (issue of issues; track issue) {
+        <li>{{ issue }}</li>
+      }
+    </ul>
+  } @else if (rows.length > 0) {
+    <p class="issues-ok">✓ Таймлайн корректен и покрывает все вейверы.</p>
+  }
+
+  @if (serverError) {
+    <p class="server-error">{{ serverError }}</p>
+  }
+</div>

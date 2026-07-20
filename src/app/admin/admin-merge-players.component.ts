@@ -4,7 +4,8 @@ import {Router, RouterLink} from '@angular/router';
 import {HttpErrorResponse} from '@angular/common/http';
 import {catchError, forkJoin, of} from 'rxjs';
 import {AdminService} from './admin.service';
-import {AdminPlayerDetails, AdminPlayerListItem} from './admin.models';
+import {AdminPlayerDetails, AdminPlayerListItem, WaiverPoint} from './admin.models';
+import {AdminMergeTimelineComponent, TimelineState} from './admin-merge-timeline.component';
 import {TeamService} from '../team/team.service';
 import {PlayerStat, PlayerTg, TeamPlayerHistory} from '../team/team.models';
 import {SnackbarService} from '../snackbar/snackbar.service';
@@ -26,7 +27,7 @@ function emptySide(): MergeSide {
 @Component({
   selector: 'app-admin-merge-players',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, AdminMergeTimelineComponent],
   templateUrl: './admin-merge-players.component.html',
   styleUrl: './admin-merge-players.component.scss',
 })
@@ -36,6 +37,14 @@ export class AdminMergePlayersComponent implements OnDestroy {
 
   confirmChecked = false;
   isMerging = false;
+
+  timelineEditorOpen = false;
+  timelineLoading = false;
+  waiverPoints: WaiverPoint[] = [];
+  /** Snapshot of both players' combined history taken when the editor opens (prefill for the rows). */
+  timelineHistory: TeamPlayerHistory[] = [];
+  timelineState: TimelineState | null = null;
+  timelineServerError: string | null = null;
 
   private searchTimers: {primary?: ReturnType<typeof setTimeout>; secondary?: ReturnType<typeof setTimeout>} = {};
 
@@ -75,6 +84,7 @@ export class AdminMergePlayersComponent implements OnDestroy {
     side.detail = null;
     side.stat = null;
     this.confirmChecked = false;
+    this.closeTimelineEditor();
 
     forkJoin({
       detail: this.adminService.getPlayer(player.id),
@@ -99,6 +109,7 @@ export class AdminMergePlayersComponent implements OnDestroy {
       this.secondary = emptySide();
     }
     this.confirmChecked = false;
+    this.closeTimelineEditor();
   }
 
   get bothSelected(): boolean {
@@ -119,10 +130,63 @@ export class AdminMergePlayersComponent implements OnDestroy {
     if (this.primary.detail!.forum && this.secondary.detail!.forum) {
       warnings.push('У обоих игроков есть форумный аккаунт — сервер отклонит слияние.');
     }
-    if (this.historiesOverlap()) {
-      warnings.push('Истории команд пересекаются по времени — автоматическое слияние может не сработать (сервер вернёт ошибку).');
+    if (!this.timelineEditorOpen && this.historiesOverlap()) {
+      warnings.push('Истории команд пересекаются по времени — автоматическое слияние не сработает. Соберите таймлайн вручную.');
     }
     return warnings;
+  }
+
+  get canShowTimelineButton(): boolean {
+    return this.bothSelected && !this.sameId && !this.timelineEditorOpen && !this.timelineLoading;
+  }
+
+  /** Load waiver points of both players and open the manual timeline editor. */
+  openTimelineEditor(): void {
+    if (!this.bothSelected || this.sameId || this.timelineLoading || this.timelineEditorOpen) return;
+    this.timelineLoading = true;
+    forkJoin({
+      primary: this.adminService.getWaiverPoints(this.primary.detail!.id),
+      secondary: this.adminService.getWaiverPoints(this.secondary.detail!.id),
+    }).subscribe({
+      next: ({primary, secondary}) => {
+        this.timelineLoading = false;
+        // The merge validates against the union of both players' points; dedupe shared games.
+        const seen = new Set<string>();
+        this.waiverPoints = [...primary.items, ...secondary.items]
+          .filter((point) => {
+            const key = `${point.game.id}:${point.team.id}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+          .sort((a, b) => Date.parse(a.at_since) - Date.parse(b.at_since));
+        this.timelineHistory = [...(this.primary.stat?.team_history ?? []), ...(this.secondary.stat?.team_history ?? [])];
+        this.timelineEditorOpen = true;
+      },
+      error: () => {
+        this.timelineLoading = false;
+        this.snackbar.error('Не удалось загрузить вейверы игроков');
+      },
+    });
+  }
+
+  closeTimelineEditor(): void {
+    this.timelineEditorOpen = false;
+    this.timelineLoading = false;
+    this.waiverPoints = [];
+    this.timelineHistory = [];
+    this.timelineState = null;
+    this.timelineServerError = null;
+  }
+
+  onTimelineChange(state: TimelineState): void {
+    this.timelineState = state;
+    this.timelineServerError = null;
+  }
+
+  get canMerge(): boolean {
+    if (!this.bothSelected || this.sameId || !this.confirmChecked || this.isMerging) return false;
+    return !this.timelineEditorOpen || (this.timelineState?.valid ?? false);
   }
 
   tgLabel(tg: PlayerTg): string {
@@ -139,12 +203,13 @@ export class AdminMergePlayersComponent implements OnDestroy {
   }
 
   merge(): void {
-    if (!this.bothSelected || this.sameId || !this.confirmChecked || this.isMerging) return;
+    if (!this.canMerge) return;
     const primaryId = this.primary.detail!.id;
     const secondaryId = this.secondary.detail!.id;
+    const timeline = this.timelineEditorOpen ? this.timelineState!.items : undefined;
 
     this.isMerging = true;
-    this.adminService.mergePlayers(primaryId, secondaryId).subscribe({
+    this.adminService.mergePlayers(primaryId, secondaryId, timeline).subscribe({
       next: () => {
         this.isMerging = false;
         this.snackbar.success('Игроки объединены');
@@ -152,7 +217,15 @@ export class AdminMergePlayersComponent implements OnDestroy {
       },
       error: (err) => {
         this.isMerging = false;
-        this.snackbar.error(this.mergeErrorMessage(err));
+        if (this.timelineEditorOpen) {
+          // Keep the editor open and show the rejection next to it so the admin can fix the timeline.
+          this.timelineServerError = this.mergeErrorMessage(err);
+        } else if (this.isIncompatibleHistories(err)) {
+          this.snackbar.error('Истории команд несовместимы — соберите таймлайн вручную');
+          this.openTimelineEditor();
+        } else {
+          this.snackbar.error(this.mergeErrorMessage(err));
+        }
       },
     });
   }
@@ -188,6 +261,13 @@ export class AdminMergePlayersComponent implements OnDestroy {
       }
     }
     return false;
+  }
+
+  private isIncompatibleHistories(err: unknown): boolean {
+    return err instanceof HttpErrorResponse
+      && err.status === 422
+      && typeof err.error === 'object'
+      && String(err.error?.text ?? '').includes('team histories are not compatible');
   }
 
   private mergeErrorMessage(err: unknown): string {
