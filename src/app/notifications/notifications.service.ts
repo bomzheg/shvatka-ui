@@ -2,6 +2,7 @@ import {effect, Injectable, NgZone, signal} from "@angular/core";
 import {Observable} from "rxjs";
 import {HttpAdapter} from "../http/http.adapter";
 import {AuthStateService} from "../auth/auth-state.service";
+import {MergeTimelineItem} from "../admin/admin.models";
 import {
   ActionRequest,
   ActionRequestList,
@@ -144,8 +145,13 @@ export class NotificationsService {
     return this.http.post<ActionRequest>("/requests/org-invite", {game_id: gameId, player_id: playerId});
   }
 
-  acceptRequest(id: number): Observable<ActionRequest> {
-    return this.http.post<ActionRequest>(`/requests/${id}/accept`, {});
+  /**
+   * `timeline` applies to `player_merge` requests only: when a plain accept is
+   * rejected with a 422 `MergeError` (incompatible team histories), retry with
+   * a manually built timeline that replaces both players' histories.
+   */
+  acceptRequest(id: number, timeline?: MergeTimelineItem[]): Observable<ActionRequest> {
+    return this.http.post<ActionRequest>(`/requests/${id}/accept`, timeline ? {timeline} : {});
   }
 
   declineRequest(id: number): Observable<ActionRequest> {

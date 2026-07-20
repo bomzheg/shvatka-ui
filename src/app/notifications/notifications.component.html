@@ -54,12 +54,14 @@
                 @if (isPending(rv)) {
                   <div class="request-actions">
                     @if (rv.direction === 'incoming') {
-                      <button
-                        class="action-button action-button--accept"
-                        type="button"
-                        [disabled]="rv.busy"
-                        (click)="respond(rv, 'accept')"
-                      >Принять</button>
+                      @if (canAccept(rv)) {
+                        <button
+                          class="action-button action-button--accept"
+                          type="button"
+                          [disabled]="rv.busy"
+                          (click)="respond(rv, 'accept')"
+                        >Принять</button>
+                      }
                       <button
                         class="action-button action-button--decline"
                         type="button"
@@ -117,12 +119,14 @@
                 <span class="notification-date">{{ rv.request.created_at | date:'dd.MM.yyyy HH:mm' }}</span>
                 @if (isPending(rv)) {
                   <div class="request-actions">
-                    <button
-                      class="action-button action-button--accept"
-                      type="button"
-                      [disabled]="rv.busy"
-                      (click)="respond(rv, 'accept')"
-                    >Принять</button>
+                    @if (canAccept(rv)) {
+                      <button
+                        class="action-button action-button--accept"
+                        type="button"
+                        [disabled]="rv.busy"
+                        (click)="respond(rv, 'accept')"
+                      >Принять</button>
+                    }
                     <button
                       class="action-button action-button--decline"
                       type="button"
@@ -130,6 +134,39 @@
                       (click)="respond(rv, 'decline')"
                     >Отклонить</button>
                   </div>
+
+                  @if (isMergeEditorFor(rv)) {
+                    @if (mergeEditor!.loading) {
+                      <p class="status-message">Загружаем вейверы игроков...</p>
+                    } @else {
+                      <div class="merge-editor">
+                        <p class="merge-editor-hint">
+                          Истории команд игроков несовместимы — соберите итоговый таймлайн вручную
+                          и примите заявку с ним. Таймлайн полностью заменит историю обоих игроков.
+                        </p>
+                        <app-admin-merge-timeline
+                          [history]="mergeEditor!.history"
+                          [points]="mergeEditor!.points"
+                          [serverError]="mergeEditor!.serverError"
+                          (timelineChange)="onMergeTimelineChange($event)"
+                        />
+                        <div class="request-actions">
+                          <button
+                            class="action-button action-button--accept"
+                            type="button"
+                            [disabled]="rv.busy || mergeEditor!.submitting || !mergeEditor!.state?.valid"
+                            (click)="submitMergeTimeline(rv)"
+                          >{{ mergeEditor!.submitting ? 'Объединяем...' : 'Принять с таймлайном' }}</button>
+                          <button
+                            class="action-button action-button--cancel"
+                            type="button"
+                            [disabled]="mergeEditor!.submitting"
+                            (click)="closeMergeEditor()"
+                          >Отмена</button>
+                        </div>
+                      </div>
+                    }
+                  }
                 } @else {
                   <span class="request-status" [class]="'request-status--' + rv.request.status">
                     {{ statusLabel(rv) }}

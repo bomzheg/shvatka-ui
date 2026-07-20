@@ -70,11 +70,67 @@ describe("notificationText", () => {
   it("renders request results with whatever context the payload has", () => {
     const accepted = makeNotification("request_accepted", {team_name: "Сова"});
     const declined = makeNotification("request_declined", {game_name: "Ночная"});
+    const mergeAccepted = makeNotification("request_accepted", {primary_player_name: "harry"});
     const bare = makeNotification("request_accepted", {});
 
     expect(notificationText(accepted)).toBe("Запрос по команде «Сова» принят");
     expect(notificationText(declined)).toBe("Запрос по игре «Ночная» отклонён");
+    expect(notificationText(mergeAccepted)).toBe("Запрос на объединение аккаунта «harry» принят");
     expect(notificationText(bare)).toBe("Запрос принят");
+  });
+
+  it("renders a player merge for the admin, the initiator and the primary player", () => {
+    const payload = {
+      primary_player_id: 3, primary_player_name: "harry",
+      secondary_player_id: 8, secondary_player_name: "harry_forum",
+      initiator_id: 3, initiator_name: "harry",
+    };
+    const notification = makeNotification("player_merge_request", payload);
+
+    expect(notificationText(notification))
+      .toBe("harry просит объединить аккаунт «harry_forum» с аккаунтом «harry»");
+    expect(notificationText(notification, 3))
+      .toBe("Вы просите объединить аккаунт «harry_forum» с аккаунтом «harry»");
+
+    const byAdmin = makeNotification("player_merge_request", {...payload, initiator_id: 1, initiator_name: "админ"});
+    expect(notificationText(byAdmin, 3))
+      .toBe("админ предлагает объединить ваш аккаунт с «harry_forum» — ждёт подтверждения администратора");
+  });
+
+  it("renders a team merge and uses first person for the captain", () => {
+    const payload = {
+      primary_team_id: 5, primary_team_name: "Gryffindor",
+      secondary_team_id: 9, secondary_team_name: "Gryffindor (forum)",
+      captain_id: 1, captain_name: "cap",
+    };
+    const notification = makeNotification("team_merge_request", payload);
+
+    expect(notificationText(notification))
+      .toBe("cap просит объединить команду «Gryffindor» с форумной копией «Gryffindor (forum)»");
+    expect(notificationText(notification, 1))
+      .toBe("Вы просите объединить команду «Gryffindor» с форумной копией «Gryffindor (forum)»");
+  });
+
+  it("renders merge ActionRequests through the same texts as their notifications", () => {
+    const request: ActionRequest = {
+      id: 17,
+      type: "player_merge",
+      status: "pending",
+      initiator_id: 3,
+      target_player_id: 3,
+      team_id: null,
+      game_id: null,
+      payload: {
+        primary_player_id: 3, primary_player_name: "harry",
+        secondary_player_id: 8, secondary_player_name: "harry_forum",
+        initiator_id: 3, initiator_name: "harry",
+      },
+      created_at: "2026-07-20T15:44:00Z",
+      responded_at: null,
+    };
+
+    expect(requestText(request)).toBe("harry просит объединить аккаунт «harry_forum» с аккаунтом «harry»");
+    expect(requestText(request, 3)).toBe("Вы просите объединить аккаунт «harry_forum» с аккаунтом «harry»");
   });
 
   it("does not crash on an unknown type (open enum)", () => {
@@ -95,6 +151,8 @@ describe("notificationIcon", () => {
   it("maps known types and falls back to the bell for unknown ones", () => {
     expect(notificationIcon(makeNotification("request_accepted", {}))).toBe(AppIcon.check);
     expect(notificationIcon(makeNotification("game_schedule_changed", {}))).toBe(AppIcon.clock);
+    expect(notificationIcon(makeNotification("player_merge_request", {}))).toBe(AppIcon.merge);
+    expect(notificationIcon(makeNotification("team_merge_request", {}))).toBe(AppIcon.merge);
     expect(notificationIcon(makeNotification("brand_new_type", {}))).toBe(AppIcon.notifications);
   });
 });

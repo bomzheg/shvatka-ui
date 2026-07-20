@@ -220,3 +220,17 @@
   font-size: 1rem;
   color: inherit;
 }
+
+// ── Inline player-merge timeline editor ────────────────────────────────────────
+
+.merge-editor {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--app-border);
+}
+
+.merge-editor-hint {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}

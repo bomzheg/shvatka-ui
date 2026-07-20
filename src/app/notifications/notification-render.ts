@@ -1,5 +1,5 @@
 import {AppIcon} from "../ui/icons";
-import {ActionRequest, AppNotification, NotificationPayload, NotificationType} from "./notifications.models";
+import {ActionRequest, AppNotification, NotificationPayload, NotificationType, RequestType} from "./notifications.models";
 
 /**
  * Pure helpers that turn a notification (`type` + denormalized `payload`)
@@ -28,6 +28,14 @@ function requestContext(payload: NotificationPayload): string {
   const gameName = str(payload, "game_name");
   if (gameName) {
     return `по игре «${gameName}»`;
+  }
+  const primaryTeamName = str(payload, "primary_team_name");
+  if (primaryTeamName) {
+    return `на объединение команды «${primaryTeamName}»`;
+  }
+  const primaryPlayerName = str(payload, "primary_player_name");
+  if (primaryPlayerName) {
+    return `на объединение аккаунта «${primaryPlayerName}»`;
   }
   return "";
 }
@@ -93,6 +101,31 @@ function renderTypeText(type: string, payload: NotificationPayload, currentPlaye
       }
       return `${author} приглашает ${playerName} организовать игру «${gameName}»`;
     }
+    // Merge requests: the ActionRequest type and the notification type that
+    // announces it to superusers differ, but the payload is the same.
+    case RequestType.playerMerge:
+    case NotificationType.playerMergeRequest: {
+      const primary = str(payload, "primary_player_name");
+      const secondary = str(payload, "secondary_player_name");
+      const initiator = str(payload, "initiator_name");
+      if (currentPlayerId !== undefined && payload["initiator_id"] === currentPlayerId) {
+        return `Вы просите объединить аккаунт «${secondary}» с аккаунтом «${primary}»`;
+      }
+      if (currentPlayerId !== undefined && payload["primary_player_id"] === currentPlayerId) {
+        return `${initiator} предлагает объединить ваш аккаунт с «${secondary}» — ждёт подтверждения администратора`;
+      }
+      return `${initiator} просит объединить аккаунт «${secondary}» с аккаунтом «${primary}»`;
+    }
+    case RequestType.teamMerge:
+    case NotificationType.teamMergeRequest: {
+      const primary = str(payload, "primary_team_name");
+      const secondary = str(payload, "secondary_team_name");
+      const captain = str(payload, "captain_name");
+      if (currentPlayerId !== undefined && payload["captain_id"] === currentPlayerId) {
+        return `Вы просите объединить команду «${primary}» с форумной копией «${secondary}»`;
+      }
+      return `${captain} просит объединить команду «${primary}» с форумной копией «${secondary}»`;
+    }
     case NotificationType.requestAccepted: {
       const context = requestContext(payload);
       return context ? `Запрос ${context} принят` : "Запрос принят";
@@ -119,6 +152,10 @@ const TYPE_ICONS: Record<string, AppIcon> = {
   [NotificationType.teamJoinInvite]: AppIcon.add,
   [NotificationType.teamJoinRequest]: AppIcon.add,
   [NotificationType.orgInvite]: AppIcon.key,
+  [NotificationType.teamMergeRequest]: AppIcon.merge,
+  [NotificationType.playerMergeRequest]: AppIcon.merge,
+  [RequestType.teamMerge]: AppIcon.merge,
+  [RequestType.playerMerge]: AppIcon.merge,
   [NotificationType.requestAccepted]: AppIcon.check,
   [NotificationType.requestDeclined]: AppIcon.cancel,
 };

@@ -3,17 +3,24 @@ import {DatePipe} from "@angular/common";
 import {FormsModule} from "@angular/forms";
 import {MatIcon} from "@angular/material/icon";
 import {HttpErrorResponse} from "@angular/common/http";
-import {finalize, forkJoin} from "rxjs";
+import {catchError, finalize, forkJoin, of} from "rxjs";
 import {AppIcon} from "../ui/icons";
 import {UserService} from "../auth/user.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
+import {AdminService} from "../admin/admin.service";
+import {WaiverPoint} from "../admin/admin.models";
+import {AdminMergeTimelineComponent, TimelineState} from "../admin/admin-merge-timeline.component";
+import {TeamService} from "../team/team.service";
+import {TeamPlayerHistory} from "../team/team.models";
 import {NotificationsService} from "./notifications.service";
 import {notificationIcon, notificationText, requestText, typeIcon} from "./notification-render";
 import {
   ACTIONABLE_NOTIFICATION_TYPES,
+  ADMIN_RESOLVED_REQUEST_TYPES,
   ActionRequest,
   AppNotification,
   RequestStatus,
+  RequestType,
 } from "./notifications.models";
 
 const PAGE_SIZE = 50;
@@ -34,10 +41,25 @@ interface NotificationView {
   icon: AppIcon;
 }
 
+/**
+ * Inline timeline editor opened when accepting a `player_merge` request fails
+ * with a 422 `MergeError` (incompatible team histories). At most one editor is
+ * open at a time; it lives under the request's row in the incoming list.
+ */
+interface MergeEditor {
+  requestId: number;
+  loading: boolean;
+  points: WaiverPoint[];
+  history: TeamPlayerHistory[];
+  state: TimelineState | null;
+  serverError: string | null;
+  submitting: boolean;
+}
+
 @Component({
   selector: "app-notifications",
   standalone: true,
-  imports: [DatePipe, FormsModule, MatIcon],
+  imports: [DatePipe, FormsModule, MatIcon, AdminMergeTimelineComponent],
   templateUrl: "./notifications.component.html",
   styleUrl: "./notifications.component.scss",
 })
@@ -55,6 +77,8 @@ export class NotificationsComponent implements OnInit {
   /** Requests tab filter: show only pending (default) or the full history. */
   pendingOnly = true;
 
+  mergeEditor: MergeEditor | null = null;
+
   private offset = 0;
   private requestsById = new Map<number, RequestView>();
 
@@ -62,6 +86,8 @@ export class NotificationsComponent implements OnInit {
     private notificationsService: NotificationsService,
     private userService: UserService,
     private snackbar: SnackbarService,
+    private adminService: AdminService,
+    private teamService: TeamService,
   ) {
   }
 
@@ -128,6 +154,25 @@ export class NotificationsComponent implements OnInit {
     return requestView.request.status === RequestStatus.pending;
   }
 
+  /**
+   * Merge requests are resolved by superusers; the primary player of a
+   * `player_merge` sees the request too but may only decline it. Hidden while
+   * the timeline editor is open — the editor has its own accept button.
+   */
+  canAccept(requestView: RequestView): boolean {
+    if (this.isMergeEditorFor(requestView)) {
+      return false;
+    }
+    if (ADMIN_RESOLVED_REQUEST_TYPES.includes(requestView.request.type)) {
+      return this.userService.isAdmin();
+    }
+    return true;
+  }
+
+  isMergeEditorFor(requestView: RequestView): boolean {
+    return this.mergeEditor?.requestId === requestView.request.id;
+  }
+
   statusLabel(requestView: RequestView): string {
     switch (requestView.request.status) {
       case RequestStatus.accepted:
@@ -170,9 +215,136 @@ export class NotificationsComponent implements OnInit {
           } else {
             this.snackbar.info("Запрос отменён");
           }
+          if (this.isMergeEditorFor(requestView)) {
+            this.closeMergeEditor();
+          }
         },
-        error: error => this.handleRequestError(error),
+        error: error => {
+          // Incompatible team histories: the request stays pending, and the
+          // admin has to build the merged timeline by hand and accept again.
+          if (action === "accept"
+            && requestView.request.type === RequestType.playerMerge
+            && this.isMergeError(error)) {
+            this.snackbar.info("Истории команд игроков несовместимы — соберите таймлайн вручную");
+            this.openMergeEditor(requestView);
+            return;
+          }
+          this.handleRequestError(error);
+        },
       });
+  }
+
+  onMergeTimelineChange(state: TimelineState): void {
+    if (this.mergeEditor) {
+      this.mergeEditor.state = state;
+      this.mergeEditor.serverError = null;
+    }
+  }
+
+  closeMergeEditor(): void {
+    this.mergeEditor = null;
+  }
+
+  /** Retry the accept with the manually built timeline. */
+  submitMergeTimeline(requestView: RequestView): void {
+    const editor = this.mergeEditor;
+    if (!editor || editor.requestId !== requestView.request.id
+      || editor.submitting || !editor.state?.valid) {
+      return;
+    }
+    editor.submitting = true;
+    this.notificationsService.acceptRequest(requestView.request.id, editor.state.items)
+      .pipe(finalize(() => {
+        editor.submitting = false;
+      }))
+      .subscribe({
+        next: updated => {
+          requestView.request = updated;
+          this.closeMergeEditor();
+          this.notificationsService.refreshUnreadCount();
+          this.snackbar.success("Игроки объединены");
+        },
+        error: error => {
+          if (this.isMergeError(error)) {
+            // Keep the editor open and show the rejection next to it.
+            const description = error instanceof HttpErrorResponse ? error.error?.description : undefined;
+            editor.serverError = typeof description === "string" && description
+              ? description
+              : "Сервер отклонил таймлайн — проверьте интервалы";
+            return;
+          }
+          this.handleRequestError(error);
+        },
+      });
+  }
+
+  /**
+   * Loads waiver points and team histories of both players and opens the
+   * timeline editor under the request's row on the "Заявки" tab.
+   */
+  private openMergeEditor(requestView: RequestView): void {
+    const payload = requestView.request.payload ?? {};
+    const primaryId = typeof payload["primary_player_id"] === "number"
+      ? payload["primary_player_id"]
+      : requestView.request.target_player_id;
+    const secondaryId = typeof payload["secondary_player_id"] === "number"
+      ? payload["secondary_player_id"]
+      : null;
+    if (primaryId === null || secondaryId === null) {
+      this.snackbar.error("В заявке нет идентификаторов игроков — обновите страницу");
+      return;
+    }
+
+    // The editor renders only in the incoming list of the requests tab.
+    this.activeTab = "requests";
+    const editor: MergeEditor = {
+      requestId: requestView.request.id,
+      loading: true,
+      points: [],
+      history: [],
+      state: null,
+      serverError: null,
+      submitting: false,
+    };
+    this.mergeEditor = editor;
+
+    forkJoin({
+      primaryPoints: this.adminService.getWaiverPoints(primaryId),
+      secondaryPoints: this.adminService.getWaiverPoints(secondaryId),
+      primaryStat: this.teamService.getPlayerStat(primaryId).pipe(catchError(() => of(null))),
+      secondaryStat: this.teamService.getPlayerStat(secondaryId).pipe(catchError(() => of(null))),
+    }).subscribe({
+      next: ({primaryPoints, secondaryPoints, primaryStat, secondaryStat}) => {
+        if (this.mergeEditor !== editor) {
+          return;
+        }
+        // The merge validates against the union of both players' points; dedupe shared games.
+        const seen = new Set<string>();
+        editor.points = [...primaryPoints.items, ...secondaryPoints.items]
+          .filter(point => {
+            const key = `${point.game.id}:${point.team.id}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+          .sort((a, b) => Date.parse(a.at_since) - Date.parse(b.at_since));
+        // Primary player's entries first: they win overlaps in the auto-built timeline.
+        editor.history = [...(primaryStat?.team_history ?? []), ...(secondaryStat?.team_history ?? [])];
+        editor.loading = false;
+      },
+      error: () => {
+        if (this.mergeEditor === editor) {
+          this.closeMergeEditor();
+        }
+        this.snackbar.error("Не удалось загрузить вейверы игроков");
+      },
+    });
+  }
+
+  private isMergeError(error: unknown): boolean {
+    return error instanceof HttpErrorResponse
+      && error.status === 422
+      && error.error?.type === "MergeError";
   }
 
   markAllRead(): void {
@@ -249,6 +421,7 @@ export class NotificationsComponent implements OnInit {
    */
   private loadRequests(): void {
     this.isLoadingRequests = true;
+    this.closeMergeEditor();
     forkJoin({
       incoming: this.notificationsService.listRequests("incoming"),
       outgoing: this.notificationsService.listRequests("outgoing"),
