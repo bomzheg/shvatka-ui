@@ -1,4 +1,5 @@
 import {AfterViewChecked, Component, OnDestroy, OnInit} from '@angular/core';
+import {DatePipe} from "@angular/common";
 import {GameService} from "./game.service";
 import {FullGame, GameStat, GameWaivers, Keys, Level, Team, VotedPlayer} from "../domain/game.models";
 import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
@@ -21,6 +22,7 @@ import {BreadcrumbsComponent, Breadcrumb} from "../ui/breadcrumbs/breadcrumbs.co
     RouterLink,
     ScenarioGraphPartComponent,
     BreadcrumbsComponent,
+    DatePipe,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'

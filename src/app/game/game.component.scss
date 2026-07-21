@@ -13,6 +13,22 @@
   text-align: center;
 }
 
+.game-start-at {
+  margin: -0.35rem 0 0.85rem;
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.game-start-at-label {
+  margin-right: 0.35rem;
+}
+
+.game-start-at-value {
+  font-weight: 600;
+  color: var(--app-text);
+}
+
 details {
   border: 1px solid #e5e7eb;
   border-radius: 12px;
