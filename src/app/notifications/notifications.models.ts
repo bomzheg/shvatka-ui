@@ -61,9 +61,28 @@ export const NotificationType = {
   teamJoinInvite: "team_join_invite",
   teamJoinRequest: "team_join_request",
   orgInvite: "org_invite",
+  teamMergeRequest: "team_merge_request",
+  playerMergeRequest: "player_merge_request",
   requestAccepted: "request_accepted",
   requestDeclined: "request_declined",
 } as const;
+
+/**
+ * Known ActionRequest `type` values that differ from the notification `type`
+ * announcing them (open enum). Merge requests are resolved by superusers;
+ * a `player_merge` also appears in the primary player's own incoming list,
+ * where they may only decline it.
+ */
+export const RequestType = {
+  teamMerge: "team_merge",
+  playerMerge: "player_merge",
+} as const;
+
+/** Request types resolvable only by a superuser (accept is admin-only). */
+export const ADMIN_RESOLVED_REQUEST_TYPES: readonly string[] = [
+  RequestType.teamMerge,
+  RequestType.playerMerge,
+];
 
 /** Known RequestStatus values (open enum). */
 export const RequestStatus = {
@@ -79,4 +98,6 @@ export const ACTIONABLE_NOTIFICATION_TYPES: readonly string[] = [
   NotificationType.teamJoinInvite,
   NotificationType.teamJoinRequest,
   NotificationType.orgInvite,
+  NotificationType.teamMergeRequest,
+  NotificationType.playerMergeRequest,
 ];

@@ -61,6 +61,7 @@ export enum AppIcon {
   effects = "auto-awesome",
   clock = "schedule",
   notifications = "notifications",
+  merge = "call-merge",
   // rich-text toolbar (Telegram message entities)
   bold = "format-bold",
   italic = "format-italic",

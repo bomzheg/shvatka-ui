@@ -1,6 +1,6 @@
-import {Component, OnDestroy} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
-import {Router, RouterLink} from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {HttpErrorResponse} from '@angular/common/http';
 import {catchError, forkJoin, of} from 'rxjs';
 import {AdminService} from './admin.service';
@@ -31,7 +31,7 @@ function emptySide(): MergeSide {
   templateUrl: './admin-merge-players.component.html',
   styleUrl: './admin-merge-players.component.scss',
 })
-export class AdminMergePlayersComponent implements OnDestroy {
+export class AdminMergePlayersComponent implements OnInit, OnDestroy {
   primary: MergeSide = emptySide();
   secondary: MergeSide = emptySide();
 
@@ -53,7 +53,21 @@ export class AdminMergePlayersComponent implements OnDestroy {
     private teamService: TeamService,
     private snackbar: SnackbarService,
     private router: Router,
+    private route: ActivatedRoute,
   ) {}
+
+  /** `?primary=<id>&secondary=<id>` preselect both sides (deep link from a merge request). */
+  ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+    const primary = Number(params.get('primary'));
+    const secondary = Number(params.get('secondary'));
+    if (Number.isInteger(primary) && primary > 0) {
+      this.selectById('primary', primary);
+    }
+    if (Number.isInteger(secondary) && secondary > 0) {
+      this.selectById('secondary', secondary);
+    }
+  }
 
   ngOnDestroy(): void {
     if (this.searchTimers.primary) clearTimeout(this.searchTimers.primary);
@@ -77,9 +91,17 @@ export class AdminMergePlayersComponent implements OnDestroy {
   }
 
   select(role: 'primary' | 'secondary', player: AdminPlayerListItem): void {
+    this.loadPlayer(role, player.id, player.username || player.name_mention);
+  }
+
+  private selectById(role: 'primary' | 'secondary', playerId: number): void {
+    this.loadPlayer(role, playerId, `#${playerId}`);
+  }
+
+  private loadPlayer(role: 'primary' | 'secondary', playerId: number, queryLabel: string): void {
     const side = this.side(role);
     side.results = [];
-    side.query = player.username || player.name_mention;
+    side.query = queryLabel;
     side.loading = true;
     side.detail = null;
     side.stat = null;
@@ -87,13 +109,14 @@ export class AdminMergePlayersComponent implements OnDestroy {
     this.closeTimelineEditor();
 
     forkJoin({
-      detail: this.adminService.getPlayer(player.id),
-      stat: this.teamService.getPlayerStat(player.id).pipe(catchError(() => of(null))),
+      detail: this.adminService.getPlayer(playerId),
+      stat: this.teamService.getPlayerStat(playerId).pipe(catchError(() => of(null))),
     }).subscribe({
       next: ({detail, stat}) => {
         side.loading = false;
         side.detail = detail;
         side.stat = stat;
+        side.query = detail.username || detail.name_mention;
       },
       error: () => {
         side.loading = false;

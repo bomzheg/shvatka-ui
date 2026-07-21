@@ -95,6 +95,7 @@ describe('NotificationsService', () => {
     service.acceptRequest(45).subscribe();
     const accept = httpMock.expectOne(req => req.url.endsWith('/requests/45/accept'));
     expect(accept.request.method).toBe('POST');
+    expect(accept.request.body).toEqual({});
     accept.flush({});
 
     service.declineRequest(46).subscribe();
@@ -106,5 +107,16 @@ describe('NotificationsService', () => {
     const cancel = httpMock.expectOne(req => req.url.endsWith('/requests/47/cancel'));
     expect(cancel.request.method).toBe('POST');
     cancel.flush({});
+  });
+
+  it('accepts a player merge with a manual timeline in the body', () => {
+    const timeline = [{team_id: 5, date_joined: '2019-03-01T00:00:00Z', date_left: null}];
+
+    service.acceptRequest(17, timeline).subscribe();
+
+    const accept = httpMock.expectOne(req => req.url.endsWith('/requests/17/accept'));
+    expect(accept.request.method).toBe('POST');
+    expect(accept.request.body).toEqual({timeline});
+    accept.flush({});
   });
 });
