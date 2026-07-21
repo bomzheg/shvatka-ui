@@ -1,17 +1,36 @@
-<ul class="games-list">
-  @for (game of getGames(); track game.id) {
-    <li class="games-list-item" [class.games-list-item-disabled]="!canOpenGame()">
-      @if (canOpenGame()) {
-        <a routerLink="{{game.id}}" routerLinkActive="active" ariaCurrentWhenActive="page">
-          <div class="game-number"><span>{{game.number}}</span></div>
-          <div class="game-name"><span>{{game.name}}</span></div>
-        </a>
-      } @else {
-        <button type="button" class="disabled-game-link" (click)="onGameClick($event)">
-          <div class="game-number"><span>{{game.number}}</span></div>
-          <div class="game-name"><span>{{game.name}}</span></div>
-        </button>
+@for (group of getGamesByYear(); track group.year) {
+  <section class="games-year-group">
+    <h2 class="games-year-heading">{{ group.year ?? "Без даты" }}</h2>
+    <ul class="games-list">
+      @for (game of group.games; track game.id) {
+        <li class="games-list-item" [class.games-list-item-disabled]="!canOpenGame()">
+          @if (canOpenGame()) {
+            <a routerLink="{{game.id}}" routerLinkActive="active" ariaCurrentWhenActive="page">
+              <div class="game-number"><span>{{game.number}}</span></div>
+              <div class="game-name"><span>{{game.name}}</span></div>
+              <div class="game-start-at">
+                @if (game.start_at) {
+                  <span>{{ game.start_at | date:'dd.MM.yyyy' }}</span>
+                } @else {
+                  <span class="game-start-at-empty">—</span>
+                }
+              </div>
+            </a>
+          } @else {
+            <button type="button" class="disabled-game-link" (click)="onGameClick($event)">
+              <div class="game-number"><span>{{game.number}}</span></div>
+              <div class="game-name"><span>{{game.name}}</span></div>
+              <div class="game-start-at">
+                @if (game.start_at) {
+                  <span>{{ game.start_at | date:'dd.MM.yyyy' }}</span>
+                } @else {
+                  <span class="game-start-at-empty">—</span>
+                }
+              </div>
+            </button>
+          }
+        </li>
       }
-    </li>
-  }
-</ul>
+    </ul>
+  </section>
+}
