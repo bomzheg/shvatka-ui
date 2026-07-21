@@ -20,6 +20,8 @@ export class EffectsEditorComponent {
   @Input() gameId: number | undefined;
   @Input() objectUrls?: Map<string, string>;
   @Input() disabled = false;
+  /** Upload through the superuser endpoint (completed-game editing). */
+  @Input() adminUpload = false;
   /** Whether the level-up ("завершение уровня") toggle is shown. */
   @Input() allowLevelUp = true;
   /** Ids of the other levels — targets for the next_level jump. */

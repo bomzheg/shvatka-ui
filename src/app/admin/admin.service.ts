@@ -3,6 +3,8 @@ import {Observable} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
 import {Items, TeamDetails} from '../team/team.models';
 import {Game, Page} from '../games/games.service';
+import {FullGame} from '../domain/game.models';
+import {ScenarioPayload, UploadedFile} from '../constructor/constructor.models';
 import {
   AdminEmail,
   AdminPlayerDetails,
@@ -91,5 +93,33 @@ export class AdminService {
 
   listGames(): Observable<Page<Game>> {
     return this.http.get<Page<Game>>('/games');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Editing completed games (superuser only). The admin endpoints work only on
+  // completed games — any other status is reported as 404 GameNotFound.
+  // ---------------------------------------------------------------------------
+
+  /** Full game (with levels/scenario) — completed games are readable here. */
+  getGame(id: number): Observable<FullGame> {
+    return this.http.get<FullGame>(`/games/${id}`);
+  }
+
+  /**
+   * Replace the whole scenario of a completed game. With `authorId`, the game
+   * is reassigned to that player before the scenario is saved (the target does
+   * not need to be an approved author).
+   */
+  saveGameScenario(id: number, scenario: ScenarioPayload, authorId?: number): Observable<FullGame> {
+    const body: {scenario: ScenarioPayload; author_id?: number} = {scenario};
+    if (authorId !== undefined) body.author_id = authorId;
+    return this.http.put<FullGame>(`/admin/games/${id}/scenario`, body);
+  }
+
+  /** Upload a media file for a completed game (owned by the game's author). */
+  uploadGameFile(id: number, file: File): Observable<UploadedFile> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<UploadedFile>(`/admin/games/${id}/files`, formData);
   }
 }

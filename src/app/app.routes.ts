@@ -20,6 +20,7 @@ import {AdminPollComponent} from "./admin/admin-poll.component";
 import {AdminWaiversComponent} from "./admin/admin-waivers.component";
 import {AdminMergePlayersComponent} from "./admin/admin-merge-players.component";
 import {AdminMergeTeamsComponent} from "./admin/admin-merge-teams.component";
+import {AdminGamesComponent} from "./admin/admin-games.component";
 import {adminGuard} from "./admin/admin.guard";
 import {SearchComponent} from "./search/search.component";
 
@@ -39,6 +40,14 @@ export const routes: Routes = [
   {path: "players/:id", component: PlayerCardComponent},
   {path: "profile", component: ProfileComponent},
   {path: "notifications", component: NotificationsComponent},
+  // Full-page admin editor for completed games — outside the admin shell,
+  // reusing the constructor editor in admin mode (wider layout).
+  {
+    path: "admin/games/:id",
+    component: GameEditorComponent,
+    canActivate: [adminGuard],
+    data: {admin: true},
+  },
   {
     path: "admin",
     component: AdminComponent,
@@ -47,6 +56,7 @@ export const routes: Routes = [
       {path: "", pathMatch: "full", redirectTo: "players"},
       {path: "players", component: AdminPlayersComponent},
       {path: "players/:id", component: AdminPlayerCardComponent},
+      {path: "games", component: AdminGamesComponent},
       {path: "poll", component: AdminPollComponent},
       {path: "waivers", component: AdminWaiversComponent},
       {path: "merge/players", component: AdminMergePlayersComponent},
