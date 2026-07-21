@@ -1,3 +1,20 @@
+.games-year-group {
+  margin-bottom: 1.5rem;
+}
+
+.games-year-group:last-child {
+  margin-bottom: 0;
+}
+
+.games-year-heading {
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 2px solid #d1e7d7;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #17603a;
+}
+
 .games-list {
   list-style: none;
   padding-left: 0;
@@ -22,7 +39,7 @@
   text-decoration: none;
   color: var(--app-text);
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
   align-items: center;
   padding: 0.8rem;
@@ -34,7 +51,7 @@
   background: transparent;
   color: var(--app-text);
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto 1fr auto;
   gap: 0.75rem;
   align-items: center;
   padding: 0.8rem;
@@ -60,4 +77,15 @@
 
 .game-name {
   text-align: left;
+}
+
+.game-start-at {
+  justify-self: end;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.game-start-at-empty {
+  color: #b0b6bf;
 }

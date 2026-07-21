@@ -12,6 +12,7 @@ export class Game {
     public id: number,
     public name: string,
     public number: number,
+    public start_at: string | null = null,
   ) {
   }
 }
