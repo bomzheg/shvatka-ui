@@ -1,0 +1,49 @@
+@use '../../styles/component-mixins' as cm;
+
+.status-message,
+.hint {
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.hint {
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+.games-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.game-link {
+  @include cm.surface-card(12px, 0.7rem 1rem);
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  color: var(--app-text);
+  text-decoration: none;
+
+  &:hover .game-name {
+    text-decoration: underline;
+  }
+}
+
+.game-number {
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.game-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.game-year {
+  margin-left: auto;
+  color: var(--tg-theme-hint-color, #6b7280);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}

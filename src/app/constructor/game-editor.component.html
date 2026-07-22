@@ -1,5 +1,9 @@
 <section class="editor-page">
-  <a routerLink="/games/constructor" class="back-link"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.back"/> К списку игр</a>
+  @if (adminMode) {
+    <a routerLink="/admin/games" class="back-link"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.back"/> К списку игр (админ)</a>
+  } @else {
+    <a routerLink="/games/constructor" class="back-link"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.back"/> К списку игр</a>
+  }
 
   @if (isLoading && !game) {
     <div class="loading-state" aria-live="polite">
@@ -21,18 +25,28 @@
     </div>
 
     @if (!isEditable) {
-      <p class="warn">Игра в статусе «{{ statusLabel(status) }}» — сценарий заморожен и недоступен для редактирования.</p>
+      @if (adminMode) {
+        <p class="warn">Игра в статусе «{{ statusLabel(status) }}» — здесь можно редактировать только завершённые игры.</p>
+      } @else {
+        <p class="warn">Игра в статусе «{{ statusLabel(status) }}» — сценарий заморожен и недоступен для редактирования.</p>
+      }
     }
 
-    <!-- Planned start -->
-    <div class="block">
-      <h2>Планируемый старт</h2>
-      <div class="start-row">
-        <input type="datetime-local" [(ngModel)]="startAtLocal" [disabled]="!isEditable" />
-        <button type="button" class="primary" (click)="saveStartAt()" [disabled]="!isEditable">Сохранить</button>
-        <button type="button" class="ghost-button" (click)="clearStartAt()" [disabled]="!isEditable">Отменить старт</button>
+    @if (adminMode && isEditable) {
+      <p class="warn">Режим администратора: изменения сценария завершённой игры применяются сразу и видны всем.</p>
+    }
+
+    @if (!adminMode) {
+      <!-- Planned start -->
+      <div class="block">
+        <h2>Планируемый старт</h2>
+        <div class="start-row">
+          <input type="datetime-local" [(ngModel)]="startAtLocal" [disabled]="!isEditable" />
+          <button type="button" class="primary" (click)="saveStartAt()" [disabled]="!isEditable">Сохранить</button>
+          <button type="button" class="ghost-button" (click)="clearStartAt()" [disabled]="!isEditable">Отменить старт</button>
+        </div>
       </div>
-    </div>
+    }
 
     <!-- Game name -->
     <div class="block">
@@ -40,8 +54,39 @@
       <input id="gameName" type="text" [(ngModel)]="name" [disabled]="!isEditable" />
     </div>
 
-    <!-- Organizers -->
-    <app-organizers-editor [gameId]="gameId"></app-organizers-editor>
+    @if (adminMode) {
+      <!-- Author (admin only, applied with the next save) -->
+      <div class="block">
+        <h2>Автор</h2>
+        @if (game.author) {
+          <p class="hint-note">Текущий автор: {{ playerLabel(game.author) }}</p>
+        }
+        @if (pendingAuthor) {
+          <div class="author-pending">
+            <span>Новый автор: <strong>{{ playerLabel(pendingAuthor) }}</strong> — будет назначен при сохранении сценария.</span>
+            <button type="button" class="ghost-button" (click)="clearPendingAuthor()">Отменить</button>
+          </div>
+        } @else if (isEditable) {
+          <input type="text" [ngModel]="authorQuery" (ngModelChange)="onAuthorQueryChange($event)"
+                 placeholder="Поиск игрока по username" />
+          @if (isSearchingAuthors) {
+            <p class="hint-note">Поиск...</p>
+          }
+          @if (authorResults.length > 0) {
+            <ul class="author-results">
+              @for (player of authorResults; track player.id) {
+                <li>
+                  <button type="button" class="link-button" (click)="selectAuthor(player)">{{ playerLabel(player) }}</button>
+                </li>
+              }
+            </ul>
+          }
+        }
+      </div>
+    } @else {
+      <!-- Organizers -->
+      <app-organizers-editor [gameId]="gameId"></app-organizers-editor>
+    }
 
     <!-- Levels -->
     <div class="block">
@@ -148,6 +193,7 @@
                     [gameId]="gameId"
                     [objectUrls]="objectUrls"
                     [disabled]="!isEditable"
+                    [adminUpload]="adminMode"
                     [allowLevelUp]="true"
                     [levelIds]="allLevelIds()"
                     (fileUploaded)="onHintFileUploaded($event)"
@@ -184,6 +230,7 @@
                     [gameId]="gameId"
                     [objectUrls]="objectUrls"
                     [disabled]="!isEditable"
+                    [adminUpload]="adminMode"
                     [allowLevelUp]="false"
                     (fileUploaded)="onHintFileUploaded($event)"
                     (fileRenamed)="onHintFileRenamed($event)"
@@ -223,6 +270,7 @@
                         [gameId]="gameId"
                         [objectUrls]="objectUrls"
                         [disabled]="!isEditable"
+                        [adminUpload]="adminMode"
                         (remove)="removeHint(th, hi)"
                         (fileUploaded)="onHintFileUploaded($event)"
                         (fileRenamed)="onHintFileRenamed($event)"
@@ -266,7 +314,7 @@
                     @if (fileContentTypeLabel(f)) {
                       <span class="file-type">{{ fileContentTypeLabel(f) }}</span>
                     }
-                    @if (isEditable) {
+                    @if (isEditable && !adminMode) {
                       <button type="button" class="ghost-button icon" (click)="startRename(f)" title="Переименовать"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
                     }
                   </div>

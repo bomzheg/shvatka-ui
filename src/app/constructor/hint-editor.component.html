@@ -63,7 +63,7 @@
       } @else {
         <span class="current-file">
           {{ currentFileLabel() }}
-          @if (!disabled && currentFile()) {
+          @if (!disabled && !adminUpload && currentFile()) {
             <button type="button" class="ghost-button icon" (click)="startRename()" title="Переименовать"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
           }
         </span>

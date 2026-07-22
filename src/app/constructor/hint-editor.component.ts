@@ -13,6 +13,7 @@ import {
   describeError,
 } from "./constructor.models";
 import {ConstructorService} from "./constructor.service";
+import {AdminService} from "../admin/admin.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {AppIcon, HINT_TYPE_ICON} from "../ui/icons";
@@ -36,6 +37,9 @@ export class HintEditorComponent {
   @Input() gameId: number | undefined;
   @Input() objectUrls?: Map<string, string>;
   @Input() disabled = false;
+  /** Upload through the superuser endpoint (completed-game editing).
+   *  Renaming is hidden in this mode — there is no admin rename endpoint. */
+  @Input() adminUpload = false;
   @Output() remove = new EventEmitter<void>();
   @Output() fileUploaded = new EventEmitter<UploadedFile>();
   @Output() fileRenamed = new EventEmitter<UploadedFile>();
@@ -55,6 +59,7 @@ export class HintEditorComponent {
 
   constructor(
     private constructorService: ConstructorService,
+    private adminService: AdminService,
     private http: HttpAdapter,
     private snackbar: SnackbarService,
   ) {
@@ -127,7 +132,10 @@ export class HintEditorComponent {
     }
 
     this.isUploading = true;
-    this.constructorService.uploadFile(this.gameId, file).subscribe({
+    const upload = this.adminUpload
+      ? this.adminService.uploadGameFile(this.gameId, file)
+      : this.constructorService.uploadFile(this.gameId, file);
+    upload.subscribe({
       next: uploaded => {
         this.isUploading = false;
         input.value = "";

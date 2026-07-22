@@ -1,0 +1,23 @@
+<p class="hint">Редактирование сценария уже завершённой игры: замена уровней, загрузка новых файлов, смена автора.</p>
+
+@if (isLoading) {
+  <p class="status-message">Загрузка...</p>
+} @else if (games.length === 0) {
+  <p class="status-message">Завершённых игр нет.</p>
+} @else {
+  <ul class="games-list">
+    @for (game of games; track game.id) {
+      <li>
+        <a class="game-link" [routerLink]="['/admin/games', game.id]">
+          @if (game.number) {
+            <span class="game-number">№{{ game.number }}</span>
+          }
+          <span class="game-name">{{ game.name }}</span>
+          @if (startYear(game)) {
+            <span class="game-year">{{ startYear(game) }}</span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+}

@@ -31,6 +31,8 @@ import {
   validateScenario,
 } from "./constructor.models";
 import {SnackbarService} from "../snackbar/snackbar.service";
+import {AdminService} from "../admin/admin.service";
+import {AdminPlayerListItem} from "../admin/admin.models";
 import {HttpAdapter} from "../http/http.adapter";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon, CONTENT_TYPE_ICON} from "../ui/icons";
@@ -92,6 +94,18 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   isSaving = false;
   isUploading = false;
 
+  /** Superuser mode (/admin/games/:id): editing an already completed game
+   *  through the /admin endpoints. Start, status and organizers are frozen —
+   *  only the scenario, files and the author can change. */
+  adminMode = false;
+
+  // Author reassignment (admin mode): applied together with the next save.
+  authorQuery = "";
+  authorResults: AdminPlayerListItem[] = [];
+  isSearchingAuthors = false;
+  pendingAuthor: AdminPlayerListItem | null = null;
+  private authorSearchTimer: ReturnType<typeof setTimeout> | undefined;
+
   name = "";
   levels: EditorLevel[] = [];
   files: UploadedFile[] = [];
@@ -108,6 +122,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
   constructor(
     private constructorService: ConstructorService,
+    private adminService: AdminService,
     private route: ActivatedRoute,
     private snackbar: SnackbarService,
     private http: HttpAdapter,
@@ -115,6 +130,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.adminMode = this.route.snapshot.data["admin"] === true;
     this.routeSubscription = this.route.paramMap.subscribe((params: ParamMap) => {
       const id = Number(params.get("id"));
       if (Number.isNaN(id)) {
@@ -128,6 +144,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.objectUrls.forEach(url => URL.revokeObjectURL(url));
     this.routeSubscription?.unsubscribe();
+    if (this.authorSearchTimer) clearTimeout(this.authorSearchTimer);
   }
 
   get status(): string | undefined {
@@ -142,15 +159,19 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   get isEditable(): boolean {
+    if (this.adminMode) {
+      // The admin endpoints work only on completed games.
+      return this.game?.status === "complete";
+    }
     return isEditableStatus(this.game?.status);
   }
 
   get canOpenWaivers(): boolean {
-    return this.isEditable && this.game?.status !== "getting_waivers";
+    return !this.adminMode && this.isEditable && this.game?.status !== "getting_waivers";
   }
 
   get canComplete(): boolean {
-    return this.game?.status === "finished";
+    return !this.adminMode && this.game?.status === "finished";
   }
 
   // -------------------------------------------------------------------------
@@ -159,7 +180,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
   load() {
     this.isLoading = true;
-    this.constructorService.getGame(this.gameId).subscribe({
+    const source = this.adminMode
+      ? this.adminService.getGame(this.gameId)
+      : this.constructorService.getGame(this.gameId);
+    source.subscribe({
       next: game => {
         this.applyGame(game);
         this.isLoading = false;
@@ -528,7 +552,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     }
 
     this.isUploading = true;
-    this.constructorService.uploadFile(this.gameId, file).subscribe({
+    const upload = this.adminMode
+      ? this.adminService.uploadGameFile(this.gameId, file)
+      : this.constructorService.uploadFile(this.gameId, file);
+    upload.subscribe({
       next: uploaded => {
         this.addFile(uploaded);
         if (uploaded?.guid) {
@@ -785,9 +812,13 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     }
 
     this.isSaving = true;
-    this.constructorService.saveScenario(this.gameId, scenario).subscribe({
+    const save = this.adminMode
+      ? this.adminService.saveGameScenario(this.gameId, scenario, this.pendingAuthor?.id)
+      : this.constructorService.saveScenario(this.gameId, scenario);
+    save.subscribe({
       next: game => {
         this.applyGame(game);
+        this.pendingAuthor = null;
         this.isSaving = false;
         this.snackbar.success("Сценарий сохранён");
       },
@@ -795,6 +826,49 @@ export class GameEditorComponent implements OnInit, OnDestroy {
         this.isSaving = false;
       },
     });
+  }
+
+  // -------------------------------------------------------------------------
+  // Author reassignment (admin mode)
+  // -------------------------------------------------------------------------
+
+  onAuthorQueryChange(value: string) {
+    this.authorQuery = value;
+    if (this.authorSearchTimer) clearTimeout(this.authorSearchTimer);
+    const query = value.trim();
+    if (!query) {
+      this.authorResults = [];
+      return;
+    }
+    this.authorSearchTimer = setTimeout(() => this.searchAuthors(query), 350);
+  }
+
+  private searchAuthors(query: string) {
+    this.isSearchingAuthors = true;
+    this.adminService.listPlayers({username: query, active: true, archive: true}).subscribe({
+      next: res => {
+        this.isSearchingAuthors = false;
+        this.authorResults = res.items;
+      },
+      error: () => {
+        this.isSearchingAuthors = false;
+        this.snackbar.error("Не удалось выполнить поиск игроков");
+      },
+    });
+  }
+
+  selectAuthor(player: AdminPlayerListItem) {
+    this.pendingAuthor = player;
+    this.authorResults = [];
+    this.authorQuery = "";
+  }
+
+  clearPendingAuthor() {
+    this.pendingAuthor = null;
+  }
+
+  playerLabel(player: {username?: string | null; name_mention: string}): string {
+    return player.username ? `@${player.username}` : player.name_mention;
   }
 
   // -------------------------------------------------------------------------
