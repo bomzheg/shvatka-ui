@@ -117,6 +117,24 @@
         </div>
       }
 
+      @if (showExportButton()) {
+        <div class="stat-toolbar">
+          <button
+            type="button"
+            class="stat-export-btn"
+            [disabled]="exporting"
+            (click)="onExportClick()"
+            title="Скачать таблицу результатов в Excel"
+          >
+            @if (exporting) {
+              <span class="stat-export-loader"></span>Скачивание…
+            } @else {
+              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.download"/>Скачать Excel
+            }
+          </button>
+        </div>
+      }
+
       @if (showCurrentStandings()) {
         <div class="game-stat">
           @if (sortedStatEntries.length > 0) {

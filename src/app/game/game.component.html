@@ -94,5 +94,5 @@
     </div>
   </details>
 
-  <app-game-log-part [keys]="getKeys()" [stat]="getStat()" [levels]="getLevels()" [gameStartAt]="getGame()!.start_at" [gameId]="gameId" [isCompleted]="true"></app-game-log-part>
+  <app-game-log-part [keys]="getKeys()" [stat]="getStat()" [levels]="getLevels()" [gameStartAt]="getGame()!.start_at" [gameId]="gameId" [isCompleted]="true" [exporting]="exporting" (exportStat)="onExportStat()"></app-game-log-part>
 }

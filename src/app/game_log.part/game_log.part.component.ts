@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game.models";
 import {MatIcon} from "@angular/material/icon";
 import {RouterLink} from "@angular/router";
@@ -64,6 +64,21 @@ export class GameLogPartComponent {
   @Input() isCompleted = false;
   @Input() keysLoading = false;
   @Input() statLoading = false;
+  /** Whether a results-workbook export is currently in flight. */
+  @Input() exporting = false;
+  /** Request to download the results workbook (.xlsx). */
+  @Output() exportStat = new EventEmitter<void>();
+
+  onExportClick(): void {
+    if (!this.exporting) {
+      this.exportStat.emit();
+    }
+  }
+
+  /** The workbook export is offered on the table view only, not on the chart. */
+  showExportButton(): boolean {
+    return this.gameId !== undefined && !this.showCompletedChart();
+  }
 
   sortedTeamKeysEntries: [string, KeyTime[]][] = [];
   displayedTeamKeysEntries: [string, KeyTime[]][] = [];

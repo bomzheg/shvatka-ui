@@ -1,8 +1,10 @@
 import {AfterViewChecked, Component, OnDestroy, OnInit} from '@angular/core';
 import {DatePipe} from "@angular/common";
 import {GameService} from "./game.service";
+import {SnackbarService} from "../snackbar/snackbar.service";
 import {FullGame, GameStat, GameWaivers, Keys, Level, Team, VotedPlayer} from "../domain/game.models";
 import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
+import {HttpErrorResponse} from "@angular/common/http";
 import {Subscription} from "rxjs";
 import {GameLogPartComponent} from "../game_log.part/game_log.part.component";
 import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
@@ -35,10 +37,12 @@ export class GameComponent implements OnInit, OnDestroy, AfterViewChecked {
   private pendingLevelAnchor: string | undefined;
   scenarioTab: 'compact' | 'full' | 'graph' = 'compact';
   gameId: number | undefined;
+  exporting = false;
 
   constructor(
     private gameService: GameService,
     private route: ActivatedRoute,
+    private snackbar: SnackbarService,
   ) {
   }
 
@@ -157,6 +161,40 @@ export class GameComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   getTeamVotedPlayers(teamId: number): VotedPlayer[] {
     return this.getWaivers()?.waivers?.[String(teamId)] ?? [];
+  }
+
+  onExportStat(): void {
+    const id = this.gameId;
+    if (id === undefined || this.exporting) {
+      return;
+    }
+
+    this.exporting = true;
+    this.gameService.exportStat(id).subscribe({
+      next: blob => {
+        this.exporting = false;
+        this.triggerDownload(blob, `${this.getGame()?.name ?? 'game'}.xlsx`);
+      },
+      error: error => {
+        this.exporting = false;
+        if (error instanceof HttpErrorResponse && error.status === 401) {
+          this.snackbar.error("Экспорт результатов доступен только авторизованным пользователям", 'Закрыть', 3000);
+        } else {
+          this.snackbar.error("Не удалось скачать результаты игры", 'Закрыть', 3000);
+        }
+      },
+    });
+  }
+
+  private triggerDownload(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   }
 
 }
