@@ -54,6 +54,41 @@ export function requestText(request: ActionRequest, currentPlayerId?: number): s
   return renderTypeText(request.type, request.payload ?? {}, currentPlayerId);
 }
 
+/**
+ * Richer line for a `request_accepted` / `request_declined` feed item when the
+ * originating request is known. The bare result payload doesn't say what kind
+ * of request resolved or who the other party was, so we render that from the
+ * request's own type and payload. The reader is always the request initiator
+ * (the backend sends these results to them), so invite outcomes are phrased in
+ * the third person about the target, while an ask-to-join is phrased as the
+ * reader's own request.
+ */
+export function requestResultText(request: ActionRequest, accepted: boolean): string {
+  const payload = request.payload ?? {};
+  const playerName = str(payload, "player_name");
+  const teamName = str(payload, "team_name");
+  const gameName = str(payload, "game_name");
+  const reacted = accepted ? "принял(а)" : "отклонил(а)";
+  const resolved = accepted ? "принят" : "отклонён";
+
+  switch (request.type) {
+    case NotificationType.teamJoinInvite:
+      return `${playerName} ${reacted} приглашение в команду «${teamName}»`;
+    case NotificationType.orgInvite:
+      return `${playerName} ${reacted} приглашение организовать игру «${gameName}»`;
+    case RequestType.promotion:
+      return `${playerName} ${reacted} приглашение стать автором`;
+    case NotificationType.teamJoinRequest:
+      return `Ваш запрос на вступление в команду «${teamName}» ${resolved}`;
+    default: {
+      const context = requestContext(payload);
+      return context
+        ? `Запрос ${context} ${resolved}`
+        : (accepted ? "Запрос принят" : "Запрос отклонён");
+    }
+  }
+}
+
 function renderTypeText(type: string, payload: NotificationPayload, currentPlayerId?: number): string {
   const playerName = str(payload, "player_name");
   const teamName = str(payload, "team_name");

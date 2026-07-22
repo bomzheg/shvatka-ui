@@ -1,6 +1,21 @@
-import {notificationIcon, notificationText, requestText} from "./notification-render";
+import {notificationIcon, notificationText, requestResultText, requestText} from "./notification-render";
 import {ActionRequest, AppNotification} from "./notifications.models";
 import {AppIcon} from "../ui/icons";
+
+function makeRequest(type: string, payload: Record<string, unknown>): ActionRequest {
+  return {
+    id: 1,
+    type,
+    status: "accepted",
+    initiator_id: 1,
+    target_player_id: 42,
+    team_id: null,
+    game_id: null,
+    payload,
+    created_at: "2026-07-22T17:37:00Z",
+    responded_at: "2026-07-22T17:37:20Z",
+  };
+}
 
 function makeNotification(type: string, payload: Record<string, unknown>): AppNotification {
   return {
@@ -171,6 +186,41 @@ describe("notificationText", () => {
   it("survives a missing/garbage payload", () => {
     const broken = makeNotification("player_left_team", {by_self: "yes", player_name: 5});
     expect(() => notificationText(broken)).not.toThrow();
+  });
+});
+
+describe("requestResultText", () => {
+  it("names the request kind and the other party for invite outcomes", () => {
+    const promotion = makeRequest("promotion", {
+      inviter_id: 1, inviter_name: "Автор", player_id: 42, player_name: "Вася",
+    });
+    expect(requestResultText(promotion, true)).toBe("Вася принял(а) приглашение стать автором");
+    expect(requestResultText(promotion, false)).toBe("Вася отклонил(а) приглашение стать автором");
+
+    const teamInvite = makeRequest("team_join_invite", {
+      inviter_name: "Капитан", player_name: "Вася", team_name: "Сова",
+    });
+    expect(requestResultText(teamInvite, true)).toBe("Вася принял(а) приглашение в команду «Сова»");
+
+    const orgInvite = makeRequest("org_invite", {
+      author_name: "Автор", player_name: "Вася", game_name: "Ночная",
+    });
+    expect(requestResultText(orgInvite, true)).toBe("Вася принял(а) приглашение организовать игру «Ночная»");
+  });
+
+  it("phrases an ask-to-join outcome as the reader's own request", () => {
+    const ask = makeRequest("team_join_request", {player_name: "Вася", team_name: "Сова"});
+    expect(requestResultText(ask, true)).toBe("Ваш запрос на вступление в команду «Сова» принят");
+    expect(requestResultText(ask, false)).toBe("Ваш запрос на вступление в команду «Сова» отклонён");
+  });
+
+  it("falls back to context or the bare result for other/unknown types", () => {
+    const merge = makeRequest("player_merge", {primary_player_name: "harry"});
+    expect(requestResultText(merge, true)).toBe("Запрос на объединение аккаунта «harry» принят");
+
+    const bare = makeRequest("brand_new_type", {});
+    expect(requestResultText(bare, true)).toBe("Запрос принят");
+    expect(requestResultText(bare, false)).toBe("Запрос отклонён");
   });
 });
 
