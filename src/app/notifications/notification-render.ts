@@ -126,6 +126,17 @@ function renderTypeText(type: string, payload: NotificationPayload, currentPlaye
       }
       return `${captain} просит объединить команду «${primary}» с форумной копией «${secondary}»`;
     }
+    case RequestType.promotion:
+    case NotificationType.promotionInvite: {
+      const inviter = str(payload, "inviter_name");
+      if (currentPlayerId !== undefined && payload["inviter_id"] === currentPlayerId) {
+        return `Вы приглашаете ${playerName} стать автором`;
+      }
+      if (currentPlayerId !== undefined && payload["player_id"] === currentPlayerId) {
+        return `${inviter} приглашает вас стать автором`;
+      }
+      return `${inviter} приглашает ${playerName} стать автором`;
+    }
     case NotificationType.requestAccepted: {
       const context = requestContext(payload);
       return context ? `Запрос ${context} принят` : "Запрос принят";
@@ -156,6 +167,8 @@ const TYPE_ICONS: Record<string, AppIcon> = {
   [NotificationType.playerMergeRequest]: AppIcon.merge,
   [RequestType.teamMerge]: AppIcon.merge,
   [RequestType.playerMerge]: AppIcon.merge,
+  [NotificationType.promotionInvite]: AppIcon.key,
+  [RequestType.promotion]: AppIcon.key,
   [NotificationType.requestAccepted]: AppIcon.check,
   [NotificationType.requestDeclined]: AppIcon.cancel,
 };

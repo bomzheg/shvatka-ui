@@ -133,6 +133,33 @@ describe("notificationText", () => {
     expect(requestText(request, 3)).toBe("Вы просите объединить аккаунт «harry_forum» с аккаунтом «harry»");
   });
 
+  it("renders a promotion invite for the inviter, the target and a bystander", () => {
+    const payload = {inviter_id: 1, inviter_name: "Автор", player_id: 42, player_name: "Вася"};
+    const notification = makeNotification("promotion_invite", payload);
+
+    expect(notificationText(notification, 1)).toBe("Вы приглашаете Вася стать автором");
+    expect(notificationText(notification, 42)).toBe("Автор приглашает вас стать автором");
+    expect(notificationText(notification)).toBe("Автор приглашает Вася стать автором");
+  });
+
+  it("renders a promotion ActionRequest through the same texts", () => {
+    const request: ActionRequest = {
+      id: 71,
+      type: "promotion",
+      status: "pending",
+      initiator_id: 1,
+      target_player_id: 42,
+      team_id: null,
+      game_id: null,
+      payload: {inviter_id: 1, inviter_name: "Автор", player_id: 42, player_name: "Вася"},
+      created_at: "2026-07-20T15:44:00Z",
+      responded_at: null,
+    };
+
+    expect(requestText(request, 1)).toBe("Вы приглашаете Вася стать автором");
+    expect(requestText(request, 42)).toBe("Автор приглашает вас стать автором");
+  });
+
   it("does not crash on an unknown type (open enum)", () => {
     const unknown = makeNotification("brand_new_type", {team_name: "Сова"});
     const unknownBare = makeNotification("brand_new_type", {});
@@ -153,6 +180,7 @@ describe("notificationIcon", () => {
     expect(notificationIcon(makeNotification("game_schedule_changed", {}))).toBe(AppIcon.clock);
     expect(notificationIcon(makeNotification("player_merge_request", {}))).toBe(AppIcon.merge);
     expect(notificationIcon(makeNotification("team_merge_request", {}))).toBe(AppIcon.merge);
+    expect(notificationIcon(makeNotification("promotion_invite", {}))).toBe(AppIcon.key);
     expect(notificationIcon(makeNotification("brand_new_type", {}))).toBe(AppIcon.notifications);
   });
 });
