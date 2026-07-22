@@ -63,6 +63,7 @@ export const NotificationType = {
   orgInvite: "org_invite",
   teamMergeRequest: "team_merge_request",
   playerMergeRequest: "player_merge_request",
+  promotionInvite: "promotion_invite",
   requestAccepted: "request_accepted",
   requestDeclined: "request_declined",
 } as const;
@@ -76,6 +77,7 @@ export const NotificationType = {
 export const RequestType = {
   teamMerge: "team_merge",
   playerMerge: "player_merge",
+  promotion: "promotion",
 } as const;
 
 /** Request types resolvable only by a superuser (accept is admin-only). */
@@ -100,4 +102,5 @@ export const ACTIONABLE_NOTIFICATION_TYPES: readonly string[] = [
   NotificationType.orgInvite,
   NotificationType.teamMergeRequest,
   NotificationType.playerMergeRequest,
+  NotificationType.promotionInvite,
 ];

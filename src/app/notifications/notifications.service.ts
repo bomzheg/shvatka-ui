@@ -145,6 +145,11 @@ export class NotificationsService {
     return this.http.post<ActionRequest>("/requests/org-invite", {game_id: gameId, player_id: playerId});
   }
 
+  /** Invites a player to become an author ("аппрув"); caller must be an author. */
+  createPromotionInvite(playerId: number): Observable<ActionRequest> {
+    return this.http.post<ActionRequest>("/requests/promotion-invite", {player_id: playerId});
+  }
+
   /**
    * `timeline` applies to `player_merge` requests only: when a plain accept is
    * rejected with a 422 `MergeError` (incompatible team histories), retry with

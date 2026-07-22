@@ -14,12 +14,13 @@ import {AdminMergeTimelineComponent, TimelineState} from "../admin/admin-merge-t
 import {TeamService} from "../team/team.service";
 import {TeamPlayerHistory} from "../team/team.models";
 import {NotificationsService} from "./notifications.service";
-import {notificationIcon, notificationText, requestText, typeIcon} from "./notification-render";
+import {notificationIcon, notificationText, requestResultText, requestText, typeIcon} from "./notification-render";
 import {
   ACTIONABLE_NOTIFICATION_TYPES,
   ADMIN_RESOLVED_REQUEST_TYPES,
   ActionRequest,
   AppNotification,
+  NotificationType,
   RequestStatus,
   RequestType,
 } from "./notifications.models";
@@ -106,7 +107,19 @@ export class NotificationsComponent implements OnInit {
   }
 
   text(view: NotificationView): string {
-    return notificationText(view.notification, this.userService.getMe()?.id);
+    const notification = view.notification;
+    // A resolved-request feed item carries only a bare "принят/отклонён"
+    // payload; enrich it from the originating request (loaded into
+    // requestsById) so it names the request kind and the other party.
+    if (notification.request_id !== null
+      && (notification.type === NotificationType.requestAccepted
+        || notification.type === NotificationType.requestDeclined)) {
+      const linked = this.requestsById.get(notification.request_id);
+      if (linked) {
+        return requestResultText(linked.request, notification.type === NotificationType.requestAccepted);
+      }
+    }
+    return notificationText(notification, this.userService.getMe()?.id);
   }
 
   requestRowText(requestView: RequestView): string {

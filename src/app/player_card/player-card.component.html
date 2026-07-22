@@ -9,6 +9,15 @@
       <h1 class="player-name">{{ displayName }}</h1>
       @if (canBeAuthor) {
         <p class="author-note">Может создавать команды и писать игры</p>
+      } @else if (promotionSent) {
+        <p class="promote-note">Приглашение стать автором отправлено</p>
+      } @else if (canPromote) {
+        <p class="promote-note">
+          Игрок не имеет аппрува.
+          <button type="button" class="promote-link" [disabled]="promotionSending" (click)="promote()">
+            аппрувнуть
+          </button>
+        </p>
       }
     </header>
 
