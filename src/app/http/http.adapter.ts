@@ -55,6 +55,16 @@ export class HttpAdapter {
     );
   }
 
+  getBlob(url: string): Observable<Blob> {
+    if (this.shouldBlockProtectedRequest(url)) {
+      return this.unauthorizedError(url);
+    }
+    return this.http.get(
+      this.config.apiUrl + url,
+      {withCredentials: true, responseType: "blob"},
+    );
+  }
+
   getFileUrl(gameId: number, fileId: string): string {
     return `${this.config.cdnUrl}/games/${gameId}/files/${fileId}`
   }
@@ -108,6 +118,7 @@ export class HttpAdapter {
       || /^\/games\/my(\/.*)?$/.test(url)
       || /^\/games\/\d+\/keys$/.test(url)
       || /^\/games\/\d+\/stat$/.test(url)
+      || /^\/games\/\d+\/stat\/export$/.test(url)
       || /^\/games\/\d+\/files\/.+$/.test(url)
       || url === "/games/active/me"
       || url === "/games/running/level/current"

@@ -75,6 +75,24 @@
     <details [open]="statDetailsOpen" (toggle)="onStatDetailsToggle($any($event.target).open)">
       <summary class="game-stat-spoiler">Результаты игры@if (statLoading) {<span class="spoiler-loading"><span class="spoiler-loader"></span>обновление…</span>}</summary>
 
+      @if (gameId !== undefined) {
+        <div class="stat-toolbar">
+          <button
+            type="button"
+            class="stat-export-btn"
+            [disabled]="exporting"
+            (click)="onExportClick()"
+            title="Скачать таблицу результатов в Excel"
+          >
+            @if (exporting) {
+              <span class="stat-export-loader"></span>Скачивание…
+            } @else {
+              <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.download"/>Скачать Excel
+            }
+          </button>
+        </div>
+      }
+
       @if (showCompletedTabs()) {
         <div class="stat-tabs" role="tablist">
           <button

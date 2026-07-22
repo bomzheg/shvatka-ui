@@ -1,4 +1,5 @@
 import {Injectable} from '@angular/core';
+import {Observable} from "rxjs";
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {SnackbarService} from "../snackbar/snackbar.service";
@@ -77,6 +78,14 @@ export class GameService {
           }
         }
       });
+  }
+
+  /**
+   * Downloads the results workbook (.xlsx) for a game — the same table the
+   * Telegram bot exports (team level times / timedeltas / raw stat).
+   */
+  exportStat(id: number): Observable<Blob> {
+    return this.http.getBlob(`/games/${id}/stat/export`);
   }
 
   private fetchGame(id: number, version: number, shouldFetch: boolean) {
