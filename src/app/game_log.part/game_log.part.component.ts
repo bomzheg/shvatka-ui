@@ -75,6 +75,11 @@ export class GameLogPartComponent {
     }
   }
 
+  /** The workbook export is offered on the table view only, not on the chart. */
+  showExportButton(): boolean {
+    return this.gameId !== undefined && !this.showCompletedChart();
+  }
+
   sortedTeamKeysEntries: [string, KeyTime[]][] = [];
   displayedTeamKeysEntries: [string, KeyTime[]][] = [];
   sortedStatEntries: [string, LevelTime[]][] = [];
