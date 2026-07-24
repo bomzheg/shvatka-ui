@@ -4,7 +4,7 @@ import {HttpAdapter} from '../http/http.adapter';
 import {Items, TeamDetails} from '../team/team.models';
 import {Game, Page} from '../games/games.service';
 import {FullGame} from '../domain/game.models';
-import {ScenarioPayload, UploadedFile} from '../constructor/constructor.models';
+import {ScenarioPayload, UploadedFile, UploadOptions, uploadOptionsQuery} from '../constructor/constructor.models';
 import {
   AdminEmail,
   AdminPlayerDetails,
@@ -116,10 +116,12 @@ export class AdminService {
     return this.http.put<FullGame>(`/admin/games/${id}/scenario`, body);
   }
 
-  /** Upload a media file for a completed game (owned by the game's author). */
-  uploadGameFile(id: number, file: File): Observable<UploadedFile> {
+  /** Upload a media file for a completed game (owned by the game's author).
+   *  The optional flags mirror the CDN endpoint's unsupported-image handling
+   *  (HEIC/HEIF conversion) — see {@link UploadOptions}. */
+  uploadGameFile(id: number, file: File, options?: UploadOptions): Observable<UploadedFile> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<UploadedFile>(`/admin/games/${id}/files`, formData);
+    return this.http.post<UploadedFile>(`/admin/games/${id}/files${uploadOptionsQuery(options)}`, formData);
   }
 }

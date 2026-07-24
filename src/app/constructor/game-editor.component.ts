@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
-import {Subscription} from "rxjs";
+import {Subscription, finalize} from "rxjs";
 import {CdkDragDrop, DragDropModule, moveItemInArray} from "@angular/cdk/drag-drop";
 import {ConstructorService} from "./constructor.service";
 import {HintEditorComponent} from "./hint-editor.component";
@@ -21,6 +21,7 @@ import {
   generateEffectId,
   HintPayload,
   isEditableStatus,
+  isHeicFile,
   isValidKey,
   isValidLevelId,
   parseKeys,
@@ -28,8 +29,10 @@ import {
   ScenarioPayload,
   STATUS_LABELS,
   UploadedFile,
+  UploadOptions,
   validateScenario,
 } from "./constructor.models";
+import {HeicUploadService} from "./heic-upload.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {AdminService} from "../admin/admin.service";
 import {AdminPlayerListItem} from "../admin/admin.models";
@@ -126,6 +129,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackbar: SnackbarService,
     private http: HttpAdapter,
+    private heicUpload: HeicUploadService,
   ) {
   }
 
@@ -552,22 +556,25 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     }
 
     this.isUploading = true;
-    const upload = this.adminMode
-      ? this.adminService.uploadGameFile(this.gameId, file)
-      : this.constructorService.uploadFile(this.gameId, file);
-    upload.subscribe({
+    const uploadFn = (options?: UploadOptions) => this.adminMode
+      ? this.adminService.uploadGameFile(this.gameId, file, options)
+      : this.constructorService.uploadFile(this.gameId, file, options);
+    this.heicUpload.upload(file, uploadFn).pipe(
+      finalize(() => {
+        this.isUploading = false;
+        input.value = "";
+      }),
+    ).subscribe({
       next: uploaded => {
         this.addFile(uploaded);
-        if (uploaded?.guid) {
+        // A HEIC source can't render locally (converted → server JPEG previews
+        // instead; kept as-is → no preview), so skip the object URL for it.
+        if (uploaded?.guid && !isHeicFile(file)) {
           this.objectUrls.set(uploaded.guid, URL.createObjectURL(file));
         }
-        this.isUploading = false;
         this.snackbar.success(`Файл загружен: ${uploaded.original_filename}${uploaded.extension}`);
-        input.value = "";
       },
       error: err => {
-        this.isUploading = false;
-        input.value = "";
         this.snackbar.error(`Не удалось загрузить файл: ${describeError(err)}`);
       },
     });

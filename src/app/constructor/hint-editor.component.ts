@@ -10,9 +10,13 @@ import {
   HintPayload,
   THUMB_HINT_TYPES,
   UploadedFile,
+  UploadOptions,
   describeError,
+  isHeicFile,
 } from "./constructor.models";
 import {ConstructorService} from "./constructor.service";
+import {HeicUploadService} from "./heic-upload.service";
+import {finalize} from "rxjs";
 import {AdminService} from "../admin/admin.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {SnackbarService} from "../snackbar/snackbar.service";
@@ -62,6 +66,7 @@ export class HintEditorComponent {
     private adminService: AdminService,
     private http: HttpAdapter,
     private snackbar: SnackbarService,
+    private heicUpload: HeicUploadService,
   ) {
   }
 
@@ -131,19 +136,27 @@ export class HintEditorComponent {
       return;
     }
 
+    const gameId = this.gameId;
     this.isUploading = true;
-    const upload = this.adminUpload
-      ? this.adminService.uploadGameFile(this.gameId, file)
-      : this.constructorService.uploadFile(this.gameId, file);
-    upload.subscribe({
-      next: uploaded => {
+    const uploadFn = (options?: UploadOptions) => this.adminUpload
+      ? this.adminService.uploadGameFile(gameId, file, options)
+      : this.constructorService.uploadFile(gameId, file, options);
+    this.heicUpload.upload(file, uploadFn).pipe(
+      finalize(() => {
         this.isUploading = false;
         input.value = "";
+      }),
+    ).subscribe({
+      next: uploaded => {
         if (!uploaded || !uploaded.guid) {
           this.snackbar.error("Сервер вернул файл без идентификатора");
           return;
         }
-        this.objectUrls?.set(uploaded.guid, URL.createObjectURL(file));
+        // A HEIC source can't render locally (converted → server JPEG previews
+        // instead; kept as-is → no preview), so skip the object URL for it.
+        if (!isHeicFile(file)) {
+          this.objectUrls?.set(uploaded.guid, URL.createObjectURL(file));
+        }
         this.fileUploaded.emit(uploaded);
         if (target === "file") {
           this.hint.file_guid = uploaded.guid;
@@ -155,8 +168,6 @@ export class HintEditorComponent {
         this.snackbar.success(`Файл загружен: ${uploaded.original_filename}${uploaded.extension}`);
       },
       error: err => {
-        this.isUploading = false;
-        input.value = "";
         this.snackbar.error(`Не удалось загрузить файл: ${describeError(err)}`);
       },
     });
