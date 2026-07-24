@@ -5,7 +5,7 @@ import {HttpAdapter} from "../http/http.adapter";
 import {environment} from "../../environments/environment";
 import {Page} from "../games/games.service";
 import {FullGame} from "../domain/game.models";
-import {MyGame, ScenarioPayload, UploadedFile} from "./constructor.models";
+import {MyGame, ScenarioPayload, UploadedFile, UploadOptions, uploadOptionsQuery} from "./constructor.models";
 import {GameOrganizer, OrgPermissionKey, OrgPlayer} from "./organizers.models";
 
 interface ItemsResponse<T> {
@@ -49,12 +49,14 @@ export class ConstructorService {
     return this.http.put<MyGame>(`/games/my/${id}/status`, {status});
   }
 
-  /** §1.7 — upload a single file (multipart `file`). */
-  uploadFile(id: number, file: File): Observable<UploadedFile> {
+  /** §1.7 — upload a single file (multipart `file`). The optional flags control
+   *  server-side handling of unsupported images (HEIC/HEIF) — see
+   *  {@link UploadOptions}; ordinary formats ignore them. */
+  uploadFile(id: number, file: File, options?: UploadOptions): Observable<UploadedFile> {
     const formData = new FormData();
     formData.append("file", file);
     return this.httpClient.post<UploadedFile>(
-      `${environment.cdnUrl}/games/${id}/files`,
+      `${environment.cdnUrl}/games/${id}/files${uploadOptionsQuery(options)}`,
       formData,
       {withCredentials: true},
     );

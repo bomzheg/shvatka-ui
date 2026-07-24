@@ -35,6 +35,66 @@ export interface UploadedFile {
   sha256?: string;
 }
 
+/**
+ * Optional flags of `POST /cdn/games/{id}/files` that control how an
+ * unsupported image (HEIC/HEIF) is handled server-side. Both default to false;
+ * ordinary formats (JPEG/PNG/mp4/…) ignore them entirely.
+ */
+export interface UploadOptions {
+  /** Convert the unsupported image to JPEG before storing (lands as `.jpg`). */
+  allowConversion?: boolean;
+  /** Store the original bytes untouched instead of rejecting (won't preview). */
+  saveUnsupportedAsIs?: boolean;
+}
+
+/** Build the query string for {@link UploadOptions}, or "" when none apply. */
+export function uploadOptionsQuery(options?: UploadOptions): string {
+  const params = new URLSearchParams();
+  if (options?.allowConversion) {
+    params.set("allow_conversion", "true");
+  }
+  if (options?.saveUnsupportedAsIs) {
+    params.set("save_unsupported_as_is", "true");
+  }
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+}
+
+const HEIC_EXTENSIONS = [".heic", ".heif"];
+const HEIC_MIME_TYPES = ["image/heic", "image/heif"];
+
+/**
+ * Best-effort client-side detection of a HEIC/HEIF image by MIME type or file
+ * extension. The browser may report an empty MIME type for `.heic`, so the
+ * extension is the reliable signal; the server remains the source of truth
+ * (always be ready to handle a 415, see {@link isUnsupportedMediaError}).
+ */
+export function isHeicFile(file: File): boolean {
+  const type = (file.type || "").toLowerCase();
+  if (HEIC_MIME_TYPES.includes(type)) {
+    return true;
+  }
+  const name = (file.name || "").toLowerCase();
+  return HEIC_EXTENSIONS.some(ext => name.endsWith(ext));
+}
+
+/** Whether a failed upload was rejected as an unsupported media type (415). */
+export function isUnsupportedMediaError(err: unknown): err is HttpErrorResponse {
+  return err instanceof HttpErrorResponse && err.status === 415;
+}
+
+/**
+ * The user-facing message of a 415 rejection. The backend nests it under
+ * `detail.text` (a localized string); `detail.description` is diagnostic only.
+ */
+export function unsupportedMediaMessage(err: HttpErrorResponse): string {
+  const body = err.error as { detail?: { text?: unknown } } | null;
+  const text = body?.detail?.text;
+  return typeof text === "string" && text.length > 0
+    ? text
+    : "Формат файла не поддерживается для загрузки.";
+}
+
 export interface LinkPreview {
   is_disabled?: boolean;
   url?: string;

@@ -1,0 +1,14 @@
+@if (heic.prompt$ | async; as prompt) {
+  <div class="heic-overlay" (click)="cancel()">
+    <div class="heic-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
+         aria-labelledby="heic-title">
+      <h2 id="heic-title" class="heic-title">Неподдерживаемый формат</h2>
+      <p class="heic-message">{{ prompt.message }}</p>
+      <div class="heic-actions">
+        <button type="button" class="primary" (click)="convert()">Конвертировать в JPEG</button>
+        <button type="button" class="ghost-button" (click)="keep()">Оставить как есть</button>
+        <button type="button" class="ghost-button" (click)="cancel()">Отмена</button>
+      </div>
+    </div>
+  </div>
+}
