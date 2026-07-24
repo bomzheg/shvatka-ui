@@ -20,7 +20,8 @@ export interface HeicPrompt {
 /** Message shown when a HEIC/HEIF file is detected client-side, before upload. */
 const HEIC_DETECTED_MESSAGE =
   "Файл в формате HEIC/HEIF не поддерживается для просмотра в браузере и Telegram. " +
-  "Его можно сконвертировать в JPEG или загрузить как есть (без предпросмотра).";
+  "Его можно сконвертировать в JPEG или загрузить как есть (в этом случае схватчики " +
+  "будут получать ошибки при попытке посмотреть его).";
 
 /**
  * Orchestrates uploading a file while transparently handling HEIC/HEIF images
