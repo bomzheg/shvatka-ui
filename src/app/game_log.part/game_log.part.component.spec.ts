@@ -124,6 +124,79 @@ describe('GameLogPartComponent bonuses', () => {
     expect(component.durationCell(component.pivotData[0], 0)).toBe('00:20:00-00:05:00+00:03:00');
   });
 
+  it('folds many bonuses into one bonus and one penalty term', () => {
+    const component = componentWith([
+      bonus(3, 0),
+      bonus(-2, 0),
+      bonus(10, 0),
+      bonus(-2, 0),
+      bonus(2, 0),
+    ]);
+    component.setTimeMode('expression');
+    // 15 minutes of bonus, 4 of penalty — three parts, not six
+    expect(component.durationCell(component.pivotData[0], 0)).toBe('00:20:00-00:15:00+00:04:00');
+  });
+
+  it('drops the penalty term when there are only bonuses', () => {
+    const component = componentWith([bonus(3, 0), bonus(2, 0)]);
+    component.setTimeMode('expression');
+    expect(component.durationCell(component.pivotData[0], 0)).toBe('00:20:00-00:05:00');
+  });
+
+  it('drops the bonus term when there are only penalties', () => {
+    const component = componentWith([bonus(-3, 0), bonus(-2, 0)]);
+    component.setTimeMode('expression');
+    expect(component.durationCell(component.pivotData[0], 0)).toBe('00:20:00+00:05:00');
+  });
+
+  it('cycles the expression detail: grouped, collapsed, full', () => {
+    const component = componentWith([bonus(3, 0), bonus(10, 0), bonus(-2, 0)]);
+    component.setTimeMode('expression');
+    const row = () => component.pivotData[0];
+    expect(component.expressionDetail).toBe('grouped');
+    expect(component.durationCell(row(), 0)).toBe('00:20:00-00:13:00+00:02:00');
+
+    component.cycleExpressionDetail();
+    expect(component.expressionDetail).toBe('collapsed');
+    // 20 minutes minus a net 11 minutes of bonus
+    expect(component.durationCell(row(), 0)).toBe('00:09:00');
+
+    component.cycleExpressionDetail();
+    expect(component.expressionDetail).toBe('full');
+    expect(component.durationCell(row(), 0)).toBe('00:20:00-00:03:00-00:10:00+00:02:00');
+
+    component.cycleExpressionDetail();
+    expect(component.expressionDetail).toBe('grouped');
+    expect(component.durationCell(row(), 0)).toBe('00:20:00-00:13:00+00:02:00');
+  });
+
+  it('groups the total the same way, so a long game stays three parts', () => {
+    const component = componentWith([bonus(5, 0), bonus(3, 1), bonus(-2, 0), bonus(-1, 1)]);
+    component.setTimeMode('expression');
+    expect(component.totalCell(component.pivotData[0])).toBe('00:30:00-00:08:00+00:03:00');
+  });
+
+  it('re-clicking the expression mode cycles the detail instead of resetting it', () => {
+    const component = componentWith([bonus(5, 0)]);
+    component.setTimeMode('expression');
+    expect(component.expressionDetail).toBe('grouped');
+    component.setTimeMode('expression');
+    expect(component.timeMode).toBe('expression');
+    expect(component.expressionDetail).toBe('collapsed');
+  });
+
+  it('only treats cells as clickable in expression mode', () => {
+    const component = componentWith([bonus(5, 0)]);
+    expect(component.isExpressionCell()).toBeFalse();
+    component.onExpressionCellClick();
+    expect(component.expressionDetail).toBe('grouped');
+
+    component.setTimeMode('expression');
+    expect(component.isExpressionCell()).toBeTrue();
+    component.onExpressionCellClick();
+    expect(component.expressionDetail).toBe('collapsed');
+  });
+
   it('leaves untouched levels alone in expression mode', () => {
     const component = componentWith([bonus(5, 0)]);
     component.setTimeMode('expression');
@@ -259,6 +332,36 @@ describe('GameLogPartComponent bonuses rendering', () => {
     const cell = tables[tables.length - 1].querySelector('tbody td:not(.team-name-cell)');
     expect(cell.classList).toContain('has-penalty');
     expect(cell.getAttribute('title')).toContain('штраф 5 мин.');
+  });
+
+  it('cycles the detail when an expression cell is clicked', () => {
+    const fixture = renderWith([bonus(3, 0), bonus(10, 0), bonus(-2, 0)]);
+    fixture.componentInstance.setTimeMode('expression');
+    fixture.detectChanges();
+
+    const tables = fixture.nativeElement.querySelectorAll('.pivot-table');
+    const cell = tables[tables.length - 1].querySelector('tbody td.expression-cell');
+    expect(cell.textContent.trim()).toBe('00:20:00-00:13:00+00:02:00');
+
+    cell.click();
+    fixture.detectChanges();
+    expect(cell.textContent.trim()).toBe('00:09:00');
+
+    cell.click();
+    fixture.detectChanges();
+    expect(cell.textContent.trim()).toBe('00:20:00-00:03:00-00:10:00+00:02:00');
+
+    cell.click();
+    fixture.detectChanges();
+    expect(cell.textContent.trim()).toBe('00:20:00-00:13:00+00:02:00');
+  });
+
+  it('marks cells clickable only while showing an expression', () => {
+    const fixture = renderWith([bonus(5, 0)]);
+    expect(fixture.nativeElement.querySelector('.expression-cell')).toBeNull();
+    fixture.componentInstance.setTimeMode('expression');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.expression-cell')).not.toBeNull();
   });
 
   it('renders the bonuses tab with every event', () => {

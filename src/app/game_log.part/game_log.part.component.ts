@@ -30,6 +30,15 @@ interface TeamPivotData {
  */
 export type TimeMode = 'raw' | 'adjusted' | 'expression';
 
+/**
+ * How much of the arithmetic an expression cell shows. Clicking a cell cycles
+ * through these, because spelling out a dozen bonuses makes the table far
+ * wider than the screen.
+ */
+export type ExpressionDetail = 'grouped' | 'collapsed' | 'full';
+
+const EXPRESSION_DETAIL_ORDER: ExpressionDetail[] = ['grouped', 'collapsed', 'full'];
+
 const NO_VALUE = '—';
 
 @Component({
@@ -119,6 +128,7 @@ export class GameLogPartComponent {
   statTab: 'results' | 'pivot' | 'bonuses' = 'results';
   completedTab: 'table' | 'chart' | 'bonuses' = 'table';
   timeMode: TimeMode = 'raw';
+  expressionDetail: ExpressionDetail = 'grouped';
   private teamKeysOpenState: Record<string, boolean> = {};
 
   setStatTab(tab: 'results' | 'pivot' | 'bonuses'): void {
@@ -130,8 +140,47 @@ export class GameLogPartComponent {
   }
 
   setTimeMode(mode: TimeMode): void {
+    // clicking "с расчётом" again cycles the detail — a keyboard-reachable
+    // path to the same thing clicking a cell does
+    if (mode === 'expression' && this.timeMode === 'expression') {
+      this.cycleExpressionDetail();
+      return;
+    }
     this.timeMode = mode;
     this.refreshModeDerived();
+  }
+
+  /** Whether cells currently render the arithmetic rather than a single time. */
+  showsExpression(): boolean {
+    return this.timeMode === 'expression' && this.expressionDetail !== 'collapsed';
+  }
+
+  /** grouped → collapsed → full → grouped. */
+  cycleExpressionDetail(): void {
+    const next = EXPRESSION_DETAIL_ORDER.indexOf(this.expressionDetail) + 1;
+    this.expressionDetail = EXPRESSION_DETAIL_ORDER[next % EXPRESSION_DETAIL_ORDER.length];
+  }
+
+  /** Expression cells react to a click, so mark them as such. */
+  isExpressionCell(): boolean {
+    return this.timeMode === 'expression';
+  }
+
+  onExpressionCellClick(): void {
+    if (this.isExpressionCell()) {
+      this.cycleExpressionDetail();
+    }
+  }
+
+  expressionHint(): string {
+    switch (this.expressionDetail) {
+      case 'grouped':
+        return 'Нажмите, чтобы свернуть расчёт';
+      case 'collapsed':
+        return 'Нажмите, чтобы раскрыть расчёт полностью';
+      default:
+        return 'Нажмите, чтобы свернуть до бонусов и штрафов';
+    }
   }
 
   /** Completed games offer a table / chart switch over the same results. */
@@ -483,7 +532,7 @@ export class GameLogPartComponent {
     if (this.timeMode === 'raw' || bonus === 0) {
       return this.formatDuration(raw);
     }
-    if (this.timeMode === 'adjusted') {
+    if (!this.showsExpression()) {
       return this.formatSignedDuration(raw - bonus);
     }
     return this.formatDuration(raw) + this.bonusTerms(row.bonusesByLevel.get(levelNumber) ?? []);
@@ -499,7 +548,7 @@ export class GameLogPartComponent {
     if (this.timeMode === 'raw' || bonus === 0) {
       return row.absoluteTimes.get(levelNumber) ?? NO_VALUE;
     }
-    if (this.timeMode === 'adjusted') {
+    if (!this.showsExpression()) {
       return this.msToLocalHms(raw - bonus);
     }
     return (row.absoluteTimes.get(levelNumber) ?? NO_VALUE)
@@ -512,7 +561,7 @@ export class GameLogPartComponent {
     if (total === undefined) {
       return NO_VALUE;
     }
-    if (this.timeMode === 'expression') {
+    if (this.showsExpression()) {
       return this.formatDuration(total) + this.bonusTerms(row.bonuses);
     }
     return this.formatSignedDuration(total - row.totalBonusMs);
@@ -523,7 +572,7 @@ export class GameLogPartComponent {
     if (bonuses.length === 0) {
       return '';
     }
-    return bonuses
+    const breakdown = bonuses
       .map(bonus => {
         const minutes = BonusEvent.minutes(bonus);
         const what = minutes > 0 ? 'бонус' : 'штраф';
@@ -531,6 +580,7 @@ export class GameLogPartComponent {
         return `${this.toLocalHms(bonus.at)} ${what} ${Math.abs(minutes)} мин. (${where})`;
       })
       .join('\n');
+    return this.isExpressionCell() ? `${breakdown}\n\n${this.expressionHint()}` : breakdown;
   }
 
   levelCellTitle(row: TeamPivotData, levelNumber: number): string {
@@ -541,14 +591,36 @@ export class GameLogPartComponent {
     return this.cellTitle(this.cumulativeBonuses(row, levelNumber));
   }
 
-  /** Terms like `-00:05:00+00:03:00`: a bonus subtracts, a penalty adds. */
+  /**
+   * Terms like `-00:05:00+00:03:00`: a bonus subtracts, a penalty adds.
+   *
+   * Grouped (the default) folds them into at most two terms — all bonuses and
+   * all penalties — so a team with a dozen bonuses still fits in its column.
+   * Full spells out every event.
+   */
   private bonusTerms(bonuses: BonusEvent[]): string {
-    return bonuses
-      .map(bonus => {
-        const ms = BonusEvent.minutes(bonus) * 60_000;
-        return (ms > 0 ? '-' : '+') + this.formatDuration(Math.abs(ms));
-      })
-      .join('');
+    if (this.expressionDetail === 'full') {
+      return bonuses.map(bonus => this.term(BonusEvent.minutes(bonus) * 60_000)).join('');
+    }
+    let bonusMs = 0;
+    let penaltyMs = 0;
+    for (const bonus of bonuses) {
+      const ms = BonusEvent.minutes(bonus) * 60_000;
+      if (ms > 0) {
+        bonusMs += ms;
+      } else {
+        penaltyMs += ms;
+      }
+    }
+    return this.term(bonusMs) + this.term(penaltyMs);
+  }
+
+  /** One signed term of an expression; empty when there is nothing to add. */
+  private term(ms: number): string {
+    if (ms === 0) {
+      return '';
+    }
+    return (ms > 0 ? '-' : '+') + this.formatDuration(Math.abs(ms));
   }
 
   private totalRawMs(row: TeamPivotData): number | undefined {

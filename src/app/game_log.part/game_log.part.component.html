@@ -215,7 +215,7 @@
               [class.stat-tab-active]="timeMode === 'expression'"
               [attr.aria-checked]="timeMode === 'expression'"
               (click)="setTimeMode('expression')"
-              title="Показать сам расчёт: время и все слагаемые"
+              [title]="timeMode === 'expression' ? expressionHint() : 'Показать сам расчёт: время, бонусы и штрафы'"
             >с расчётом</button>
           </div>
         }
@@ -248,12 +248,19 @@
                   @for (lvl of allLevelNumbers; track lvl) {
                     <td
                       [class.min-duration]="isMinAbsoluteTime(lvl, comparableAbsoluteMs(row, lvl))"
+                      [class.expression-cell]="isExpressionCell()"
                       [ngClass]="bonusClass(row.bonusMs.get(lvl))"
                       [title]="cumulativeCellTitle(row, lvl)"
+                      (click)="onExpressionCellClick()"
                     >{{ absoluteCell(row, lvl) }}</td>
                   }
                   @if (showTotalColumn()) {
-                    <td class="total-cell" [title]="cellTitle(row.bonuses)">{{ totalCell(row) }}</td>
+                    <td
+                      class="total-cell"
+                      [class.expression-cell]="isExpressionCell()"
+                      [title]="cellTitle(row.bonuses)"
+                      (click)="onExpressionCellClick()"
+                    >{{ totalCell(row) }}</td>
                   }
                 </tr>
               }
@@ -289,12 +296,19 @@
                   @for (lvl of allLevelNumbers; track lvl) {
                     <td
                       [class.min-duration]="isMinDuration(lvl, comparableDurationMs(row, lvl))"
+                      [class.expression-cell]="isExpressionCell()"
                       [ngClass]="bonusClass(row.bonusMs.get(lvl))"
                       [title]="levelCellTitle(row, lvl)"
+                      (click)="onExpressionCellClick()"
                     >{{ durationCell(row, lvl) }}</td>
                   }
                   @if (showTotalColumn()) {
-                    <td class="total-cell" [title]="cellTitle(row.bonuses)">{{ totalCell(row) }}</td>
+                    <td
+                      class="total-cell"
+                      [class.expression-cell]="isExpressionCell()"
+                      [title]="cellTitle(row.bonuses)"
+                      (click)="onExpressionCellClick()"
+                    >{{ totalCell(row) }}</td>
                   }
                 </tr>
               }
