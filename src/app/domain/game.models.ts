@@ -270,9 +270,35 @@ export class LevelTime {
   }
 }
 
+/** Что принесло команде бонус или штраф. */
+export enum BonusSource {
+  key = "key",
+  timer = "timer",
+  unknown = "unknown",
+}
+
+/**
+ * Бонус (minutes > 0) или штраф (minutes < 0), полученный командой.
+ * Бонус вычитается из результата, штраф прибавляется.
+ */
+export class BonusEvent {
+  constructor(
+    public at: string,
+    public minutes: number,
+    public source: BonusSource,
+    public key: string | null,
+    public level_time_id: number | null,
+    /** Уровень, на котором получен. null — учитывать только в итоге. */
+    public level_number: number | null,
+  ) {
+  }
+}
+
 export class GameStat {
   constructor(
     public level_times: Map<number, LevelTime[]>,
+    /** {team_id: [...]} — только команды, у которых бонусы есть. */
+    public bonuses: Map<number, BonusEvent[]> = new Map(),
   ) {
   }
 }

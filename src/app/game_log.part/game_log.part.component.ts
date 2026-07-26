@@ -1,5 +1,6 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game.models";
+import {NgClass} from "@angular/common";
+import {BonusEvent, BonusSource, GameStat, Keys, KeyTime, KeyType, Level, LevelTime} from "../domain/game.models";
 import {MatIcon} from "@angular/material/icon";
 import {RouterLink} from "@angular/router";
 import {AppIcon} from "../ui/icons";
@@ -12,12 +13,29 @@ interface TeamPivotData {
   absoluteTimeMs: Map<number, number>;
   durations: Map<number, string>;
   durationMs: Map<number, number>;
+  /** Бонус за уровень в мс: положительный снимает время, отрицательный добавляет. */
+  bonusMs: Map<number, number>;
+  bonusesByLevel: Map<number, BonusEvent[]>;
+  /** Все бонусы команды, включая те, чей уровень не определён. */
+  bonuses: BonusEvent[];
+  totalBonusMs: number;
+  /** Время последнего взятого уровня — по нему считается место команды. */
+  finishMs: number | undefined;
+  currentLevel: number;
 }
+
+/**
+ * Как показывать время в таблицах:
+ * raw — как есть, adjusted — с учётом бонусов, expression — с расчётом.
+ */
+export type TimeMode = 'raw' | 'adjusted' | 'expression';
+
+const NO_VALUE = '—';
 
 @Component({
   selector: 'app-game-log-part',
   standalone: true,
-  imports: [MatIcon, RouterLink, GameChartPartComponent],
+  imports: [MatIcon, NgClass, RouterLink, GameChartPartComponent],
   templateUrl: './game_log.part.component.html',
   styleUrl: './game_log.part.component.scss',
 })
@@ -98,16 +116,22 @@ export class GameLogPartComponent {
   keysDetailsOpen = false;
   statDetailsOpen = false;
   pivotDetailsOpen = false;
-  statTab: 'results' | 'pivot' = 'results';
-  completedTab: 'table' | 'chart' = 'table';
+  statTab: 'results' | 'pivot' | 'bonuses' = 'results';
+  completedTab: 'table' | 'chart' | 'bonuses' = 'table';
+  timeMode: TimeMode = 'raw';
   private teamKeysOpenState: Record<string, boolean> = {};
 
-  setStatTab(tab: 'results' | 'pivot'): void {
+  setStatTab(tab: 'results' | 'pivot' | 'bonuses'): void {
     this.statTab = tab;
   }
 
-  setCompletedTab(tab: 'table' | 'chart'): void {
+  setCompletedTab(tab: 'table' | 'chart' | 'bonuses'): void {
     this.completedTab = tab;
+  }
+
+  setTimeMode(mode: TimeMode): void {
+    this.timeMode = mode;
+    this.refreshModeDerived();
   }
 
   /** Completed games offer a table / chart switch over the same results. */
@@ -237,7 +261,7 @@ export class GameLogPartComponent {
     const levelNameIds = new Map<number, string>();
     const pivotRows: TeamPivotData[] = [];
 
-    for (const [, teamLevelTimes] of this.sortedStatEntries) {
+    for (const [teamId, teamLevelTimes] of this.sortedStatEntries) {
       if (teamLevelTimes.length === 0) continue;
 
       const sorted = [...teamLevelTimes].sort((a, b) => a.level_number - b.level_number);
@@ -245,6 +269,12 @@ export class GameLogPartComponent {
       const absoluteTimeMs = new Map<number, number>();
       const durations = new Map<number, string>();
       const durationMs = new Map<number, number>();
+      const bonuses = this.bonusesOf(teamId);
+      const bonusesByLevel = this.groupBonusesByLevel(bonuses);
+      const bonusMs = new Map<number, number>();
+      for (const [lvl, events] of bonusesByLevel) {
+        bonusMs.set(lvl, this.sumBonusMs(events));
+      }
 
       for (let i = 0; i < sorted.length; i++) {
         const lt = sorted[i];
@@ -276,6 +306,12 @@ export class GameLogPartComponent {
         absoluteTimeMs,
         durations,
         durationMs,
+        bonusMs,
+        bonusesByLevel,
+        bonuses,
+        totalBonusMs: this.sumBonusMs(bonuses),
+        finishMs: this.parseDate(teamLevelTimes[teamLevelTimes.length - 1]?.start_at),
+        currentLevel: this.getCurrentLevelNumber(teamLevelTimes),
       });
     }
 
@@ -287,17 +323,22 @@ export class GameLogPartComponent {
     this.pivotData = pivotRows;
     this.levelNameIds = levelNameIds;
 
+    this.refreshModeDerived();
+  }
+
+  /** Пересчитать всё, что зависит от режима отображения: подсветку лучшего и порядок. */
+  private refreshModeDerived(): void {
     const minDurations = new Map<number, number>();
     const minAbsTimes = new Map<number, number>();
     for (const lvl of this.allLevelNumbers) {
       let minDur = Number.MAX_SAFE_INTEGER;
       let minAbs = Number.MAX_SAFE_INTEGER;
-      for (const row of pivotRows) {
-        const d = row.durationMs.get(lvl);
+      for (const row of this.pivotData) {
+        const d = this.comparableDurationMs(row, lvl);
         if (d !== undefined && d < minDur) {
           minDur = d;
         }
-        const a = row.absoluteTimeMs.get(lvl);
+        const a = this.comparableAbsoluteMs(row, lvl);
         if (a !== undefined && a < minAbs) {
           minAbs = a;
         }
@@ -311,6 +352,87 @@ export class GameLogPartComponent {
     }
     this.minDurationPerLevel = minDurations;
     this.minAbsoluteTimePerLevel = minAbsTimes;
+    this.sortPivotData();
+  }
+
+  /** Время на уровне, по которому команды сравниваются в текущем режиме. */
+  comparableDurationMs(row: TeamPivotData, levelNumber: number): number | undefined {
+    const raw = row.durationMs.get(levelNumber);
+    if (raw === undefined || this.timeMode === 'raw') {
+      return raw;
+    }
+    return raw - (row.bonusMs.get(levelNumber) ?? 0);
+  }
+
+  /** Время закрытия уровня, по которому команды сравниваются в текущем режиме. */
+  comparableAbsoluteMs(row: TeamPivotData, levelNumber: number): number | undefined {
+    const raw = row.absoluteTimeMs.get(levelNumber);
+    if (raw === undefined || this.timeMode === 'raw') {
+      return raw;
+    }
+    return raw - this.cumulativeBonusMs(row, levelNumber);
+  }
+
+  private bonusesOf(teamId: string): BonusEvent[] {
+    const all = this._stat?.bonuses as unknown as Record<string, BonusEvent[]> | undefined;
+    return all?.[teamId] ?? [];
+  }
+
+  private groupBonusesByLevel(bonuses: BonusEvent[]): Map<number, BonusEvent[]> {
+    const grouped = new Map<number, BonusEvent[]>();
+    for (const bonus of bonuses) {
+      if (bonus.level_number === null || bonus.level_number === undefined) {
+        continue;
+      }
+      const existing = grouped.get(bonus.level_number);
+      if (existing) {
+        existing.push(bonus);
+      } else {
+        grouped.set(bonus.level_number, [bonus]);
+      }
+    }
+    return grouped;
+  }
+
+  private sumBonusMs(bonuses: BonusEvent[]): number {
+    return bonuses.reduce((acc, bonus) => acc + bonus.minutes * 60_000, 0);
+  }
+
+  /** Бонус на 3-м уровне не должен двигать время закрытия 1-го, поэтому суммируем нарастающе. */
+  private cumulativeBonusMs(row: TeamPivotData, levelNumber: number): number {
+    let total = 0;
+    for (const [lvl, ms] of row.bonusMs) {
+      if (lvl <= levelNumber) {
+        total += ms;
+      }
+    }
+    return total;
+  }
+
+  /** Бонусы всех уровней до этого включительно — слагаемые для режима с расчётом. */
+  private cumulativeBonuses(row: TeamPivotData, levelNumber: number): BonusEvent[] {
+    return [...row.bonusesByLevel.entries()]
+      .filter(([lvl]) => lvl <= levelNumber)
+      .sort((a, b) => a[0] - b[0])
+      .flatMap(([, events]) => events);
+  }
+
+  /**
+   * Место команды: кто дальше — выше, при равенстве — кто раньше закрыл
+   * последний уровень. В режиме с бонусами сравнивается уже их время
+   * с бонусами, так что победитель может поменяться.
+   */
+  private sortPivotData(): void {
+    const finishOf = (row: TeamPivotData): number => {
+      if (row.finishMs === undefined) {
+        return Number.MAX_SAFE_INTEGER;
+      }
+      return this.timeMode === 'raw' ? row.finishMs : row.finishMs - row.totalBonusMs;
+    };
+    this.pivotData = [...this.pivotData].sort((a, b) => {
+      const levelDiff = b.currentLevel - a.currentLevel;
+      return levelDiff !== 0 ? levelDiff : finishOf(a) - finishOf(b);
+    });
   }
 
   shouldOpenTeamKeys(teamKeysCount: number): boolean {
@@ -326,7 +448,11 @@ export class GameLogPartComponent {
   }
 
   toLocalHms(dt: string): string {
-    return new Date(Date.parse(dt)).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'});
+    return this.msToLocalHms(Date.parse(dt));
+  }
+
+  msToLocalHms(ms: number): string {
+    return new Date(ms).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', second: '2-digit'});
   }
 
   formatDuration(ms: number): string {
@@ -335,6 +461,152 @@ export class GameLogPartComponent {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+
+  /**
+   * Длительность со знаком. Бонус может оказаться больше времени на уровне —
+   * такое время не обрезаем в ноль, а показываем минусом, чтобы сумма по
+   * уровням совпадала с итогом и была видна ошибка в сценарии.
+   */
+  formatSignedDuration(ms: number): string {
+    const sign = ms < 0 ? '-' : '';
+    return sign + this.formatDuration(Math.abs(ms));
+  }
+
+  /** Время на уровне в выбранном режиме. */
+  durationCell(row: TeamPivotData, levelNumber: number): string {
+    const raw = row.durationMs.get(levelNumber);
+    if (raw === undefined) {
+      return NO_VALUE;
+    }
+    const bonus = row.bonusMs.get(levelNumber) ?? 0;
+    if (this.timeMode === 'raw' || bonus === 0) {
+      return this.formatDuration(raw);
+    }
+    if (this.timeMode === 'adjusted') {
+      return this.formatSignedDuration(raw - bonus);
+    }
+    return this.formatDuration(raw) + this.bonusTerms(row.bonusesByLevel.get(levelNumber) ?? []);
+  }
+
+  /** Время закрытия уровня в выбранном режиме. */
+  absoluteCell(row: TeamPivotData, levelNumber: number): string {
+    const raw = row.absoluteTimeMs.get(levelNumber);
+    if (raw === undefined) {
+      return NO_VALUE;
+    }
+    const bonus = this.cumulativeBonusMs(row, levelNumber);
+    if (this.timeMode === 'raw' || bonus === 0) {
+      return row.absoluteTimes.get(levelNumber) ?? NO_VALUE;
+    }
+    if (this.timeMode === 'adjusted') {
+      return this.msToLocalHms(raw - bonus);
+    }
+    return (row.absoluteTimes.get(levelNumber) ?? NO_VALUE)
+      + this.bonusTerms(this.cumulativeBonuses(row, levelNumber));
+  }
+
+  /** Итоговое время команды с учётом всех бонусов — то самое «место». */
+  totalCell(row: TeamPivotData): string {
+    const total = this.totalRawMs(row);
+    if (total === undefined) {
+      return NO_VALUE;
+    }
+    if (this.timeMode === 'expression') {
+      return this.formatDuration(total) + this.bonusTerms(row.bonuses);
+    }
+    return this.formatSignedDuration(total - row.totalBonusMs);
+  }
+
+  /** Полная расшифровка для подсказки — доступна в любом режиме. */
+  cellTitle(bonuses: BonusEvent[]): string {
+    if (bonuses.length === 0) {
+      return '';
+    }
+    return bonuses
+      .map(bonus => {
+        const what = bonus.minutes > 0 ? 'бонус' : 'штраф';
+        const where = bonus.key ? `ключ ${bonus.key}` : this.bonusSourceLabel(bonus.source);
+        return `${this.toLocalHms(bonus.at)} ${what} ${Math.abs(bonus.minutes)} мин. (${where})`;
+      })
+      .join('\n');
+  }
+
+  levelCellTitle(row: TeamPivotData, levelNumber: number): string {
+    return this.cellTitle(row.bonusesByLevel.get(levelNumber) ?? []);
+  }
+
+  cumulativeCellTitle(row: TeamPivotData, levelNumber: number): string {
+    return this.cellTitle(this.cumulativeBonuses(row, levelNumber));
+  }
+
+  /** Слагаемые вида `-00:05:00+00:03:00`: бонус вычитается, штраф прибавляется. */
+  private bonusTerms(bonuses: BonusEvent[]): string {
+    return bonuses
+      .map(bonus => {
+        const ms = bonus.minutes * 60_000;
+        return (ms > 0 ? '-' : '+') + this.formatDuration(Math.abs(ms));
+      })
+      .join('');
+  }
+
+  private totalRawMs(row: TeamPivotData): number | undefined {
+    const startMs = this.parseDate(this.gameStartAt);
+    if (startMs === undefined || row.finishMs === undefined) {
+      return undefined;
+    }
+    return row.finishMs - startMs;
+  }
+
+  bonusSourceLabel(source: BonusSource): string {
+    switch (source) {
+      case BonusSource.key:
+        return 'ключ';
+      case BonusSource.timer:
+        return 'таймер';
+      default:
+        return 'неизвестно';
+    }
+  }
+
+  bonusSourceIcon(source: BonusSource): AppIcon {
+    return source === BonusSource.timer ? AppIcon.effects : AppIcon.bonus;
+  }
+
+  /** Класс ячейки по знаку бонуса: положительный — бонус, отрицательный — штраф. */
+  bonusClass(bonus: number | undefined): string {
+    if (!bonus) {
+      return '';
+    }
+    return bonus > 0 ? 'has-bonus' : 'has-penalty';
+  }
+
+  showTotalColumn(): boolean {
+    return this.timeMode !== 'raw' && this.gameStartAt !== undefined;
+  }
+
+  hasAnyBonus(): boolean {
+    return this.pivotData.some(row => row.bonuses.length > 0);
+  }
+
+  /** Вкладка «Бонусы» имеет смысл только когда бонусы вообще были. */
+  showBonusesTab(): boolean {
+    if (!this.hasAnyBonus()) {
+      return false;
+    }
+    return this.isCompleted ? this.completedTab === 'bonuses' : this.statTab === 'bonuses';
+  }
+
+  bonusRows(): TeamPivotData[] {
+    return this.pivotData.filter(row => row.bonuses.length > 0);
+  }
+
+  levelLabelOf(bonus: BonusEvent): string {
+    if (bonus.level_number === null || bonus.level_number === undefined) {
+      return NO_VALUE;
+    }
+    const nameId = this.getLevelNameId(bonus.level_number);
+    return nameId ? `${bonus.level_number + 1} (${nameId})` : `${bonus.level_number + 1}`;
   }
 
   isMinDuration(levelNumber: number, durationMs: number | undefined): boolean {

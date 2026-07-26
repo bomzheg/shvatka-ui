@@ -272,6 +272,34 @@ td {
   font-weight: 600;
 }
 
+/* Переключатель режима времени — тот же язык, что у вкладок, но помельче. */
+.time-mode-btn {
+  flex: 0 1 auto;
+  font-size: 0.85rem;
+  padding: 0.2rem 0.6rem;
+
+  &:not(.stat-tab-active) {
+    font-weight: normal;
+    background: none;
+  }
+}
+
+.has-bonus { color: #2f8f4e; }
+.has-penalty { color: #c0392b; }
+.total-cell { font-weight: 600; }
+
+.bonus-team {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0.35rem;
+}
+
+.bonus-total {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 .team-link {
   color: var(--app-accent);
   text-decoration: none;
