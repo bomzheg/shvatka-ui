@@ -270,7 +270,7 @@ export class LevelTime {
   }
 }
 
-/** Что принесло команде бонус или штраф. */
+/** What brought the team a bonus or a penalty. */
 export enum BonusSource {
   key = "key",
   timer = "timer",
@@ -278,26 +278,32 @@ export enum BonusSource {
 }
 
 /**
- * Бонус (minutes > 0) или штраф (minutes < 0), полученный командой.
- * Бонус вычитается из результата, штраф прибавляется.
+ * An event that changed a team's time, with the whole effects that caused it.
+ * The bonus is `effects.bonus_minutes`: positive is subtracted from the result,
+ * negative (a penalty) is added to it.
  */
 export class BonusEvent {
   constructor(
     public at: string,
-    public minutes: number,
+    public effects: EffectLike,
     public source: BonusSource,
     public key: string | null,
     public level_time_id: number | null,
-    /** Уровень, на котором получен. null — учитывать только в итоге. */
+    /** Level it was earned on. null means count it in the total only. */
     public level_number: number | null,
   ) {
+  }
+
+  static minutes(bonus: BonusEvent): number {
+    const minutes = bonus.effects?.bonus_minutes;
+    return typeof minutes === 'number' ? minutes : 0;
   }
 }
 
 export class GameStat {
   constructor(
     public level_times: Map<number, LevelTime[]>,
-    /** {team_id: [...]} — только команды, у которых бонусы есть. */
+    /** {team_id: [...]} — only teams that actually have bonuses. */
     public bonuses: Map<number, BonusEvent[]> = new Map(),
   ) {
   }

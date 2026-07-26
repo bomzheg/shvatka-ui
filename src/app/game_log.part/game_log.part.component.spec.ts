@@ -33,7 +33,7 @@ function levelTime(t: Team, levelNumber: number, minutes: number): LevelTime {
 function bonus(minutes: number, levelNumber: number | null, atMinutes = 1): BonusEvent {
   return new BonusEvent(
     at(atMinutes).toISOString(),
-    minutes,
+    {id: 'e1', bonus_minutes: minutes},
     BonusSource.key,
     'SHBONUS',
     null,
@@ -135,7 +135,7 @@ describe('GameLogPartComponent bonuses', () => {
     const row = component.pivotData[0];
     const rawLevel1 = component.absoluteCell(row, 1);
     component.setTimeMode('adjusted');
-    // закрытие уровня 0 сдвигается только своим бонусом, уровня 1 — обоими
+    // level 0's closing shifts by its own bonus only, level 1's by both
     expect(component.comparableAbsoluteMs(row, 0)).toBe(
       (row.absoluteTimeMs.get(0) ?? 0) - 5 * 60_000,
     );
@@ -151,7 +151,7 @@ describe('GameLogPartComponent bonuses', () => {
     expect(row.bonusMs.get(0)).toBe(5 * 60_000);
     expect(row.totalBonusMs).toBe(12 * 60_000);
     component.setTimeMode('adjusted');
-    // всего 30 минут игры минус 12 минут бонусов
+    // 30 minutes of game in total, minus 12 minutes of bonuses
     expect(component.totalCell(row)).toBe('00:18:00');
   });
 
@@ -163,7 +163,7 @@ describe('GameLogPartComponent bonuses', () => {
   });
 
   it('lets bonuses change who wins', () => {
-    // Slytherin финиширует позже, но получила бонус больше отставания
+    // Slytherin finishes later but got a bonus bigger than the gap
     const component = makeComponent();
     component.gameStartAt = START;
     component.isCompleted = true;
@@ -216,7 +216,7 @@ describe('GameLogPartComponent bonuses rendering', () => {
     return fixture;
   }
 
-  /** Ячейки «Время на уровне» — вторая сводная таблица. */
+  /** Cells of the time-on-level table — the second pivot. */
   function durationCells(fixture: ComponentFixture<GameLogPartComponent>): string[] {
     const tables = fixture.nativeElement.querySelectorAll('.pivot-table');
     const cells = tables[tables.length - 1].querySelectorAll('tbody td:not(.team-name-cell)');
@@ -248,7 +248,7 @@ describe('GameLogPartComponent bonuses rendering', () => {
 
     fixture.nativeElement.querySelectorAll('.time-mode-btn')[1].click();
     fixture.detectChanges();
-    // третья ячейка — колонка «Итого»: 30 минут игры минус 5 минут бонуса
+    // the third cell is the total column: 30 minutes of game minus a 5 minute bonus
     expect(durationCells(fixture)).toEqual(['00:15:00', '00:10:00', '00:25:00']);
     expect(fixture.nativeElement.querySelector('.total-cell')).not.toBeNull();
   });

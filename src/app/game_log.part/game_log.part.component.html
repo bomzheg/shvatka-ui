@@ -325,12 +325,12 @@
                 </tr>
                 </thead>
                 <tbody>
-                  @for (bonus of row.bonuses; track bonus.at + bonus.minutes) {
+                  @for (bonus of row.bonuses; track bonus.at + bonusMinutes(bonus)) {
                     <tr>
                       <td>{{ toLocalHms(bonus.at) }}</td>
                       <td>{{ levelLabelOf(bonus) }}</td>
-                      <td [ngClass]="bonusClass(bonus.minutes)">
-                        {{ bonus.minutes > 0 ? '+' : '' }}{{ bonus.minutes }}
+                      <td [ngClass]="bonusClass(bonusMinutes(bonus))">
+                        {{ bonusMinutes(bonus) > 0 ? '+' : '' }}{{ bonusMinutes(bonus) }}
                       </td>
                       <td>
                         <mat-icon class="app-icon-inline" [svgIcon]="bonusSourceIcon(bonus.source)"/>

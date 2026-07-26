@@ -13,20 +13,20 @@ interface TeamPivotData {
   absoluteTimeMs: Map<number, number>;
   durations: Map<number, string>;
   durationMs: Map<number, number>;
-  /** Бонус за уровень в мс: положительный снимает время, отрицательный добавляет. */
+  /** Level bonus in ms: positive takes time off, negative adds it. */
   bonusMs: Map<number, number>;
   bonusesByLevel: Map<number, BonusEvent[]>;
-  /** Все бонусы команды, включая те, чей уровень не определён. */
+  /** Every bonus of the team, including those whose level is unresolved. */
   bonuses: BonusEvent[];
   totalBonusMs: number;
-  /** Время последнего взятого уровня — по нему считается место команды. */
+  /** Time of the last level taken — the team's placement is judged by it. */
   finishMs: number | undefined;
   currentLevel: number;
 }
 
 /**
- * Как показывать время в таблицах:
- * raw — как есть, adjusted — с учётом бонусов, expression — с расчётом.
+ * How to show times in the tables: raw as they are, adjusted by bonuses,
+ * or expression with the arithmetic spelled out.
  */
 export type TimeMode = 'raw' | 'adjusted' | 'expression';
 
@@ -326,7 +326,7 @@ export class GameLogPartComponent {
     this.refreshModeDerived();
   }
 
-  /** Пересчитать всё, что зависит от режима отображения: подсветку лучшего и порядок. */
+  /** Recompute everything that depends on the mode: best-time highlight and order. */
   private refreshModeDerived(): void {
     const minDurations = new Map<number, number>();
     const minAbsTimes = new Map<number, number>();
@@ -355,7 +355,7 @@ export class GameLogPartComponent {
     this.sortPivotData();
   }
 
-  /** Время на уровне, по которому команды сравниваются в текущем режиме. */
+  /** Time on level by which teams are compared in the current mode. */
   comparableDurationMs(row: TeamPivotData, levelNumber: number): number | undefined {
     const raw = row.durationMs.get(levelNumber);
     if (raw === undefined || this.timeMode === 'raw') {
@@ -364,7 +364,7 @@ export class GameLogPartComponent {
     return raw - (row.bonusMs.get(levelNumber) ?? 0);
   }
 
-  /** Время закрытия уровня, по которому команды сравниваются в текущем режиме. */
+  /** Level closing time by which teams are compared in the current mode. */
   comparableAbsoluteMs(row: TeamPivotData, levelNumber: number): number | undefined {
     const raw = row.absoluteTimeMs.get(levelNumber);
     if (raw === undefined || this.timeMode === 'raw') {
@@ -395,10 +395,10 @@ export class GameLogPartComponent {
   }
 
   private sumBonusMs(bonuses: BonusEvent[]): number {
-    return bonuses.reduce((acc, bonus) => acc + bonus.minutes * 60_000, 0);
+    return bonuses.reduce((acc, bonus) => acc + BonusEvent.minutes(bonus) * 60_000, 0);
   }
 
-  /** Бонус на 3-м уровне не должен двигать время закрытия 1-го, поэтому суммируем нарастающе. */
+  /** A bonus on level 3 must not move level 1's closing time, so sum cumulatively. */
   private cumulativeBonusMs(row: TeamPivotData, levelNumber: number): number {
     let total = 0;
     for (const [lvl, ms] of row.bonusMs) {
@@ -409,7 +409,7 @@ export class GameLogPartComponent {
     return total;
   }
 
-  /** Бонусы всех уровней до этого включительно — слагаемые для режима с расчётом. */
+  /** Bonuses of every level up to this one — the terms for expression mode. */
   private cumulativeBonuses(row: TeamPivotData, levelNumber: number): BonusEvent[] {
     return [...row.bonusesByLevel.entries()]
       .filter(([lvl]) => lvl <= levelNumber)
@@ -418,9 +418,9 @@ export class GameLogPartComponent {
   }
 
   /**
-   * Место команды: кто дальше — выше, при равенстве — кто раньше закрыл
-   * последний уровень. В режиме с бонусами сравнивается уже их время
-   * с бонусами, так что победитель может поменяться.
+   * Team placement: further is higher, ties broken by who closed the last level
+   * earlier. Outside raw mode the adjusted times are compared, so bonuses can
+   * change who wins.
    */
   private sortPivotData(): void {
     const finishOf = (row: TeamPivotData): number => {
@@ -464,16 +464,16 @@ export class GameLogPartComponent {
   }
 
   /**
-   * Длительность со знаком. Бонус может оказаться больше времени на уровне —
-   * такое время не обрезаем в ноль, а показываем минусом, чтобы сумма по
-   * уровням совпадала с итогом и была видна ошибка в сценарии.
+   * Signed duration. A bonus can exceed the time on level — such a time is not
+   * clamped to zero but shown negative, so the per-level sum matches the total
+   * and a mistake in the scenario stays visible.
    */
   formatSignedDuration(ms: number): string {
     const sign = ms < 0 ? '-' : '';
     return sign + this.formatDuration(Math.abs(ms));
   }
 
-  /** Время на уровне в выбранном режиме. */
+  /** Time on level in the selected mode. */
   durationCell(row: TeamPivotData, levelNumber: number): string {
     const raw = row.durationMs.get(levelNumber);
     if (raw === undefined) {
@@ -489,7 +489,7 @@ export class GameLogPartComponent {
     return this.formatDuration(raw) + this.bonusTerms(row.bonusesByLevel.get(levelNumber) ?? []);
   }
 
-  /** Время закрытия уровня в выбранном режиме. */
+  /** Level closing time in the selected mode. */
   absoluteCell(row: TeamPivotData, levelNumber: number): string {
     const raw = row.absoluteTimeMs.get(levelNumber);
     if (raw === undefined) {
@@ -506,7 +506,7 @@ export class GameLogPartComponent {
       + this.bonusTerms(this.cumulativeBonuses(row, levelNumber));
   }
 
-  /** Итоговое время команды с учётом всех бонусов — то самое «место». */
+  /** The team's total time with every bonus applied — its actual result. */
   totalCell(row: TeamPivotData): string {
     const total = this.totalRawMs(row);
     if (total === undefined) {
@@ -518,16 +518,17 @@ export class GameLogPartComponent {
     return this.formatSignedDuration(total - row.totalBonusMs);
   }
 
-  /** Полная расшифровка для подсказки — доступна в любом режиме. */
+  /** Full breakdown for the tooltip — available in every mode. */
   cellTitle(bonuses: BonusEvent[]): string {
     if (bonuses.length === 0) {
       return '';
     }
     return bonuses
       .map(bonus => {
-        const what = bonus.minutes > 0 ? 'бонус' : 'штраф';
+        const minutes = BonusEvent.minutes(bonus);
+        const what = minutes > 0 ? 'бонус' : 'штраф';
         const where = bonus.key ? `ключ ${bonus.key}` : this.bonusSourceLabel(bonus.source);
-        return `${this.toLocalHms(bonus.at)} ${what} ${Math.abs(bonus.minutes)} мин. (${where})`;
+        return `${this.toLocalHms(bonus.at)} ${what} ${Math.abs(minutes)} мин. (${where})`;
       })
       .join('\n');
   }
@@ -540,11 +541,11 @@ export class GameLogPartComponent {
     return this.cellTitle(this.cumulativeBonuses(row, levelNumber));
   }
 
-  /** Слагаемые вида `-00:05:00+00:03:00`: бонус вычитается, штраф прибавляется. */
+  /** Terms like `-00:05:00+00:03:00`: a bonus subtracts, a penalty adds. */
   private bonusTerms(bonuses: BonusEvent[]): string {
     return bonuses
       .map(bonus => {
-        const ms = bonus.minutes * 60_000;
+        const ms = BonusEvent.minutes(bonus) * 60_000;
         return (ms > 0 ? '-' : '+') + this.formatDuration(Math.abs(ms));
       })
       .join('');
@@ -556,6 +557,11 @@ export class GameLogPartComponent {
       return undefined;
     }
     return row.finishMs - startMs;
+  }
+
+  /** Bonus minutes of an event, read out of its effects. */
+  bonusMinutes(bonus: BonusEvent): number {
+    return BonusEvent.minutes(bonus);
   }
 
   bonusSourceLabel(source: BonusSource): string {
@@ -573,7 +579,7 @@ export class GameLogPartComponent {
     return source === BonusSource.timer ? AppIcon.effects : AppIcon.bonus;
   }
 
-  /** Класс ячейки по знаку бонуса: положительный — бонус, отрицательный — штраф. */
+  /** Cell class by the bonus sign: positive is a bonus, negative a penalty. */
   bonusClass(bonus: number | undefined): string {
     if (!bonus) {
       return '';
@@ -589,7 +595,7 @@ export class GameLogPartComponent {
     return this.pivotData.some(row => row.bonuses.length > 0);
   }
 
-  /** Вкладка «Бонусы» имеет смысл только когда бонусы вообще были. */
+  /** The bonuses tab only makes sense when there were bonuses at all. */
   showBonusesTab(): boolean {
     if (!this.hasAnyBonus()) {
       return false;
