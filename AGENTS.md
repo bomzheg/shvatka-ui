@@ -147,4 +147,6 @@ components are dumb/presentational pieces composed by larger feature components.
 - Auth gating is duplicated knowledge: protected routes exist both in the backend
   and in `HttpAdapter.isProtectedUrl`. Keep them in sync.
 - User-facing strings are Russian; don't accidentally introduce English copy.
+- **Comments and doc comments are English**, in contrast to the user-facing
+  strings around them.
 - `game_play.component.ts` is large (~700 lines) — read it fully before editing.

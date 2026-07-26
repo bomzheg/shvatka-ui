@@ -93,6 +93,16 @@
             [attr.aria-selected]="completedTab === 'chart'"
             (click)="setCompletedTab('chart')"
           >График</button>
+          @if (hasAnyBonus()) {
+            <button
+              type="button"
+              class="stat-tab"
+              role="tab"
+              [class.stat-tab-active]="completedTab === 'bonuses'"
+              [attr.aria-selected]="completedTab === 'bonuses'"
+              (click)="setCompletedTab('bonuses')"
+            >Бонусы</button>
+          }
         </div>
       }
 
@@ -114,6 +124,16 @@
             [attr.aria-selected]="statTab === 'pivot'"
             (click)="setStatTab('pivot')"
           >Статистика по уровням</button>
+          @if (hasAnyBonus()) {
+            <button
+              type="button"
+              class="stat-tab"
+              role="tab"
+              [class.stat-tab-active]="statTab === 'bonuses'"
+              [attr.aria-selected]="statTab === 'bonuses'"
+              (click)="setStatTab('bonuses')"
+            >Бонусы</button>
+          }
         </div>
       }
 
@@ -168,6 +188,55 @@
 
       @if (showPivotTable()) {
       <div class="game-stat">
+        @if (hasAnyBonus()) {
+          <div class="stat-tabs" role="radiogroup" aria-label="Учёт бонусов во времени">
+            <button
+              type="button"
+              class="stat-tab time-mode-btn"
+              role="radio"
+              [class.stat-tab-active]="timeMode === 'raw'"
+              [attr.aria-checked]="timeMode === 'raw'"
+              (click)="setTimeMode('raw')"
+              title="Время без учёта бонусов и штрафов"
+            >как есть</button>
+            <button
+              type="button"
+              class="stat-tab time-mode-btn"
+              role="radio"
+              [class.stat-tab-active]="timeMode === 'adjusted'"
+              [attr.aria-checked]="timeMode === 'adjusted'"
+              (click)="setTimeMode('adjusted')"
+              title="Бонус вычтен из времени, штраф прибавлен"
+            >с бонусами</button>
+            <button
+              type="button"
+              class="stat-tab time-mode-btn"
+              role="radio"
+              [class.stat-tab-active]="timeMode === 'expression'"
+              [attr.aria-checked]="timeMode === 'expression'"
+              (click)="setTimeMode('expression')"
+              title="Показать сам расчёт: время, бонусы и штрафы"
+            >с расчётом</button>
+          </div>
+
+          @if (isExpressionCell()) {
+            <div class="stat-tabs detail-row" role="radiogroup" aria-label="Подробность расчёта">
+              <span class="detail-label">Расчёт:</span>
+              @for (option of expressionDetails; track option.detail) {
+                <button
+                  type="button"
+                  class="stat-tab time-mode-btn"
+                  role="radio"
+                  [class.stat-tab-active]="expressionDetail === option.detail"
+                  [attr.aria-checked]="expressionDetail === option.detail"
+                  (click)="setExpressionDetail(option.detail)"
+                  [title]="option.title"
+                >{{ option.label }}</button>
+              }
+            </div>
+          }
+        }
+
         <h4 class="pivot-title">Время прохождения</h4>
         <div class="table-wrap">
           <table class="pivot-table">
@@ -182,6 +251,9 @@
                   }
                 </th>
               }
+              @if (showTotalColumn()) {
+                <th>Итого</th>
+              }
             </tr>
             </thead>
             <tbody>
@@ -191,7 +263,21 @@
                     <a class="team-link" [routerLink]="['/teams', row.teamId]">{{ row.teamName }}</a>
                   </td>
                   @for (lvl of allLevelNumbers; track lvl) {
-                    <td [class.min-duration]="isMinAbsoluteTime(lvl, row.absoluteTimeMs.get(lvl))">{{ row.absoluteTimes.get(lvl) ?? '—' }}</td>
+                    <td
+                      [class.min-duration]="isMinAbsoluteTime(lvl, comparableAbsoluteMs(row, lvl))"
+                      [class.expression-cell]="isExpressionCell()"
+                      [ngClass]="bonusClass(row.bonusMs.get(lvl))"
+                      [title]="cumulativeCellTitle(row, lvl)"
+                      (click)="onExpressionCellClick(cellKey(row, 'abs', lvl))"
+                    >{{ absoluteCell(row, lvl) }}</td>
+                  }
+                  @if (showTotalColumn()) {
+                    <td
+                      class="total-cell"
+                      [class.expression-cell]="isExpressionCell()"
+                      [title]="totalCellTitle(row, 'abs')"
+                      (click)="onExpressionCellClick(cellKey(row, 'abs', 'total'))"
+                    >{{ totalCell(row, 'abs') }}</td>
                   }
                 </tr>
               }
@@ -213,6 +299,9 @@
                   }
                 </th>
               }
+              @if (showTotalColumn()) {
+                <th>Итого</th>
+              }
             </tr>
             </thead>
             <tbody>
@@ -222,9 +311,21 @@
                     <a class="team-link" [routerLink]="['/teams', row.teamId]">{{ row.teamName }}</a>
                   </td>
                   @for (lvl of allLevelNumbers; track lvl) {
-                    <td [class.min-duration]="isMinDuration(lvl, row.durationMs.get(lvl))">
-                      {{ row.durations.get(lvl) ?? '—' }}
-                    </td>
+                    <td
+                      [class.min-duration]="isMinDuration(lvl, comparableDurationMs(row, lvl))"
+                      [class.expression-cell]="isExpressionCell()"
+                      [ngClass]="bonusClass(row.bonusMs.get(lvl))"
+                      [title]="levelCellTitle(row, lvl)"
+                      (click)="onExpressionCellClick(cellKey(row, 'dur', lvl))"
+                    >{{ durationCell(row, lvl) }}</td>
+                  }
+                  @if (showTotalColumn()) {
+                    <td
+                      class="total-cell"
+                      [class.expression-cell]="isExpressionCell()"
+                      [title]="totalCellTitle(row, 'dur')"
+                      (click)="onExpressionCellClick(cellKey(row, 'dur', 'total'))"
+                    >{{ totalCell(row, 'dur') }}</td>
                   }
                 </tr>
               }
@@ -232,6 +333,47 @@
           </table>
         </div>
       </div>
+      }
+
+      @if (showBonusesTab()) {
+        <div class="game-stat">
+          <h4 class="pivot-title">Бонусы и штрафы</h4>
+          @for (row of bonusRows(); track row.teamId) {
+            <div class="bonus-team">
+              <a class="team-link" [routerLink]="['/teams', row.teamId]">{{ row.teamName }}</a>
+              <span class="bonus-total" [ngClass]="bonusClass(row.totalBonusMs)">
+                итого {{ formatSignedDuration(row.totalBonusMs) }}
+              </span>
+            </div>
+            <div class="table-wrap">
+              <table class="pivot-table">
+                <thead>
+                <tr>
+                  <th>Время</th>
+                  <th>Уровень</th>
+                  <th>Минуты</th>
+                  <th>Источник</th>
+                </tr>
+                </thead>
+                <tbody>
+                  @for (bonus of row.bonuses; track bonus.at + bonusMinutes(bonus)) {
+                    <tr>
+                      <td>{{ toLocalHms(bonus.at) }}</td>
+                      <td>{{ levelLabelOf(bonus) }}</td>
+                      <td [ngClass]="bonusClass(bonusMinutes(bonus))">
+                        {{ bonusMinutes(bonus) > 0 ? '+' : '' }}{{ bonusMinutes(bonus) }}
+                      </td>
+                      <td>
+                        <mat-icon class="app-icon-inline" [svgIcon]="bonusSourceIcon(bonus.source)"/>
+                        {{ bonus.key ?? bonusSourceLabel(bonus.source) }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
       }
 
       @if (showCompletedChart()) {
