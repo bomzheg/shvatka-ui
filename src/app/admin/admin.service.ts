@@ -45,6 +45,11 @@ export class AdminService {
     return this.http.put<AdminEmail>(`/admin/players/${playerId}/email`, {email, verified});
   }
 
+  /** Rename the player. Same rules as the self-service change: a-z, A-Z, 0-9, _, 3-50 chars. */
+  setUsername(playerId: number, username: string): Observable<AdminPlayerDetails> {
+    return this.http.put<AdminPlayerDetails>(`/admin/players/${playerId}/username`, {username});
+  }
+
   relinkTg(
     playerId: number,
     tg: {tg_id: number; username?: string | null; first_name?: string | null; last_name?: string | null},

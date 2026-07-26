@@ -57,6 +57,24 @@
   </div>
 
   <div class="detail-section">
+    <h3 class="section-title">Имя пользователя</h3>
+    <p class="hint">Можно использовать a-z, A-Z, 0-9, _. Длина от 3 до 50 символов.</p>
+    <form class="section-form" (ngSubmit)="submitUsername()">
+      <label for="adminUsername">Username игрока</label>
+      <input
+        id="adminUsername"
+        name="adminUsername"
+        type="text"
+        autocomplete="off"
+        [(ngModel)]="usernameInput"
+      />
+      <button class="primary" type="submit" [disabled]="isUsernameSubmitting">
+        {{ isUsernameSubmitting ? 'Сохраняем...' : 'Сохранить username' }}
+      </button>
+    </form>
+  </div>
+
+  <div class="detail-section">
     <h3 class="section-title">Одноразовая ссылка для входа</h3>
     <p class="hint">Игрок откроет ссылку и войдёт под своим аккаунтом. Ссылка одноразовая и быстро протухает.</p>
     <button class="primary" type="button" (click)="createOneTimeLink()" [disabled]="isLinkCreating">

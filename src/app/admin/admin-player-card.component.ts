@@ -24,6 +24,9 @@ export class AdminPlayerCardComponent implements OnInit, OnDestroy {
   oneTimeLink = '';
   isLinkCreating = false;
 
+  usernameInput = '';
+  isUsernameSubmitting = false;
+
   emailInput = '';
   emailVerified = false;
   isEmailSubmitting = false;
@@ -93,6 +96,36 @@ export class AdminPlayerCardComponent implements OnInit, OnDestroy {
       () => this.snackbar.success('Ссылка скопирована в буфер обмена'),
       () => this.snackbar.info('Скопируйте ссылку вручную'),
     );
+  }
+
+  submitUsername(): void {
+    const username = this.usernameInput.trim();
+    if (!username) {
+      this.snackbar.error('Введите имя пользователя');
+      return;
+    }
+
+    this.isUsernameSubmitting = true;
+    this.adminService.setUsername(this.playerId, username).subscribe({
+      next: (updated) => {
+        this.isUsernameSubmitting = false;
+        this.player = updated;
+        this.fillFormsFromPlayer();
+        this.snackbar.success('Имя пользователя изменено');
+      },
+      error: (err) => {
+        this.isUsernameSubmitting = false;
+        if (err instanceof HttpErrorResponse && err.status === 409) {
+          this.snackbar.error('Это имя пользователя уже занято');
+          return;
+        }
+        if (err instanceof HttpErrorResponse && err.status === 422) {
+          this.snackbar.error('Можно использовать a-z, A-Z, 0-9, _. Длина от 3 до 50 символов');
+          return;
+        }
+        this.snackbar.error('Не удалось изменить имя пользователя');
+      },
+    });
   }
 
   submitEmail(): void {
@@ -182,6 +215,7 @@ export class AdminPlayerCardComponent implements OnInit, OnDestroy {
   }
 
   private fillFormsFromPlayer(): void {
+    this.usernameInput = this.player?.username ?? '';
     this.emailInput = this.player?.email?.email ?? '';
     this.emailVerified = this.player?.email?.is_verified ?? false;
     this.tgId = this.player?.tg?.tg_id ?? null;
