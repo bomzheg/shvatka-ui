@@ -215,9 +215,26 @@
               [class.stat-tab-active]="timeMode === 'expression'"
               [attr.aria-checked]="timeMode === 'expression'"
               (click)="setTimeMode('expression')"
-              [title]="timeMode === 'expression' ? expressionHint() : 'Показать сам расчёт: время, бонусы и штрафы'"
+              title="Показать сам расчёт: время, бонусы и штрафы"
             >с расчётом</button>
           </div>
+
+          @if (isExpressionCell()) {
+            <div class="stat-tabs detail-row" role="radiogroup" aria-label="Подробность расчёта">
+              <span class="detail-label">Расчёт:</span>
+              @for (option of expressionDetails; track option.detail) {
+                <button
+                  type="button"
+                  class="stat-tab time-mode-btn"
+                  role="radio"
+                  [class.stat-tab-active]="expressionDetail === option.detail"
+                  [attr.aria-checked]="expressionDetail === option.detail"
+                  (click)="setExpressionDetail(option.detail)"
+                  [title]="option.title"
+                >{{ option.label }}</button>
+              }
+            </div>
+          }
         }
 
         <h4 class="pivot-title">Время прохождения</h4>
@@ -251,16 +268,16 @@
                       [class.expression-cell]="isExpressionCell()"
                       [ngClass]="bonusClass(row.bonusMs.get(lvl))"
                       [title]="cumulativeCellTitle(row, lvl)"
-                      (click)="onExpressionCellClick()"
+                      (click)="onExpressionCellClick(cellKey(row, 'abs', lvl))"
                     >{{ absoluteCell(row, lvl) }}</td>
                   }
                   @if (showTotalColumn()) {
                     <td
                       class="total-cell"
                       [class.expression-cell]="isExpressionCell()"
-                      [title]="cellTitle(row.bonuses)"
-                      (click)="onExpressionCellClick()"
-                    >{{ totalCell(row) }}</td>
+                      [title]="totalCellTitle(row, 'abs')"
+                      (click)="onExpressionCellClick(cellKey(row, 'abs', 'total'))"
+                    >{{ totalCell(row, 'abs') }}</td>
                   }
                 </tr>
               }
@@ -299,16 +316,16 @@
                       [class.expression-cell]="isExpressionCell()"
                       [ngClass]="bonusClass(row.bonusMs.get(lvl))"
                       [title]="levelCellTitle(row, lvl)"
-                      (click)="onExpressionCellClick()"
+                      (click)="onExpressionCellClick(cellKey(row, 'dur', lvl))"
                     >{{ durationCell(row, lvl) }}</td>
                   }
                   @if (showTotalColumn()) {
                     <td
                       class="total-cell"
                       [class.expression-cell]="isExpressionCell()"
-                      [title]="cellTitle(row.bonuses)"
-                      (click)="onExpressionCellClick()"
-                    >{{ totalCell(row) }}</td>
+                      [title]="totalCellTitle(row, 'dur')"
+                      (click)="onExpressionCellClick(cellKey(row, 'dur', 'total'))"
+                    >{{ totalCell(row, 'dur') }}</td>
                   }
                 </tr>
               }

@@ -285,6 +285,14 @@ td {
 }
 
 .expression-cell { cursor: pointer; }
+
+.detail-row {
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.detail-label { opacity: 0.75; }
+
 .has-bonus { color: #2f8f4e; }
 .has-penalty { color: #c0392b; }
 .total-cell { font-weight: 600; }

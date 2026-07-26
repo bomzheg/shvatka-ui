@@ -129,7 +129,14 @@ export class GameLogPartComponent {
   completedTab: 'table' | 'chart' | 'bonuses' = 'table';
   timeMode: TimeMode = 'raw';
   expressionDetail: ExpressionDetail = 'grouped';
+  /** Per-cell overrides of `expressionDetail`, keyed by `cellKey`. */
+  private cellDetail = new Map<string, ExpressionDetail>();
   private teamKeysOpenState: Record<string, boolean> = {};
+  readonly expressionDetails: {detail: ExpressionDetail; label: string; title: string}[] = [
+    {detail: 'collapsed', label: 'только итог', title: 'Показывать только время с бонусами'},
+    {detail: 'grouped', label: 'кратко', title: 'Время, все бонусы и все штрафы — три части'},
+    {detail: 'full', label: 'полностью', title: 'Каждый бонус и штраф отдельным слагаемым'},
+  ];
 
   setStatTab(tab: 'results' | 'pivot' | 'bonuses'): void {
     this.statTab = tab;
@@ -140,25 +147,34 @@ export class GameLogPartComponent {
   }
 
   setTimeMode(mode: TimeMode): void {
-    // clicking "с расчётом" again cycles the detail — a keyboard-reachable
-    // path to the same thing clicking a cell does
-    if (mode === 'expression' && this.timeMode === 'expression') {
-      this.cycleExpressionDetail();
-      return;
-    }
     this.timeMode = mode;
     this.refreshModeDerived();
   }
 
-  /** Whether cells currently render the arithmetic rather than a single time. */
-  showsExpression(): boolean {
-    return this.timeMode === 'expression' && this.expressionDetail !== 'collapsed';
+  /** Set the detail for the whole table, dropping any per-cell overrides. */
+  setExpressionDetail(detail: ExpressionDetail): void {
+    this.expressionDetail = detail;
+    this.cellDetail.clear();
   }
 
-  /** grouped → collapsed → full → grouped. */
-  cycleExpressionDetail(): void {
-    const next = EXPRESSION_DETAIL_ORDER.indexOf(this.expressionDetail) + 1;
-    this.expressionDetail = EXPRESSION_DETAIL_ORDER[next % EXPRESSION_DETAIL_ORDER.length];
+  /** Detail of one cell: its own override, or whatever the table is set to. */
+  detailOf(key: string): ExpressionDetail {
+    return this.cellDetail.get(key) ?? this.expressionDetail;
+  }
+
+  /** Whether one cell renders the arithmetic rather than a single time. */
+  showsExpression(key: string): boolean {
+    return this.timeMode === 'expression' && this.detailOf(key) !== 'collapsed';
+  }
+
+  /** Cycle one cell only: grouped → collapsed → full → grouped. */
+  onExpressionCellClick(key: string): void {
+    if (!this.isExpressionCell()) {
+      return;
+    }
+    const current = EXPRESSION_DETAIL_ORDER.indexOf(this.detailOf(key));
+    const next = EXPRESSION_DETAIL_ORDER[(current + 1) % EXPRESSION_DETAIL_ORDER.length];
+    this.cellDetail.set(key, next);
   }
 
   /** Expression cells react to a click, so mark them as such. */
@@ -166,14 +182,16 @@ export class GameLogPartComponent {
     return this.timeMode === 'expression';
   }
 
-  onExpressionCellClick(): void {
-    if (this.isExpressionCell()) {
-      this.cycleExpressionDetail();
-    }
+  /**
+   * Identifies one cell for its detail override. The two pivot tables show the
+   * same team and level, so the table has to be part of the key.
+   */
+  cellKey(row: TeamPivotData, table: 'abs' | 'dur', level: number | 'total'): string {
+    return `${table}:${row.teamId}:${level}`;
   }
 
-  expressionHint(): string {
-    switch (this.expressionDetail) {
+  expressionHint(key: string): string {
+    switch (this.detailOf(key)) {
       case 'grouped':
         return 'Нажмите, чтобы свернуть расчёт';
       case 'collapsed':
@@ -532,10 +550,14 @@ export class GameLogPartComponent {
     if (this.timeMode === 'raw' || bonus === 0) {
       return this.formatDuration(raw);
     }
-    if (!this.showsExpression()) {
+    const key = this.cellKey(row, 'dur', levelNumber);
+    if (!this.showsExpression(key)) {
       return this.formatSignedDuration(raw - bonus);
     }
-    return this.formatDuration(raw) + this.bonusTerms(row.bonusesByLevel.get(levelNumber) ?? []);
+    return (
+      this.formatDuration(raw)
+      + this.bonusTerms(row.bonusesByLevel.get(levelNumber) ?? [], this.detailOf(key))
+    );
   }
 
   /** Level closing time in the selected mode. */
@@ -548,27 +570,31 @@ export class GameLogPartComponent {
     if (this.timeMode === 'raw' || bonus === 0) {
       return row.absoluteTimes.get(levelNumber) ?? NO_VALUE;
     }
-    if (!this.showsExpression()) {
+    const key = this.cellKey(row, 'abs', levelNumber);
+    if (!this.showsExpression(key)) {
       return this.msToLocalHms(raw - bonus);
     }
-    return (row.absoluteTimes.get(levelNumber) ?? NO_VALUE)
-      + this.bonusTerms(this.cumulativeBonuses(row, levelNumber));
+    return (
+      (row.absoluteTimes.get(levelNumber) ?? NO_VALUE)
+      + this.bonusTerms(this.cumulativeBonuses(row, levelNumber), this.detailOf(key))
+    );
   }
 
   /** The team's total time with every bonus applied — its actual result. */
-  totalCell(row: TeamPivotData): string {
+  totalCell(row: TeamPivotData, table: 'abs' | 'dur'): string {
     const total = this.totalRawMs(row);
     if (total === undefined) {
       return NO_VALUE;
     }
-    if (this.showsExpression()) {
-      return this.formatDuration(total) + this.bonusTerms(row.bonuses);
+    const key = this.cellKey(row, table, 'total');
+    if (this.showsExpression(key)) {
+      return this.formatDuration(total) + this.bonusTerms(row.bonuses, this.detailOf(key));
     }
     return this.formatSignedDuration(total - row.totalBonusMs);
   }
 
   /** Full breakdown for the tooltip — available in every mode. */
-  cellTitle(bonuses: BonusEvent[]): string {
+  cellTitle(bonuses: BonusEvent[], key = ''): string {
     if (bonuses.length === 0) {
       return '';
     }
@@ -580,15 +606,25 @@ export class GameLogPartComponent {
         return `${this.toLocalHms(bonus.at)} ${what} ${Math.abs(minutes)} мин. (${where})`;
       })
       .join('\n');
-    return this.isExpressionCell() ? `${breakdown}\n\n${this.expressionHint()}` : breakdown;
+    return this.isExpressionCell() ? `${breakdown}\n\n${this.expressionHint(key)}` : breakdown;
   }
 
   levelCellTitle(row: TeamPivotData, levelNumber: number): string {
-    return this.cellTitle(row.bonusesByLevel.get(levelNumber) ?? []);
+    return this.cellTitle(
+      row.bonusesByLevel.get(levelNumber) ?? [],
+      this.cellKey(row, 'dur', levelNumber),
+    );
   }
 
   cumulativeCellTitle(row: TeamPivotData, levelNumber: number): string {
-    return this.cellTitle(this.cumulativeBonuses(row, levelNumber));
+    return this.cellTitle(
+      this.cumulativeBonuses(row, levelNumber),
+      this.cellKey(row, 'abs', levelNumber),
+    );
+  }
+
+  totalCellTitle(row: TeamPivotData, table: 'abs' | 'dur'): string {
+    return this.cellTitle(row.bonuses, this.cellKey(row, table, 'total'));
   }
 
   /**
@@ -598,8 +634,8 @@ export class GameLogPartComponent {
    * all penalties — so a team with a dozen bonuses still fits in its column.
    * Full spells out every event.
    */
-  private bonusTerms(bonuses: BonusEvent[]): string {
-    if (this.expressionDetail === 'full') {
+  private bonusTerms(bonuses: BonusEvent[], detail: ExpressionDetail): string {
+    if (detail === 'full') {
       return bonuses.map(bonus => this.term(BonusEvent.minutes(bonus) * 60_000)).join('');
     }
     let bonusMs = 0;

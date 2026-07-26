@@ -149,52 +149,76 @@ describe('GameLogPartComponent bonuses', () => {
     expect(component.durationCell(component.pivotData[0], 0)).toBe('00:20:00+00:05:00');
   });
 
-  it('cycles the expression detail: grouped, collapsed, full', () => {
+  it('cycles one cell through grouped, collapsed, full', () => {
     const component = componentWith([bonus(3, 0), bonus(10, 0), bonus(-2, 0)]);
     component.setTimeMode('expression');
     const row = () => component.pivotData[0];
-    expect(component.expressionDetail).toBe('grouped');
+    const key = component.cellKey(row(), 'dur', 0);
     expect(component.durationCell(row(), 0)).toBe('00:20:00-00:13:00+00:02:00');
 
-    component.cycleExpressionDetail();
-    expect(component.expressionDetail).toBe('collapsed');
+    component.onExpressionCellClick(key);
     // 20 minutes minus a net 11 minutes of bonus
     expect(component.durationCell(row(), 0)).toBe('00:09:00');
 
-    component.cycleExpressionDetail();
-    expect(component.expressionDetail).toBe('full');
+    component.onExpressionCellClick(key);
     expect(component.durationCell(row(), 0)).toBe('00:20:00-00:03:00-00:10:00+00:02:00');
 
-    component.cycleExpressionDetail();
-    expect(component.expressionDetail).toBe('grouped');
+    component.onExpressionCellClick(key);
     expect(component.durationCell(row(), 0)).toBe('00:20:00-00:13:00+00:02:00');
+  });
+
+  it('leaves the other cells alone when one is clicked', () => {
+    const component = componentWith([bonus(5, 0), bonus(3, 1)]);
+    component.setTimeMode('expression');
+    const row = () => component.pivotData[0];
+    component.onExpressionCellClick(component.cellKey(row(), 'dur', 0));
+
+    expect(component.durationCell(row(), 0)).toBe('00:15:00');
+    // level 1 and the same level in the other table keep the table-wide detail
+    expect(component.durationCell(row(), 1)).toBe('00:10:00-00:03:00');
+    expect(component.absoluteCell(row(), 0)).toContain('-00:05:00');
+    expect(component.expressionDetail).toBe('grouped');
+  });
+
+  it('the table-wide buttons reset per-cell overrides', () => {
+    const component = componentWith([bonus(5, 0)]);
+    component.setTimeMode('expression');
+    const row = () => component.pivotData[0];
+    const key = component.cellKey(row(), 'dur', 0);
+    component.onExpressionCellClick(key);
+    expect(component.detailOf(key)).toBe('collapsed');
+
+    component.setExpressionDetail('full');
+    expect(component.detailOf(key)).toBe('full');
+    expect(component.durationCell(row(), 0)).toBe('00:20:00-00:05:00');
+  });
+
+  it('the table-wide buttons drive every cell at once', () => {
+    const component = componentWith([bonus(5, 0), bonus(3, 1)]);
+    component.setTimeMode('expression');
+    const row = () => component.pivotData[0];
+    component.setExpressionDetail('collapsed');
+    expect(component.durationCell(row(), 0)).toBe('00:15:00');
+    expect(component.durationCell(row(), 1)).toBe('00:07:00');
   });
 
   it('groups the total the same way, so a long game stays three parts', () => {
     const component = componentWith([bonus(5, 0), bonus(3, 1), bonus(-2, 0), bonus(-1, 1)]);
     component.setTimeMode('expression');
-    expect(component.totalCell(component.pivotData[0])).toBe('00:30:00-00:08:00+00:03:00');
-  });
-
-  it('re-clicking the expression mode cycles the detail instead of resetting it', () => {
-    const component = componentWith([bonus(5, 0)]);
-    component.setTimeMode('expression');
-    expect(component.expressionDetail).toBe('grouped');
-    component.setTimeMode('expression');
-    expect(component.timeMode).toBe('expression');
-    expect(component.expressionDetail).toBe('collapsed');
+    expect(component.totalCell(component.pivotData[0], 'dur')).toBe('00:30:00-00:08:00+00:03:00');
   });
 
   it('only treats cells as clickable in expression mode', () => {
     const component = componentWith([bonus(5, 0)]);
+    const key = component.cellKey(component.pivotData[0], 'dur', 0);
     expect(component.isExpressionCell()).toBeFalse();
-    component.onExpressionCellClick();
-    expect(component.expressionDetail).toBe('grouped');
+    component.onExpressionCellClick(key);
+    expect(component.detailOf(key)).toBe('grouped');
 
     component.setTimeMode('expression');
     expect(component.isExpressionCell()).toBeTrue();
-    component.onExpressionCellClick();
-    expect(component.expressionDetail).toBe('collapsed');
+    component.onExpressionCellClick(key);
+    expect(component.detailOf(key)).toBe('collapsed');
   });
 
   it('leaves untouched levels alone in expression mode', () => {
@@ -225,7 +249,7 @@ describe('GameLogPartComponent bonuses', () => {
     expect(row.totalBonusMs).toBe(12 * 60_000);
     component.setTimeMode('adjusted');
     // 30 minutes of game in total, minus 12 minutes of bonuses
-    expect(component.totalCell(row)).toBe('00:18:00');
+    expect(component.totalCell(row, 'dur')).toBe('00:18:00');
   });
 
   it('shows the total column only outside raw mode', () => {
@@ -334,26 +358,52 @@ describe('GameLogPartComponent bonuses rendering', () => {
     expect(cell.getAttribute('title')).toContain('штраф 5 мин.');
   });
 
-  it('cycles the detail when an expression cell is clicked', () => {
-    const fixture = renderWith([bonus(3, 0), bonus(10, 0), bonus(-2, 0)]);
+  it('cycles only the clicked cell', () => {
+    const fixture = renderWith([bonus(3, 0), bonus(10, 0), bonus(-2, 0), bonus(4, 1)]);
     fixture.componentInstance.setTimeMode('expression');
     fixture.detectChanges();
 
+    const cells = () => {
+      const tables = fixture.nativeElement.querySelectorAll('.pivot-table');
+      return [...tables[tables.length - 1].querySelectorAll('tbody td.expression-cell')];
+    };
+    const textAt = (i: number) => (cells()[i].textContent ?? '').trim();
+    expect(textAt(0)).toBe('00:20:00-00:13:00+00:02:00');
+    expect(textAt(1)).toBe('00:10:00-00:04:00');
+
+    cells()[0].click();
+    fixture.detectChanges();
+    expect(textAt(0)).toBe('00:09:00');
+    expect(textAt(1)).toBe('00:10:00-00:04:00');
+
+    cells()[0].click();
+    fixture.detectChanges();
+    expect(textAt(0)).toBe('00:20:00-00:03:00-00:10:00+00:02:00');
+    expect(textAt(1)).toBe('00:10:00-00:04:00');
+
+    cells()[0].click();
+    fixture.detectChanges();
+    expect(textAt(0)).toBe('00:20:00-00:13:00+00:02:00');
+  });
+
+  it('offers table-wide detail buttons only in expression mode', () => {
+    const fixture = renderWith([bonus(5, 0), bonus(3, 1)]);
+    expect(fixture.nativeElement.querySelector('.detail-row')).toBeNull();
+
+    fixture.componentInstance.setTimeMode('expression');
+    fixture.detectChanges();
+    const buttons = fixture.nativeElement.querySelectorAll('.detail-row .time-mode-btn');
+    expect([...buttons].map((b: Element) => (b.textContent ?? '').trim()))
+      .toEqual(['только итог', 'кратко', 'полностью']);
+
+    // "полностью" expands every cell at once
+    buttons[2].click();
+    fixture.detectChanges();
     const tables = fixture.nativeElement.querySelectorAll('.pivot-table');
-    const cell = tables[tables.length - 1].querySelector('tbody td.expression-cell');
-    expect(cell.textContent.trim()).toBe('00:20:00-00:13:00+00:02:00');
-
-    cell.click();
-    fixture.detectChanges();
-    expect(cell.textContent.trim()).toBe('00:09:00');
-
-    cell.click();
-    fixture.detectChanges();
-    expect(cell.textContent.trim()).toBe('00:20:00-00:03:00-00:10:00+00:02:00');
-
-    cell.click();
-    fixture.detectChanges();
-    expect(cell.textContent.trim()).toBe('00:20:00-00:13:00+00:02:00');
+    const cells = [...tables[tables.length - 1].querySelectorAll('tbody td.expression-cell')];
+    expect((cells[0].textContent ?? '').trim()).toBe('00:20:00-00:05:00');
+    expect((cells[1].textContent ?? '').trim()).toBe('00:10:00-00:03:00');
+    expect(buttons[2].classList).toContain('stat-tab-active');
   });
 
   it('marks cells clickable only while showing an expression', () => {
