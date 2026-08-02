@@ -120,7 +120,7 @@ collapse the two in copy or in conditionals.
 | **Time hint** | Подсказка | A batch of content released this many minutes after the team reached the level. Rendered as `Подсказка N мин.` | `TimeHint`, `hint.part/` |
 | **Hint part** | Часть подсказки | One piece of a hint's content: text, photo, video, audio, document, GPS point, venue, contact, sticker… A hint is a list of parts. | `HintPart`, `HintType` |
 | **Key** | Ключ | The code string a team submits. Starts with `SH` or `СХ`, then uppercase Latin/Cyrillic letters and digits — e.g. `SHHELLO99`, `СХПРИВЕТ13`. | `game_play/`, `constructor/` |
-| **Master key** | — | The key that completes the level. Modelled as the win condition (`WIN_KEY`): a set of keys, **all** required, in any order. At most one per level. | `ScenarioConditionType.winKey` |
+| **Master key** | Мастер-ключ | The key that completes the level. Modelled as the win condition (`WIN_KEY`): a set of keys, **all** required, in any order. At most one per level. | `ScenarioConditionType.winKey` |
 | **Effects key** | Ключ с эффектами | A key that triggers effects instead of (or as well as) completing the level. Any number per level. | `ScenarioConditionType.effectsKey` |
 | **Timer** | Таймер | Time from the start of the level at which effects fire. Any number per level; at most one may end the level. | `ScenarioConditionType.effectsTimer`, `action_time` |
 | **Condition** | Условие | The general form of "when X, do Y" in a level — win key, effects key, or effects timer. | `ScenarioCondition` |
