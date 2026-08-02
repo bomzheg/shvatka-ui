@@ -67,7 +67,7 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 | **User** | Пользователь | A Telegram account. Purely an external identity — no game meaning on its own. | `auth/user.service.ts` |
 | **Player** | Игрок | A person as the domain knows them: the identity everything else hangs off. May be linked to Telegram, to a forum account, to an email, or to none. | `Player` in `domain/game.models.ts` |
 | **`name_mention`** | — | The display name for a player, already resolved by the API. Render it as given; don't re-derive a name from username/first name. | `Player.name_mention` |
-| **Dummy player** | Пустышка | A player imported from the old forum with nobody behind it yet. Merged into a live player later. | admin merge screens |
+| **Dummy player** | — | A player imported from the old forum with nobody behind it yet. Merged into a live player later. | admin merge screens |
 | **Author** | Автор | A player allowed to write games (`can_be_author`). Granted by another author — see *promotion*. | `Player.can_be_author` |
 | **Promotion** | Аппрув | An author invites a player to become an author. Arrives as a request. | `notifications/` |
 | **Superuser** | Админ движка | An operator of the engine itself, above the game roles. Gates `/admin`. | `admin/`, `app.routes.ts` |
@@ -100,11 +100,11 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 | Status | Русский | Meaning |
 | --- | --- | --- |
 | `underconstruction` | в процессе создания | Being written. Editable. |
-| `ready` | полностью готова | Finished scenario, not yet collecting waivers. |
+| `ready` | полностью готова | Finished scenario, not yet collecting waivers. **Not used any more** — kept for old games; a game goes straight from `underconstruction` to `getting_waivers`. |
 | `getting_waivers` | сбор вейверов | Teams are declaring who plays. Still editable. |
 | `started` | началась | Being played. |
 | `finished` | все команды финишировали | Every team has passed the last level; results not yet closed. |
-| `complete` | завершена | Closed and archived; the game gets its number here. |
+| `complete` | завершена | **Terminal.** Closed and archived; the game gets its number here. This is also the status that makes a game public: any player may read the game, its whole scenario, its key log and its results, with no organizer permission involved — which is what the archive and the game card rely on. |
 
 **`finished` is not `complete`** — the distinction is visible to users, so don't
 collapse the two in copy or in conditionals.
@@ -120,7 +120,7 @@ collapse the two in copy or in conditionals.
 | **Time hint** | Подсказка | A batch of content released this many minutes after the team reached the level. Rendered as `Подсказка N мин.` | `TimeHint`, `hint.part/` |
 | **Hint part** | Часть подсказки | One piece of a hint's content: text, photo, video, audio, document, GPS point, venue, contact, sticker… A hint is a list of parts. | `HintPart`, `HintType` |
 | **Key** | Ключ | The code string a team submits. Starts with `SH` or `СХ`, then uppercase Latin/Cyrillic letters and digits — e.g. `SHHELLO99`, `СХПРИВЕТ13`. | `game_play/`, `constructor/` |
-| **Master key** | Мастер-ключ | The key that completes the level. Modelled as the win condition (`WIN_KEY`): a set of keys, **all** required, in any order. At most one per level. | `ScenarioConditionType.winKey` |
+| **Master key** | — | The key that completes the level. Modelled as the win condition (`WIN_KEY`): a set of keys, **all** required, in any order. At most one per level. | `ScenarioConditionType.winKey` |
 | **Effects key** | Ключ с эффектами | A key that triggers effects instead of (or as well as) completing the level. Any number per level. | `ScenarioConditionType.effectsKey` |
 | **Timer** | Таймер | Time from the start of the level at which effects fire. Any number per level; at most one may end the level. | `ScenarioConditionType.effectsTimer`, `action_time` |
 | **Condition** | Условие | The general form of "when X, do Y" in a level — win key, effects key, or effects timer. | `ScenarioCondition` |
@@ -168,7 +168,7 @@ the language should be enforced in one place.
 
 | Term | Русский | Meaning | Where |
 | --- | --- | --- | --- |
-| **Action request** | Запрос | A user-to-user request needing someone's decision: `pending` → `accepted` / `declined` / `cancelled` / `expired`. Types: team join invite, team join request, org invite, team merge, player merge, promotion. | `notifications/` |
+| **Action request** | Заявка | A user-to-user request needing someone's decision: `pending` → `accepted` / `declined` / `cancelled` / `expired`. Types: team join invite, team join request, org invite, team merge, player merge, promotion. | `notifications/` |
 | **Notification** | Уведомление | One inbox item for exactly one recipient — the record that something happened. A request produces notifications; a notification is not itself actionable. | `notifications/`, `notification-render.ts` |
 | **Severity** | Важность | How much a notification matters (`low` / `normal` / `important`); drives UI emphasis and push urgency. | `notifications/` |
 | **Push** | Пуш | A web push notification delivered through the service worker. | `push/`, `src/push-sw.js` |
@@ -205,11 +205,12 @@ in code and in Russian UI copy alike.
 | Not this | Say this | Why |
 | --- | --- | --- |
 | Quest, task, stage, mission | **Level** — уровень | The domain word is уровень; the others come from other games. |
-| Answer, code, password | **Key** — ключ | A key has a defined format and a life in the key log. |
+| Answer, password | **Key** — ключ | A key has a defined format and a life in the key log. |
+| Code / код | **Key** — ключ | People do say *код* out loud, and that's fine in speech — but it isn't the term. In code and copy it's a key, because only a key has the `SH`/`СХ` format and a row in the key log. |
 | Registration, application, sign-up | **Waiver** — вейвер | Вейвер is the domain word and covers the vote → approve flow. |
 | Admin (for a game) | **Organizer** / **org** — организатор, орг | *Admin* means the engine's superuser, who owns `/admin`. A game has organizers. |
 | Moderator | **Organizer** or **superuser** | Neither role exists under that name. |
-| Level text | **Puzzle** — загадка уровня | There is no separate "level text" concept; it is the 0-minute hint. |
+| Level text / текст уровня | **Puzzle** — загадка уровня | Say *текст уровня* all you like in conversation; it's the popular name and it's exact whenever the puzzle happens to be text. In UI copy use *загадка уровня*, because a puzzle can just as well be a photo, a video or an audio file, and because there is no separate "level text" in the model — it is the 0-minute hint. |
 | Clue, tip | **Hint** — подсказка | One word for the thing released on a timer. |
 | Fine, malus | **Penalty** — штраф | A penalty is a negative bonus, not another field. |
 | Group, squad, crew | **Team** — команда | Group means a Telegram chat here. |
