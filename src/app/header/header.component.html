@@ -20,7 +20,7 @@
       <a routerLink="/games/running" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games/running', $event)">Текущая игра</a>
     }
     @if (isAuthenticated() && canBeAuthor()) {
-      <a routerLink="/games/constructor" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games/constructor', $event)">Черновики</a>
+      <a routerLink="/games/constructor" routerLinkActive="active" class="nav-link" (click)="onNavClick('/games/constructor', $event)">Мои игры</a>
     }
     @if (isAuthenticated()) {
       <a routerLink="/team" routerLinkActive="active" class="nav-link" (click)="onNavClick('/team', $event)">Команда</a>
@@ -189,7 +189,7 @@
   @if (isAuthenticated() && canBeAuthor()) {
     <a routerLink="/games/constructor" class="mobile-link" routerLinkActive="active" (click)="onNavClick('/games/constructor', $event)">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-      <span>Черновики</span>
+      <span>Мои игры</span>
     </a>
   }
   @if (isAuthenticated()) {

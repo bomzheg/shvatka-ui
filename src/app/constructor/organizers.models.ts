@@ -55,10 +55,10 @@ export interface OrgPermissionLabel {
 
 /** UI labels (ru) for each permission, in display order. */
 export const ORG_PERMISSION_LABELS: OrgPermissionLabel[] = [
-  {key: "can_spy", label: "Наблюдение за командами"},
-  {key: "can_see_log_keys", label: "Лог ключей"},
-  {key: "can_validate_waivers", label: "Проверка вейверов"},
-  {key: "view_scenario", label: "Просмотр сценария"},
+  {key: "can_spy", label: "Шпионить"},
+  {key: "can_see_log_keys", label: "Смотреть лог ключей"},
+  {key: "can_validate_waivers", label: "Принимать вейверы"},
+  {key: "view_scenario", label: "Смотреть сценарий"},
 ];
 
 /** The valid permission keys — used for client-side validation of the PUT. */

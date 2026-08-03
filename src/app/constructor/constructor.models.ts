@@ -273,12 +273,12 @@ export const CONTENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export const STATUS_LABELS: Record<string, string> = {
-  underconstruction: "В разработке",
-  ready: "Готова",
+  underconstruction: "В процессе создания",
+  ready: "Полностью готова",
   getting_waivers: "Сбор вейверов",
-  started: "Идёт",
-  finished: "Завершена",
-  complete: "Опубликована",
+  started: "Началась",
+  finished: "Все команды финишировали",
+  complete: "Завершена",
 };
 
 export const EDITABLE_STATUSES = ["underconstruction", "ready", "getting_waivers"];

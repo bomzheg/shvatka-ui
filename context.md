@@ -83,7 +83,7 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 | **Team player** | Участник команды | A player's membership in a team over an interval, with a role, an emoji and permissions. A player is in at most one team at a time. | `team/`, `team_card/` |
 | **Captain** | Капитан | The team's head: submits waivers, manages membership, implicitly holds every team permission. | `Team.captain`, `ui/role-emoji.ts` |
 | **Role** | Роль | Free text for what a member does in the field: `полевой`, `водитель`, `мозг`, `капитан`… Each has a default emoji. | `ui/role-emoji.ts` |
-| **Team permission** | Полномочие | A right delegated by the captain: manage waivers, manage players, change the team name, add/remove players. The captain has all of them regardless. | `team/` |
+| **Team permission** | Полномочие | A right delegated by the captain: manage waivers, manage players, change the team name, add/remove players. The captain has all of them regardless. The labels are the bot's, see below. | `team/` |
 
 ## Game
 
@@ -93,7 +93,7 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 | **Game status** | Статус игры | Where the game is in its lifecycle — see below. Drives what the UI offers. | `FullGame.status` |
 | **Game number** | Номер игры | The game's place in the archive; only played games have one. | games list |
 | **Organizer (org)** | Организатор (орг) | A player who runs a game rather than playing it. The author is the **primary organizer** with every right; others are **secondary organizers** with explicit permissions and **nothing granted by default**. | `game_play/` |
-| **Org permission** | Полномочие орга | What a secondary organizer may do: spy, see the key log, validate waivers, view the scenario. | `game_play.component.html` |
+| **Org permission** | Полномочие орга | What a secondary organizer may do: spy, see the key log, validate waivers, view the scenario. **Nothing is granted by default.** The labels are the bot's, see below. | `game_play.component.html`, `constructor/organizers.models.ts` |
 
 ### Game statuses
 
@@ -181,6 +181,31 @@ the language should be enforced in one place.
 | **Snippet** | — | The excerpt around a match; highlighted rather than re-searched client-side. | `ui/highlight-query.pipe.ts` |
 
 ---
+
+## Permission labels
+
+A permission is one thing with one name. A player who sees «Шпионить» in the bot
+must see «Шпионить» here too, and the user documentation describes exactly these
+words — so when a label changes, it changes in the bot, here and in the docs
+together.
+
+| Field | Русский |
+| --- | --- |
+| `can_manage_waivers` | Подавать вейверы |
+| `can_manage_players` | Управлять игроками |
+| `can_change_team_name` | Переименовывать команду |
+| `can_add_players` | Добавлять игроков |
+| `can_remove_players` | Удалять игроков |
+| `can_spy` | Шпионить |
+| `can_see_log_keys` | Смотреть лог ключей |
+| `can_validate_waivers` | Принимать вейверы |
+| `view_scenario` | Смотреть сценарий |
+
+Game statuses work the same way: their Russian names come from the engine
+(`status_desc` in `core/models/enums/game_status.py`) and live in `STATUS_LABELS`.
+Note that **finished** is «все команды финишировали» and **complete** is
+«завершена» — calling `finished` «завершена» merges two different states, and
+«опубликована» is publication, a separate thing.
 
 ## Naming rules that follow from the language
 

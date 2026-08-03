@@ -66,11 +66,11 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
   hardAddPlayer = false;
 
   readonly permissionLabels: PermissionLabel[] = [
-    {key: 'can_manage_waivers', label: 'Вейверы'},
-    {key: 'can_manage_players', label: 'Управление участниками'},
-    {key: 'can_change_team_name', label: 'Изменить название'},
+    {key: 'can_manage_waivers', label: 'Подавать вейверы'},
+    {key: 'can_manage_players', label: 'Управлять игроками'},
+    {key: 'can_change_team_name', label: 'Переименовывать команду'},
     {key: 'can_add_players', label: 'Добавлять игроков'},
-    {key: 'can_remove_players', label: 'Исключать игроков'},
+    {key: 'can_remove_players', label: 'Удалять игроков'},
   ];
 
   private searchTimer: ReturnType<typeof setTimeout> | undefined;

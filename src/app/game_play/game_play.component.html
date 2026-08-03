@@ -240,9 +240,9 @@
               <p><mat-icon class="app-icon-inline app-icon-danger" [svgIcon]="AppIcon.cancel"/>Не могу смотреть лог ключей</p>
             }
             @if (getMyOrg()?.can_spy) {
-              <p><mat-icon class="app-icon-inline app-icon-success" [svgIcon]="AppIcon.check"/>Могу смотреть какая команда на каком уровне</p>
+              <p><mat-icon class="app-icon-inline app-icon-success" [svgIcon]="AppIcon.check"/>Могу шпионить</p>
             } @else {
-              <p><mat-icon class="app-icon-inline app-icon-danger" [svgIcon]="AppIcon.cancel"/>Не могу смотреть какая команда на каком уровне</p>
+              <p><mat-icon class="app-icon-inline app-icon-danger" [svgIcon]="AppIcon.cancel"/>Не могу шпионить</p>
             }
             @if (getMyOrg()?.view_scenario) {
               <p><mat-icon class="app-icon-inline app-icon-success" [svgIcon]="AppIcon.check"/>Могу смотреть сценарий</p>

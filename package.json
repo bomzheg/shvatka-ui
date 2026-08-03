@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "mock": "node tools/mock-api/mock-api.mjs",
+    "start:mock": "ng serve --proxy-config proxy.mock.json"
   },
   "private": true,
   "dependencies": {
