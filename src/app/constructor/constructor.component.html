@@ -1,5 +1,5 @@
 <section class="constructor-page">
-  <h1>Конструктор игр</h1>
+  <h1>Мои игры</h1>
 
   @if (!isAuthenticated) {
     <p>Авторизуйтесь, чтобы создавать и редактировать игры.</p>
@@ -19,8 +19,6 @@
       </div>
     </form>
 
-    <h2 class="drafts-title">Мои черновики</h2>
-
     @if (isLoading) {
       <div class="loading-state" aria-live="polite">
         <span class="loading-spinner"></span>
@@ -38,7 +36,7 @@
         }
       </ul>
     } @else {
-      <p class="empty-state">У вас пока нет игр-черновиков. Создайте первую выше.</p>
+      <p class="empty-state">У вас пока нет игр. Создайте первую выше.</p>
     }
   }
 </section>
