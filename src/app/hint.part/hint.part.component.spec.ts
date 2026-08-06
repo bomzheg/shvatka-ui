@@ -11,16 +11,27 @@ describe('HintPartComponent', () => {
   let component: HintPartComponent;
   let fixture: ComponentFixture<HintPartComponent>;
 
-  function photo(hasSpoiler: boolean | null | undefined): HintPart {
-    const hint = new HintPart(HintType.photo);
+  const FILE_URL = 'https://cdn.example/media';
+  const THUMB_URL = 'https://cdn.example/thumb.jpg';
+
+  function media(type: HintType, hasSpoiler: boolean | null | undefined): HintPart {
+    const hint = new HintPart(type);
     hint.file_guid = 'guid';
     hint.has_spoiler = hasSpoiler;
     return hint;
   }
 
-  function render(hint: HintPart): HTMLElement {
+  function photo(hasSpoiler: boolean | null | undefined): HintPart {
+    return media(HintType.photo, hasSpoiler);
+  }
+
+  /** Bind a hint the way Angular would: set the inputs, then run ngOnChanges. */
+  function render(hint: HintPart, thumbUrl?: string): HTMLElement {
+    const previous = component.hint;
     component.hint = hint;
-    component.fileUrl = 'https://cdn.example/photo.jpg';
+    component.fileUrl = FILE_URL;
+    component.thumbUrl = thumbUrl;
+    component.ngOnChanges({hint: new SimpleChange(previous, hint, false)});
     fixture.detectChanges();
     return fixture.nativeElement as HTMLElement;
   }
@@ -48,17 +59,17 @@ describe('HintPartComponent', () => {
 
     const cover = el.querySelector('button.hint-spoiler');
     expect(cover).withContext('spoilered photo must start covered').toBeTruthy();
-    expect(el.querySelector('img.hint-spoiler-image')).toBeTruthy();
+    // A photo blurs itself, so the cover shows the file, not a thumbnail.
+    expect(el.querySelector('img.hint-spoiler-image')?.getAttribute('src')).toBe(FILE_URL);
 
     (cover as HTMLButtonElement).click();
     fixture.detectChanges();
 
     expect(el.querySelector('button.hint-spoiler')).toBeNull();
-    const img = el.querySelector('img') as HTMLImageElement;
-    expect(img.src).toBe('https://cdn.example/photo.jpg');
+    expect((el.querySelector('img') as HTMLImageElement).src).toBe(FILE_URL);
   });
 
-  it('keeps the caption visible while the photo is covered', () => {
+  it('keeps the caption visible while the media is covered', () => {
     const hint = photo(true);
     hint.caption = 'подпись';
     const el = render(hint);
@@ -67,17 +78,58 @@ describe('HintPartComponent', () => {
     expect(el.querySelector('.hint-caption')?.textContent).toContain('подпись');
   });
 
-  it('shows a photo with no spoiler flag as usual', () => {
+  it('shows media with no spoiler flag as usual', () => {
     for (const value of [undefined, null, false] as (boolean | null | undefined)[]) {
-      const el = render(photo(value));
-      expect(el.querySelector('button.hint-spoiler'))
-        .withContext(`has_spoiler=${value} must not cover the photo`)
-        .toBeNull();
-      expect(el.querySelector('img')).toBeTruthy();
+      for (const type of [HintType.photo, HintType.video, HintType.animation]) {
+        const el = render(media(type, value));
+        expect(el.querySelector('button.hint-spoiler'))
+          .withContext(`${type} with has_spoiler=${value} must not be covered`)
+          .toBeNull();
+      }
     }
   });
 
-  it('covers the new photo again when the hint changes', () => {
+  it('covers a spoilered video and animation, holding back the player', () => {
+    for (const type of [HintType.video, HintType.animation]) {
+      const el = render(media(type, true), THUMB_URL);
+
+      expect(el.querySelector('button.hint-spoiler'))
+        .withContext(`${type} must start covered`)
+        .toBeTruthy();
+      // Nothing may play (or even load) behind the blur.
+      expect(el.querySelector('video')).withContext(`${type} player must not be mounted`).toBeNull();
+      // Video and animation blur their thumbnail — there is no still otherwise.
+      expect(el.querySelector('img.hint-spoiler-image')?.getAttribute('src')).toBe(THUMB_URL);
+
+      (el.querySelector('button.hint-spoiler') as HTMLButtonElement).click();
+      fixture.detectChanges();
+
+      expect(el.querySelector('button.hint-spoiler')).toBeNull();
+      expect(el.querySelector('video')).toBeTruthy();
+    }
+  });
+
+  it('falls back to a plain cover for a video without a thumbnail', () => {
+    const el = render(media(HintType.video, true));
+
+    expect(el.querySelector('img.hint-spoiler-image')).toBeNull();
+    expect(el.querySelector('.hint-spoiler-blank')).toBeTruthy();
+  });
+
+  it('names the hidden media in the cover label', () => {
+    const labels = new Map<HintType, string>([
+      [HintType.photo, 'Показать скрытое фото'],
+      [HintType.video, 'Показать скрытое видео'],
+      [HintType.animation, 'Показать скрытую анимацию'],
+    ]);
+
+    labels.forEach((label, type) => {
+      const el = render(media(type, true), THUMB_URL);
+      expect(el.querySelector('button.hint-spoiler')?.getAttribute('aria-label')).toBe(label);
+    });
+  });
+
+  it('covers the new media again when the hint changes', () => {
     const el = render(photo(true));
     (el.querySelector('button.hint-spoiler') as HTMLButtonElement).click();
     fixture.detectChanges();
@@ -92,12 +144,12 @@ describe('HintPartComponent', () => {
     expect(el.querySelector('button.hint-spoiler')).toBeTruthy();
   });
 
-  it('ignores the flag on non-photo hints', () => {
-    const hint = new HintPart(HintType.video);
+  it('ignores the flag on types that cannot carry a spoiler', () => {
+    const hint = new HintPart(HintType.document);
     hint.has_spoiler = true;
     const el = render(hint);
 
     expect(el.querySelector('button.hint-spoiler')).toBeNull();
-    expect(el.querySelector('video')).toBeTruthy();
+    expect(el.querySelector('.hint-document')).toBeTruthy();
   });
 });

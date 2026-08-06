@@ -19,8 +19,9 @@
 }
 
 // ---------------------------------------------------------------------------
-// Photo spoiler: the image is loaded but blurred behind a cover until the
-// player taps it. Only the image is hidden — the caption stays readable.
+// Media spoiler (photo / video / animation): a blurred still sits behind a
+// cover until the player taps it. Only the media is hidden — the caption
+// stays readable.
 // ---------------------------------------------------------------------------
 .hint-spoiler {
   position: relative;
@@ -39,6 +40,14 @@
 .hint-part .hint-spoiler img.hint-spoiler-image {
   filter: blur(20px);
   transform: scale(1.15);
+}
+
+// Stand-in still for a video without a thumbnail (or one that failed to load).
+.hint-spoiler-blank {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: color-mix(in srgb, var(--app-text) 55%, var(--app-surface));
 }
 
 .hint-spoiler-cover {

@@ -48,31 +48,29 @@
       </div>
     }
     @case (HintType.photo) {
-      @if (isSpoilered() && !spoilerRevealed) {
-        <button
-          type="button"
-          class="hint-spoiler"
-          (click)="revealSpoiler()"
-          aria-label="Показать скрытое фото">
-          <img class="hint-spoiler-image" [src]="fileUrl!" alt="">
-          <span class="hint-spoiler-cover">
-            <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.spoiler"/>
-            Нажмите, чтобы показать
-          </span>
-        </button>
+      @if (isCovered()) {
+        <ng-container [ngTemplateOutlet]="spoiler"/>
       } @else {
         <img [src]="fileUrl!" alt="">
       }
     }
     @case (HintType.animation) {
-      <video autoplay loop controls [poster]="thumbUrl || null">
-        <source [src]="fileUrl!" type="video/mp4">
-      </video>
+      @if (isCovered()) {
+        <ng-container [ngTemplateOutlet]="spoiler"/>
+      } @else {
+        <video autoplay loop controls [poster]="thumbUrl || null">
+          <source [src]="fileUrl!" type="video/mp4">
+        </video>
+      }
     }
     @case (HintType.video) {
-      <video controls [poster]="thumbUrl || null">
-        <source [src]="fileUrl!" type="video/mp4"/>
-      </video>
+      @if (isCovered()) {
+        <ng-container [ngTemplateOutlet]="spoiler"/>
+      } @else {
+        <video controls [poster]="thumbUrl || null">
+          <source [src]="fileUrl!" type="video/mp4"/>
+        </video>
+      }
     }
     @case (HintType.video_note) {
       <app-video-note [src]="fileUrl" [poster]="thumbUrl" [size]="240"></app-video-note>
@@ -138,3 +136,25 @@
     <p class="hint-caption" [innerHTML]="toHtml(hint.caption)"></p>
   }
 </div>
+
+<!-- Cover of a spoilered photo/video/animation: a blurred still (the photo
+     itself, or the thumbnail for video) that the player taps to uncover. The
+     media element is only rendered afterwards, so an animation doesn't play
+     under the blur. -->
+<ng-template #spoiler>
+  <button
+    type="button"
+    class="hint-spoiler"
+    (click)="revealSpoiler()"
+    [attr.aria-label]="spoilerLabel()">
+    @if (spoilerCoverUrl(); as cover) {
+      <img class="hint-spoiler-image" [src]="cover" alt="" (error)="onSpoilerCoverError()">
+    } @else {
+      <span class="hint-spoiler-blank"></span>
+    }
+    <span class="hint-spoiler-cover">
+      <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.spoiler"/>
+      Нажмите, чтобы показать
+    </span>
+  </button>
+</ng-template>

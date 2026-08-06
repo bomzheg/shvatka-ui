@@ -1,5 +1,9 @@
-import {HintType, ScenarioConditionType} from "../domain/game.models";
+import {HintType, ScenarioConditionType, SPOILER_HINT_TYPES} from "../domain/game.models";
 import {HttpErrorResponse} from "@angular/common/http";
+
+// The spoilerable types live with the model: the read-only hint view needs the
+// same list, and it must not drift from the editor's copy.
+export {SPOILER_HINT_TYPES};
 
 // ---------------------------------------------------------------------------
 // Constructor payload model — mirrors the "Game Scenario object" contract (§2).
@@ -123,8 +127,8 @@ export interface HintPayload {
   show_caption_above_media?: boolean;
   file_guid?: string;
   thumb_guid?: string;
-  // photo
-  /** Cover the photo until the player reveals it. `null` reads as false. */
+  /** {@link SPOILER_HINT_TYPES} only: cover the media until the player reveals
+   *  it. `null` reads as false. */
   has_spoiler?: boolean | null;
   // contact
   phone_number?: string;
@@ -258,11 +262,6 @@ export const CAPTION_HINT_TYPES: HintType[] = [
   HintType.document,
   HintType.animation,
   HintType.voice,
-];
-
-/** Hint types that support `has_spoiler`. Telegram allows it on photos only. */
-export const SPOILER_HINT_TYPES: HintType[] = [
-  HintType.photo,
 ];
 
 /** Hint types that support `show_caption_above_media`. */

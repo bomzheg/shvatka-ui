@@ -30,6 +30,16 @@ export enum HintType {
   sticker = "sticker",
 }
 
+/**
+ * Hint types that can carry `has_spoiler`. These are the media Telegram lets a
+ * sender hide behind a spoiler; every other type ignores the field.
+ */
+export const SPOILER_HINT_TYPES: HintType[] = [
+  HintType.photo,
+  HintType.video,
+  HintType.animation,
+];
+
 interface HintPartArgs {
   type: HintType
   text?: string | undefined
@@ -41,7 +51,7 @@ interface HintPartArgs {
   foursquare_type?: string | undefined
   caption?: string | undefined
   show_caption_above_media?: boolean | undefined
-  /** Photo only: cover the image until the player reveals it. */
+  /** {@link SPOILER_HINT_TYPES} only: cover the media until it is revealed. */
   has_spoiler?: boolean | null | undefined
   file_guid?: string | undefined
   thumb_guid?: string | undefined
@@ -69,7 +79,7 @@ export class HintPart {
     public first_name: string | undefined = undefined,
     public last_name: string | undefined = undefined,
     public vcard: string | undefined = undefined,
-    /** Photo only. `null`/absent means no spoiler — treat both as false. */
+    /** Media only. `null`/absent means no spoiler — treat both as false. */
     public has_spoiler: boolean | null | undefined = undefined,
   ) {}
 
@@ -113,9 +123,9 @@ export class HintPart {
     );
   }
 
-  /** A photo the author marked as a spoiler. `null`/absent reads as false. */
+  /** Media the author marked as a spoiler. `null`/absent reads as false. */
   static isSpoilered(hint: HintPart): boolean {
-    return hint.type === HintType.photo && hint.has_spoiler === true;
+    return SPOILER_HINT_TYPES.includes(hint.type) && hint.has_spoiler === true;
   }
 }
 
