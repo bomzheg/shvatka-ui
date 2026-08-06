@@ -3,7 +3,7 @@
   <section class="release" id="release">
     <div class="release-parts">
       @for (part of releaseParts(); track $index) {
-        <app-hint-part [hint]="part" [fileUrl]="fileUrl(part)" [thumbUrl]="thumbUrl(part)"/>
+        <app-hint-part [hint]="part" [fileUrl]="fileUrl(part)" [thumbUrl]="thumbUrl(part)" [fileUrlFor]="fileUrlFor"/>
       }
     </div>
     <p class="release-link">

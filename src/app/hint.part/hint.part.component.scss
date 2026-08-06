@@ -229,3 +229,107 @@ a.hint-card:hover,
 .hint-contact-phone:hover {
   text-decoration: underline;
 }
+
+// ---------------------------------------------------------------------------
+// Rich hint: a whole document rendered inside one hint — headings, lists,
+// tables, quotes and embedded media. Telegram styles it for us; on the web the
+// markup is ours to tame, so it is kept inside the hint's width and given the
+// modest vertical rhythm the rest of the page uses.
+//
+// The markup arrives through [innerHTML], so its elements carry no view
+// encapsulation attribute and need ::ng-deep to be styled.
+// ---------------------------------------------------------------------------
+.hint-rich {
+  min-width: 0;
+}
+
+.hint-rich ::ng-deep {
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0.8rem 0 0.4rem;
+    line-height: 1.25;
+  }
+
+  h1 {
+    font-size: 1.35rem;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+  }
+
+  h3, h4, h5, h6 {
+    font-size: 1.05rem;
+  }
+
+  p, ul, ol, blockquote, pre, table {
+    margin: 0.5rem 0;
+  }
+
+  ul, ol {
+    padding-left: 1.4rem;
+  }
+
+  blockquote {
+    margin-left: 0;
+    padding-left: 0.75rem;
+    border-left: 3px solid var(--app-accent);
+    color: var(--app-muted-text);
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--app-border);
+  }
+
+  code {
+    font-family: monospace;
+    font-size: 0.9em;
+  }
+
+  pre {
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    background: var(--app-surface);
+    overflow-x: auto;
+  }
+
+  // Wide tables scroll on their own instead of stretching the page.
+  table {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--app-border);
+    text-align: left;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+// Markdown markup has no renderer here, so it is shown as the source it is.
+.hint-rich-source {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: var(--app-surface);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -101,7 +101,7 @@
             </div>
           }
           @for (hint of item.hints; track hint) {
-            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)" [fileUrlFor]="fileUrlFor"></app-hint-part>
           }
         </li>
       }
@@ -129,7 +129,7 @@
               <li [class.feed-last-hint]="isLastPassedHint(level, i)">
                 <h5 class="hint-header">{{ hintLabel(timeHint.time, isLastPassedHint(level, i)) }}</h5>
                 @for (hint of timeHint.hint; track hint) {
-                  <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+                  <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)" [fileUrlFor]="fileUrlFor"></app-hint-part>
                 }
               </li>
             }
@@ -167,7 +167,7 @@
                       <ul class="typed-key-hints">
                         @for (hint of getEventHints(event); track hint) {
                           <li>
-                            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+                            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)" [fileUrlFor]="fileUrlFor"></app-hint-part>
                           </li>
                         }
                       </ul>
@@ -206,7 +206,7 @@
                         <ul class="typed-key-hints">
                           @for (hint of getEventHints(event); track hint) {
                             <li>
-                              <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+                              <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)" [fileUrlFor]="fileUrlFor"></app-hint-part>
                             </li>
                           }
                         </ul>

@@ -6,6 +6,13 @@
     @case (HintType.text) {
       <p class="hint-text" [innerHTML]="toHtml(hint.text)"></p>
     }
+    @case (HintType.rich) {
+      @if (isRichHtml()) {
+        <div class="hint-rich" [innerHTML]="richHtml()"></div>
+      } @else {
+        <pre class="hint-rich-source">{{ hint.text }}</pre>
+      }
+    }
     @case (HintType.gps) {
       <div class="hint-card hint-location">
         <a class="hint-card-link" [href]="mapUrl()" target="_blank" rel="noopener" aria-label="Открыть на карте">

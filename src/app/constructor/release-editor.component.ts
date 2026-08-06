@@ -146,6 +146,10 @@ export class ReleaseEditorComponent implements OnInit {
     return parts as HintPart[];
   }
 
+  /** Bound once so the hint view can resolve any file of the game (a rich
+   *  hint embeds several) without a new closure on every change detection. */
+  fileUrlFor = (guid: string): string | undefined => this.http.getFileUrl(this.gameId, guid);
+
   fileUrl(hint: HintPart): string | undefined {
     return hint.file_guid ? this.http.getFileUrl(this.gameId, hint.file_guid) : undefined;
   }
