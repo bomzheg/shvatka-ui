@@ -155,3 +155,46 @@ select {
   color: var(--app-muted-text);
   margin: 0;
 }
+
+// ---------------------------------------------------------------------------
+// Rich message: the markup itself, and one row per embedded file.
+// ---------------------------------------------------------------------------
+.rich-markup {
+  font-family: monospace;
+  font-size: 0.85rem;
+  resize: vertical;
+}
+
+.rich-media {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+}
+
+.rich-media-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.rich-media-row select {
+  flex: 1;
+  min-width: 0;
+}
+
+.rich-media-id {
+  flex: 0 1 12rem;
+}
+
+// The exact snippet to paste into the markup, so it reads as code.
+.rich-media-ref {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--app-muted-text);
+}

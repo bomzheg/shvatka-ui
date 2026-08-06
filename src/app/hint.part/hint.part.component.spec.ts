@@ -5,7 +5,7 @@ import {provideHttpClient} from '@angular/common/http';
 import {provideHttpClientTesting} from '@angular/common/http/testing';
 
 import {HintPartComponent} from './hint.part.component';
-import {HintPart, HintType} from '../domain/game.models';
+import {HintPart, HintType, RichFormat} from '../domain/game.models';
 
 describe('HintPartComponent', () => {
   let component: HintPartComponent;
@@ -142,6 +142,42 @@ describe('HintPartComponent', () => {
 
     expect(component.spoilerRevealed).toBeFalse();
     expect(el.querySelector('button.hint-spoiler')).toBeTruthy();
+  });
+
+  it('renders rich html and resolves the media it embeds', () => {
+    const hint = new HintPart(HintType.rich);
+    hint.text = '<h1>Загадка</h1><p>смотри <img src="pic"></p>';
+    hint.format = RichFormat.html;
+    hint.media = [{id: 'pic', file_guid: 'guid'}];
+    component.fileUrlFor = guid => `https://cdn.example/${guid}`;
+
+    const el = render(hint);
+
+    expect(el.querySelector('.hint-rich h1')?.textContent).toBe('Загадка');
+    expect(el.querySelector('.hint-rich img')?.getAttribute('src'))
+      .toBe('https://cdn.example/guid');
+  });
+
+  it('leaves an unresolvable media reference alone', () => {
+    const hint = new HintPart(HintType.rich);
+    hint.text = '<p><img src="pic"></p>';
+    hint.media = [{id: 'pic', file_guid: 'guid'}];
+    component.fileUrlFor = () => undefined;
+
+    const el = render(hint);
+
+    expect(el.querySelector('.hint-rich img')?.getAttribute('src')).toBe('pic');
+  });
+
+  it('shows markdown markup as its source', () => {
+    const hint = new HintPart(HintType.rich);
+    hint.text = '# Загадка';
+    hint.format = RichFormat.markdown;
+
+    const el = render(hint);
+
+    expect(el.querySelector('.hint-rich')).toBeNull();
+    expect(el.querySelector('pre.hint-rich-source')?.textContent).toBe('# Загадка');
   });
 
   it('ignores the flag on types that cannot carry a spoiler', () => {

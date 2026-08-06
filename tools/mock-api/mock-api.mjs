@@ -40,6 +40,7 @@ const members = [
 ];
 
 const text = t => ({type: 'text', text: t});
+const rich = (markup, media = []) => ({type: 'rich', text: markup, format: 'html', media});
 const hint = (time, ...parts) => ({time, hint: parts});
 const winKey = (...keys) => ({type: 'WIN_KEY', keys});
 const effectsKey = (keys, effects) => ({type: 'EFFECTS_KEY', keys, effects});
@@ -77,7 +78,15 @@ const levels = [
     db_id: 3, name_id: 'rainbow', author: captain, game_id: 1, number_in_game: 2,
     scenario: {
       id: 'rainbow',
-      time_hints: [hint(0, text('Радуга Деш произвела звуковую радугу - эффект который считался мифическим'))],
+      time_hints: [
+        hint(0, text('Радуга Деш произвела звуковую радугу - эффект который считался мифическим')),
+        hint(10, rich(
+          '<h2>Звуковая радуга</h2>' +
+          '<p>Эффект считался <b>мифическим</b>, пока его не повторили:</p>' +
+          '<ul><li>скорость — предельная</li><li>свидетели — вся Понивилль</li></ul>' +
+          '<blockquote>Второй раз получится только на спор.</blockquote>',
+        )),
+      ],
       conditions: [winKey('СХРАДУГА')],
     },
   },

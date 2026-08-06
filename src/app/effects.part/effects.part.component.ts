@@ -58,6 +58,11 @@ export class EffectsPartComponent {
     return Effects.hints(effect);
   }
 
+  /** Bound once so the hint view can resolve any file of the game (rich hints
+   *  embed several) without a new closure on every change detection. */
+  fileUrlFor = (guid: string): string | undefined =>
+    this.gameId === undefined ? undefined : this.http.getFileUrl(this.gameId, guid);
+
   getHintFileUrl(hint: HintPart): string | undefined {
     if (hint.file_guid === undefined || this.gameId === undefined) {
       return undefined;

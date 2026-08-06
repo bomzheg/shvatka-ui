@@ -1,4 +1,4 @@
-import {HintType, ScenarioConditionType, SPOILER_HINT_TYPES} from "../domain/game.models";
+import {HintType, RichFormat, RichMedia, ScenarioConditionType, SPOILER_HINT_TYPES} from "../domain/game.models";
 import {HttpErrorResponse} from "@angular/common/http";
 
 // The spoilerable types live with the model: the read-only hint view needs the
@@ -111,9 +111,12 @@ export interface LinkPreview {
  *  selected type are sent; the rest stay undefined. */
 export interface HintPayload {
   type: HintType;
-  // text
+  // text (and the markup of a rich hint)
   text?: string;
   link_preview?: LinkPreview | null;
+  // rich
+  format?: RichFormat;
+  media?: RichMedia[];
   // gps / venue
   latitude?: number;
   longitude?: number;
@@ -200,6 +203,7 @@ export const HINT_TYPE_LABELS: Record<HintType, string> = {
   [HintType.video_note]: "Видеосообщение (кружок)",
   [HintType.contact]: "Контакт",
   [HintType.sticker]: "Стикер",
+  [HintType.rich]: "Форматированное сообщение",
 };
 
 export const ALL_HINT_TYPES: HintType[] = [
@@ -215,6 +219,7 @@ export const ALL_HINT_TYPES: HintType[] = [
   HintType.video_note,
   HintType.contact,
   HintType.sticker,
+  HintType.rich,
 ];
 
 /**
@@ -232,6 +237,7 @@ export const CREATABLE_HINT_TYPES: HintType[] = [
   HintType.document,
   HintType.animation,
   HintType.contact,
+  HintType.rich,
 ];
 
 /** Hint types that carry a main file (`file_guid`). */
@@ -369,6 +375,37 @@ function collectGuids(hints: HintPayload[] | undefined, sink: Set<string>) {
     if (hint.thumb_guid) {
       sink.add(hint.thumb_guid);
     }
+    for (const media of hint.media ?? []) {
+      if (media.file_guid) {
+        sink.add(media.file_guid);
+      }
+    }
+  }
+}
+
+/** Rich hints only: the markup and the media it embeds must both hold up. */
+function validateRichHints(hints: HintPayload[] | undefined, label: string, errors: string[]) {
+  for (const hint of hints ?? []) {
+    if (hint.type !== HintType.rich) {
+      continue;
+    }
+    if (!hint.text || hint.text.trim().length === 0) {
+      errors.push(`${label}: форматированное сообщение не может быть пустым.`);
+    }
+    const seenIds = new Set<string>();
+    for (const media of hint.media ?? []) {
+      if (!media.id || media.id.trim().length === 0) {
+        errors.push(`${label}: у вложения форматированного сообщения нет идентификатора.`);
+        continue;
+      }
+      if (seenIds.has(media.id)) {
+        errors.push(`${label}: идентификатор вложения «${media.id}» повторяется.`);
+      }
+      seenIds.add(media.id);
+      if (!media.file_guid) {
+        errors.push(`${label}: для вложения «${media.id}» не выбран файл.`);
+      }
+    }
   }
 }
 
@@ -418,6 +455,7 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
         errors.push(`${label}: у подсказки на время ${th.time} пустой список.`);
       }
       collectGuids(th.hint, usedGuids);
+      validateRichHints(th.hint, label, errors);
     });
 
     // conditions
@@ -495,6 +533,7 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
           errors.push(`${cl}: уровень перехода «${c.effects.next_level}» не существует.`);
         }
         collectGuids(c.effects.hints, usedGuids);
+        validateRichHints(c.effects.hints, cl, errors);
       }
     });
 
