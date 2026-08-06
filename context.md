@@ -127,6 +127,7 @@ collapse the two in copy or in conditionals.
 | **Effects** | Эффекты | What a condition does: bonus minutes (or a penalty), hints, completing the level, and optionally routing to another level. | `Effect`, `Effects`, `effects.part/` |
 | **Routed level-up** | Переход на уровень | Completing the level *and* jumping to a specific level rather than the next in order. This is how a non-linear game is built; the graph view draws it. | `Effect.next_level`, `scenario_graph.part/` |
 | **File GUID** | GUID файла | A media file referenced by a hint. The scenario carries the GUID; the bytes come from the CDN. | `HintPart.file_guid`, `thumb_guid` |
+| **Spoiler** | Спойлер | A media hint part the author chose to deliver covered: the player sees a blurred still and uncovers it with a tap, exactly as in Telegram. The caption stays visible. Photo, video and animation only; absent or `null` means no spoiler. | `HintPart.has_spoiler`, `SPOILER_HINT_TYPES`, `hint.part/`, `constructor/hint-editor.component` |
 
 `Effects.normalize` and `HintPart.create` exist because the payload is loosely
 typed at the boundary. Extend those helpers rather than spreading `any` handling —

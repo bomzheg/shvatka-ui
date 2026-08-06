@@ -1,14 +1,22 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
+import {NgTemplateOutlet} from "@angular/common";
 import {MatIcon} from "@angular/material/icon";
 import {HintPart, HintType} from "../domain/game.models";
 import {AppIcon} from "../ui/icons";
 import {VideoNoteComponent} from "../ui/video-note.component";
 
+/** What the cover of a spoiler announces, per hidden media type. */
+const SPOILER_REVEAL_LABELS: Partial<Record<HintType, string>> = {
+  [HintType.photo]: "Показать скрытое фото",
+  [HintType.video]: "Показать скрытое видео",
+  [HintType.animation]: "Показать скрытую анимацию",
+};
+
 
 @Component({
   selector: 'app-hint-part',
   standalone: true,
-  imports: [MatIcon, VideoNoteComponent],
+  imports: [MatIcon, NgTemplateOutlet, VideoNoteComponent],
   templateUrl: './hint.part.component.html',
   styleUrl: './hint.part.component.scss'
 })
@@ -29,11 +37,56 @@ export class HintPartComponent implements OnChanges {
   coordsCopied = false;
   /** Set when the thumbnail fails to load, so we fall back to a placeholder. */
   thumbBroken = false;
+  /** Spoilered media stays covered until the player asks to see it. */
+  spoilerRevealed = false;
+  /** Set when the still behind the blur can't be loaded (plain cover instead). */
+  spoilerCoverBroken = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['thumbUrl']) {
       this.thumbBroken = false;
     }
+    // A different hint (or a different file) must be covered again.
+    if (changes['hint'] || changes['fileUrl'] || changes['thumbUrl']) {
+      this.spoilerRevealed = false;
+      this.spoilerCoverBroken = false;
+    }
+  }
+
+  /** Whether this part is media the author hid behind a spoiler. */
+  isSpoilered(): boolean {
+    return HintPart.isSpoilered(this.hint);
+  }
+
+  /** Whether the media is spoilered *and* still hidden. */
+  isCovered(): boolean {
+    return this.isSpoilered() && !this.spoilerRevealed;
+  }
+
+  /**
+   * The still shown blurred under the cover: a photo blurs itself, video and
+   * animation blur their thumbnail. Undefined means a plain cover instead.
+   */
+  spoilerCoverUrl(): string | undefined {
+    if (this.spoilerCoverBroken) {
+      return undefined;
+    }
+    return this.hint.type === HintType.photo ? this.fileUrl : this.thumbUrl;
+  }
+
+  /** Fall back to a plain cover when the blurred still can't be loaded. */
+  onSpoilerCoverError(): void {
+    this.spoilerCoverBroken = true;
+  }
+
+  /** Uncover the media. There is no way back — same as in Telegram. */
+  revealSpoiler(): void {
+    this.spoilerRevealed = true;
+  }
+
+  /** Screen-reader label of the cover, naming what is hidden behind it. */
+  spoilerLabel(): string {
+    return SPOILER_REVEAL_LABELS[this.hint.type] ?? "Показать скрытое вложение";
   }
 
   /** Whether a usable thumbnail is available (present and not broken). */

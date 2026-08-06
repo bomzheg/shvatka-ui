@@ -145,4 +145,12 @@
       Подпись над медиа
     </label>
   }
+
+  @if (needsSpoiler()) {
+    <label class="checkbox">
+      <input type="checkbox" [(ngModel)]="hasSpoiler" [disabled]="disabled" />
+      Спойлер
+    </label>
+    <span class="field-hint">Медиа будет скрыто, пока игрок не нажмёт на него. Подпись видна сразу.</span>
+  }
 </div>
