@@ -48,7 +48,21 @@
       </div>
     }
     @case (HintType.photo) {
-      <img [src]="fileUrl!" alt="">
+      @if (isSpoilered() && !spoilerRevealed) {
+        <button
+          type="button"
+          class="hint-spoiler"
+          (click)="revealSpoiler()"
+          aria-label="Показать скрытое фото">
+          <img class="hint-spoiler-image" [src]="fileUrl!" alt="">
+          <span class="hint-spoiler-cover">
+            <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.spoiler"/>
+            Нажмите, чтобы показать
+          </span>
+        </button>
+      } @else {
+        <img [src]="fileUrl!" alt="">
+      }
     }
     @case (HintType.animation) {
       <video autoplay loop controls [poster]="thumbUrl || null">

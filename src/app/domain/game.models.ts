@@ -41,6 +41,8 @@ interface HintPartArgs {
   foursquare_type?: string | undefined
   caption?: string | undefined
   show_caption_above_media?: boolean | undefined
+  /** Photo only: cover the image until the player reveals it. */
+  has_spoiler?: boolean | null | undefined
   file_guid?: string | undefined
   thumb_guid?: string | undefined
   phone_number?: string | undefined
@@ -67,6 +69,8 @@ export class HintPart {
     public first_name: string | undefined = undefined,
     public last_name: string | undefined = undefined,
     public vcard: string | undefined = undefined,
+    /** Photo only. `null`/absent means no spoiler — treat both as false. */
+    public has_spoiler: boolean | null | undefined = undefined,
   ) {}
 
   public static create({
@@ -86,6 +90,7 @@ export class HintPart {
     first_name,
     last_name,
     vcard,
+    has_spoiler,
   }: HintPartArgs) {
     return new HintPart(
       type,
@@ -104,7 +109,13 @@ export class HintPart {
       first_name,
       last_name,
       vcard,
+      has_spoiler,
     );
+  }
+
+  /** A photo the author marked as a spoiler. `null`/absent reads as false. */
+  static isSpoilered(hint: HintPart): boolean {
+    return hint.type === HintType.photo && hint.has_spoiler === true;
   }
 }
 

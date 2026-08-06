@@ -8,6 +8,7 @@ import {
   FILE_HINT_TYPES,
   HINT_TYPE_LABELS,
   HintPayload,
+  SPOILER_HINT_TYPES,
   THUMB_HINT_TYPES,
   UploadedFile,
   UploadOptions,
@@ -119,6 +120,19 @@ export class HintEditorComponent {
 
   needsCaptionAbove(): boolean {
     return CAPTION_ABOVE_HINT_TYPES.includes(this.hint.type);
+  }
+
+  needsSpoiler(): boolean {
+    return SPOILER_HINT_TYPES.includes(this.hint.type);
+  }
+
+  /** Checkbox state: a stored `null` (no spoiler) has to read as unchecked. */
+  get hasSpoiler(): boolean {
+    return this.hint.has_spoiler === true;
+  }
+
+  set hasSpoiler(value: boolean) {
+    this.hint.has_spoiler = value;
   }
 
   onRemove() {

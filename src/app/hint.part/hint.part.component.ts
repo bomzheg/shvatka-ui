@@ -29,11 +29,27 @@ export class HintPartComponent implements OnChanges {
   coordsCopied = false;
   /** Set when the thumbnail fails to load, so we fall back to a placeholder. */
   thumbBroken = false;
+  /** A spoilered photo stays covered until the player asks to see it. */
+  spoilerRevealed = false;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['thumbUrl']) {
       this.thumbBroken = false;
     }
+    // A different hint (or a different file) must be covered again.
+    if (changes['hint'] || changes['fileUrl']) {
+      this.spoilerRevealed = false;
+    }
+  }
+
+  /** Whether this part is a photo the author hid behind a spoiler. */
+  isSpoilered(): boolean {
+    return HintPart.isSpoilered(this.hint);
+  }
+
+  /** Uncover the photo. There is no way back — same as in Telegram. */
+  revealSpoiler(): void {
+    this.spoilerRevealed = true;
   }
 
   /** Whether a usable thumbnail is available (present and not broken). */

@@ -18,6 +18,49 @@
   max-width: 100%;
 }
 
+// ---------------------------------------------------------------------------
+// Photo spoiler: the image is loaded but blurred behind a cover until the
+// player taps it. Only the image is hidden — the caption stays readable.
+// ---------------------------------------------------------------------------
+.hint-spoiler {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+// Scaled up so the blur doesn't wash out towards the edges of the frame.
+.hint-part .hint-spoiler img.hint-spoiler-image {
+  filter: blur(20px);
+  transform: scale(1.15);
+}
+
+.hint-spoiler-cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.hint-spoiler:hover .hint-spoiler-cover,
+.hint-spoiler:focus-visible .hint-spoiler-cover {
+  background: rgba(0, 0, 0, 0.45);
+}
+
 // Stickers keep their natural size instead of stretching full width.
 .hint-part img.hint-sticker {
   width: auto;
