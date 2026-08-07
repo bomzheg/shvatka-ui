@@ -49,6 +49,11 @@ export class ConstructorService {
     return this.http.put<MyGame>(`/games/my/${id}/status`, {status});
   }
 
+  /** Keys of the game as a pdf laid out for A4, to print and cut into slips. */
+  keysToPrint(id: number): Observable<Blob> {
+    return this.http.getBlob(`/games/my/${id}/keys/print`);
+  }
+
   /** §1.7 — upload a single file (multipart `file`). The optional flags control
    *  server-side handling of unsupported images (HEIC/HEIF) — see
    *  {@link UploadOptions}; ordinary formats ignore them. */

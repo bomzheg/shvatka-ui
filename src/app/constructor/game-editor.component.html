@@ -22,6 +22,9 @@
       @if (canComplete) {
         <button type="button" class="primary" (click)="changeStatus('complete')">Опубликовать игру</button>
       }
+      <button type="button" class="ghost-button" (click)="downloadKeysToPrint()" [disabled]="isDownloadingKeys">
+        <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.download"/>{{ isDownloadingKeys ? "Готовим..." : "Ключи для печати" }}
+      </button>
     </div>
 
     @if (!isEditable) {
