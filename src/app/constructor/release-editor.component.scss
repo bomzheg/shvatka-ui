@@ -1,3 +1,44 @@
+@use "../../styles/component-mixins" as cm;
+
+// View encapsulation keeps the editor page's button styles out of this
+// component, so the shared shapes are restated here, as the sibling editors do.
+.block {
+  @include cm.surface-card(14px, 1rem);
+  margin: 1rem 0;
+}
+
+.primary {
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ghost-button {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+}
+
+.ghost-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.warn {
+  color: #b26a00;
+  background: color-mix(in srgb, var(--app-surface) 80%, #f0ad4e);
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+}
+
 .release-block {
   display: flex;
   flex-direction: column;
@@ -72,6 +113,7 @@
   opacity: 0.8;
 }
 
-.danger {
-  color: #b91c1c;
+.ghost-button.danger {
+  color: #c62828;
+  border-color: #c62828;
 }

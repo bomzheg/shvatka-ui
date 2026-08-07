@@ -55,13 +55,9 @@ export class HomeComponent implements OnInit {
     return this.release.banner ? [this.release.banner, ...this.release.hints] : this.release.hints;
   }
 
-  gameName(): string {
-    return this.activeGame?.name ?? "";
-  }
-
-  /** Waivers are still open — worth sending a reader of the release there. */
-  isGettingWaivers(): boolean {
-    return this.activeGame?.status === "getting_waivers";
+  /** Where a reader of the release goes next — the waivers, in their words. */
+  waiversLinkText(): string {
+    return this.activeGame?.status === "getting_waivers" ? "идёт сбор вейверов" : "текущая игра";
   }
 
   fileUrl(hint: HintPart): string | undefined {

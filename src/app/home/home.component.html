@@ -1,35 +1,29 @@
-<section class="home">
-  <div class="main-info">
-    <img
-      ngSrc="assets/icons/web-app-manifest-512x512.png"
-      alt="Логотип"
-      width="512"
-      height="512"
-      class="side-image"
-    />
-    <span class="text-content">
-    <h1>Добро пожаловать в Shvatka</h1>
-    <p>Следите за активной игрой, просматривайте сценарии и проверяйте результаты в адаптивном интерфейсе.</p>
-    </span>
-  </div>
-
-  @if (hasRelease()) {
-    <!-- the whole release; the header carries only its banner and links here -->
-    <section class="release" id="release">
-      <h2>📢 Релиз игры {{ gameName() }}</h2>
-      <div class="release-parts">
-        @for (part of releaseParts(); track $index) {
-          <app-hint-part [hint]="part" [fileUrl]="fileUrl(part)" [thumbUrl]="thumbUrl(part)"/>
-        }
-      </div>
-      <p class="release-link">
-        @if (isGettingWaivers()) {
-          Идёт сбор вейверов —
-          <a routerLink="/games/running">подать вейвер</a>
-        } @else {
-          <a routerLink="/games/running">Текущая игра и вейверы</a>
-        }
-      </p>
-    </section>
-  }
-</section>
+@if (hasRelease()) {
+  <!-- with a release, the main page *is* the release: no welcome, no heading -->
+  <section class="release" id="release">
+    <div class="release-parts">
+      @for (part of releaseParts(); track $index) {
+        <app-hint-part [hint]="part" [fileUrl]="fileUrl(part)" [thumbUrl]="thumbUrl(part)"/>
+      }
+    </div>
+    <p class="release-link">
+      <a routerLink="/games/running">{{ waiversLinkText() }}</a>
+    </p>
+  </section>
+} @else {
+  <section class="home">
+    <div class="main-info">
+      <img
+        ngSrc="assets/icons/web-app-manifest-512x512.png"
+        alt="Логотип"
+        width="512"
+        height="512"
+        class="side-image"
+      />
+      <span class="text-content">
+      <h1>Добро пожаловать в Shvatka</h1>
+      <p>Следите за активной игрой, просматривайте сценарии и проверяйте результаты в адаптивном интерфейсе.</p>
+      </span>
+    </div>
+  </section>
+}

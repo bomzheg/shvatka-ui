@@ -245,15 +245,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * The release's banner, the only part that fits above the header. The rest
-   * of the release is shown on the main page, which the banner links to.
+   * The release's banner, the only part that fits above the header, and the
+   * only thing shown there — the whole release is on the main page, which the
+   * banner links to.
    */
   bannerUrl(): string | undefined {
     return this.releaseUrlFor(this.release?.banner?.file_guid);
-  }
-
-  bannerCaption(): string | undefined {
-    return this.release?.banner?.caption;
   }
 
   bannerAlt(): string {
