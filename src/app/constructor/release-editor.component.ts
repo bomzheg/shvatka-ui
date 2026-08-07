@@ -12,9 +12,12 @@ import {AppIcon} from "../ui/icons";
 import {MatIcon} from "@angular/material/icon";
 
 /**
- * The game's release — the promo published before it: a banner, some text
- * about the theme, a map. It is an ordinary list of hint parts, so it is
- * edited with the same hint editors as the scenario.
+ * The game's release — the promo published before it.
+ *
+ * It leads with a banner: a wide title picture with a caption, the one part
+ * shown above the site's header. After it comes the rest — the theme, a map —
+ * as an ordinary list of hint parts. Both are edited with the same hint
+ * editors as the scenario; the banner is simply a photo part kept apart.
  *
  * Saving and announcing are separate: the engine decides when a release
  * reaches the announcements channel (with the start of the waivers), and
@@ -40,6 +43,8 @@ export class ReleaseEditorComponent implements OnInit {
   @Output() fileUploaded = new EventEmitter<UploadedFile>();
   @Output() fileRenamed = new EventEmitter<UploadedFile>();
 
+  /** The wide title picture leading the release — a photo part, or nothing. */
+  banner?: HintPayload;
   hints: HintPayload[] = [];
   /** True once it stands in the announcements channel. */
   isPublished = false;
@@ -63,6 +68,11 @@ export class ReleaseEditorComponent implements OnInit {
     return this.hints.length > 0;
   }
 
+  /** Nothing to save while both the banner and the body are missing. */
+  get isEmpty(): boolean {
+    return !this.banner && !this.hasHints;
+  }
+
   /** What saving will do with the channel, in the game's current status. */
   get announceHint(): string {
     if (this.isPublished) {
@@ -77,6 +87,14 @@ export class ReleaseEditorComponent implements OnInit {
     return "Игра уже началась — релиз будет виден на сайте, но в канал не пойдёт.";
   }
 
+  addBanner() {
+    this.banner = {type: HintType.photo};
+  }
+
+  removeBanner() {
+    this.banner = undefined;
+  }
+
   addHint(type: HintType) {
     this.hints.push({type});
   }
@@ -86,8 +104,8 @@ export class ReleaseEditorComponent implements OnInit {
   }
 
   preview() {
-    if (!this.hasHints) {
-      this.snackbar.error("Релиз пуст — добавьте хотя бы одну часть");
+    if (this.isEmpty) {
+      this.snackbar.error("Релиз пуст — добавьте баннер или хотя бы одну часть");
       return;
     }
 
@@ -99,13 +117,19 @@ export class ReleaseEditorComponent implements OnInit {
   }
 
   save() {
-    if (!this.hasHints) {
-      this.snackbar.error("Релиз пуст — добавьте хотя бы одну часть");
+    if (this.isEmpty) {
+      this.snackbar.error("Релиз пуст — добавьте баннер или хотя бы одну часть");
+      return;
+    }
+
+    if (this.banner && !this.banner.file_guid) {
+      this.snackbar.error("Баннер без картинки — загрузите изображение или уберите баннер");
       return;
     }
 
     this.isSaving = true;
-    this.constructorService.saveRelease(this.gameId, this.hints.map(h => cleanHint(h)))
+    const banner = this.banner ? cleanHint(this.banner) : undefined;
+    this.constructorService.saveRelease(this.gameId, banner, this.hints.map(h => cleanHint(h)))
       .pipe(finalize(() => this.isSaving = false))
       .subscribe({
         next: release => {
@@ -122,6 +146,7 @@ export class ReleaseEditorComponent implements OnInit {
   remove() {
     this.constructorService.deleteRelease(this.gameId).subscribe({
       next: () => {
+        this.banner = undefined;
         this.hints = [];
         this.hasRelease = false;
         this.isPublished = false;
@@ -131,8 +156,10 @@ export class ReleaseEditorComponent implements OnInit {
     });
   }
 
-  previewHints(): HintPart[] {
-    return this.hints as HintPart[];
+  /** The release as everyone will see it — the banner leads. */
+  previewParts(): HintPart[] {
+    const parts = this.banner ? [this.banner, ...this.hints] : this.hints;
+    return parts as HintPart[];
   }
 
   fileUrl(hint: HintPart): string | undefined {
@@ -162,6 +189,7 @@ export class ReleaseEditorComponent implements OnInit {
   }
 
   private apply(release: GameRelease | undefined) {
+    this.banner = release?.banner as HintPayload | undefined;
     this.hints = (release?.hints ?? []) as HintPayload[];
     this.hasRelease = release !== undefined;
     this.isPublished = release?.is_published === true;

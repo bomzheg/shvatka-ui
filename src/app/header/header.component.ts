@@ -11,8 +11,7 @@ import {ThemeMode, ThemeService} from "../theme/theme.service";
 import {PushService} from "../push/push.service";
 import {NotificationsService} from "../notifications/notifications.service";
 import {DebugLogService} from "../debug/debug-log.service";
-import {GameRelease, HintPart} from "../domain/game.models";
-import {HintPartComponent} from "../hint.part/hint.part.component";
+import {GameRelease} from "../domain/game.models";
 import {HttpAdapter} from "../http/http.adapter";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
@@ -32,7 +31,6 @@ interface Countdown {
     RouterLink,
     RouterLinkActive,
     MatIcon,
-    HintPartComponent,
   ],
   templateUrl: 'header.component.html',
   styleUrl: './header.component.scss',
@@ -45,9 +43,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
-  /** Release of the active game, when its author published one. */
+  /** Release of the active game, when its author wrote one. */
   release: GameRelease | undefined;
-  isReleaseOpen = false;
   isMobileMenuOpen = false;
   selectedThemeMode: ThemeMode = "system";
 
@@ -247,24 +244,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return "ещё не началась";
   }
 
-  hasRelease(): boolean {
-    return this.releaseHints().length > 0;
+  /**
+   * The release's banner, the only part that fits above the header. The rest
+   * of the release is shown on the main page, which the banner links to.
+   */
+  bannerUrl(): string | undefined {
+    return this.releaseUrlFor(this.release?.banner?.file_guid);
   }
 
-  releaseHints(): HintPart[] {
-    return this.release?.hints ?? [];
+  bannerCaption(): string | undefined {
+    return this.release?.banner?.caption;
   }
 
-  toggleRelease() {
-    this.isReleaseOpen = !this.isReleaseOpen;
-  }
-
-  releaseFileUrl(hint: HintPart): string | undefined {
-    return this.releaseUrlFor(hint.file_guid);
-  }
-
-  releaseThumbUrl(hint: HintPart): string | undefined {
-    return this.releaseUrlFor(hint.thumb_guid);
+  bannerAlt(): string {
+    return this.activeGame ? `Релиз игры ${this.activeGame.name}` : "Релиз игры";
   }
 
   ngOnDestroy() {

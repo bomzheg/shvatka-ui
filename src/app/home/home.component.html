@@ -12,4 +12,24 @@
     <p>Следите за активной игрой, просматривайте сценарии и проверяйте результаты в адаптивном интерфейсе.</p>
     </span>
   </div>
+
+  @if (hasRelease()) {
+    <!-- the whole release; the header carries only its banner and links here -->
+    <section class="release" id="release">
+      <h2>📢 Релиз игры {{ gameName() }}</h2>
+      <div class="release-parts">
+        @for (part of releaseParts(); track $index) {
+          <app-hint-part [hint]="part" [fileUrl]="fileUrl(part)" [thumbUrl]="thumbUrl(part)"/>
+        }
+      </div>
+      <p class="release-link">
+        @if (isGettingWaivers()) {
+          Идёт сбор вейверов —
+          <a routerLink="/games/running">подать вейвер</a>
+        } @else {
+          <a routerLink="/games/running">Текущая игра и вейверы</a>
+        }
+      </p>
+    </section>
+  }
 </section>

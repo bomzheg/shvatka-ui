@@ -99,8 +99,15 @@ export class ConstructorService {
    * goes out when they do, one saved later goes out at once, and an already
    * published one has its channel messages edited.
    */
-  saveRelease(gameId: number, hints: HintPayload[]): Observable<GameRelease> {
-    return this.http.put<GameRelease>(`/games/my/${gameId}/release`, {hints});
+  saveRelease(
+    gameId: number,
+    banner: HintPayload | undefined,
+    hints: HintPayload[],
+  ): Observable<GameRelease> {
+    return this.http.put<GameRelease>(`/games/my/${gameId}/release`, {
+      banner: banner ?? null,
+      hints,
+    });
   }
 
   deleteRelease(gameId: number): Observable<void> {

@@ -17,10 +17,25 @@
 }
 
 .hints,
-.published-release {
+.published-release,
+.banner-slot,
+.release-body {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.banner-slot h3,
+.release-body h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.banner-slot {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
 }
 
 .release-actions {

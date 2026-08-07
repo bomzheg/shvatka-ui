@@ -5,27 +5,14 @@
         , начнётся через {{ countdown.firstValue }} {{ countdownUnitLabel(countdown.firstUnit) }} {{ countdown.secondValue }} {{ countdownUnitLabel(countdown.secondUnit) }}
       }
     </a>
-    @if (hasRelease()) {
-      <button
-        type="button"
-        class="release-toggle"
-        [attr.aria-expanded]="isReleaseOpen"
-        (click)="toggleRelease()"
-      >
-        <span>📢 Релиз игры</span>
-        <span class="release-toggle__chevron" [class.open]="isReleaseOpen" aria-hidden="true">⌄</span>
-      </button>
-      @if (isReleaseOpen) {
-        <div class="release-panel">
-          @for (hint of releaseHints(); track $index) {
-            <app-hint-part
-              [hint]="hint"
-              [fileUrl]="releaseFileUrl(hint)"
-              [thumbUrl]="releaseThumbUrl(hint)"
-            />
-          }
-        </div>
-      }
+    @if (bannerUrl()) {
+      <!-- the banner is the whole release up here; the rest lives on the main page -->
+      <a class="release-banner" routerLink="/" fragment="release" (click)="closeMobileMenu()">
+        <img [src]="bannerUrl()" [alt]="bannerAlt()"/>
+        @if (bannerCaption()) {
+          <span class="release-banner__caption">{{ bannerCaption() }}</span>
+        }
+      </a>
     }
   </div>
 }

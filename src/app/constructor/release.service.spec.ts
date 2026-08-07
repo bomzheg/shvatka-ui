@@ -32,11 +32,13 @@ describe("game release", () => {
     expect(request.request.method).toBe("GET");
     request.flush({
       game_id: 7,
-      hints: [{type: HintType.text, text: "тема игры"}],
+      banner: {type: HintType.photo, file_guid: "banner", caption: "тема игры"},
+      hints: [{type: HintType.text, text: "карта района"}],
       is_published: true,
     });
 
     expect(received?.game_id).toBe(7);
+    expect(received?.banner?.file_guid).toBe("banner");
     expect(received?.hints.length).toBe(1);
     expect(received?.is_published).toBeTrue();
   });
@@ -50,21 +52,36 @@ describe("game release", () => {
     expect(received).toBeUndefined();
   });
 
-  it("saves the release, leaving it to the engine when to announce it", () => {
+  it("saves the banner apart from the rest, leaving the announcing to the engine", () => {
     let saved: GameRelease | undefined;
-    constructorService.saveRelease(7, [{type: HintType.photo, file_guid: "banner"}])
+    const banner = {type: HintType.photo, file_guid: "banner", caption: "тема"};
+    constructorService.saveRelease(7, banner, [{type: HintType.text, text: "карта"}])
       .subscribe(release => saved = release);
 
     const request = httpMock.expectOne(req => req.url.endsWith("/games/my/7/release"));
     expect(request.request.method).toBe("PUT");
-    expect(request.request.body).toEqual({hints: [{type: HintType.photo, file_guid: "banner"}]});
+    expect(request.request.body).toEqual({
+      banner,
+      hints: [{type: HintType.text, text: "карта"}],
+    });
     request.flush({
       game_id: 7,
-      hints: [{type: HintType.photo, file_guid: "banner"}],
+      banner,
+      hints: [{type: HintType.text, text: "карта"}],
       is_published: false,
     });
 
+    expect(saved?.banner?.caption).toBe("тема");
     expect(saved?.is_published).toBeFalse();
+  });
+
+  it("sends an explicit null when the release has no banner", () => {
+    constructorService.saveRelease(7, undefined, [{type: HintType.text, text: "только текст"}])
+      .subscribe();
+
+    const request = httpMock.expectOne(req => req.url.endsWith("/games/my/7/release"));
+    expect(request.request.body.banner).toBeNull();
+    request.flush({game_id: 7, banner: null, hints: [], is_published: false});
   });
 
   it("deletes the release", () => {
