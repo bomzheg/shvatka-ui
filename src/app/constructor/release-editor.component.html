@@ -1,0 +1,67 @@
+<div class="block release-block">
+  <div class="block-head">
+    <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonusHint"/> Релиз игры</h2>
+    @if (isPublished) {
+      <span class="badge badge-published">в канале</span>
+    } @else if (hasRelease) {
+      <span class="badge">сохранён</span>
+    }
+  </div>
+  <p class="hint-note">
+    Промо, которое публикуется примерно за неделю до игры: баннер, текст про тему, карта района.
+    Необязательно — без релиза игра идёт как обычно.
+  </p>
+  <p class="hint-note">{{ announceHint }}</p>
+
+  @if (isLoading) {
+    <div class="loading-state" aria-live="polite">
+      <span class="loading-spinner"></span>
+      Загрузка релиза...
+    </div>
+  } @else if (isPreviewing) {
+    <div class="published-release">
+      @for (hint of previewHints(); track $index) {
+        <app-hint-part [hint]="hint" [fileUrl]="fileUrl(hint)" [thumbUrl]="thumbUrl(hint)"/>
+      }
+    </div>
+    <div class="release-actions">
+      <button type="button" class="primary" (click)="save()" [disabled]="isSaving">
+        {{ isSaving ? "Сохранение..." : "Сохранить" }}
+      </button>
+      <button type="button" class="ghost-button" (click)="backToEditing()">Дописать</button>
+    </div>
+  } @else {
+    <div class="hints">
+      @for (hint of hints; track hint; let i = $index) {
+        <app-hint-editor
+          [hint]="hint"
+          [files]="files"
+          [gameId]="gameId"
+          [objectUrls]="objectUrls"
+          [disabled]="disabled"
+          (remove)="removeHint(i)"
+          (fileUploaded)="onHintFileUploaded($event)"
+          (fileRenamed)="onHintFileRenamed($event)"
+        ></app-hint-editor>
+      }
+    </div>
+
+    @if (disabled) {
+      <p class="warn">Игра завершена — релиз может изменить только администратор.</p>
+    } @else {
+      <app-hint-type-picker label="+ контент" (picked)="addHint($event)"></app-hint-type-picker>
+
+      <div class="release-actions">
+        <button type="button" class="primary" (click)="save()" [disabled]="isSaving || !hasHints">
+          {{ isSaving ? "Сохранение..." : "Сохранить" }}
+        </button>
+        <button type="button" class="ghost-button" (click)="preview()" [disabled]="!hasHints">
+          Предпросмотр
+        </button>
+        @if (hasRelease) {
+          <button type="button" class="ghost-button danger" (click)="remove()">Удалить релиз</button>
+        }
+      </div>
+    }
+  }
+</div>

@@ -91,6 +91,18 @@
       <app-organizers-editor [gameId]="gameId"></app-organizers-editor>
     }
 
+    <!-- Release (the promo published before the game). Stays editable longer
+         than the scenario, and admins may still change a complete game's one. -->
+    <app-release-editor
+      [gameId]="gameId"
+      [files]="files"
+      [objectUrls]="objectUrls"
+      [gameStatus]="status ?? ''"
+      [disabled]="!canEditRelease"
+      (fileUploaded)="onHintFileUploaded($event)"
+      (fileRenamed)="onHintFileRenamed($event)"
+    ></app-release-editor>
+
     <!-- Levels -->
     <div class="block">
       <div class="block-head">

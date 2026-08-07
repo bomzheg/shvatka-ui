@@ -1,11 +1,18 @@
 import {Injectable} from "@angular/core";
-import {Observable} from "rxjs";
+import {map, Observable} from "rxjs";
 import {HttpClient} from "@angular/common/http";
 import {HttpAdapter} from "../http/http.adapter";
 import {environment} from "../../environments/environment";
 import {Page} from "../games/games.service";
-import {FullGame} from "../domain/game.models";
-import {MyGame, ScenarioPayload, UploadedFile, UploadOptions, uploadOptionsQuery} from "./constructor.models";
+import {FullGame, GameRelease} from "../domain/game.models";
+import {
+  HintPayload,
+  MyGame,
+  ScenarioPayload,
+  UploadedFile,
+  UploadOptions,
+  uploadOptionsQuery,
+} from "./constructor.models";
 import {GameOrganizer, OrgPermissionKey, OrgPlayer} from "./organizers.models";
 
 interface ItemsResponse<T> {
@@ -74,6 +81,30 @@ export class ConstructorService {
       {filename},
       {withCredentials: true},
     );
+  }
+
+  // -------------------------------------------------------------------------
+  // Release (the promo published before a game)
+  // -------------------------------------------------------------------------
+
+  /** The game's published release, or undefined while it has none. */
+  getRelease(gameId: number): Observable<GameRelease | undefined> {
+    return this.http.get<GameRelease | null>(`/games/${gameId}/release`)
+      .pipe(map(release => release ?? undefined));
+  }
+
+  /**
+   * Write (or rewrite) the game's release. When it reaches the announcements
+   * channel is the engine's call: a release saved before the waivers start
+   * goes out when they do, one saved later goes out at once, and an already
+   * published one has its channel messages edited.
+   */
+  saveRelease(gameId: number, hints: HintPayload[]): Observable<GameRelease> {
+    return this.http.put<GameRelease>(`/games/my/${gameId}/release`, {hints});
+  }
+
+  deleteRelease(gameId: number): Observable<void> {
+    return this.http.del<void>(`/games/my/${gameId}/release`);
   }
 
   // -------------------------------------------------------------------------

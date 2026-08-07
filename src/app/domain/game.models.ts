@@ -256,6 +256,22 @@ export class FullGame {
   ) {}
 }
 
+/**
+ * A game's release — the promo published before it: a banner, some text about
+ * the theme, a map. Just a list of hint parts, so it renders like any other
+ * hint. Optional: most games have none.
+ *
+ * `is_published` tells whether it already stands in the announcements channel;
+ * a release saved before the waivers start goes out when they do.
+ */
+export class GameRelease {
+  constructor(
+    public game_id: number,
+    public hints: HintPart[] = [],
+    public is_published: boolean = false,
+  ) {}
+}
+
 export enum KeyType {
   wrong = "wrong",
   simple = "simple",

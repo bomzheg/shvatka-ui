@@ -11,6 +11,9 @@ import {ThemeMode, ThemeService} from "../theme/theme.service";
 import {PushService} from "../push/push.service";
 import {NotificationsService} from "../notifications/notifications.service";
 import {DebugLogService} from "../debug/debug-log.service";
+import {GameRelease, HintPart} from "../domain/game.models";
+import {HintPartComponent} from "../hint.part/hint.part.component";
+import {HttpAdapter} from "../http/http.adapter";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
 
@@ -29,6 +32,7 @@ interface Countdown {
     RouterLink,
     RouterLinkActive,
     MatIcon,
+    HintPartComponent,
   ],
   templateUrl: 'header.component.html',
   styleUrl: './header.component.scss',
@@ -41,6 +45,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
+  /** Release of the active game, when its author published one. */
+  release: GameRelease | undefined;
+  isReleaseOpen = false;
   isMobileMenuOpen = false;
   selectedThemeMode: ThemeMode = "system";
 
@@ -54,6 +61,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private pushService: PushService,
     private notificationsService: NotificationsService,
     private debugLog: DebugLogService,
+    private http: HttpAdapter,
   ) {
     this.window = this._document.defaultView;
     this.tg = (this.window as any)?.Telegram;
@@ -157,6 +165,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.activeGame = game;
         this.countdown = this.getCountdown();
         this.setupCountdownTicker();
+        this.loadRelease(game);
       },
       error: error => this.logDebugError("load active game", error),
     });
@@ -238,10 +247,51 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return "ещё не началась";
   }
 
+  hasRelease(): boolean {
+    return this.releaseHints().length > 0;
+  }
+
+  releaseHints(): HintPart[] {
+    return this.release?.hints ?? [];
+  }
+
+  toggleRelease() {
+    this.isReleaseOpen = !this.isReleaseOpen;
+  }
+
+  releaseFileUrl(hint: HintPart): string | undefined {
+    return this.releaseUrlFor(hint.file_guid);
+  }
+
+  releaseThumbUrl(hint: HintPart): string | undefined {
+    return this.releaseUrlFor(hint.thumb_guid);
+  }
+
   ngOnDestroy() {
     if (this.countdownInterval) {
       window.clearInterval(this.countdownInterval);
     }
+  }
+
+  /** A release is optional — a game without one just shows no banner. */
+  private loadRelease(game: ActiveGame | undefined) {
+    if (!game) {
+      this.release = undefined;
+      return;
+    }
+
+    this.gamesService.getRelease(game.id).subscribe({
+      next: release => this.release = release,
+      error: error => this.logDebugError("load game release", error),
+    });
+  }
+
+  private releaseUrlFor(guid: string | undefined): string | undefined {
+    if (!guid || !this.release) {
+      return undefined;
+    }
+
+    return this.http.getFileUrl(this.release.game_id, guid);
   }
 
 

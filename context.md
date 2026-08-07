@@ -48,6 +48,7 @@ admin panel.
 | The shared model, as the API returns it | `src/app/domain/game.models.ts` |
 | Archive of games, game card | `src/app/games/`, `src/app/game/`, `src/app/game_scenario.part/`, `src/app/game_log.part/` |
 | Live play — keys, hints, waivers, spy | `src/app/game_play/` |
+| A game's release | `src/app/constructor/release-editor.component.ts`, `src/app/header/` |
 | Scenario authoring | `src/app/constructor/`, `src/app/scenario_graph.part/` |
 | Results and charts | `src/app/game_chart.part/`, `src/app/game_chart_page/` |
 | Teams and players | `src/app/team/`, `src/app/teams/`, `src/app/team_card/`, `src/app/player_card/` |
@@ -94,6 +95,7 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 | **Game number** | Номер игры | The game's place in the archive; only played games have one. | games list |
 | **Organizer (org)** | Организатор (орг) | A player who runs a game rather than playing it. The author is the **primary organizer** with every right; others are **secondary organizers** with explicit permissions and **nothing granted by default**. | `game_play/` |
 | **Org permission** | Полномочие орга | What a secondary organizer may do: spy, see the key log, validate waivers, view the scenario. **Nothing is granted by default.** The labels are the bot's, see below. | `game_play.component.html`, `constructor/organizers.models.ts` |
+| **Release** | Релиз | The promo an author publishes before a game — a banner, a few words about the theme, a map of the district. A plain list of hint parts, so it renders through the same components as a hint. Optional. Shown above the header for the active game, written in the constructor. | `GameRelease` in `domain/game.models.ts`, `constructor/release-editor.component.ts`, `header/` |
 
 ### Game statuses
 
@@ -108,6 +110,11 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 
 **`finished` is not `complete`** — the distinction is visible to users, so don't
 collapse the two in copy or in conditionals.
+
+A game's **release** stays editable longer than its scenario: through `finished`
+included, and after `complete` only for an admin. When it reaches the
+announcements channel is the engine's business, not the UI's — the constructor
+saves, and says what the save will do in the game's current status.
 
 ## Scenario — what an author writes
 
@@ -238,6 +245,7 @@ in code and in Russian UI copy alike.
 | Moderator | **Organizer** or **superuser** | Neither role exists under that name. |
 | Level text / текст уровня | **Puzzle** — загадка уровня | Say *текст уровня* all you like in conversation; it's the popular name and it's exact whenever the puzzle happens to be text. In UI copy use *загадка уровня*, because a puzzle can just as well be a photo, a video or an audio file, and because there is no separate "level text" in the model — it is the 0-minute hint. |
 | Clue, tip | **Hint** — подсказка | One word for the thing released on a timer. |
+| Announcement, анонс | **Release** — релиз | Организаторы говорят *релиз* про промо перед игрой; *анонс* размывает его с любым другим объявлением. |
 | Fine, malus | **Penalty** — штраф | A penalty is a negative bonus, not another field. |
 | Group, squad, crew | **Team** — команда | Group means a Telegram chat here. |
 | Member | **Team player** — участник команды | Membership is an interval with permissions, not a flag. |

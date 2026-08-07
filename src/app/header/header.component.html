@@ -1,9 +1,33 @@
 @if (hasActiveGame()) {
-  <a class="active-game-banner" routerLink="/games/running" (click)="onNavClick('/games/running', $event)">
-    {{ activeGame?.name }}: {{ activeGameBannerLabel() }}@if (countdown) {
-      , начнётся через {{ countdown.firstValue }} {{ countdownUnitLabel(countdown.firstUnit) }} {{ countdown.secondValue }} {{ countdownUnitLabel(countdown.secondUnit) }}
+  <div class="active-game-strip">
+    <a class="active-game-banner" routerLink="/games/running" (click)="onNavClick('/games/running', $event)">
+      {{ activeGame?.name }}: {{ activeGameBannerLabel() }}@if (countdown) {
+        , начнётся через {{ countdown.firstValue }} {{ countdownUnitLabel(countdown.firstUnit) }} {{ countdown.secondValue }} {{ countdownUnitLabel(countdown.secondUnit) }}
+      }
+    </a>
+    @if (hasRelease()) {
+      <button
+        type="button"
+        class="release-toggle"
+        [attr.aria-expanded]="isReleaseOpen"
+        (click)="toggleRelease()"
+      >
+        <span>📢 Релиз игры</span>
+        <span class="release-toggle__chevron" [class.open]="isReleaseOpen" aria-hidden="true">⌄</span>
+      </button>
+      @if (isReleaseOpen) {
+        <div class="release-panel">
+          @for (hint of releaseHints(); track $index) {
+            <app-hint-part
+              [hint]="hint"
+              [fileUrl]="releaseFileUrl(hint)"
+              [thumbUrl]="releaseThumbUrl(hint)"
+            />
+          }
+        </div>
+      }
     }
-  </a>
+  </div>
 }
 
 <header class="main-header">
