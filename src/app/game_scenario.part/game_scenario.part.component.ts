@@ -54,6 +54,10 @@ export class GameScenarioPartComponent {
     return typeof condition.action_time === 'number' ? condition.action_time : undefined;
   }
 
+  /** Bound once so the hint view can resolve any file of the game (rich hints
+   *  embed several) without a new closure on every change detection. */
+  fileUrlFor = (guid: string): string | undefined => this.http.getFileUrl(this.game.id, guid);
+
   getFileUrl(hint: HintPart) {
     if (hint.file_guid === undefined) {
       return undefined;

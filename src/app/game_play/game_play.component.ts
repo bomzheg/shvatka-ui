@@ -387,6 +387,13 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.gameService.getSpyStat();
   }
 
+  /** Bound once so the hint view can resolve any file of the current game
+   *  (rich hints embed several) without a new closure on every check. */
+  fileUrlFor = (guid: string): string | undefined => {
+    const hints = this.getCurrentHints();
+    return hints ? this.http.getFileUrl(hints.game_id, guid) : undefined;
+  };
+
   getFileUrl(hint: HintPart) {
     if (hint.file_guid === undefined) {
       return undefined;

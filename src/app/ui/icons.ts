@@ -30,6 +30,7 @@ export enum AppIcon {
   download = "download",
   // hint part types
   text = "description",
+  rich = "newspaper",
   gps = "location-on",
   venue = "account-balance",
   photo = "photo-camera",
@@ -95,6 +96,7 @@ export const HINT_TYPE_ICON: Record<HintType, AppIcon> = {
   [HintType.video_note]: AppIcon.videoNote,
   [HintType.contact]: AppIcon.contact,
   [HintType.sticker]: AppIcon.sticker,
+  [HintType.rich]: AppIcon.rich,
 };
 
 /** Icon for the CDN `content_type` of an uploaded file. */

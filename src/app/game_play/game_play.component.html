@@ -107,7 +107,7 @@
                     <ul class="typed-key-hints">
                       @for (hint of getTypedKeyHints(typedKey); track hint) {
                         <li>
-                          <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+                          <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)" [fileUrlFor]="fileUrlFor"></app-hint-part>
                         </li>
                       }
                     </ul>
@@ -127,7 +127,7 @@
         <li>
           <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
           @for (hint of timeHint.hint; track hint) {
-            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)" [fileUrlFor]="fileUrlFor"></app-hint-part>
           }
         </li>
       }
@@ -163,7 +163,7 @@
                       <ul class="typed-key-hints">
                         @for (hint of getEventHints(event); track hint) {
                           <li>
-                            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+                            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)" [fileUrlFor]="fileUrlFor"></app-hint-part>
                           </li>
                         }
                       </ul>
@@ -202,7 +202,7 @@
                         <ul class="typed-key-hints">
                           @for (hint of getEventHints(event); track hint) {
                             <li>
-                              <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+                              <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)" [fileUrlFor]="fileUrlFor"></app-hint-part>
                             </li>
                           }
                         </ul>

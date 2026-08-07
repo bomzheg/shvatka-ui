@@ -28,6 +28,19 @@ export enum HintType {
   video_note = "video_note",
   contact = "contact",
   sticker = "sticker",
+  rich = "rich",
+}
+
+/** Markup language a rich hint ({@link HintType.rich}) is written in. */
+export enum RichFormat {
+  html = "html",
+  markdown = "markdown",
+}
+
+/** A file embedded in the markup of a rich hint, bound to the id it uses. */
+export interface RichMedia {
+  id: string;
+  file_guid: string;
 }
 
 /**
@@ -59,6 +72,10 @@ interface HintPartArgs {
   first_name?: string | undefined
   last_name?: string | undefined
   vcard?: string | undefined
+  /** {@link HintType.rich} only: markup language of `text`. */
+  format?: RichFormat | undefined
+  /** {@link HintType.rich} only: files the markup embeds. */
+  media?: RichMedia[] | undefined
 }
 
 export class HintPart {
@@ -81,6 +98,10 @@ export class HintPart {
     public vcard: string | undefined = undefined,
     /** Media only. `null`/absent means no spoiler — treat both as false. */
     public has_spoiler: boolean | null | undefined = undefined,
+    /** Rich hints only: which markup language `text` is written in. */
+    public format: RichFormat | undefined = undefined,
+    /** Rich hints only: files embedded in the markup, by the id it uses. */
+    public media: RichMedia[] | undefined = undefined,
   ) {}
 
   public static create({
@@ -101,6 +122,8 @@ export class HintPart {
     last_name,
     vcard,
     has_spoiler,
+    format,
+    media,
   }: HintPartArgs) {
     return new HintPart(
       type,
@@ -120,7 +143,14 @@ export class HintPart {
       last_name,
       vcard,
       has_spoiler,
+      format,
+      media,
     );
+  }
+
+  /** Files the rich markup embeds; absent for every other hint type. */
+  static richMedia(hint: HintPart): RichMedia[] {
+    return Array.isArray(hint.media) ? hint.media : [];
   }
 
   /** Media the author marked as a spoiler. `null`/absent reads as false. */

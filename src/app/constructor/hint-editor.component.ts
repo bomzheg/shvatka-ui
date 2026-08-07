@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, Output} from "@angular/core";
 import {FormsModule} from "@angular/forms";
-import {HintType} from "../domain/game.models";
+import {HintType, RichFormat, RichMedia} from "../domain/game.models";
 import {
   CAPTION_ABOVE_HINT_TYPES,
   CAPTION_HINT_TYPES,
@@ -51,6 +51,7 @@ export class HintEditorComponent {
 
   protected readonly HintType = HintType;
   protected readonly AppIcon = AppIcon;
+  protected readonly RichFormat = RichFormat;
 
   isUploading = false;
   /** "выбрать из загруженных" toggles the file/thumb picker dropdowns. */
@@ -140,10 +141,89 @@ export class HintEditorComponent {
   }
 
   // ---------------------------------------------------------------------
+  // Rich message: markup plus the files it embeds
+  // ---------------------------------------------------------------------
+
+  /** Markup language of the hint; html unless the author says otherwise. */
+  get richFormat(): RichFormat {
+    return this.hint.format ?? RichFormat.html;
+  }
+
+  set richFormat(value: RichFormat) {
+    this.hint.format = value;
+  }
+
+  richMedia(): RichMedia[] {
+    if (!this.hint.media) {
+      this.hint.media = [];
+    }
+    return this.hint.media;
+  }
+
+  /** A new media row, pre-named so the markup has something to refer to. */
+  addRichMedia(): void {
+    const media = this.richMedia();
+    media.push({id: this.nextMediaId(media), file_guid: ""});
+  }
+
+  removeRichMedia(index: number): void {
+    this.richMedia().splice(index, 1);
+  }
+
+  /** How the markup refers to this file: `<img src="id">` / `![](id)`. */
+  richMediaReference(media: RichMedia): string {
+    return this.richFormat === RichFormat.markdown
+      ? `![](${media.id})`
+      : `<img src="${media.id}">`;
+  }
+
+  copyRichMediaReference(media: RichMedia): void {
+    navigator.clipboard?.writeText(this.richMediaReference(media)).then(() => {
+      this.snackbar.success("Ссылка на вложение скопирована");
+    });
+  }
+
+  /** Upload straight into a media row of the rich markup. */
+  onRichMediaSelected(event: Event, media: RichMedia): void {
+    this.upload(event, uploaded => {
+      media.file_guid = uploaded.guid;
+    });
+  }
+
+  /** Preview url of an embedded image; other media types have none here. */
+  richMediaImageUrl(media: RichMedia): string | undefined {
+    const file = this.files.find(f => f.guid === media.file_guid);
+    return file?.content_type === "photo" ? this.fileUrlFor(media.file_guid) : undefined;
+  }
+
+  private nextMediaId(media: RichMedia[]): string {
+    const taken = new Set(media.map(item => item.id));
+    for (let i = 1; ; i++) {
+      const id = `media${i}`;
+      if (!taken.has(id)) {
+        return id;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------
   // Upload (for an empty hint or to replace the current file)
   // ---------------------------------------------------------------------
 
   onUploadSelected(event: Event, target: "file" | "thumb") {
+    this.upload(event, uploaded => {
+      if (target === "file") {
+        this.hint.file_guid = uploaded.guid;
+        this.showFileBrowser = false;
+      } else {
+        this.hint.thumb_guid = uploaded.guid;
+        this.showThumbBrowser = false;
+      }
+    });
+  }
+
+  /** Upload the picked file and hand the stored file to `apply`. */
+  private upload(event: Event, apply: (uploaded: UploadedFile) => void) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file || this.gameId === undefined) {
@@ -172,13 +252,7 @@ export class HintEditorComponent {
           this.objectUrls?.set(uploaded.guid, URL.createObjectURL(file));
         }
         this.fileUploaded.emit(uploaded);
-        if (target === "file") {
-          this.hint.file_guid = uploaded.guid;
-          this.showFileBrowser = false;
-        } else {
-          this.hint.thumb_guid = uploaded.guid;
-          this.showThumbBrowser = false;
-        }
+        apply(uploaded);
         this.snackbar.success(`Файл загружен: ${uploaded.original_filename}${uploaded.extension}`);
       },
       error: err => {

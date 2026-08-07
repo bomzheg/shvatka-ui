@@ -1,9 +1,10 @@
 import {Component, Input, OnChanges, SimpleChanges} from '@angular/core';
 import {NgTemplateOutlet} from "@angular/common";
 import {MatIcon} from "@angular/material/icon";
-import {HintPart, HintType} from "../domain/game.models";
+import {HintPart, HintType, RichFormat} from "../domain/game.models";
 import {AppIcon} from "../ui/icons";
 import {VideoNoteComponent} from "../ui/video-note.component";
+import {FileUrlResolver, resolveRichMedia} from "./rich-hint";
 
 /** What the cover of a spoiler announces, per hidden media type. */
 const SPOILER_REVEAL_LABELS: Partial<Record<HintType, string>> = {
@@ -28,6 +29,13 @@ export class HintPartComponent implements OnChanges {
   /** Optional thumbnail (Telegram `thumb`) used as a poster/preview. */
   @Input()
   thumbUrl: string | undefined;
+  /**
+   * Resolves any file of the game by guid. A rich hint embeds several files at
+   * once, so the single `fileUrl` above is not enough for it. Pass a stable
+   * (bound) function — a fresh closure on every check would churn the view.
+   */
+  @Input()
+  fileUrlFor: FileUrlResolver | undefined;
 
     protected readonly HintType = HintType;
     protected readonly AppIcon = AppIcon;
@@ -41,6 +49,8 @@ export class HintPartComponent implements OnChanges {
   spoilerRevealed = false;
   /** Set when the still behind the blur can't be loaded (plain cover instead). */
   spoilerCoverBroken = false;
+  /** Rendered rich markup, kept until the markup or its media change. */
+  private renderedRich: {key: string; html: string} | undefined;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['thumbUrl']) {
@@ -51,6 +61,22 @@ export class HintPartComponent implements OnChanges {
       this.spoilerRevealed = false;
       this.spoilerCoverBroken = false;
     }
+  }
+
+  /** Whether the markup of this rich hint can be rendered as HTML. Markdown
+   *  is shown as the source text instead — the web has no renderer for it. */
+  isRichHtml(): boolean {
+    return this.hint.format !== RichFormat.markdown;
+  }
+
+  /** The rich markup with every embedded media id resolved to a file url. */
+  richHtml(): string {
+    const media = HintPart.richMedia(this.hint);
+    const key = [this.hint.text ?? "", ...media.map(m => `${m.id}:${m.file_guid}`)].join("\u0000");
+    if (this.renderedRich?.key !== key) {
+      this.renderedRich = {key, html: resolveRichMedia(this.hint.text, media, this.fileUrlFor)};
+    }
+    return this.renderedRich.html;
   }
 
   /** Whether this part is media the author hid behind a spoiler. */

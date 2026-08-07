@@ -13,7 +13,7 @@ import {VideoNoteComponent} from "../ui/video-note.component";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GraphLevel, GraphRoute, keyRouteLabel, timerRouteLabel} from "../scenario_graph.part/scenario_graph.model";
 import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
-import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
+import {FullGame, HintType, Level, RichFormat, ScenarioConditionType} from "../domain/game.models";
 import {
   CONTENT_TYPE_LABELS,
   describeError,
@@ -812,6 +812,13 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     // (including after a type change), which the server reads as "no spoiler".
     if (SPOILER_HINT_TYPES.includes(hint.type) && hint.has_spoiler === true) out.has_spoiler = true;
     if (hint.link_preview) out.link_preview = hint.link_preview;
+    // A rich hint keeps the markup language it was written in and the media
+    // its markup embeds; half-filled media rows are dropped.
+    if (hint.type === HintType.rich) {
+      out.format = hint.format ?? RichFormat.html;
+      const media = (hint.media ?? []).filter(m => m.id && m.file_guid);
+      if (media.length > 0) out.media = media;
+    }
     return out;
   }
 

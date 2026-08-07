@@ -11,6 +11,65 @@
       <app-hint-text-editor [(ngModel)]="hint.text" [disabled]="disabled" placeholder="Текст подсказки"></app-hint-text-editor>
     }
 
+    @case (HintType.rich) {
+      <label>Разметка</label>
+      <textarea class="rich-markup" rows="8" [(ngModel)]="hint.text" [disabled]="disabled"
+                placeholder="&lt;h1&gt;Заголовок&lt;/h1&gt;&lt;p&gt;Текст подсказки&lt;/p&gt;"></textarea>
+      <span class="field-hint">
+        Форматированное сообщение Telegram: заголовки, списки, таблицы, цитаты, вложения.
+        Разметка — Rich HTML (или Markdown, если выбрать его ниже).
+      </span>
+
+      <label>Язык разметки</label>
+      <select [(ngModel)]="richFormat" [disabled]="disabled">
+        <option [ngValue]="RichFormat.html">HTML</option>
+        <option [ngValue]="RichFormat.markdown">Markdown</option>
+      </select>
+      @if (richFormat === RichFormat.markdown) {
+        <span class="field-hint">В веб-версии Markdown показывается как есть, без разметки.</span>
+      }
+
+      <label>Вложения</label>
+      <span class="field-hint">
+        Каждое вложение подставляется в разметку по своему идентификатору.
+      </span>
+      @for (media of richMedia(); track $index) {
+        <div class="rich-media">
+          <div class="rich-media-row">
+            <input class="rich-media-id" type="text" [(ngModel)]="media.id" [disabled]="disabled"
+                   placeholder="идентификатор" />
+            <code class="rich-media-ref">{{ richMediaReference(media) }}</code>
+            <button type="button" class="ghost-button icon" (click)="copyRichMediaReference(media)"
+                    title="Скопировать вставку"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.copy"/></button>
+            @if (!disabled) {
+              <button type="button" class="ghost-button icon danger" (click)="removeRichMedia($index)"
+                      title="Удалить вложение"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
+            }
+          </div>
+          <div class="rich-media-row">
+            <select [(ngModel)]="media.file_guid" [disabled]="disabled">
+              <option [ngValue]="''">— выберите файл —</option>
+              @for (f of files; track f.guid) {
+                <option [ngValue]="f.guid">{{ fileLabel(f) }}</option>
+              }
+            </select>
+            @if (!disabled) {
+              <label class="upload-button" [class.busy]="isUploading">
+                <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.upload"/> Загрузить
+                <input type="file" hidden (change)="onRichMediaSelected($event, media)" [disabled]="isUploading" />
+              </label>
+            }
+          </div>
+          @if (richMediaImageUrl(media); as mediaSrc) {
+            <app-image-lightbox [src]="mediaSrc"></app-image-lightbox>
+          }
+        </div>
+      }
+      @if (!disabled) {
+        <button type="button" class="ghost-button" (click)="addRichMedia()">+ вложение</button>
+      }
+    }
+
     @case (HintType.gps) {
       <label>Координаты (широта, долгота)</label>
       <input type="text" [(ngModel)]="coords" [disabled]="disabled" placeholder="55.751244, 37.618423" />
