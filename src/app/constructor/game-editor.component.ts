@@ -96,6 +96,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   isLoading = false;
   isSaving = false;
   isUploading = false;
+  isDownloadingKeys = false;
 
   /** Superuser mode (/admin/games/:id): editing an already completed game
    *  through the /admin endpoints. Start, status and organizers are frozen —
@@ -911,6 +912,31 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       next: () => {
         this.snackbar.success("Статус изменён");
         this.load();
+      },
+    });
+  }
+
+  /** Download the keys of the game as a pdf ready to print on A4. */
+  downloadKeysToPrint(): void {
+    if (this.isDownloadingKeys) {
+      return;
+    }
+    this.isDownloadingKeys = true;
+    this.constructorService.keysToPrint(this.gameId).subscribe({
+      next: blob => {
+        this.isDownloadingKeys = false;
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${this.name || "game"}-keys.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.isDownloadingKeys = false;
+        this.snackbar.error("Не удалось скачать ключи для печати", "Закрыть", 3000);
       },
     });
   }
