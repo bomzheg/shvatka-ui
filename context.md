@@ -48,7 +48,7 @@ admin panel.
 | The shared model, as the API returns it | `src/app/domain/game.models.ts` |
 | Archive of games, game card | `src/app/games/`, `src/app/game/`, `src/app/game_scenario.part/`, `src/app/game_log.part/` |
 | Live play — keys, hints, waivers, spy | `src/app/game_play/` |
-| A game's release | `src/app/constructor/release-editor.component.ts`, `src/app/header/` |
+| A game's release | `src/app/constructor/release-editor.component.ts`, `src/app/header/`, `src/app/home/`, `src/app/game/` |
 | Scenario authoring | `src/app/constructor/`, `src/app/scenario_graph.part/` |
 | Results and charts | `src/app/game_chart.part/`, `src/app/game_chart_page/` |
 | Teams and players | `src/app/team/`, `src/app/teams/`, `src/app/team_card/`, `src/app/player_card/` |
@@ -95,7 +95,7 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 | **Game number** | Номер игры | The game's place in the archive; only played games have one. | games list |
 | **Organizer (org)** | Организатор (орг) | A player who runs a game rather than playing it. The author is the **primary organizer** with every right; others are **secondary organizers** with explicit permissions and **nothing granted by default**. | `game_play/` |
 | **Org permission** | Полномочие орга | What a secondary organizer may do: spy, see the key log, validate waivers, view the scenario. **Nothing is granted by default.** The labels are the bot's, see below. | `game_play.component.html`, `constructor/organizers.models.ts` |
-| **Release** | Релиз | The promo an author publishes before a game — a **banner**, then a few words about the theme and a map of the district. Everything after the banner is a plain list of hint parts, so it renders through the same components as a hint. Optional. Written in the constructor; read on the main page in full. | `GameRelease` in `domain/game.models.ts`, `constructor/release-editor.component.ts`, `home/` |
+| **Release** | Релиз | The promo an author publishes before a game — a **banner**, then a few words about the theme and a map of the district. Everything after the banner is a plain list of hint parts, so it renders through the same components as a hint. Optional. Written in the constructor; read on the main page in full, and on a game's card behind the first spoiler. | `GameRelease` in `domain/game.models.ts`, `constructor/release-editor.component.ts`, `home/`, `game/` |
 | **Banner** | Баннер | The wide title picture (with its caption) that leads a release — roughly 1280×250—1280×550, though nothing enforces that. It is the only part shown above the header, where it links down to the full release on the main page. A release may be just a banner, or have none. | `GameRelease.banner`, `header/header.component.html` |
 
 ### Game statuses

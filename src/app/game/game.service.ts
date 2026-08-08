@@ -4,12 +4,13 @@ import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {SnackbarService} from "../snackbar/snackbar.service";
 
-import {FullGame, GameStat, GameWaivers, Keys} from "../domain/game.models";
+import {FullGame, GameRelease, GameStat, GameWaivers, Keys} from "../domain/game.models";
 type GameCacheItem = {
   game?: FullGame;
   keys?: Keys;
   stat?: GameStat;
   waivers?: GameWaivers;
+  release?: GameRelease;
 };
 
 @Injectable({
@@ -20,6 +21,7 @@ export class GameService {
   private keys: Keys | undefined;
   private stat: GameStat | undefined;
   private waivers: GameWaivers | undefined;
+  private release: GameRelease | undefined;
   private currentGameId: number | undefined;
   private requestVersion = 0;
   private cache = new Map<number, GameCacheItem>();
@@ -44,9 +46,12 @@ export class GameService {
     this.isWaiversLoadingFlag = false;
     this.waiversErrorFlag = false;
 
+    this.release = cached?.release;
+
     this.fetchGame(id, version, !cached?.game);
     this.fetchKeys(id, version, !cached?.keys);
     this.fetchStat(id, version, !cached?.stat);
+    this.fetchRelease(id, version, !cached?.release);
   }
 
   loadWaivers() {
@@ -146,6 +151,31 @@ export class GameService {
       });
   }
 
+  /** A release is optional and public — a game without one shows no spoiler. */
+  private fetchRelease(id: number, version: number, shouldFetch: boolean) {
+    if (!shouldFetch) {
+      return;
+    }
+
+    this.http.get<GameRelease | null>(`/games/${id}/release`)
+      .subscribe({
+        next: r => {
+          const release = r ?? undefined;
+          if (release) {
+            this.upsertCache(id, {release});
+          }
+          if (this.shouldApply(id, version)) {
+            this.release = release;
+          }
+        },
+        error: () => {
+          if (this.shouldApply(id, version)) {
+            this.release = undefined;
+          }
+        }
+      });
+  }
+
   private fetchStat(id: number, version: number, shouldFetch: boolean) {
     if (!shouldFetch) {
       this.isStatLoading = false;
@@ -201,6 +231,10 @@ export class GameService {
 
   getStat(): GameStat | undefined {
     return this.stat;
+  }
+
+  getRelease(): GameRelease | undefined {
+    return this.release;
   }
 
   getWaivers(): GameWaivers | undefined {

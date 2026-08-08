@@ -18,6 +18,21 @@
       <span class="game-start-at-value">{{ getGame()!.start_at | date:'dd.MM.yyyy HH:mm' }}</span>
     </p>
   }
+  @if (hasRelease()) {
+    <!-- first: the promo is what the game was announced as, before any spoilers -->
+    <details class="game-release">
+      <summary class="game-scn-spoiler">Релиз игры</summary>
+      <div class="game-release-parts">
+        @for (part of releaseParts(); track $index) {
+          <app-hint-part
+            [hint]="part"
+            [fileUrl]="releaseFileUrl(part)"
+            [thumbUrl]="releaseThumbUrl(part)"
+          />
+        }
+      </div>
+    </details>
+  }
   <details>
     <summary class="game-scn-spoiler">Сценарий</summary>
     <div class="scenario-tabs" role="tablist">
