@@ -264,15 +264,15 @@ export class FullGame {
  * map — is a plain list of hint parts, rendered like any other hint. Both
  * halves are optional, and so is the release: most games have none.
  *
- * `is_published` tells whether it already stands in the announcements channel;
- * a release saved before the waivers start goes out when they do.
+ * Where it currently stands in the announcements channel is the bot's own
+ * business and not part of this model: a release saved before the waivers
+ * start goes out when they do.
  */
 export class GameRelease {
   constructor(
     public game_id: number,
     public banner: HintPart | undefined = undefined,
     public hints: HintPart[] = [],
-    public is_published: boolean = false,
   ) {}
 }
 

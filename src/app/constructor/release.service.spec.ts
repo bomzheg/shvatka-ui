@@ -34,13 +34,11 @@ describe("game release", () => {
       game_id: 7,
       banner: {type: HintType.photo, file_guid: "banner", caption: "тема игры"},
       hints: [{type: HintType.text, text: "карта района"}],
-      is_published: true,
     });
 
     expect(received?.game_id).toBe(7);
     expect(received?.banner?.file_guid).toBe("banner");
     expect(received?.hints.length).toBe(1);
-    expect(received?.is_published).toBeTrue();
   });
 
   it("treats a game without a release as no release, not an error", () => {
@@ -68,11 +66,9 @@ describe("game release", () => {
       game_id: 7,
       banner,
       hints: [{type: HintType.text, text: "карта"}],
-      is_published: false,
     });
 
     expect(saved?.banner?.caption).toBe("тема");
-    expect(saved?.is_published).toBeFalse();
   });
 
   it("sends an explicit null when the release has no banner", () => {
@@ -81,7 +77,7 @@ describe("game release", () => {
 
     const request = httpMock.expectOne(req => req.url.endsWith("/games/my/7/release"));
     expect(request.request.body.banner).toBeNull();
-    request.flush({game_id: 7, banner: null, hints: [], is_published: false});
+    request.flush({game_id: 7, banner: null, hints: []});
   });
 
   it("deletes the release", () => {

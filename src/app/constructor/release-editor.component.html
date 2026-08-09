@@ -1,9 +1,7 @@
 <div class="block release-block">
   <div class="block-head">
     <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonusHint"/> Релиз игры</h2>
-    @if (isPublished) {
-      <span class="badge badge-published">в канале</span>
-    } @else if (hasRelease) {
+    @if (hasRelease) {
       <span class="badge">сохранён</span>
     }
   </div>

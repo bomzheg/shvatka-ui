@@ -46,8 +46,6 @@ export class ReleaseEditorComponent implements OnInit {
   /** The wide title picture leading the release — a photo part, or nothing. */
   banner?: HintPayload;
   hints: HintPayload[] = [];
-  /** True once it stands in the announcements channel. */
-  isPublished = false;
   hasRelease = false;
   isPreviewing = false;
   isLoading = false;
@@ -75,16 +73,14 @@ export class ReleaseEditorComponent implements OnInit {
 
   /** What saving will do with the channel, in the game's current status. */
   get announceHint(): string {
-    if (this.isPublished) {
-      return "Релиз уже в канале — правки обновят те же сообщения.";
-    }
     if (this.gameStatus === "getting_waivers") {
-      return "Идёт сбор вейверов — релиз уйдёт в канал сразу после сохранения.";
+      return "Идёт сбор вейверов — релиз в канале, правки обновят те же сообщения.";
     }
     if (this.gameStatus === "underconstruction" || this.gameStatus === "ready") {
       return "Релиз уйдёт в канал, когда начнётся сбор вейверов.";
     }
-    return "Игра уже началась — релиз будет виден на сайте, но в канал не пойдёт.";
+    return "Игра уже началась — в канал релиз не пойдёт, "
+      + "но если он уже там, правки его обновят.";
   }
 
   addBanner() {
@@ -135,9 +131,7 @@ export class ReleaseEditorComponent implements OnInit {
         next: release => {
           this.apply(release);
           this.isPreviewing = false;
-          this.snackbar.success(
-            release.is_published ? "Релиз сохранён и опубликован" : "Релиз сохранён",
-          );
+          this.snackbar.success("Релиз сохранён");
         },
         error: error => this.snackbar.error(`Не удалось сохранить релиз: ${describeError(error)}`),
       });
@@ -149,7 +143,6 @@ export class ReleaseEditorComponent implements OnInit {
         this.banner = undefined;
         this.hints = [];
         this.hasRelease = false;
-        this.isPublished = false;
         this.snackbar.success("Релиз удалён");
       },
       error: error => this.snackbar.error(`Не удалось удалить релиз: ${describeError(error)}`),
@@ -192,6 +185,5 @@ export class ReleaseEditorComponent implements OnInit {
     this.banner = release?.banner as HintPayload | undefined;
     this.hints = (release?.hints ?? []) as HintPayload[];
     this.hasRelease = release !== undefined;
-    this.isPublished = release?.is_published === true;
   }
 }
