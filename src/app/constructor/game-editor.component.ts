@@ -8,7 +8,6 @@ import {HintEditorComponent} from "./hint-editor.component";
 import {HintTypePickerComponent} from "./hint-type-picker.component";
 import {EffectsEditorComponent} from "./effects-editor.component";
 import {OrganizersEditorComponent} from "./organizers-editor.component";
-import {ReleaseEditorComponent} from "./release-editor.component";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {VideoNoteComponent} from "../ui/video-note.component";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
@@ -82,7 +81,6 @@ type FilePreviewKind = "image" | "video" | "video_note" | "audio" | "none";
     HintTypePickerComponent,
     EffectsEditorComponent,
     OrganizersEditorComponent,
-    ReleaseEditorComponent,
     ImageLightboxComponent,
     VideoNoteComponent,
     ScenarioGraphPartComponent,
@@ -175,8 +173,11 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   /** A release stays editable until the game is complete (admins even then). */
-  get canEditRelease(): boolean {
-    return this.adminMode || this.game?.status !== "complete";
+  /** The release is edited on its own page — link there rather than inline. */
+  get releaseLink(): string {
+    return this.adminMode
+      ? `/admin/games/${this.gameId}/release`
+      : `/games/constructor/${this.gameId}/release`;
   }
 
   get canOpenWaivers(): boolean {

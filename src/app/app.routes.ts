@@ -8,6 +8,7 @@ import {ProfileComponent} from "./profile/profile.component";
 import {OneTimeTokenComponent} from "./auth/one-time-token.component";
 import {ConstructorComponent} from "./constructor/constructor.component";
 import {GameEditorComponent} from "./constructor/game-editor.component";
+import {ReleasePageComponent} from "./constructor/release-page.component";
 import {CaptainBridgeComponent} from "./team/captain-bridge.component";
 import {TeamsComponent} from "./teams/teams.component";
 import {TeamCardComponent} from "./team_card/team-card.component";
@@ -32,6 +33,7 @@ export const routes: Routes = [
   {path: "games/running", component: GamePlayComponent},
   {path: "games/constructor", component: ConstructorComponent},
   {path: "games/constructor/:id", component: GameEditorComponent},
+  {path: "games/constructor/:id/release", component: ReleasePageComponent},
   {path: "games/:id/chart", component: GameChartPageComponent},
   {path: "games/:id", component: GameComponent},
   {path: "team", component: CaptainBridgeComponent},
@@ -45,6 +47,12 @@ export const routes: Routes = [
   {
     path: "admin/games/:id",
     component: GameEditorComponent,
+    canActivate: [adminGuard],
+    data: {admin: true},
+  },
+  {
+    path: "admin/games/:id/release",
+    component: ReleasePageComponent,
     canActivate: [adminGuard],
     data: {admin: true},
   },

@@ -1,0 +1,24 @@
+<section class="release-page">
+  <app-breadcrumbs [crumbs]="getBreadcrumbs()"></app-breadcrumbs>
+
+  @if (isLoading && !game) {
+    <div class="loading-state" aria-live="polite">
+      <span class="loading-spinner"></span>
+      Загрузка игры...
+    </div>
+  }
+
+  @if (game) {
+    <h1>Релиз игры «{{ game.name }}»</h1>
+
+    <app-release-editor
+      [gameId]="gameId"
+      [files]="files"
+      [objectUrls]="objectUrls"
+      [gameStatus]="status"
+      [disabled]="!canEdit"
+      (fileUploaded)="onFileUploaded($event)"
+      (fileRenamed)="onFileRenamed($event)"
+    ></app-release-editor>
+  }
+</section>
