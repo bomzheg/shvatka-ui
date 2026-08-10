@@ -11,6 +11,8 @@ import {ThemeMode, ThemeService} from "../theme/theme.service";
 import {PushService} from "../push/push.service";
 import {NotificationsService} from "../notifications/notifications.service";
 import {DebugLogService} from "../debug/debug-log.service";
+import {GameRelease} from "../domain/game.models";
+import {HttpAdapter} from "../http/http.adapter";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
 
@@ -41,6 +43,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private countdownInterval: number | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
+  /** Release of the active game, when its author wrote one. */
+  release: GameRelease | undefined;
   isMobileMenuOpen = false;
   selectedThemeMode: ThemeMode = "system";
 
@@ -54,6 +58,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private pushService: PushService,
     private notificationsService: NotificationsService,
     private debugLog: DebugLogService,
+    private http: HttpAdapter,
   ) {
     this.window = this._document.defaultView;
     this.tg = (this.window as any)?.Telegram;
@@ -157,6 +162,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.activeGame = game;
         this.countdown = this.getCountdown();
         this.setupCountdownTicker();
+        this.loadRelease(game);
       },
       error: error => this.logDebugError("load active game", error),
     });
@@ -238,10 +244,44 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return "ещё не началась";
   }
 
+  /**
+   * The release's banner, the only part that fits above the header, and the
+   * only thing shown there — the whole release is on the main page, which the
+   * banner links to.
+   */
+  bannerUrl(): string | undefined {
+    return this.releaseUrlFor(this.release?.banner?.file_guid);
+  }
+
+  bannerAlt(): string {
+    return this.activeGame ? `Релиз игры ${this.activeGame.name}` : "Релиз игры";
+  }
+
   ngOnDestroy() {
     if (this.countdownInterval) {
       window.clearInterval(this.countdownInterval);
     }
+  }
+
+  /** A release is optional — a game without one just shows no banner. */
+  private loadRelease(game: ActiveGame | undefined) {
+    if (!game) {
+      this.release = undefined;
+      return;
+    }
+
+    this.gamesService.getRelease(game.id).subscribe({
+      next: release => this.release = release,
+      error: error => this.logDebugError("load game release", error),
+    });
+  }
+
+  private releaseUrlFor(guid: string | undefined): string | undefined {
+    if (!guid || !this.release) {
+      return undefined;
+    }
+
+    return this.http.getFileUrl(this.release.game_id, guid);
   }
 
 

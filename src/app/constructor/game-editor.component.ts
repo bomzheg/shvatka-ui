@@ -15,6 +15,7 @@ import {GraphLevel, GraphRoute, keyRouteLabel, timerRouteLabel} from "../scenari
 import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
 import {
+  cleanHint,
   CONTENT_TYPE_LABELS,
   describeError,
   EffectsPayload,
@@ -27,7 +28,6 @@ import {
   parseKeys,
   SCENARIO_MODEL_VERSION,
   ScenarioPayload,
-  SPOILER_HINT_TYPES,
   STATUS_LABELS,
   UploadedFile,
   UploadOptions,
@@ -170,6 +170,14 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       return this.game?.status === "complete";
     }
     return isEditableStatus(this.game?.status);
+  }
+
+  /** A release stays editable until the game is complete (admins even then). */
+  /** The release is edited on its own page — link there rather than inline. */
+  get releaseLink(): string {
+    return this.adminMode
+      ? `/admin/games/${this.gameId}/release`
+      : `/games/constructor/${this.gameId}/release`;
   }
 
   get canOpenWaivers(): boolean {
@@ -724,7 +732,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
         __model_version__: SCENARIO_MODEL_VERSION,
         time_hints: level.time_hints.map(th => ({
           time: Number(th.time),
-          hint: th.hint.map(h => this.cleanHint(h)),
+          hint: th.hint.map(h => cleanHint(h)),
         })),
         conditions: this.buildConditions(level),
       })),
@@ -777,42 +785,11 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   private buildEffects(e: EffectsPayload): EffectsPayload {
     return {
       id: e.id,
-      hints: e.hints.map(h => this.cleanHint(h)),
+      hints: e.hints.map(h => cleanHint(h)),
       bonus_minutes: Number(e.bonus_minutes) || 0,
       level_up: e.level_up === true,
       next_level: e.next_level && e.next_level.length > 0 ? e.next_level : null,
     };
-  }
-
-  /** Drop empty/undefined fields and coerce numbers so the payload is clean. */
-  private cleanHint(hint: HintPayload): HintPayload {
-    const out: HintPayload = {type: hint.type};
-    const copyIf = (key: keyof HintPayload) => {
-      const v = hint[key];
-      if (v !== undefined && v !== null && v !== "") {
-        (out as any)[key] = v;
-      }
-    };
-    copyIf("text");
-    copyIf("title");
-    copyIf("address");
-    copyIf("foursquare_id");
-    copyIf("foursquare_type");
-    copyIf("caption");
-    copyIf("file_guid");
-    copyIf("thumb_guid");
-    copyIf("phone_number");
-    copyIf("first_name");
-    copyIf("last_name");
-    copyIf("vcard");
-    if (typeof hint.latitude === "number") out.latitude = Number(hint.latitude);
-    if (typeof hint.longitude === "number") out.longitude = Number(hint.longitude);
-    if (hint.show_caption_above_media === true) out.show_caption_above_media = true;
-    // Only media carries a spoiler; for every other type the field is dropped
-    // (including after a type change), which the server reads as "no spoiler".
-    if (SPOILER_HINT_TYPES.includes(hint.type) && hint.has_spoiler === true) out.has_spoiler = true;
-    if (hint.link_preview) out.link_preview = hint.link_preview;
-    return out;
   }
 
   save() {

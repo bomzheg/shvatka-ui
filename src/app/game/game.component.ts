@@ -2,7 +2,7 @@ import {AfterViewChecked, Component, OnDestroy, OnInit} from '@angular/core';
 import {DatePipe} from "@angular/common";
 import {GameService} from "./game.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
-import {FullGame, GameStat, GameWaivers, Keys, Level, Team, VotedPlayer} from "../domain/game.models";
+import {FullGame, GameStat, GameWaivers, HintPart, Keys, Level, Team, VotedPlayer} from "../domain/game.models";
 import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {HttpErrorResponse} from "@angular/common/http";
 import {Subscription} from "rxjs";
@@ -13,6 +13,8 @@ import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.
 import {GraphLevel, routingGraphFromGame} from "../scenario_graph.part/scenario_graph.model";
 import {levelAnchorId, scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 import {BreadcrumbsComponent, Breadcrumb} from "../ui/breadcrumbs/breadcrumbs.component";
+import {HintPartComponent} from "../hint.part/hint.part.component";
+import {HttpAdapter} from "../http/http.adapter";
 
 @Component({
   selector: 'app-game',
@@ -25,6 +27,7 @@ import {BreadcrumbsComponent, Breadcrumb} from "../ui/breadcrumbs/breadcrumbs.co
     ScenarioGraphPartComponent,
     BreadcrumbsComponent,
     DatePipe,
+    HintPartComponent,
   ],
   templateUrl: './game.component.html',
   styleUrl: './game.component.scss'
@@ -43,6 +46,7 @@ export class GameComponent implements OnInit, OnDestroy, AfterViewChecked {
     private gameService: GameService,
     private route: ActivatedRoute,
     private snackbar: SnackbarService,
+    private http: HttpAdapter,
   ) {
   }
 
@@ -85,6 +89,32 @@ export class GameComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   getGame(): FullGame | undefined {
     return this.gameService.getGame();
+  }
+
+  hasRelease(): boolean {
+    return this.releaseParts().length > 0;
+  }
+
+  /** The release as it was written — the banner leads. */
+  releaseParts(): HintPart[] {
+    const release = this.gameService.getRelease();
+    if (!release) {
+      return [];
+    }
+
+    return release.banner ? [release.banner, ...release.hints] : release.hints;
+  }
+
+  releaseFileUrl(part: HintPart): string | undefined {
+    return this.releaseUrlFor(part.file_guid);
+  }
+
+  releaseThumbUrl(part: HintPart): string | undefined {
+    return this.releaseUrlFor(part.thumb_guid);
+  }
+
+  private releaseUrlFor(guid: string | undefined): string | undefined {
+    return guid && this.gameId ? this.http.getFileUrl(this.gameId, guid) : undefined;
   }
 
   getBreadcrumbs(): Breadcrumb[] {

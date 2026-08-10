@@ -91,6 +91,19 @@
       <app-organizers-editor [gameId]="gameId"></app-organizers-editor>
     }
 
+    <!-- The release lives on its own page: it has nothing to do with the
+         scenario, and its own "Сохранить" next to the scenario's confused. -->
+    <div class="block release-link-block">
+      <div class="block-head">
+        <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonusHint"/> Релиз игры</h2>
+      </div>
+      <p class="hint-note">
+        Промо, которое публикуется примерно за неделю до игры: баннер, текст про тему,
+        карта района. Необязательно — без релиза игра идёт как обычно.
+      </p>
+      <a class="ghost-button" [routerLink]="releaseLink">Открыть релиз</a>
+    </div>
+
     <!-- Levels -->
     <div class="block">
       <div class="block-head">

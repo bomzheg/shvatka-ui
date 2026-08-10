@@ -1,0 +1,109 @@
+@use "../../styles/component-mixins" as cm;
+
+// View encapsulation keeps the editor page's button styles out of this
+// component, so the shared shapes are restated here, as the sibling editors do.
+.block {
+  @include cm.surface-card(14px, 1rem);
+  margin: 1rem 0;
+}
+
+.primary {
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ghost-button {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+}
+
+.ghost-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.warn {
+  color: #b26a00;
+  background: color-mix(in srgb, var(--app-surface) 80%, #f0ad4e);
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+}
+
+.release-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.block-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.hint-note {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.hints,
+.published-release,
+.banner-slot,
+.release-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.banner-slot h3,
+.release-body h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.banner-slot {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.release-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.ghost-button.danger {
+  color: #c62828;
+  border-color: #c62828;
+}

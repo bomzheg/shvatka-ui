@@ -256,6 +256,26 @@ export class FullGame {
   ) {}
 }
 
+/**
+ * A game's release — the promo published before it.
+ *
+ * It leads with a `banner`: a wide title picture with a caption, the one part
+ * small enough to stand above the header. Everything after it — the theme, a
+ * map — is a plain list of hint parts, rendered like any other hint. Both
+ * halves are optional, and so is the release: most games have none.
+ *
+ * Where it currently stands in the announcements channel is the bot's own
+ * business and not part of this model: a release saved before the waivers
+ * start goes out when they do.
+ */
+export class GameRelease {
+  constructor(
+    public game_id: number,
+    public banner: HintPart | undefined = undefined,
+    public hints: HintPart[] = [],
+  ) {}
+}
+
 export enum KeyType {
   wrong = "wrong",
   simple = "simple",

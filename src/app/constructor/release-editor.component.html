@@ -1,0 +1,94 @@
+<div class="block release-block">
+  <div class="block-head">
+    <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.bonusHint"/> Релиз игры</h2>
+    @if (hasRelease) {
+      <span class="badge">сохранён</span>
+    }
+  </div>
+  <p class="hint-note">
+    Промо, которое публикуется примерно за неделю до игры: баннер, текст про тему, карта района.
+    Необязательно — без релиза игра идёт как обычно.
+  </p>
+  <p class="hint-note">{{ announceHint }}</p>
+
+  @if (isLoading) {
+    <div class="loading-state" aria-live="polite">
+      <span class="loading-spinner"></span>
+      Загрузка релиза...
+    </div>
+  } @else if (isPreviewing) {
+    <div class="published-release">
+      @for (part of previewParts(); track $index) {
+        <app-hint-part [hint]="part" [fileUrl]="fileUrl(part)" [thumbUrl]="thumbUrl(part)"/>
+      }
+    </div>
+    <div class="release-actions">
+      <button type="button" class="primary" (click)="save()" [disabled]="isSaving">
+        {{ isSaving ? "Сохранение..." : "Сохранить" }}
+      </button>
+      <button type="button" class="ghost-button" (click)="backToEditing()">Дописать</button>
+    </div>
+  } @else {
+    <div class="banner-slot">
+      <h3>Баннер</h3>
+      <p class="hint-note">
+        Широкая картинка, с которой начинается релиз — примерно 1280×250—1280×550.
+        Её показывают на сайте над шапкой. Подпись к картинке идёт вместе с ней.
+      </p>
+      @if (banner) {
+        <app-hint-editor
+          [hint]="banner"
+          [files]="files"
+          [gameId]="gameId"
+          [objectUrls]="objectUrls"
+          [disabled]="disabled"
+          (remove)="removeBanner()"
+          (fileUploaded)="onHintFileUploaded($event)"
+          (fileRenamed)="onHintFileRenamed($event)"
+        ></app-hint-editor>
+      } @else if (!disabled) {
+        <button type="button" class="ghost-button" (click)="addBanner()">+ баннер</button>
+      } @else {
+        <p class="hint-note">Баннера нет.</p>
+      }
+    </div>
+
+    <div class="release-body">
+      <h3>Остальное</h3>
+      <div class="hints">
+        @for (hint of hints; track hint; let i = $index) {
+          <app-hint-editor
+            [hint]="hint"
+            [files]="files"
+            [gameId]="gameId"
+            [objectUrls]="objectUrls"
+            [disabled]="disabled"
+            (remove)="removeHint(i)"
+            (fileUploaded)="onHintFileUploaded($event)"
+            (fileRenamed)="onHintFileRenamed($event)"
+          ></app-hint-editor>
+        }
+      </div>
+
+      @if (!disabled) {
+        <app-hint-type-picker label="+ контент" (picked)="addHint($event)"></app-hint-type-picker>
+      }
+    </div>
+
+    @if (disabled) {
+      <p class="warn">Игра завершена — релиз может изменить только администратор.</p>
+    } @else {
+      <div class="release-actions">
+        <button type="button" class="primary" (click)="save()" [disabled]="isSaving || isEmpty">
+          {{ isSaving ? "Сохранение..." : "Сохранить" }}
+        </button>
+        <button type="button" class="ghost-button" (click)="preview()" [disabled]="isEmpty">
+          Предпросмотр
+        </button>
+        @if (hasRelease) {
+          <button type="button" class="ghost-button danger" (click)="remove()">Удалить релиз</button>
+        }
+      </div>
+    }
+  }
+</div>

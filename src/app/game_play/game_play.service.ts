@@ -2,7 +2,7 @@ import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http/http.adapter";
 import {HttpErrorResponse} from "@angular/common/http";
 import {SnackbarService} from "../snackbar/snackbar.service";
-import {Effect, Effects, GameStat, KeyTime, Keys, TimeHint} from "../domain/game.models";
+import {Effect, Effects, GameRelease, GameStat, KeyTime, Keys, TimeHint} from "../domain/game.models";
 import {Observable, tap} from "rxjs";
 import {ActiveGame, GamesService} from "../games/games.service";
 import {TeamService} from "../team/team.service";
@@ -494,6 +494,10 @@ export class GamePlayService {
 
   getActiveGame(forceRefresh: boolean = false): Observable<ActiveGame | undefined> {
     return this.gamesService.getActiveGame(forceRefresh);
+  }
+
+  getRelease(gameId: number): Observable<GameRelease | undefined> {
+    return this.gamesService.getRelease(gameId);
   }
 
   submitKey(text: string): Observable<TypedKeyResult> {

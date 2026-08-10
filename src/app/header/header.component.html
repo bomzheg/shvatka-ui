@@ -1,9 +1,19 @@
 @if (hasActiveGame()) {
-  <a class="active-game-banner" routerLink="/games/running" (click)="onNavClick('/games/running', $event)">
-    {{ activeGame?.name }}: {{ activeGameBannerLabel() }}@if (countdown) {
-      , начнётся через {{ countdown.firstValue }} {{ countdownUnitLabel(countdown.firstUnit) }} {{ countdown.secondValue }} {{ countdownUnitLabel(countdown.secondUnit) }}
+  <div class="active-game-strip">
+    @if (bannerUrl()) {
+      <!-- with a banner the strip is the banner: no text over it, no line above
+           it, and the picture itself is the way into the release -->
+      <a class="release-banner" routerLink="/" (click)="closeMobileMenu()">
+        <img [src]="bannerUrl()" [alt]="bannerAlt()"/>
+      </a>
+    } @else {
+      <a class="active-game-banner" routerLink="/games/running" (click)="onNavClick('/games/running', $event)">
+        {{ activeGame?.name }}: {{ activeGameBannerLabel() }}@if (countdown) {
+          , начнётся через {{ countdown.firstValue }} {{ countdownUnitLabel(countdown.firstUnit) }} {{ countdown.secondValue }} {{ countdownUnitLabel(countdown.secondUnit) }}
+        }
+      </a>
     }
-  </a>
+  </div>
 }
 
 <header class="main-header">

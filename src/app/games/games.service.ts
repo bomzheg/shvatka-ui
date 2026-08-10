@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpAdapter} from "../http/http.adapter";
 import {catchError, map, Observable, of, shareReplay} from "rxjs";
+import {GameRelease} from "../domain/game.models";
 
 export class Page<T> {
   constructor(public content: T[]) {
@@ -54,6 +55,17 @@ export class GamesService {
     return this.http.get<Page<Game>>("/games").subscribe(r => {
       this._games = r.content;
     })
+  }
+
+  /**
+   * The game's release, or undefined when it has none.
+   * Readable without auth: a release is promo.
+   */
+  getRelease(gameId: number): Observable<GameRelease | undefined> {
+    return this.http.get<GameRelease | null>(`/games/${gameId}/release`).pipe(
+      map(release => release ?? undefined),
+      catchError(() => of(undefined)),
+    );
   }
 
   getActiveGame(forceRefresh: boolean = false): Observable<ActiveGame | undefined> {

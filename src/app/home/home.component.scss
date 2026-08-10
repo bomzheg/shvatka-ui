@@ -46,3 +46,33 @@ p {
   color: var(--app-muted-text);
   line-height: 1.5;
 }
+
+// The full release of the active game. The header shows only its banner and
+// links down here, so this block is where the whole promo actually reads.
+.release {
+  width: min(100%, 60rem);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: clamp(0.75rem, 2vw, 1.25rem);
+  border: 1px solid var(--app-border, rgba(148, 163, 184, 0.35));
+  border-radius: 12px;
+  background: var(--app-surface);
+
+  h2 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+}
+
+.release-parts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.release-link {
+  margin: 0;
+  text-align: left;
+}

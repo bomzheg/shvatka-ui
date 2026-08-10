@@ -1,3 +1,8 @@
+.active-game-strip {
+  background-color: var(--app-header-bg);
+  color: var(--app-header-text);
+}
+
 .active-game-banner {
   display: block;
   background-color: var(--app-header-bg);
@@ -10,6 +15,27 @@
     text-decoration: underline;
   }
 }
+
+// With a release, the banner *is* the strip above the header: a wide picture,
+// no text of ours over it, and the button into the release itself.
+.release-banner {
+  display: block;
+  position: relative;
+  line-height: 0;
+
+  img {
+    display: block;
+    width: 100%;
+    // wide title art (~1280x250—1280x550) stays a strip on any screen
+    max-height: 30vh;
+    object-fit: cover;
+  }
+
+  &:hover img {
+    filter: brightness(1.05);
+  }
+}
+
 
 .main-header {
   position: sticky;

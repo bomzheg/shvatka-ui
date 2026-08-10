@@ -1,4 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
+import {RouterLink} from "@angular/router";
 import {
   GamePlayService,
   CurrentHints,
@@ -14,7 +15,7 @@ import {
 } from "./game_play.service";
 import {HttpAdapter} from "../http/http.adapter";
 import {HintPartComponent} from "../hint.part/hint.part.component";
-import {Effect, EffectLike, Effects, FullGame, GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
+import {Effect, EffectLike, Effects, FullGame, GameRelease, GameStat, HintPart, KeyType, Keys} from "../domain/game.models";
 import {FormsModule} from "@angular/forms";
 import {finalize, Subscription} from "rxjs";
 import {ActiveGame} from "../games/games.service";
@@ -46,6 +47,7 @@ import {TeamMember} from "../team/team.models";
     ScenarioGraphPartComponent,
     PushToggleComponent,
     MatIcon,
+    RouterLink,
   ],
   templateUrl: './game_play.component.html',
   styleUrl: './game_play.component.scss'
@@ -53,6 +55,8 @@ import {TeamMember} from "../team/team.models";
 export class GamePlayComponent implements OnInit, OnDestroy {
   protected readonly AppIcon = AppIcon;
   activeGame: ActiveGame | undefined;
+  /** Release of the active game, when its author wrote one. */
+  release: GameRelease | undefined;
   countdownToStart: string | undefined;
   keyText: string = "";
   keyResult: string | undefined;
@@ -93,6 +97,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
       this.activeGame = game;
       this.startCountdownTicker();
       this.loadAuthorScenario(game);
+      this.loadRelease(game);
     });
     this.myRoleListenerUnsubscribe = this.gameService.onMyRoleResolved(() => {
       this.loadAuthorScenario(this.activeGame);
@@ -175,6 +180,24 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   getActiveGameName(): string {
     return this.activeGame?.name ?? "Текущая игра";
+  }
+
+  /** Whether the game has a release worth linking to from the waivers. */
+  hasRelease(): boolean {
+    return this.release !== undefined;
+  }
+
+  /** A release is optional — without one the waivers show no link. */
+  private loadRelease(game: ActiveGame | undefined) {
+    if (!game) {
+      this.release = undefined;
+      return;
+    }
+
+    this.gameService.getRelease(game.id).subscribe({
+      next: release => this.release = release,
+      error: () => this.release = undefined,
+    });
   }
 
   isCurrentUserGameAuthor(): boolean {

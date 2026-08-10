@@ -137,6 +137,37 @@ export interface HintPayload {
   vcard?: string;
 }
 
+/** Drop empty/undefined fields and coerce numbers so the payload is clean. */
+export function cleanHint(hint: HintPayload): HintPayload {
+  const out: HintPayload = {type: hint.type};
+  const copyIf = (key: keyof HintPayload) => {
+    const v = hint[key];
+    if (v !== undefined && v !== null && v !== "") {
+      (out as any)[key] = v;
+    }
+  };
+  copyIf("text");
+  copyIf("title");
+  copyIf("address");
+  copyIf("foursquare_id");
+  copyIf("foursquare_type");
+  copyIf("caption");
+  copyIf("file_guid");
+  copyIf("thumb_guid");
+  copyIf("phone_number");
+  copyIf("first_name");
+  copyIf("last_name");
+  copyIf("vcard");
+  if (typeof hint.latitude === "number") out.latitude = Number(hint.latitude);
+  if (typeof hint.longitude === "number") out.longitude = Number(hint.longitude);
+  if (hint.show_caption_above_media === true) out.show_caption_above_media = true;
+  // Only media carries a spoiler; for every other type the field is dropped
+  // (including after a type change), which the server reads as "no spoiler".
+  if (SPOILER_HINT_TYPES.includes(hint.type) && hint.has_spoiler === true) out.has_spoiler = true;
+  if (hint.link_preview) out.link_preview = hint.link_preview;
+  return out;
+}
+
 export interface TimeHintPayload {
   time: number;
   hint: HintPayload[];

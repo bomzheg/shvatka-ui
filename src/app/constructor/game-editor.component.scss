@@ -451,3 +451,10 @@ input.time-input {
     flex: 1;
   }
 }
+
+// The release has a page of its own; here there is only the way to it.
+.release-link-block .ghost-button {
+  align-self: flex-start;
+  display: inline-block;
+  text-decoration: none;
+}
