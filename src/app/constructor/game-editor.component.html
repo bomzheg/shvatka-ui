@@ -119,6 +119,17 @@
           <app-scenario-graph-part [levels]="getGraphLevels()"
                                    (levelSelected)="onGraphLevelSelected($event)"></app-scenario-graph-part>
         </details>
+
+        <details class="graph-spoiler preview-spoiler" (toggle)="onPreviewToggle($event)">
+          <summary>Предпросмотр сценария</summary>
+          <p class="hint-note">
+            Сценарий целиком, как его читают на карточке игры и орги с полномочием
+            «Смотреть сценарий» — вместе с несохранёнными правками.
+          </p>
+          @if (previewGame; as preview) {
+            <app-game-scenario-part [game]="preview" [localUrls]="objectUrls"></app-game-scenario-part>
+          }
+        </details>
       }
 
       <div cdkDropList (cdkDropListDropped)="onLevelDrop($event)">

@@ -18,6 +18,9 @@ import {AppIcon, IconTag} from "../ui/icons";
 export class EffectsPartComponent {
   @Input() effects: EffectLike[] | EffectLike | undefined;
   @Input() gameId: number | undefined;
+  /** Blob URLs by file guid, winning over the CDN copy — see the same input
+   *  on the scenario view. */
+  @Input() localUrls?: Map<string, string>;
 
   constructor(private http: HttpAdapter) {
   }
@@ -59,16 +62,26 @@ export class EffectsPartComponent {
   }
 
   getHintFileUrl(hint: HintPart): string | undefined {
-    if (hint.file_guid === undefined || this.gameId === undefined) {
+    if (hint.file_guid === undefined) {
       return undefined;
+    }
+
+    const local = this.localUrls?.get(hint.file_guid);
+    if (local || this.gameId === undefined) {
+      return local;
     }
 
     return this.http.getFileUrl(this.gameId, hint.file_guid);
   }
 
   getHintThumbUrl(hint: HintPart): string | undefined {
-    if (!hint.thumb_guid || this.gameId === undefined) {
+    if (!hint.thumb_guid) {
       return undefined;
+    }
+
+    const local = this.localUrls?.get(hint.thumb_guid);
+    if (local || this.gameId === undefined) {
+      return local;
     }
 
     return this.http.getFileUrl(this.gameId, hint.thumb_guid);

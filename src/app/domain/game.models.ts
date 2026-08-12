@@ -149,7 +149,9 @@ export class Effect {
     public hints_: HintPart[] = [],
     public bonus_minutes: number = 0,
     public level_up: boolean = false,
-    public next_level: number | null = null,
+    /** The level routed to: its `name_id` (what a scenario carries), or a
+     *  position for the older payloads that numbered levels. */
+    public next_level: number | string | null = null,
   ) {
   }
 
