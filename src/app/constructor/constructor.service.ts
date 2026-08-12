@@ -83,6 +83,16 @@ export class ConstructorService {
     );
   }
 
+  /** Detach a file from the game, deleting it outright when this was its last
+   *  use anywhere. The server refuses (409) while a level or the release still
+   *  refers to it. */
+  deleteFile(id: number, guid: string): Observable<void> {
+    return this.httpClient.delete<void>(
+      `${environment.cdnUrl}/games/${id}/files/${guid}`,
+      {withCredentials: true},
+    );
+  }
+
   // -------------------------------------------------------------------------
   // Release (the promo published before a game)
   // -------------------------------------------------------------------------

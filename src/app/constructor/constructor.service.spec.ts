@@ -36,4 +36,16 @@ describe('ConstructorService', () => {
 
     expect(received).toBe(pdf);
   });
+
+  it('deletes a game file through the cdn', () => {
+    let done = false;
+    service.deleteFile(42, 'the-guid').subscribe(() => done = true);
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/games/42/files/the-guid'));
+    expect(request.request.method).toBe('DELETE');
+    expect(request.request.withCredentials).toBeTrue();
+    request.flush(null);
+
+    expect(done).toBeTrue();
+  });
 });

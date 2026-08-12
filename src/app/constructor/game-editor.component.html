@@ -343,6 +343,7 @@
                     }
                     @if (isEditable && !adminMode) {
                       <button type="button" class="ghost-button icon" (click)="startRename(f)" title="Переименовать"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
+                      <button type="button" class="ghost-button icon danger" (click)="deleteFile(f)" [disabled]="deletingGuid === f.guid" title="Удалить файл"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.remove"/></button>
                     }
                   </div>
                 </div>

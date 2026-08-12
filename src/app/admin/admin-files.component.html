@@ -1,0 +1,65 @@
+<p class="hint">
+  Уборка файлов, на которые больше никто не ссылается: связи с играми, которые
+  не использует ни один уровень, записи о файлах без единой связи и содержимое
+  в хранилище, на которое не указывает ни одна запись. Файлы из релизов игр не
+  трогаются, а только что загруженное содержимое ждёт сутки — чтобы не удалить
+  загрузку, которая ещё идёт.
+</p>
+
+<div class="actions">
+  <button type="button" class="preview-button" (click)="preview()" [disabled]="isRunning">
+    {{ isRunning ? 'Считаем...' : 'Проверить' }}
+  </button>
+  <button type="button" class="collect-button" (click)="collect()" [disabled]="isRunning || !canCollect">
+    Удалить
+  </button>
+</div>
+
+@if (garbage) {
+  <div class="result-card">
+    <h3>{{ garbage.dry_run ? 'Что будет удалено' : 'Что удалено' }}</h3>
+
+    @if (total === 0) {
+      <p class="status-message">Мусора не найдено.</p>
+    } @else {
+      <ul class="totals">
+        <li>Связей файлов с играми: <strong>{{ garbage.game_links.length }}</strong></li>
+        <li>Записей о файлах: <strong>{{ garbage.file_guids.length }}</strong></li>
+        <li>Файлов в хранилище: <strong>{{ garbage.stored_files.length }}</strong></li>
+      </ul>
+
+      @if (garbage.game_links.length > 0) {
+        <details>
+          <summary>Связи с играми</summary>
+          <ul class="items">
+            @for (link of garbage.game_links; track link.game_id + ':' + link.file_id) {
+              <li>игра {{ link.game_id }} — файл {{ link.file_id }}</li>
+            }
+          </ul>
+        </details>
+      }
+
+      @if (garbage.file_guids.length > 0) {
+        <details>
+          <summary>Записи о файлах</summary>
+          <ul class="items">
+            @for (guid of garbage.file_guids; track guid) {
+              <li>{{ guid }}</li>
+            }
+          </ul>
+        </details>
+      }
+
+      @if (garbage.stored_files.length > 0) {
+        <details>
+          <summary>Файлы в хранилище</summary>
+          <ul class="items">
+            @for (name of garbage.stored_files; track name) {
+              <li>{{ name }}</li>
+            }
+          </ul>
+        </details>
+      }
+    }
+  </div>
+}

@@ -23,6 +23,7 @@ import {AdminMergePlayersComponent} from "./admin/admin-merge-players.component"
 import {AdminMergeTeamsComponent} from "./admin/admin-merge-teams.component";
 import {AdminTeamsComponent} from "./admin/admin-teams.component";
 import {AdminGamesComponent} from "./admin/admin-games.component";
+import {AdminFilesComponent} from "./admin/admin-files.component";
 import {adminGuard} from "./admin/admin.guard";
 import {SearchComponent} from "./search/search.component";
 
@@ -68,6 +69,7 @@ export const routes: Routes = [
       {path: "teams", component: AdminTeamsComponent},
       {path: "games", component: AdminGamesComponent},
       {path: "poll", component: AdminPollComponent},
+      {path: "files", component: AdminFilesComponent},
       {path: "waivers", component: AdminWaiversComponent},
       {path: "merge/players", component: AdminMergePlayersComponent},
       {path: "merge/teams", component: AdminMergeTeamsComponent},

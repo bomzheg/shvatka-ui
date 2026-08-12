@@ -97,3 +97,22 @@ export interface GameWaivers {
   teams: TeamDetails[];
   waivers: Record<string, WaiverEntry[]>;
 }
+
+/** One `game_files` row the garbage collector considers unused. */
+export interface UnusedGameFile {
+  game_id: number;
+  file_id: number;
+}
+
+/**
+ * `POST /admin/files/gc` — what the sweep removed, or would have when
+ * `dry_run` is true. The three lists follow the three layers a file lives in:
+ * the link that makes it usable in a game, the meta row that describes it, and
+ * the content on the storage.
+ */
+export interface FileGarbage {
+  dry_run: boolean;
+  game_links: UnusedGameFile[];
+  file_guids: string[];
+  stored_files: string[];
+}

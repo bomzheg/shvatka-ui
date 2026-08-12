@@ -715,6 +715,36 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** guid of the file currently being deleted, or null. */
+  deletingGuid: string | null = null;
+
+  /** Remove the file from the game — and, when nothing else uses it, for good.
+   *  The server refuses while a level or the release still refers to it, so
+   *  there is nothing to check here beyond asking. */
+  deleteFile(file: UploadedFile) {
+    if (!confirm(`Удалить файл «${this.fileLabel(file)}» из игры?`)) {
+      return;
+    }
+
+    this.deletingGuid = file.guid;
+    this.constructorService.deleteFile(this.gameId, file.guid).pipe(
+      finalize(() => { this.deletingGuid = null; }),
+    ).subscribe({
+      next: () => {
+        this.files = this.files.filter(f => f.guid !== file.guid);
+        const objectUrl = this.objectUrls.get(file.guid);
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          this.objectUrls.delete(file.guid);
+        }
+        this.snackbar.success("Файл удалён");
+      },
+      error: err => {
+        this.snackbar.error(`Не удалось удалить файл: ${describeError(err)}`);
+      },
+    });
+  }
+
   fileLabel(file: UploadedFile): string {
     const hasName = file.original_filename && file.original_filename !== file.guid;
     if (!hasName) {
