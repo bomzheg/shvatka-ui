@@ -5,7 +5,55 @@
     <p class="status-message">Загрузка...</p>
   } @else if (!isAuthenticated) {
     <p class="status-message">Войдите, чтобы управлять командой.</p>
-  } @else if (!team) {
+  } @else {
+
+    @if (showCaptainedTeams) {
+      <!-- Teams the player leads but does not play in: the captaincy outlives the membership -->
+      <div class="section-card captained-section">
+        <h2 class="section-title">Команды, где вы капитан</h2>
+        <p class="captained-hint">
+          Капитанство остаётся за вами, даже когда вы играете в другой команде.
+          Игрок может состоять только в одной команде, поэтому вступить в следующую
+          получится, только выйдя из текущей.
+        </p>
+
+        @if (hasCurrentTeam) {
+          <label class="leave-current-toggle">
+            <input type="checkbox" name="leaveCurrentTeam" [(ngModel)]="leaveCurrentTeam"/>
+            Выйти из текущей команды при вступлении
+          </label>
+        }
+
+        <ul class="captained-list">
+          @for (captained of captainedTeams; track captained.id) {
+            <li class="captained-card">
+              <div class="captained-info">
+                <a class="captained-name" [routerLink]="['/teams', captained.id]">{{ captained.name }}</a>
+                @if (captained.description) {
+                  <p class="captained-description">{{ captained.description }}</p>
+                }
+              </div>
+              <div class="captained-actions">
+                @if (captained.is_current) {
+                  <span class="badge badge-you">вы здесь</span>
+                } @else {
+                  <button
+                    type="button"
+                    class="btn btn-primary btn-sm"
+                    [disabled]="joiningTeamId !== null || (hasCurrentTeam && !leaveCurrentTeam)"
+                    (click)="joinCaptainedTeam(captained)"
+                  >
+                    {{ joiningTeamId === captained.id ? 'Вступление...' : 'Вступить' }}
+                  </button>
+                }
+              </div>
+            </li>
+          }
+        </ul>
+      </div>
+    }
+
+  @if (!team) {
     <div class="no-team-card">
       <p class="no-team-text">Вы не состоите ни в одной команде.</p>
       @if (canCreateTeam) {
@@ -146,6 +194,17 @@
                       title="Изменить"
                       (click)="startEditMember(member)"
                     ><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
+                  }
+                  @if (canTransferCaptaincyTo(member)) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-captaincy"
+                      title="Сделать капитаном команды"
+                      [disabled]="transferringCaptaincyTo !== null"
+                      (click)="transferCaptaincy(member)"
+                    >
+                      {{ transferringCaptaincyTo === member.id ? '...' : '👑 Передать капитанство' }}
+                    </button>
                   }
                   @if (canRemoveMember(member)) {
                     <button
@@ -328,6 +387,8 @@
         }
       </div>
     }
+
+  }
 
   }
 </section>

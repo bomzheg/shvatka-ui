@@ -224,6 +224,35 @@ describe("requestResultText", () => {
   });
 });
 
+describe("team_captain_changed", () => {
+  it("addresses the new captain directly", () => {
+    const notification = makeNotification("team_captain_changed", {
+      player_id: 42, player_name: "Вася", team_name: "Сова", old_captain_name: "Петя",
+    });
+
+    expect(notificationText(notification, 42)).toBe("Вы теперь капитан команды «Сова»");
+  });
+
+  it("names both captains for the rest of the team", () => {
+    const notification = makeNotification("team_captain_changed", {
+      player_id: 42, player_name: "Вася", team_name: "Сова", old_captain_name: "Петя",
+    });
+
+    const text = notificationText(notification, 7);
+    expect(text).toContain("Вася");
+    expect(text).toContain("Петя");
+    expect(text).toContain("Сова");
+  });
+
+  it("survives a team that had no captain", () => {
+    const notification = makeNotification("team_captain_changed", {
+      player_id: 42, player_name: "Вася", team_name: "Сова", old_captain_name: null,
+    });
+
+    expect(notificationText(notification, 7)).toBe("Вася — новый капитан команды «Сова»");
+  });
+});
+
 describe("notificationIcon", () => {
   it("maps known types and falls back to the bell for unknown ones", () => {
     expect(notificationIcon(makeNotification("request_accepted", {}))).toBe(AppIcon.check);

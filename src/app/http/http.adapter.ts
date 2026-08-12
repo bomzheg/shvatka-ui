@@ -125,7 +125,8 @@ export class HttpAdapter {
       || url === "/games/running/key"
       || url === "/users/me/password"
       || url === "/users/me/username"
-      || url === "/teams/my";
+      || /^\/teams\/my(\/.*)?$/.test(url)
+      || /^\/teams\/\d+\/captain$/.test(url);
   }
 
   private unauthorizedError<T>(url: string): Observable<T> {

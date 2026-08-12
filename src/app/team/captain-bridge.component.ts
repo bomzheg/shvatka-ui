@@ -1,5 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {FormsModule} from '@angular/forms';
+import {RouterLink} from '@angular/router';
 import {HttpErrorResponse} from '@angular/common/http';
 import {finalize} from 'rxjs';
 import {TeamService} from './team.service';
@@ -8,6 +9,7 @@ import {SnackbarService} from '../snackbar/snackbar.service';
 import {NotificationsService} from '../notifications/notifications.service';
 import {ShvatkaConfig} from '../app.config';
 import {
+  CaptainedTeam,
   PlayerProfile,
   PlayerSearchResult,
   TeamDetails,
@@ -26,7 +28,7 @@ export interface PermissionLabel {
 @Component({
   selector: 'app-captain-bridge',
   standalone: true,
-  imports: [FormsModule, MatIcon],
+  imports: [FormsModule, MatIcon, RouterLink],
   templateUrl: './captain-bridge.component.html',
   styleUrl: './captain-bridge.component.scss',
 })
@@ -54,6 +56,14 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
   isSavingMember = false;
 
   removingMemberId: number | null = null;
+
+  /** Teams the player captains — the current one included, when they play in it. */
+  captainedTeams: CaptainedTeam[] = [];
+  /** Ticked by default: a player is in one team at a time, so joining means leaving. */
+  leaveCurrentTeam = true;
+  joiningTeamId: number | null = null;
+
+  transferringCaptaincyTo: number | null = null;
 
   searchQuery = '';
   searchResults: PlayerSearchResult[] = [];
@@ -89,6 +99,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
     }
     if (this.userService.isUserLoaded()) {
       this.loadProfile();
+      this.loadCaptainedTeams();
     }
   }
 
@@ -126,6 +137,28 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
 
   isCaptain(): boolean {
     return !!this.team?.captain && this.team.captain.id === this.userId;
+  }
+
+  /** Captained teams the player does not play in — the ones a join button acts on. */
+  get joinableCaptainedTeams(): CaptainedTeam[] {
+    return this.captainedTeams.filter(t => !t.is_current);
+  }
+
+  /**
+   * The section is worth a place on the page only while something can be done
+   * there: a captain of the one team they play in has nothing to join.
+   */
+  get showCaptainedTeams(): boolean {
+    return this.joinableCaptainedTeams.length > 0;
+  }
+
+  /** True while the player is in some team — then joining another means leaving it. */
+  get hasCurrentTeam(): boolean {
+    return this.captainedTeams.some(t => t.is_current) || !!this.team;
+  }
+
+  canTransferCaptaincyTo(member: TeamMember): boolean {
+    return this.isCaptain() && !this.isCaptainMember(member);
   }
 
   hasAnyPermission(): boolean {
@@ -212,6 +245,8 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (profile) => {
           this.playerProfile = profile;
+          this.team = null;
+          this.members = [];
           if (profile.player_in_team) {
             const teamData = profile.player_in_team.team;
             this.team = {
@@ -240,6 +275,74 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
       });
   }
 
+  loadCaptainedTeams(): void {
+    this.teamService.getCaptainedTeams().subscribe({
+      next: (res) => { this.captainedTeams = res.items; },
+      // a player who captains nothing is the normal case, so failing here is
+      // not worth a snackbar over the rest of the page
+      error: () => { this.captainedTeams = []; },
+    });
+  }
+
+  joinCaptainedTeam(team: CaptainedTeam): void {
+    if (this.joiningTeamId !== null) return;
+    const leaving = this.hasCurrentTeam && this.leaveCurrentTeam;
+    const question = leaving
+      ? `Перейти в команду «${team.name}»? Вы покинете текущую команду.`
+      : `Вступить в команду «${team.name}»?`;
+    if (!confirm(question)) return;
+
+    this.joiningTeamId = team.id;
+    this.teamService.joinCaptainedTeam(team.id, leaving)
+      .pipe(finalize(() => { this.joiningTeamId = null; }))
+      .subscribe({
+        next: () => {
+          this.snackbar.success(`Вы в команде «${team.name}»`);
+          this.loadProfile();
+          this.loadCaptainedTeams();
+        },
+        error: (err) => {
+          const backendError = (err as {error?: {type?: string; description?: string}} | null)?.error;
+          if (backendError?.type === 'PlayerAlreadyInTeam' && !leaving) {
+            this.snackbar.error('Сначала выйдите из текущей команды — отметьте галочку');
+            return;
+          }
+          const description = typeof backendError?.description === 'string' && backendError.description
+            ? backendError.description
+            : null;
+          this.snackbar.error(description ?? 'Не удалось вступить в команду');
+        },
+      });
+  }
+
+  transferCaptaincy(member: TeamMember): void {
+    if (!this.team || this.transferringCaptaincyTo !== null) return;
+    const name = this.getMemberDisplayName(member);
+    if (!confirm(
+      `Передать капитанство игроку ${name}? Вы перестанете быть капитаном команды «${this.team.name}».`,
+    )) return;
+
+    const teamId = this.team.id;
+    this.transferringCaptaincyTo = member.id;
+    this.teamService.changeCaptain(teamId, member.id)
+      .pipe(finalize(() => { this.transferringCaptaincyTo = null; }))
+      .subscribe({
+        next: (updated) => {
+          this.team = updated;
+          this.snackbar.success(`${name} — новый капитан команды`);
+          this.loadMembers(teamId);
+          this.loadCaptainedTeams();
+        },
+        error: (err) => {
+          const backendError = (err as {error?: {description?: string}} | null)?.error;
+          const description = typeof backendError?.description === 'string' && backendError.description
+            ? backendError.description
+            : null;
+          this.snackbar.error(description ?? 'Не удалось передать капитанство');
+        },
+      });
+  }
+
   createTeam(): void {
     const name = this.createTeamName.trim();
     if (!name) {
@@ -257,6 +360,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
           this.createTeamDescription = '';
           this.showWebOnlyTeamHint = true;
           this.loadMembers(created.id);
+          this.loadCaptainedTeams();
           this.snackbar.success(`Команда «${created.name}» создана`);
         },
         error: (err) => {
@@ -359,6 +463,7 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
             this.team = null;
             this.members = [];
             this.playerProfile = null;
+            this.loadCaptainedTeams();
             this.snackbar.success('Вы покинули команду');
           } else {
             this.members = this.members.filter(m => m.id !== member.id);

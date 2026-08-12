@@ -54,6 +54,7 @@ export interface ActionRequestList {
 export const NotificationType = {
   playerJoinedTeam: "player_joined_team",
   playerLeftTeam: "player_left_team",
+  teamCaptainChanged: "team_captain_changed",
   teamRenamed: "team_renamed",
   orgAdded: "org_added",
   gameScheduleChanged: "game_schedule_changed",

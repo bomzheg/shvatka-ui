@@ -44,7 +44,17 @@
         </ul>
       }
 
-      @if (canAskToJoin()) {
+      @if (canJoinAsCaptain()) {
+        <p class="join-requested-note">Вы капитан этой команды, но не состоите в ней.</p>
+        <button
+          type="button"
+          class="ask-to-join-button"
+          [disabled]="isJoining"
+          (click)="joinAsCaptain()"
+        >
+          {{ isJoining ? 'Вступление...' : 'Вступить в команду' }}
+        </button>
+      } @else if (canAskToJoin()) {
         <button
           type="button"
           class="ask-to-join-button"
