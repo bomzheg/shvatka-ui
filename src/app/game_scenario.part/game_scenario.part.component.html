@@ -22,7 +22,7 @@
                   <li class="level-key">{{ key }}</li>
                 }
               </ul>
-              <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
+              <app-effects-part [effects]="condition.effects" [gameId]="game.id" [localUrls]="localUrls"></app-effects-part>
             </li>
           }
         </ul>
@@ -36,7 +36,7 @@
               @if (getTimerActionTime(condition); as actionTime) {
                 <strong>{{ actionTime }} мин.</strong>
               }
-              <app-effects-part [effects]="condition.effects" [gameId]="game.id"></app-effects-part>
+              <app-effects-part [effects]="condition.effects" [gameId]="game.id" [localUrls]="localUrls"></app-effects-part>
             </li>
           }
         </ul>

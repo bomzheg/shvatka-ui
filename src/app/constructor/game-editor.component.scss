@@ -87,6 +87,13 @@ h3 {
   font-weight: 600;
 }
 
+/* The preview renders the read-only scenario view, which brings its own
+   spacing — only keep it off the summary. */
+.preview-spoiler > app-game-scenario-part {
+  display: block;
+  margin-top: 0.5rem;
+}
+
 label {
   font-size: 0.85rem;
   color: var(--app-muted-text);

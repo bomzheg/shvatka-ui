@@ -22,6 +22,10 @@ export class GameScenarioPartComponent {
   protected readonly AppIcon = AppIcon;
 
   @Input({required: true}) game!: FullGame;
+  /** Blob URLs by file guid, winning over the CDN copy. The constructor's
+   *  preview passes the files it has just uploaded, whose CDN copy may not be
+   *  readable yet. */
+  @Input() localUrls?: Map<string, string>;
 
   constructor(private http: HttpAdapter) {
   }
@@ -59,7 +63,7 @@ export class GameScenarioPartComponent {
       return undefined;
     }
 
-    return this.http.getFileUrl(this.game.id, hint.file_guid);
+    return this.localUrls?.get(hint.file_guid) ?? this.http.getFileUrl(this.game.id, hint.file_guid);
   }
 
   getThumbUrl(hint: HintPart) {
@@ -67,6 +71,6 @@ export class GameScenarioPartComponent {
       return undefined;
     }
 
-    return this.http.getFileUrl(this.game.id, hint.thumb_guid);
+    return this.localUrls?.get(hint.thumb_guid) ?? this.http.getFileUrl(this.game.id, hint.thumb_guid);
   }
 }

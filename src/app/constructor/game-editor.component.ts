@@ -11,6 +11,8 @@ import {OrganizersEditorComponent} from "./organizers-editor.component";
 import {ImageLightboxComponent} from "../ui/image-lightbox.component";
 import {VideoNoteComponent} from "../ui/video-note.component";
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
+import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.part.component";
+import {toPreviewGame} from "./scenario-preview";
 import {GraphLevel, GraphRoute, keyRouteLabel, timerRouteLabel} from "../scenario_graph.part/scenario_graph.model";
 import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
 import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
@@ -84,6 +86,7 @@ type FilePreviewKind = "image" | "video" | "video_note" | "audio" | "none";
     ImageLightboxComponent,
     VideoNoteComponent,
     ScenarioGraphPartComponent,
+    GameScenarioPartComponent,
     MatIcon,
   ],
   templateUrl: "./game-editor.component.html",
@@ -472,6 +475,43 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       level.expanded = true;
     }
     scrollToLevel(id);
+  }
+
+  // -------------------------------------------------------------------------
+  // Preview
+  // -------------------------------------------------------------------------
+
+  /** Whether the preview spoiler is open — nothing is built while it is shut. */
+  isPreviewOpen = false;
+
+  private previewSignature = "";
+  private previewGameCache: FullGame | undefined;
+
+  onPreviewToggle(event: Event) {
+    this.isPreviewOpen = (event.target as HTMLDetailsElement).open;
+  }
+
+  /**
+   * The scenario being edited as it will be read — the same view the game's
+   * card and an organizer with the permission get, built from the payload the
+   * next save would send, so unsaved edits are included.
+   *
+   * Rebuilt only when that payload actually changes: the read-only view (and
+   * the hint parts under it, which re-cover a revealed spoiler when their hint
+   * changes) sees stable objects while the author scrolls or types elsewhere.
+   */
+  get previewGame(): FullGame | undefined {
+    if (!this.isPreviewOpen || !this.game) {
+      return undefined;
+    }
+
+    const scenario = this.buildScenario();
+    const signature = JSON.stringify(scenario);
+    if (signature !== this.previewSignature || this.previewGameCache === undefined) {
+      this.previewSignature = signature;
+      this.previewGameCache = toPreviewGame(scenario, this.game);
+    }
+    return this.previewGameCache;
   }
 
   // -------------------------------------------------------------------------
