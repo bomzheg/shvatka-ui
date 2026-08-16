@@ -195,17 +195,6 @@
                       (click)="startEditMember(member)"
                     ><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/></button>
                   }
-                  @if (canTransferCaptaincyTo(member)) {
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-captaincy"
-                      title="Сделать капитаном команды"
-                      [disabled]="transferringCaptaincyTo !== null"
-                      (click)="transferCaptaincy(member)"
-                    >
-                      {{ transferringCaptaincyTo === member.id ? '...' : '👑 Передать капитанство' }}
-                    </button>
-                  }
                   @if (canRemoveMember(member)) {
                     <button
                       type="button"
@@ -222,6 +211,17 @@
                       } @else {
                         Исключить
                       }
+                    </button>
+                  }
+                  @if (canTransferCaptaincyTo(member)) {
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-captaincy"
+                      title="Сделать капитаном команды"
+                      [disabled]="transferringCaptaincyTo !== null"
+                      (click)="transferCaptaincy(member)"
+                    >
+                      {{ transferringCaptaincyTo === member.id ? '...' : '👑 Передать капитанство' }}
                     </button>
                   }
                 </div>
