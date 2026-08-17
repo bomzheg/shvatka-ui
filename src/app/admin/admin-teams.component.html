@@ -1,0 +1,170 @@
+<p class="hint">
+  Состав и капитан команды со стороны движка: полномочия внутри команды здесь
+  не действуют. Это то, чем разруливают команду, у которой капитан пропал или
+  вышел, не передав капитанство.
+</p>
+
+@if (!team) {
+  <div class="picker-card">
+    <label for="admin-team-search">Команда</label>
+    <input
+      id="admin-team-search"
+      type="text"
+      class="search-input"
+      placeholder="Поиск по названию..."
+      name="teamQuery"
+      autocomplete="off"
+      [ngModel]="query"
+      (ngModelChange)="onQueryChange($event)"
+    />
+
+    @if (isSearching) {
+      <p class="status-message">Ищем...</p>
+    } @else if (results.length > 0) {
+      <ul class="search-results">
+        @for (found of results; track found.id) {
+          <li>
+            <button type="button" (click)="select(found)">
+              <span class="result-name">{{ found.name }}</span>
+              <span class="result-id">#{{ found.id }}</span>
+              @if (found.captain) {
+                <span class="result-extra">капитан: {{ found.captain.name_mention }}</span>
+              } @else {
+                <span class="result-extra">без капитана</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    } @else if (query.trim()) {
+      <p class="status-message">Ничего не нашли.</p>
+    }
+  </div>
+} @else {
+  <div class="team-card">
+    <div class="preview-header">
+      <a class="preview-name" [routerLink]="['/teams', team.id]">{{ team.name }}</a>
+      <span class="preview-id">#{{ team.id }}</span>
+      <button class="clear-button" type="button" (click)="clear()">Выбрать другую</button>
+    </div>
+
+    <dl class="preview-facts">
+      <dt>Капитан</dt>
+      <dd>
+        @if (team.captain; as captain) {
+          <a [routerLink]="['/admin/players', captain.id]">{{ captain.name_mention }}</a>
+        } @else {
+          <span class="muted">нет</span>
+        }
+      </dd>
+      @if (team.description) {
+        <dt>Описание</dt>
+        <dd>{{ team.description }}</dd>
+      }
+    </dl>
+
+    @if (!team.captain) {
+      <p class="warning-message">
+        У команды нет капитана — она не сможет подавать вейверы, пока капитана не назначат.
+      </p>
+    }
+  </div>
+
+  <div class="team-card">
+    <h3 class="section-title">Состав ({{ members.length }})</h3>
+
+    @if (isLoadingTeam) {
+      <p class="status-message">Загрузка...</p>
+    } @else if (members.length === 0) {
+      <p class="muted">В команде нет игроков.</p>
+    } @else {
+      <ul class="member-list">
+        @for (member of sortedMembers; track member.id) {
+          <li class="member-row">
+            <div class="member-info">
+              <span class="member-emoji" aria-hidden="true">{{ memberEmoji(member) }}</span>
+              <a class="member-name" [routerLink]="['/admin/players', member.id]">{{ memberName(member) }}</a>
+              @if (member.role) {
+                <span class="member-role">{{ member.role }}</span>
+              }
+              @if (isCaptain(member)) {
+                <span class="preview-badge">капитан</span>
+              }
+            </div>
+            <div class="member-actions">
+              @if (!isCaptain(member)) {
+                <button
+                  type="button"
+                  class="action-button"
+                  [disabled]="promotingPlayerId !== null"
+                  (click)="makeCaptain(member)"
+                >
+                  {{ promotingPlayerId === member.id ? '...' : '👑 Сделать капитаном' }}
+                </button>
+              }
+              <button
+                type="button"
+                class="action-button danger-outline"
+                [disabled]="removingPlayerId !== null"
+                (click)="removePlayer(member)"
+              >
+                {{ removingPlayerId === member.id ? '...' : 'Исключить' }}
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <div class="team-card">
+    <h3 class="section-title">Добавить игрока</h3>
+    <p class="hint">
+      Игрок может состоять только в одной команде — если он уже где-то играет,
+      сначала исключите его оттуда.
+    </p>
+
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Имя пользователя..."
+      name="playerQuery"
+      autocomplete="off"
+      [ngModel]="playerQuery"
+      (ngModelChange)="onPlayerQueryChange($event)"
+    />
+
+    @if (isSearchingPlayers) {
+      <p class="status-message">Ищем...</p>
+    } @else if (playerResults.length > 0 && !selectedPlayer) {
+      <ul class="search-results">
+        @for (player of playerResults; track player.id) {
+          <li>
+            <button type="button" (click)="selectPlayer(player)">
+              <span class="result-name">{{ player.name_mention }}</span>
+              <span class="result-id">#{{ player.id }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (selectedPlayer) {
+      <div class="add-form">
+        <div class="add-fields">
+          <div>
+            <label for="admin-add-role">Роль (необязательно)</label>
+            <input id="admin-add-role" type="text" name="addRole" class="search-input" [(ngModel)]="addRole"/>
+          </div>
+          <div>
+            <label for="admin-add-emoji">Emoji (необязательно)</label>
+            <input id="admin-add-emoji" type="text" name="addEmoji" class="search-input" [(ngModel)]="addEmoji" placeholder="🔦"/>
+          </div>
+        </div>
+        <button type="button" class="action-button primary" [disabled]="isAddingPlayer" (click)="addPlayer()">
+          {{ isAddingPlayer ? 'Добавляем...' : 'Добавить ' + selectedPlayer.name_mention }}
+        </button>
+      </div>
+    }
+  </div>
+}

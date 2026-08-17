@@ -103,6 +103,15 @@ function renderTypeText(type: string, payload: NotificationPayload, currentPlaye
       return bool(payload, "by_self")
         ? `${playerName} покинул(а) команду «${teamName}»`
         : `${playerName} исключён(а) из команды «${teamName}»`;
+    case NotificationType.teamCaptainChanged: {
+      const previous = str(payload, "old_captain_name");
+      if (currentPlayerId !== undefined && payload["player_id"] === currentPlayerId) {
+        return `Вы теперь капитан команды «${teamName}»`;
+      }
+      return previous
+        ? `${playerName} — новый капитан команды «${teamName}» (был(а) ${previous})`
+        : `${playerName} — новый капитан команды «${teamName}»`;
+    }
     case NotificationType.teamRenamed:
       return teamName ? `Команда «${teamName}» переименована` : "Команда переименована";
     case NotificationType.orgAdded:
@@ -191,6 +200,7 @@ function renderTypeText(type: string, payload: NotificationPayload, currentPlaye
 const TYPE_ICONS: Record<string, AppIcon> = {
   [NotificationType.playerJoinedTeam]: AppIcon.contact,
   [NotificationType.playerLeftTeam]: AppIcon.contact,
+  [NotificationType.teamCaptainChanged]: AppIcon.key,
   [NotificationType.teamRenamed]: AppIcon.edit,
   [NotificationType.orgAdded]: AppIcon.key,
   [NotificationType.gameScheduleChanged]: AppIcon.clock,

@@ -4,6 +4,7 @@ import {Observable} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
 import {environment} from '../../environments/environment';
 import {
+  CaptainedTeam,
   Items,
   PlayedGame,
   PlayerProfile,
@@ -52,6 +53,25 @@ export class TeamService {
 
   getTeam(teamId: number): Observable<TeamDetails> {
     return this.http.get<TeamDetails>(`/teams/${teamId}`);
+  }
+
+  /** Teams the current player captains, whether they play in them or not. */
+  getCaptainedTeams(): Observable<ItemsResponse<CaptainedTeam>> {
+    return this.http.get<ItemsResponse<CaptainedTeam>>('/teams/my/captained');
+  }
+
+  /**
+   * Join a team the current player captains — no invite involved, the captaincy
+   * is the permission. A player is in one team at a time, so `leaveCurrent`
+   * leaves the current team as part of the same request.
+   */
+  joinCaptainedTeam(teamId: number, leaveCurrent: boolean): Observable<TeamMember> {
+    return this.http.post<TeamMember>(`/teams/${teamId}/join`, {leave_current: leaveCurrent});
+  }
+
+  /** Hand the team over to another of its players. Captain only. */
+  changeCaptain(teamId: number, playerId: number): Observable<TeamDetails> {
+    return this.http.put<TeamDetails>(`/teams/${teamId}/captain`, {player_id: playerId});
   }
 
   createTeam(name: string, description: string | null): Observable<TeamDetails> {

@@ -62,6 +62,17 @@ export interface TeamDetails {
   played_games_count?: number;
 }
 
+/**
+ * A team the player is the captain of (`GET /teams/my/captained`).
+ *
+ * The captaincy outlives the membership: a captain who moved to another team as
+ * a field player still leads the old one, and `is_current` is what tells the two
+ * apart.
+ */
+export interface CaptainedTeam extends TeamDetails {
+  is_current: boolean;
+}
+
 export interface PlayerSearchResult {
   id: number;
   can_be_author: boolean;

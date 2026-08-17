@@ -82,7 +82,9 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 | --- | --- | --- | --- |
 | **Team** | Команда | The unit that plays. Has a name, a captain, a description. Teams play, players don't. | `Team` in `domain/game.models.ts` |
 | **Team player** | Участник команды | A player's membership in a team over an interval, with a role, an emoji and permissions. A player is in at most one team at a time. | `team/`, `team_card/` |
-| **Captain** | Капитан | The team's head: submits waivers, manages membership, implicitly holds every team permission. | `Team.captain`, `ui/role-emoji.ts` |
+| **Captain** | Капитан | The team's head: submits waivers, manages membership, implicitly holds every team permission. Held by a player, not by a membership — see *captaincy transfer*. | `Team.captain`, `ui/role-emoji.ts` |
+| **Captaincy transfer** | Передача капитанства | The captain making another **player of the same team** the captain. Offered on the captain's own page and, over the captain's head, in `/admin/teams`. One-way: the old captain cannot take it back. | `team/captain-bridge.component`, `admin/admin-teams.component` |
+| **Captained team** | Команда, где я капитан | A team the player captains whether or not they play in it — `is_current` tells the two apart. The captaincy outlives the membership, so the page offers a join button for the teams the captain is not in; a player is in one team at a time, so joining the next means leaving the current one, which is the checkbox next to it. | `CaptainedTeam` in `team/team.models.ts` |
 | **Role** | Роль | Free text for what a member does in the field: `полевой`, `водитель`, `мозг`, `капитан`… Each has a default emoji. | `ui/role-emoji.ts` |
 | **Team permission** | Полномочие | A right delegated by the captain: manage waivers, manage players, change the team name, add/remove players. The captain has all of them regardless. The labels are the bot's, see below. | `team/` |
 

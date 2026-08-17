@@ -26,6 +26,7 @@ export class TeamCardComponent implements OnInit, OnDestroy {
 
   isRequestingJoin = false;
   joinRequested = false;
+  isJoining = false;
 
   private routeSub: Subscription | undefined;
 
@@ -79,16 +80,59 @@ export class TeamCardComponent implements OnInit, OnDestroy {
     return `${count} ${pluralizeGames(count)}`;
   }
 
+  /** The viewer captains this team but does not play in it — no invite needed. */
+  canJoinAsCaptain(): boolean {
+    const myId = this.userService.getMe()?.id;
+    if (myId === undefined || !this.team) {
+      return false;
+    }
+    return this.team.captain?.id === myId && !this.members.some(m => m.id === myId);
+  }
+
   /**
    * The ask-to-join button is shown to any authenticated non-member; the
    * backend rejects the request if the caller is already in another team.
+   * The team's own captain gets the direct join button instead — asking
+   * themselves for permission would be absurd.
    */
   canAskToJoin(): boolean {
     const myId = this.userService.getMe()?.id;
-    if (myId === undefined || !this.team || this.joinRequested) {
+    if (myId === undefined || !this.team || this.joinRequested || this.canJoinAsCaptain()) {
       return false;
     }
     return !this.members.some(m => m.id === myId);
+  }
+
+  /**
+   * Join the team the viewer captains. The engine refuses while they play in
+   * another team, and the captain's own page is where the swap is offered —
+   * this button is the shortcut for the plain case of having no team at all.
+   */
+  joinAsCaptain(): void {
+    if (!this.team || this.isJoining) return;
+    const team = this.team;
+
+    this.isJoining = true;
+    this.teamService.joinCaptainedTeam(team.id, false)
+      .subscribe({
+        next: () => {
+          this.isJoining = false;
+          this.snackbar.success(`Вы в команде «${team.name}»`);
+          this.load(team.id);
+        },
+        error: (err) => {
+          this.isJoining = false;
+          const backendError = (err as {error?: {type?: string; description?: string}} | null)?.error;
+          if (backendError?.type === 'PlayerAlreadyInTeam') {
+            this.snackbar.error('Сначала выйдите из текущей команды — это можно сделать в разделе «Команда»');
+            return;
+          }
+          const description = typeof backendError?.description === 'string' && backendError.description
+            ? backendError.description
+            : null;
+          this.snackbar.error(description ?? 'Не удалось вступить в команду');
+        },
+      });
   }
 
   askToJoin(): void {

@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
-import {Items, TeamDetails} from '../team/team.models';
+import {Items, TeamDetails, TeamMember} from '../team/team.models';
 import {Game, Page} from '../games/games.service';
 import {FullGame} from '../domain/game.models';
 import {ScenarioPayload, UploadedFile, UploadOptions, uploadOptionsQuery} from '../constructor/constructor.models';
@@ -82,6 +82,28 @@ export class AdminService {
       primary_id: primaryId,
       secondary_id: secondaryId,
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Team membership over the head of the captain. These endpoints skip the team
+  // permissions entirely — the way out when the captain is gone or unreachable.
+  // ---------------------------------------------------------------------------
+
+  /** Make another player of the team its captain. The target must already play there. */
+  changeTeamCaptain(teamId: number, playerId: number): Observable<TeamDetails> {
+    return this.http.put<TeamDetails>(`/admin/teams/${teamId}/captain`, {player_id: playerId});
+  }
+
+  /** Put a player into the team. Fails if they already play somewhere else. */
+  addPlayerToTeam(teamId: number, playerId: number, role?: string, emoji?: string): Observable<TeamMember> {
+    const body: Record<string, unknown> = {player_id: playerId};
+    if (role) body['role'] = role;
+    if (emoji) body['emoji'] = emoji;
+    return this.http.post<TeamMember>(`/admin/teams/${teamId}/players`, body);
+  }
+
+  removePlayerFromTeam(teamId: number, playerId: number): Observable<void> {
+    return this.http.del<void>(`/admin/teams/${teamId}/players/${playerId}`);
   }
 
   getPoll(): Observable<AdminPoll> {

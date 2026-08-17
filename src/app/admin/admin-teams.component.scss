@@ -1,0 +1,117 @@
+// Reuses the merge screens' picker/preview vocabulary: search input, result
+// rows, preview header and facts all look the same across the admin panel.
+@use './merge-shared';
+@use '../../styles/component-mixins' as cm;
+
+.picker-card,
+.team-card {
+  @include cm.surface-card(12px, 1rem);
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+}
+
+.section-title {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+}
+
+.preview-facts dd a,
+.member-name {
+  color: inherit;
+}
+
+.member-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.member-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+}
+
+.member-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.member-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.member-role {
+  font-size: 0.8rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.action-button {
+  @include cm.button-base(8px, 0.25rem 0.6rem);
+  font-size: 0.8rem;
+  font-weight: 400;
+  white-space: nowrap;
+  background: transparent;
+  color: var(--app-text);
+  border: 1px solid var(--app-border);
+
+  &:hover:not(:disabled) {
+    border-color: var(--app-accent);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  &.primary {
+    background: var(--app-accent);
+    color: var(--app-accent-contrast);
+    border-color: transparent;
+  }
+
+  &.danger-outline {
+    color: #dc2626;
+    border-color: color-mix(in srgb, #dc2626 45%, var(--app-border));
+  }
+}
+
+.add-form {
+  margin-top: 0.75rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.add-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+  }
+}
