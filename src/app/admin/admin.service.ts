@@ -12,6 +12,7 @@ import {
   AdminPlayerRef,
   AdminPlayersFilters,
   AdminPoll,
+  FileGarbage,
   GameWaivers,
   MergeTimelineItem,
   OneTimeLink,
@@ -112,6 +113,15 @@ export class AdminService {
 
   removePollEntry(teamId: number, playerId: number): Observable<void> {
     return this.http.del<void>(`/admin/poll/${teamId}/players/${playerId}`);
+  }
+
+  /**
+   * Sweep files nothing refers to any more: game links no level uses, metas
+   * left without a link, and stored content no meta points at. Defaults to a
+   * dry run — the answer says what would go, nothing is deleted.
+   */
+  collectFileGarbage(dryRun = true): Observable<FileGarbage> {
+    return this.http.post<FileGarbage>(`/admin/files/gc?dry_run=${dryRun}`, null);
   }
 
   getGameWaivers(gameId: number): Observable<GameWaivers> {

@@ -15,6 +15,8 @@ export class GlobalErrorHandler implements ErrorHandler {
     RequestNotFound: "Запрос не найден",
     PlayerAlreadyInTeam: "Игрок уже состоит в команде",
     PermissionsError: "Недостаточно прав",
+    FileIsUsed: "Файл используется",
+    FileNotFound: "Файл не найден",
   };
   constructor(
     private snackbar: SnackbarService,
