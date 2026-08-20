@@ -1,4 +1,4 @@
-<img class="thumb" [src]="src" [alt]="alt" loading="lazy" (click)="open()" />
+<img class="thumb" [src]="src" [alt]="alt" loading="lazy" (click)="open()" [appMediaError]="'изображение'" />
 
 @if (isOpen) {
   <div class="lightbox-overlay" (click)="close()">

@@ -1,6 +1,7 @@
 import {Component, Input} from "@angular/core";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon} from "./icons";
+import {MediaErrorDirective} from "./media-error.directive";
 
 /**
  * Telegram-style circular video note. The native controls would be clipped by
@@ -11,13 +12,14 @@ import {AppIcon} from "./icons";
 @Component({
   selector: "app-video-note",
   standalone: true,
-  imports: [MatIcon],
+  imports: [MatIcon, MediaErrorDirective],
   template: `
     <div class="video-note-wrap" [style.width.px]="size">
       <video
         #videoEl
         class="video-note"
         [src]="src || null"
+        [appMediaError]="'видео'"
         [poster]="poster || null"
         (click)="toggle(videoEl)"
         (play)="playing = true"

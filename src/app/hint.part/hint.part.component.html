@@ -51,7 +51,7 @@
       @if (isCovered()) {
         <ng-container [ngTemplateOutlet]="spoiler"/>
       } @else {
-        <img [src]="fileUrl!" alt="">
+        <img [src]="fileUrl!" alt="" [appMediaError]="'фото'">
       }
     }
     @case (HintType.animation) {
@@ -59,7 +59,7 @@
         <ng-container [ngTemplateOutlet]="spoiler"/>
       } @else {
         <video autoplay loop controls [poster]="thumbUrl || null">
-          <source [src]="fileUrl!" type="video/mp4">
+          <source [src]="fileUrl!" type="video/mp4" [appMediaError]="'анимацию'">
         </video>
       }
     }
@@ -68,7 +68,7 @@
         <ng-container [ngTemplateOutlet]="spoiler"/>
       } @else {
         <video controls [poster]="thumbUrl || null">
-          <source [src]="fileUrl!" type="video/mp4"/>
+          <source [src]="fileUrl!" type="video/mp4" [appMediaError]="'видео'"/>
         </video>
       }
     }
@@ -81,7 +81,7 @@
           <img class="hint-audio-cover" [src]="thumbUrl" alt="" (error)="onThumbError()">
         }
         <audio controls>
-          <source [src]="fileUrl!" type="audio/mp4">
+          <source [src]="fileUrl!" type="audio/mp4" [appMediaError]="'аудио'">
         </audio>
       </div>
     }
@@ -91,7 +91,7 @@
           <img class="hint-audio-cover" [src]="thumbUrl" alt="" (error)="onThumbError()">
         }
         <audio controls>
-          <source [src]="fileUrl!" type="audio/ogg">
+          <source [src]="fileUrl!" type="audio/ogg" [appMediaError]="'голосовое сообщение'">
         </audio>
       </div>
     }
@@ -110,7 +110,7 @@
       </a>
     }
     @case (HintType.sticker) {
-      <img class="hint-sticker" [src]="fileUrl!" alt="Стикер">
+      <img class="hint-sticker" [src]="fileUrl!" alt="Стикер" [appMediaError]="'стикер'">
     }
     @case (HintType.contact) {
       <div class="hint-card hint-contact">

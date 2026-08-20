@@ -4,6 +4,7 @@ import {MatIcon} from "@angular/material/icon";
 import {HintPart, HintType} from "../domain/game.models";
 import {AppIcon} from "../ui/icons";
 import {VideoNoteComponent} from "../ui/video-note.component";
+import {MediaErrorDirective} from "../ui/media-error.directive";
 
 /** What the cover of a spoiler announces, per hidden media type. */
 const SPOILER_REVEAL_LABELS: Partial<Record<HintType, string>> = {
@@ -16,7 +17,7 @@ const SPOILER_REVEAL_LABELS: Partial<Record<HintType, string>> = {
 @Component({
   selector: 'app-hint-part',
   standalone: true,
-  imports: [MatIcon, NgTemplateOutlet, VideoNoteComponent],
+  imports: [MatIcon, NgTemplateOutlet, VideoNoteComponent, MediaErrorDirective],
   templateUrl: './hint.part.component.html',
   styleUrl: './hint.part.component.scss'
 })

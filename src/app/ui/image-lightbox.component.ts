@@ -1,4 +1,5 @@
 import {Component, HostListener, Input} from "@angular/core";
+import {MediaErrorDirective} from "./media-error.directive";
 
 /**
  * Image thumbnail that opens a full-size overlay on click.
@@ -7,7 +8,7 @@ import {Component, HostListener, Input} from "@angular/core";
 @Component({
   selector: "app-image-lightbox",
   standalone: true,
-  imports: [],
+  imports: [MediaErrorDirective],
   templateUrl: "./image-lightbox.component.html",
   styleUrl: "./image-lightbox.component.scss",
 })
