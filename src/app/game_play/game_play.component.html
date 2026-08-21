@@ -67,6 +67,18 @@
         }
       </div>
     }
+
+    @if (getRecentTimerEvent(); as timerEvent) {
+      <div class="timer-event-panel">
+        <button type="button" class="icon-close right-top-panel" (click)="closeRecentTimerEvent(timerEvent)" aria-label="Закрыть"></button>
+        <p><strong>Сработал таймер</strong> <span>{{ toLocal(timerEvent.at) }}</span></p>
+
+        @if (timerEvent.effects) {
+          <p><strong>Эффекты:</strong></p>
+          <app-effects-part [effects]="timerEvent.effects" [gameId]="getCurrentHints()?.game_id"></app-effects-part>
+        }
+      </div>
+    }
     }
 
     @if (hasAnyTypedKeys()) {
@@ -135,7 +147,7 @@
     }
 
     @if (hasAnyEvents()) {
-      <details class="events-spoiler">
+      <details class="events-spoiler" open>
         <summary>Последние игровые события</summary>
 
         @if (getCurrentLevelEvents().length > 0) {
