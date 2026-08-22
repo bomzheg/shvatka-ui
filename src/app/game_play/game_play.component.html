@@ -84,10 +84,17 @@
     @if (!isTeamFinished()) {
     <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }} начался {{ toLocal(getCurrentHints()!.started_at) }} ({{ getLevelElapsed(getCurrentHints()!.started_at) }})</h3>
     <ul class="hints">
-      @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
-        <li>
-          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
-          @for (hint of timeHint.hint; track hint) {
+      @for (item of getLevelFeed(); track item.id) {
+        <li [class.feed-timer]="item.kind === 'timer'">
+          <h5 class="hint-header">{{ item.label }}</h5>
+          @if (item.tags.length > 0) {
+            <div class="typed-effects">
+              @for (tag of item.tags; track $index) {
+                <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
+              }
+            </div>
+          }
+          @for (hint of item.hints; track hint) {
             <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
           }
         </li>
@@ -180,9 +187,9 @@
       <details class="events-spoiler" open>
         <summary>Последние игровые события</summary>
 
-        @if (getCurrentLevelEvents().length > 0) {
+        @if (getCurrentLevelLogEvents().length > 0) {
           <ul class="events-list">
-            @for (event of getCurrentLevelEvents(); track event.id) {
+            @for (event of getCurrentLevelLogEvents(); track event.id) {
               <li class="event-entry">
                 <strong>{{ toLocal(event.at) }}</strong>
                 @if(event.key) {<span><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/>{{event.key}}</span>}

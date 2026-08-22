@@ -581,3 +581,9 @@ ul.hints > li > .hint-header {
   display: inline;
   margin: 0;
 }
+
+/* A timer line lives in the same feed, but it isn't a hint — mark it as one. */
+ul.hints > li.feed-timer::before {
+  -webkit-mask-image: url("/assets/svg-icons/timer.svg");
+  mask-image: url("/assets/svg-icons/timer.svg");
+}

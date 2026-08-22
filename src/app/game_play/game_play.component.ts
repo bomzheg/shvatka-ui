@@ -35,6 +35,20 @@ import {SnackbarService} from "../snackbar/snackbar.service";
 import {DebugLogService} from "../debug/debug-log.service";
 import {TeamMember} from "../team/team.models";
 
+/**
+ * One line of the current level's feed: either a hint the scenario opened on a
+ * schedule, or a timer that fired on this level.
+ */
+export interface LevelFeedItem {
+  id: string;
+  kind: 'hint' | 'timer';
+  /** Minutes since the level started — what the feed is ordered by. */
+  minutes: number;
+  label: string;
+  tags: IconTag[];
+  hints: HintPart[];
+}
+
 @Component({
   selector: 'app-game-play',
   standalone: true,
@@ -84,6 +98,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private openedTypedKeyEffects = new Set<string>();
   private openedEventEffects = new Set<number>();
   private closedRecentTimerEvents = new Set<number>();
+  private feedCacheHints: CurrentHints | undefined;
+  private feedCache: LevelFeedItem[] = [];
 
   constructor(
     private gameService: GamePlayService,
@@ -596,6 +612,79 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return hints.events.filter(event => event.level_time_id === hints.level_time_id);
   }
 
+  /**
+   * The events of this level still worth their own log line. The timers moved
+   * into the hints feed, so only the keys are left to list here.
+   */
+  getCurrentLevelLogEvents(): GameEvent[] {
+    return this.getCurrentLevelEvents().filter(event => !event.is_timer);
+  }
+
+  /**
+   * The current level as a single chronological feed: the hints the scenario
+   * opened on a schedule and the timers that fired between them. A timer's
+   * effects and bonus hints belong where they happened — next to the hint the
+   * team was reading at that minute — instead of in a log of their own.
+   */
+  getLevelFeed(): LevelFeedItem[] {
+    const hints = this.getCurrentHints();
+    if (!hints) {
+      return [];
+    }
+
+    if (this.feedCacheHints !== hints) {
+      this.feedCacheHints = hints;
+      this.feedCache = this.buildLevelFeed(hints);
+    }
+
+    return this.feedCache;
+  }
+
+  private buildLevelFeed(hints: CurrentHints): LevelFeedItem[] {
+    const startedAtMs = Date.parse(hints.started_at);
+
+    const items: LevelFeedItem[] = (hints.hints ?? []).map(timeHint => ({
+      id: `hint:${timeHint.time}`,
+      kind: 'hint' as const,
+      minutes: timeHint.time,
+      label: `Подсказка ${timeHint.time} мин.`,
+      tags: [],
+      hints: timeHint.hint ?? [],
+    }));
+
+    for (const event of this.getCurrentLevelEvents().filter(event => event.is_timer)) {
+      const minutes = this.getEventElapsedMinutes(event, startedAtMs);
+      items.push({
+        id: `timer:${event.id}`,
+        kind: 'timer',
+        minutes: minutes ?? Number.MAX_SAFE_INTEGER,
+        label: minutes === undefined
+          ? "Сработал таймер"
+          : `Таймер ${minutes} мин. (${this.toLocal(event.at)})`,
+        tags: this.getEventEffects(event),
+        hints: this.getEventHints(event),
+      });
+    }
+
+    // On a tie the hint goes first: the timer fired while it was already out.
+    return items.sort((left, right) =>
+      left.minutes - right.minutes || this.feedKindOrder(left) - this.feedKindOrder(right));
+  }
+
+  /** Minutes from the level start to the event, undefined when either time is broken. */
+  private getEventElapsedMinutes(event: GameEvent, startedAtMs: number): number | undefined {
+    const eventAtMs = Date.parse(event.at);
+    if (Number.isNaN(eventAtMs) || Number.isNaN(startedAtMs)) {
+      return undefined;
+    }
+
+    return Math.max(Math.floor((eventAtMs - startedAtMs) / 60_000), 0);
+  }
+
+  private feedKindOrder(item: LevelFeedItem): number {
+    return item.kind === 'timer' ? 1 : 0;
+  }
+
   private isEventLessThanThreeMinutesOld(event: GameEvent): boolean {
     const eventAtMs = Date.parse(event.at);
     if (Number.isNaN(eventAtMs)) {
@@ -616,7 +705,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   hasAnyEvents(): boolean {
-    return this.getCurrentLevelEvents().length > 0 || this.getPreviousLevelEvents().length > 0;
+    return this.getCurrentLevelLogEvents().length > 0 || this.getPreviousLevelEvents().length > 0;
   }
 
   hasAnyTypedKeys(): boolean {
