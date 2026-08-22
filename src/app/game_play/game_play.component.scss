@@ -581,3 +581,19 @@ ul.hints > li > .hint-header {
   display: inline;
   margin: 0;
 }
+
+/* The feed carries more than scheduled hints — say what brought each line. */
+ul.hints > li.feed-timer::before {
+  -webkit-mask-image: url("/assets/svg-icons/timer.svg");
+  mask-image: url("/assets/svg-icons/timer.svg");
+}
+
+ul.hints > li.feed-key::before {
+  -webkit-mask-image: url("/assets/svg-icons/key.svg");
+  mask-image: url("/assets/svg-icons/key.svg");
+}
+
+ul.hints > li.feed-effect::before {
+  -webkit-mask-image: url("/assets/svg-icons/auto-awesome.svg");
+  mask-image: url("/assets/svg-icons/auto-awesome.svg");
+}

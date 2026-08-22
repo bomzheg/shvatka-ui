@@ -67,27 +67,39 @@
         }
       </div>
     }
+    }
 
+    @if (!isTeamFinished()) {
     @if (getRecentTimerEvent(); as timerEvent) {
       <div class="timer-event-panel">
         <button type="button" class="icon-close right-top-panel" (click)="closeRecentTimerEvent(timerEvent)" aria-label="Закрыть"></button>
         <p><strong>Сработал таймер</strong> <span>{{ toLocal(timerEvent.at) }}</span></p>
 
-        @if (timerEvent.effects) {
-          <p><strong>Эффекты:</strong></p>
-          <app-effects-part [effects]="timerEvent.effects" [gameId]="getCurrentHints()?.game_id"></app-effects-part>
+        @if (getEventEffects(timerEvent).length > 0) {
+          <div class="typed-effects">
+            @for (tag of getEventEffects(timerEvent); track $index) {
+              <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
+            }
+          </div>
         }
       </div>
     }
-    }
 
-    @if (!isTeamFinished()) {
     <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }} начался {{ toLocal(getCurrentHints()!.started_at) }} ({{ getLevelElapsed(getCurrentHints()!.started_at) }})</h3>
     <ul class="hints">
-      @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
-        <li>
-          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
-          @for (hint of timeHint.hint; track hint) {
+      @for (item of getLevelFeed(); track item.id) {
+        <li [class.feed-timer]="item.source === 'timer'"
+            [class.feed-key]="item.source === 'key'"
+            [class.feed-effect]="item.source === 'effect'">
+          <h5 class="hint-header">{{ item.label }}</h5>
+          @if (item.tags.length > 0) {
+            <div class="typed-effects">
+              @for (tag of item.tags; track $index) {
+                <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
+              }
+            </div>
+          }
+          @for (hint of item.hints; track hint) {
             <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
           }
         </li>
@@ -96,57 +108,6 @@
     }
 
     <div class="play-spoilers">
-    @if (hasAnyTypedKeys()) {
-      <details class="typed-keys-spoiler">
-        <summary>Введённые ключи и эффекты</summary>
-        <ul>
-          @for (typedKey of getCurrentHints()!.typed_keys; track typedKey.at + typedKey.text) {
-            <li class="typed-key-entry"
-                [class.typed-key-ok]="typedKeyStatusClass(typedKey) === 'typed-key-ok'"
-                [class.typed-key-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-duplicate'"
-                [class.typed-key-wrong]="typedKeyStatusClass(typedKey) === 'typed-key-wrong'"
-                [class.typed-key-bad-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-bad-duplicate'">
-              <span class="typed-key-status">@for (icon of typedKeyIcons(typedKey); track icon) {<mat-icon class="app-icon-inline" [svgIcon]="icon"/>}</span>
-              @if (isTypedKeyTappable(typedKey)) {
-                <button
-                  type="button"
-                  class="typed-key-toggle"
-                  (click)="toggleTypedKeyEffects(typedKey)"
-                  [attr.aria-expanded]="isTypedKeyEffectsOpened(typedKey)">
-                  <strong>{{ typedKey.text }}</strong>
-                  <span class="typed-key-hint-pill" aria-hidden="true"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/> эффект</span>
-                </button>
-              } @else {
-                <strong class="typed-key-label">{{ typedKey.text }}</strong>
-              }
-
-              @if (typedKey.at) {
-                <span> ({{ toLocal(typedKey.at) }})</span>
-              }
-
-              @if (isTypedKeyEffectsOpened(typedKey)) {
-                <div class="typed-effects">
-                  @for (tag of getTypedKeyEffects(typedKey); track $index) {
-                    <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
-                  }
-
-                  @if (getTypedKeyHints(typedKey).length > 0) {
-                    <ul class="typed-key-hints">
-                      @for (hint of getTypedKeyHints(typedKey); track hint) {
-                        <li>
-                          <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
-                        </li>
-                      }
-                    </ul>
-                  }
-                </div>
-              }
-            </li>
-          }
-        </ul>
-      </details>
-    }
-
     <details class="passed-levels-spoiler" (toggle)="onPassedLevelsToggle($event)">
       <summary>Подсказки прошлых уровней</summary>
 
@@ -177,7 +138,7 @@
     </details>
 
     @if (hasAnyEvents()) {
-      <details class="events-spoiler" open>
+      <details class="events-spoiler">
         <summary>Последние игровые события</summary>
 
         @if (getCurrentLevelEvents().length > 0) {
@@ -256,6 +217,47 @@
             </ul>
           </details>
         }
+      </details>
+    }
+
+    @if (hasAnyTypedKeys()) {
+      <details class="typed-keys-spoiler">
+        <summary>Лог ключей</summary>
+        <ul>
+          @for (typedKey of getCurrentHints()!.typed_keys; track typedKey.at + typedKey.text) {
+            <li class="typed-key-entry"
+                [class.typed-key-ok]="typedKeyStatusClass(typedKey) === 'typed-key-ok'"
+                [class.typed-key-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-duplicate'"
+                [class.typed-key-wrong]="typedKeyStatusClass(typedKey) === 'typed-key-wrong'"
+                [class.typed-key-bad-duplicate]="typedKeyStatusClass(typedKey) === 'typed-key-bad-duplicate'">
+              <span class="typed-key-status">@for (icon of typedKeyIcons(typedKey); track icon) {<mat-icon class="app-icon-inline" [svgIcon]="icon"/>}</span>
+              @if (isTypedKeyTappable(typedKey)) {
+                <button
+                  type="button"
+                  class="typed-key-toggle"
+                  (click)="toggleTypedKeyEffects(typedKey)"
+                  [attr.aria-expanded]="isTypedKeyEffectsOpened(typedKey)">
+                  <strong>{{ typedKey.text }}</strong>
+                  <span class="typed-key-hint-pill" aria-hidden="true"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/> эффект</span>
+                </button>
+              } @else {
+                <strong class="typed-key-label">{{ typedKey.text }}</strong>
+              }
+
+              @if (typedKey.at) {
+                <span> ({{ toLocal(typedKey.at) }})</span>
+              }
+
+              @if (isTypedKeyEffectsOpened(typedKey)) {
+                <div class="typed-effects">
+                  @for (tag of getTypedKeyEffects(typedKey); track $index) {
+                    <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
+                  }
+                </div>
+              }
+            </li>
+          }
+        </ul>
       </details>
     }
     </div>
