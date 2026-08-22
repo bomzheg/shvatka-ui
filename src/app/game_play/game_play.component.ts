@@ -97,7 +97,6 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private windowFocusHandler: (() => void) | undefined;
   private openedTypedKeyEffects = new Set<string>();
   private openedEventEffects = new Set<number>();
-  private closedRecentTimerEvents = new Set<number>();
   private feedCacheHints: CurrentHints | undefined;
   private feedCache: LevelFeedItem[] = [];
 
@@ -562,16 +561,6 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     this.openedTypedKeyEffects.add(id);
   }
 
-  getRecentTimerEvent(): GameEvent | undefined {
-    return this.getCurrentLevelEvents()
-      .filter(event => event.is_timer && !this.closedRecentTimerEvents.has(event.id) && this.isEventLessThanThreeMinutesOld(event))
-      .sort((left, right) => Date.parse(right.at) - Date.parse(left.at))[0];
-  }
-
-  closeRecentTimerEvent(event: GameEvent): void {
-    this.closedRecentTimerEvents.add(event.id);
-  }
-
   hasEventVisibleEffects(event: GameEvent): boolean {
     return Effects.normalize(event.effects).some(effect => Effects.hasVisiblePayload(effect));
   }
@@ -683,16 +672,6 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
   private feedKindOrder(item: LevelFeedItem): number {
     return item.kind === 'timer' ? 1 : 0;
-  }
-
-  private isEventLessThanThreeMinutesOld(event: GameEvent): boolean {
-    const eventAtMs = Date.parse(event.at);
-    if (Number.isNaN(eventAtMs)) {
-      return false;
-    }
-
-    const eventAgeMs = Date.now() - eventAtMs;
-    return eventAgeMs >= 0 && eventAgeMs < 3 * 60_000;
   }
 
   getPreviousLevelEvents(): GameEvent[] {
