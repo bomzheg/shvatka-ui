@@ -1,4 +1,4 @@
-import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {DOCUMENT} from "@angular/common";
 import {AuthComponent} from "../auth/auth.component";
 import {AuthService} from "../auth/auth.service";
@@ -36,12 +36,14 @@ interface Countdown {
   templateUrl: 'header.component.html',
   styleUrl: './header.component.scss',
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
   protected readonly AppIcon = AppIcon;
   private readonly window: (Window & typeof globalThis) | undefined;
   private readonly tg: any;
   private readonly tgWa: any;
   private countdownInterval: number | undefined;
+  @ViewChild("mainHeader") private mainHeader: ElementRef<HTMLElement> | undefined;
+  private headerSizeObserver: ResizeObserver | undefined;
   activeGame: ActiveGame | undefined;
   countdown: Countdown | undefined;
   /** Release of the active game, when its author wrote one. */
@@ -273,10 +275,38 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return this.activeGame ? `Релиз игры ${this.activeGame.name}` : "Релиз игры";
   }
 
+  /**
+   * Publish the sticky header's height as `--app-header-height`, so anything
+   * else that sticks to the top of the viewport (the level summaries in the
+   * game editor, for one) can park right below it. The height is not constant:
+   * the navigation wraps at some widths, and the active-game strip above the
+   * header does not stick, so it is measured instead of hardcoded.
+   */
+  ngAfterViewInit() {
+    const header = this.mainHeader?.nativeElement;
+    if (!header || !this.window?.ResizeObserver) {
+      return;
+    }
+
+    this.headerSizeObserver = new this.window.ResizeObserver(
+      () => this.publishHeaderHeight(header.getBoundingClientRect().height),
+    );
+    this.headerSizeObserver.observe(header);
+  }
+
   ngOnDestroy() {
     if (this.countdownInterval) {
       window.clearInterval(this.countdownInterval);
     }
+
+    this.headerSizeObserver?.disconnect();
+    // No header on screen, no offset to keep: fall back to the value in the
+    // stylesheet rather than leaving a stale height behind.
+    this._document.documentElement?.style?.removeProperty("--app-header-height");
+  }
+
+  private publishHeaderHeight(height: number) {
+    this._document.documentElement?.style?.setProperty("--app-header-height", `${Math.round(height)}px`);
   }
 
   /** A release is optional — a game without one just shows no banner. */

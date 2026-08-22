@@ -26,6 +26,11 @@ $shvatka_green: #2f8f4e;
   --app-header-text: #f6fff8;
   --app-accent: #2f8f4e;
   --app-accent-contrast: #ffffff;
+  /* Height of the sticky app header; anything else that sticks to the top of
+     the viewport offsets itself by this so it lands right under the header.
+     HeaderComponent replaces it with the measured height at runtime — the value
+     here is the fallback, and matches the header's own min-height. */
+  --app-header-height: 64px;
 }
 
 :root[data-theme='dark'] {
