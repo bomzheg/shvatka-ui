@@ -90,6 +90,18 @@
     </div>
   </div>
 
+  @if (canShare()) {
+    <button
+      class="share-button"
+      type="button"
+      aria-label="Поделиться"
+      title="Поделиться"
+      (click)="share()"
+    >
+      <mat-icon aria-hidden="true" [svgIcon]="AppIcon.share"/>
+    </button>
+  }
+
   @if (isAuthenticated()) {
     <a
       routerLink="/notifications"

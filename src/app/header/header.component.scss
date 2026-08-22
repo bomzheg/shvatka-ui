@@ -80,6 +80,30 @@
   }
 }
 
+.share-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: 999px;
+  opacity: 0.92;
+
+  mat-icon {
+    width: 1.4rem;
+    height: 1.4rem;
+    font-size: 1.4rem;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.18);
+    opacity: 1;
+  }
+}
+
 .bell-badge {
   position: absolute;
   top: -2px;
@@ -328,7 +352,8 @@
     }
   }
 
-  .bell-link {
+  .bell-link,
+  .share-button {
     justify-self: end;
   }
 

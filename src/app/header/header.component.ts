@@ -13,6 +13,7 @@ import {NotificationsService} from "../notifications/notifications.service";
 import {DebugLogService} from "../debug/debug-log.service";
 import {GameRelease} from "../domain/game.models";
 import {HttpAdapter} from "../http/http.adapter";
+import {ShareService} from "../share/share.service";
 
 type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
 
@@ -59,6 +60,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private notificationsService: NotificationsService,
     private debugLog: DebugLogService,
     private http: HttpAdapter,
+    private shareService: ShareService,
   ) {
     this.window = this._document.defaultView;
     this.tg = (this.window as any)?.Telegram;
@@ -144,6 +146,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   canBeAuthor() {
     return this.userService.canBeAuthor();
+  }
+
+  /**
+   * The share button only makes sense in an installed PWA: a browser tab
+   * already has an address bar to copy the URL from.
+   */
+  canShare(): boolean {
+    return this.shareService.isInstalledPwa();
+  }
+
+  share() {
+    this.closeMobileMenu();
+    this.shareService.shareCurrentPage()
+      .catch(error => this.logDebugError("share current page", error));
   }
 
   unreadNotifications(): number {
