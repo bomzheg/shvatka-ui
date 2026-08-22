@@ -51,6 +51,11 @@ export class EmailConfirmFormComponent {
             return;
           }
 
+          if (err instanceof HttpErrorResponse && err.status === 409) {
+            this.codeError = 'Этот email успел занять кто-то другой. Укажите другой адрес.';
+            return;
+          }
+
           this.snackbar.error('Не удалось подтвердить email');
         },
       });

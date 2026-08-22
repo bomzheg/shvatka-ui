@@ -62,6 +62,10 @@ export enum AppIcon {
   clock = "schedule",
   notifications = "notifications",
   share = "share",
+  // identity & account
+  account = "account-circle",
+  email = "mail",
+  telegram = "send",
   merge = "call-merge",
   // rich-text toolbar (Telegram message entities)
   bold = "format-bold",

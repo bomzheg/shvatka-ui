@@ -122,7 +122,7 @@
     @if (isAuthenticated()) {
       <div class="user-info">
         <a routerLink="/profile" class="avatar-link" (click)="onNavClick('/profile', $event)">
-          <mat-icon svgIcon="account-circle"/>
+          <mat-icon [svgIcon]="AppIcon.account"/>
           <span>{{ getMe()?.name_mention }}</span>
         </a>
         <button class="ghost-button" type="button" (click)="logout()">Выйти</button>

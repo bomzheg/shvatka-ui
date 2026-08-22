@@ -1,0 +1,69 @@
+<form class="field" (ngSubmit)="changeUsername()">
+  <label class="field__label" for="profileUsername">Имя пользователя</label>
+  <div class="field__row">
+    <input
+      id="profileUsername"
+      name="profileUsername"
+      type="text"
+      autocomplete="username"
+      [(ngModel)]="newUsername"
+    />
+    <button
+      class="button button--primary"
+      type="submit"
+      [disabled]="isUsernameSubmitting || !isUsernameDirty"
+    >
+      {{ isUsernameSubmitting ? 'Сохраняем…' : 'Сохранить' }}
+    </button>
+  </div>
+  @if (usernameError) {
+    <p class="field-error">{{ usernameError }}</p>
+  } @else {
+    <p class="field__hint">Под этим именем вас видят в командах и играх.</p>
+  }
+</form>
+
+<div class="field">
+  <span class="field__label">Пароль</span>
+
+  @if (isPasswordFormOpen) {
+    <form class="field__stack" (ngSubmit)="changePassword()">
+      <input
+        id="profileNewPassword"
+        name="profileNewPassword"
+        type="password"
+        placeholder="Новый пароль"
+        autocomplete="new-password"
+        [(ngModel)]="newPassword"
+      />
+      <input
+        id="profileConfirmPassword"
+        name="profileConfirmPassword"
+        type="password"
+        placeholder="Повторите пароль"
+        autocomplete="new-password"
+        [(ngModel)]="confirmPassword"
+      />
+      @if (passwordError) {
+        <p class="field-error">{{ passwordError }}</p>
+      }
+      <div class="field__actions">
+        <button class="button button--primary" type="submit" [disabled]="isPasswordSubmitting">
+          {{ isPasswordSubmitting ? 'Сохраняем…' : 'Сохранить пароль' }}
+        </button>
+        <button class="button button--quiet" type="button" (click)="cancelPasswordForm()">
+          Отмена
+        </button>
+      </div>
+    </form>
+  } @else {
+    @if (hasVerifiedEmail) {
+      <p class="field__hint">Пароль нужен, чтобы входить по email.</p>
+    } @else {
+      <p class="field__hint">Пароль пригодится, когда вы привяжете и подтвердите email.</p>
+    }
+    <button class="button button--quiet" type="button" (click)="openPasswordForm()">
+      Изменить пароль
+    </button>
+  }
+</div>

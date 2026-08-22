@@ -1,0 +1,8 @@
+@use '../../styles/profile-ui' as pui;
+
+@include pui.profile-buttons();
+@include pui.profile-fields();
+
+:host {
+  display: block;
+}

@@ -1,6 +1,7 @@
 @use '../../styles/component-mixins' as cm;
 
 .push-prompt {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -17,7 +18,9 @@
 }
 
 .push-prompt__body {
-  flex: 1 1 auto;
+  /* zero basis: the text shares the first row with the bell instead of
+     wrapping under it once the row is allowed to wrap */
+  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -60,8 +63,8 @@
   cursor: pointer;
 }
 
-/* Narrow screens: the row wraps, and the wordy "не показывать" becomes an × in
-   the corner so the prompt keeps to two lines. */
+/* Narrow screens: the button drops under the text, and the wordy
+   "не показывать" becomes an × pinned to the corner. */
 @media (max-width: 600px) {
   .push-prompt {
     flex-wrap: wrap;
@@ -69,7 +72,8 @@
   }
 
   .push-prompt__body {
-    flex-basis: 0;
+    /* room for the × so the text never runs under it */
+    padding-right: 1.75rem;
   }
 
   .push-prompt__actions {
@@ -83,5 +87,8 @@
 
   .push-prompt__close {
     display: block;
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
   }
 }
