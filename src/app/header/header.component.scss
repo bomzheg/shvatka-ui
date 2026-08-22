@@ -44,6 +44,9 @@
   background: color-mix(in srgb, var(--app-header-bg) 90%, transparent);
   backdrop-filter: blur(8px);
   color: var(--app-header-text);
+  // Deliberately a literal, not --app-header-height: the header publishes its
+  // measured height into that variable, so reading it back here would pin the
+  // header at its tallest and stop it shrinking again. Keep the two in sync.
   min-height: 64px;
   padding: 0.75rem 1rem;
   display: grid;

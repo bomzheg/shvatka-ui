@@ -219,6 +219,21 @@ input.invalid {
   display: none;
 }
 
+// While a level is open its summary rides under the app header, so the level
+// number and id stay in sight through a long form (issue #171). Collapsed cards
+// are short enough not to need it, and leaving them alone keeps drag & drop
+// (only possible when nothing is expanded) free of a sticky box.
+.level-card[open] > .level-summary {
+  position: sticky;
+  top: var(--app-header-height);
+  // Above the level body, below the app header (z-index 15) and the pickers
+  // that open inside the body.
+  z-index: 2;
+  // A sticky bar must be opaque: the card's own background is translucent.
+  background: var(--app-surface);
+  border-radius: 12px 12px 0 0;
+}
+
 .level-card[open] .level-summary {
   border-bottom: 1px dashed var(--app-border);
 }
@@ -448,6 +463,14 @@ input.time-input {
 @media (max-width: 640px) {
   .level-caption {
     flex-basis: 100%;
+  }
+
+  // Narrow screens wrap the summary onto three rows, and pinned that is a lot
+  // of the viewport. The counts are there to scan the collapsed list; with the
+  // level open in front of you the conditions and hints themselves are right
+  // below, so the pinned bar drops them.
+  .level-card[open] > .level-summary .level-stats {
+    display: none;
   }
 
   .start-row input[type="datetime-local"] {
