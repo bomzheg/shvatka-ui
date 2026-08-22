@@ -122,6 +122,7 @@ export class HttpAdapter {
       || /^\/games\/\d+\/files\/.+$/.test(url)
       || url === "/games/active/me"
       || url === "/games/running/level/current"
+      || url === "/games/running/level/passed"
       || url === "/games/running/key"
       || url === "/users/me/password"
       || url === "/users/me/username"

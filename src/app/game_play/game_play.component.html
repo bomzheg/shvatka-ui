@@ -81,6 +81,21 @@
     }
     }
 
+    @if (!isTeamFinished()) {
+    <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }} начался {{ toLocal(getCurrentHints()!.started_at) }} ({{ getLevelElapsed(getCurrentHints()!.started_at) }})</h3>
+    <ul class="hints">
+      @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
+        <li>
+          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
+          @for (hint of timeHint.hint; track hint) {
+            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+          }
+        </li>
+      }
+    </ul>
+    }
+
+    <div class="play-spoilers">
     @if (hasAnyTypedKeys()) {
       <details class="typed-keys-spoiler">
         <summary>Введённые ключи и эффекты</summary>
@@ -132,19 +147,34 @@
       </details>
     }
 
-    @if (!isTeamFinished()) {
-    <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }} начался {{ toLocal(getCurrentHints()!.started_at) }} ({{ getLevelElapsed(getCurrentHints()!.started_at) }})</h3>
-    <ul class="hints">
-      @for (timeHint of getCurrentHints()!.hints; track timeHint.time) {
-        <li>
-          <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
-          @for (hint of timeHint.hint; track hint) {
-            <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
-          }
-        </li>
+    <details class="passed-levels-spoiler" (toggle)="onPassedLevelsToggle($event)">
+      <summary>Подсказки прошлых уровней</summary>
+
+      @if (isPassedLevelsLoading()) {
+        <p class="status-message">Загрузка подсказок прошлых уровней...</p>
+      } @else if (isPassedLevelsFailed()) {
+        <p class="status-message">Не удалось загрузить подсказки прошлых уровней.</p>
+      } @else if (hasNoPassedLevels()) {
+        <p class="status-message">Пройденных уровней пока нет.</p>
       }
-    </ul>
-    }
+
+      @for (level of getPassedLevels(); track level.level_time_id) {
+        <details class="passed-levels-spoiler passed-level-spoiler">
+          <summary>Уровень №{{ level.level_number + 1 }} ({{ getPassedLevelDuration(level) }})</summary>
+          <p class="passed-level-times">{{ toLocal(level.started_at) }} — {{ toLocal(level.finished_at) }}</p>
+          <ul class="hints">
+            @for (timeHint of level.hints; track timeHint.time) {
+              <li>
+                <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
+                @for (hint of timeHint.hint; track hint) {
+                  <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
+                }
+              </li>
+            }
+          </ul>
+        </details>
+      }
+    </details>
 
     @if (hasAnyEvents()) {
       <details class="events-spoiler" open>
@@ -228,6 +258,7 @@
         }
       </details>
     }
+    </div>
   </div>
 }
 

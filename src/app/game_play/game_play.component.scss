@@ -183,8 +183,39 @@ $key-duplicate-description: rgba(234, 179, 8, 1);
   font-size: 0.85rem;
 }
 
+/* The three play spoilers sit together, right under the current level. */
+.play-spoilers {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.play-spoilers > details {
+  margin: 0;
+}
+
 .typed-keys-spoiler {
   margin: 0 0 18px;
+}
+
+.passed-levels-spoiler summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.passed-level-spoiler {
+  margin: 10px 0 0 16px;
+}
+
+.passed-level-spoiler > summary {
+  font-weight: 500;
+}
+
+.passed-level-times {
+  margin: 6px 0 0;
+  opacity: 0.75;
+  font-size: 0.9rem;
 }
 
 .typed-keys-spoiler summary {

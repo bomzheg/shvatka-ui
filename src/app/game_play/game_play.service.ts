@@ -21,6 +21,26 @@ export type GameEvent = {
   is_timer: boolean;
 };
 
+/** A level the team has already left, with the hints it saw while on it. */
+export class PassedLevel {
+  constructor(
+    public level_number: number,
+    public level_time_id: number,
+    public started_at: string,
+    public finished_at: string,
+    public hints: TimeHint[],
+  ) {
+  }
+}
+
+export class PassedLevels {
+  constructor(
+    public game_id: number,
+    public levels: PassedLevel[],
+  ) {
+  }
+}
+
 export class CurrentHints {
   constructor(
     public hints: TimeHint[],
@@ -168,6 +188,11 @@ export class GamePlayService {
   private isSpyKeysLoading = false;
   private isSpyStatLoading = false;
   private isHintsLoading = false;
+  private passedLevels: PassedLevels | undefined;
+  /** Level time the cached passed levels were loaded for. */
+  private passedLevelsLevelTimeId: number | undefined;
+  private isPassedLevelsLoading = false;
+  private passedLevelsError = false;
   private authRequired = false;
   private myRoleListeners: ((role: MyRoleDto | undefined) => void)[] = [];
 
@@ -192,6 +217,7 @@ export class GamePlayService {
         this.spyGameId = undefined;
         this.spyKeys = undefined;
         this.spyStat = undefined;
+        this.forgetPassedLevels();
         this.isHintsLoading = false;
         return;
       }
@@ -222,6 +248,7 @@ export class GamePlayService {
         }
 
         this.currentHints = undefined;
+        this.forgetPassedLevels();
         this.isHintsLoading = false;
       });
     });
@@ -233,11 +260,13 @@ export class GamePlayService {
     .subscribe({
       next: h => {
         this.currentHints = h;
+        this.onLevelTimeResolved(h.level_time_id);
         this.isHintsLoading = false;
       },
       error: error => {
         this.isHintsLoading = false;
         this.currentHints = undefined;
+        this.forgetPassedLevels();
 
         if (error instanceof HttpErrorResponse && error.status === 401) {
           this.authRequired = true;
@@ -252,6 +281,7 @@ export class GamePlayService {
 
   private loadWaivers() {
     this.currentHints = undefined;
+    this.forgetPassedLevels();
     this.http.get<CurrentWaivers>(`/waivers/game/current`)
       .subscribe({
         next: waivers => {
@@ -411,6 +441,80 @@ export class GamePlayService {
   private completeSpyLoadRequest() {
     this.spyLoadingRequests = Math.max(this.spyLoadingRequests - 1, 0);
     this.isSpyLoading = this.spyLoadingRequests > 0;
+  }
+
+  /**
+   * Fetch the passed levels unless they are already there for this level.
+   *
+   * Nothing calls this while the current level is polled — the player has to
+   * open the spoiler first, and re-opening it costs no request.
+   */
+  loadPassedLevels(forceRefresh: boolean = false) {
+    const levelTimeId = this.currentHints?.level_time_id;
+    if (levelTimeId === undefined || this.isPassedLevelsLoading) {
+      return;
+    }
+
+    const cached = this.passedLevels !== undefined && this.passedLevelsLevelTimeId === levelTimeId;
+    if (cached && !forceRefresh) {
+      return;
+    }
+
+    this.isPassedLevelsLoading = true;
+    this.passedLevelsError = false;
+    this.http.get<PassedLevels>(`/games/running/level/passed`)
+      .subscribe({
+        next: passed => {
+          this.passedLevels = passed;
+          this.passedLevelsLevelTimeId = levelTimeId;
+          this.isPassedLevelsLoading = false;
+        },
+        error: error => {
+          this.isPassedLevelsLoading = false;
+          this.passedLevels = undefined;
+          this.passedLevelsLevelTimeId = undefined;
+          this.passedLevelsError = true;
+
+          if (!(error instanceof HttpErrorResponse && error.status === 401)) {
+            throw error;
+          }
+        }
+      });
+  }
+
+  /**
+   * A level up adds a level to the passed ones, so the cache goes stale. It is
+   * refreshed right away only for a player who has already opened the spoiler;
+   * for everyone else the next open loads it.
+   */
+  private onLevelTimeResolved(levelTimeId: number) {
+    if (this.passedLevelsLevelTimeId === levelTimeId) {
+      return;
+    }
+
+    const wasLoaded = this.passedLevels !== undefined;
+    this.forgetPassedLevels();
+    if (wasLoaded) {
+      this.loadPassedLevels();
+    }
+  }
+
+  private forgetPassedLevels() {
+    this.passedLevels = undefined;
+    this.passedLevelsLevelTimeId = undefined;
+    this.passedLevelsError = false;
+  }
+
+  getPassedLevels(): PassedLevels | undefined {
+    return this.passedLevels;
+  }
+
+  isPassedLevelsDataLoading(): boolean {
+    return this.isPassedLevelsLoading;
+  }
+
+  isPassedLevelsFailed(): boolean {
+    return this.passedLevelsError;
   }
 
   getCurrentHints(): CurrentHints | undefined {

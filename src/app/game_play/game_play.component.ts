@@ -9,6 +9,7 @@ import {
   CurrentWaivers,
   WaiversTeam,
   WaiverEntry,
+  PassedLevel,
   Played,
   OrganizerDto,
   WaiverInput
@@ -621,6 +622,58 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   hasAnyTypedKeys(): boolean {
     const typedKeys = this.getCurrentHints()?.typed_keys;
     return Array.isArray(typedKeys) && typedKeys.length > 0;
+  }
+
+  /**
+   * The passed levels are fetched on the first open of the spoiler — they are
+   * far heavier than the current level and most players never look at them.
+   */
+  onPassedLevelsToggle(event: Event): void {
+    if (!(event.target as HTMLDetailsElement).open) {
+      return;
+    }
+
+    this.gameService.loadPassedLevels();
+  }
+
+  getPassedLevels(): PassedLevel[] {
+    return this.gameService.getPassedLevels()?.levels ?? [];
+  }
+
+  isPassedLevelsLoading(): boolean {
+    return this.gameService.isPassedLevelsDataLoading();
+  }
+
+  isPassedLevelsFailed(): boolean {
+    return this.gameService.isPassedLevelsFailed();
+  }
+
+  /** True once the answer came back and there was nothing to show. */
+  hasNoPassedLevels(): boolean {
+    return !this.isPassedLevelsLoading()
+      && !this.isPassedLevelsFailed()
+      && this.gameService.getPassedLevels() !== undefined
+      && this.getPassedLevels().length === 0;
+  }
+
+  /** How long the team stayed on a level it has already left. */
+  getPassedLevelDuration(level: PassedLevel): string {
+    const startedAtMs = Date.parse(level.started_at);
+    const finishedAtMs = Date.parse(level.finished_at);
+    if (Number.isNaN(startedAtMs) || Number.isNaN(finishedAtMs)) {
+      return "—";
+    }
+
+    const totalSeconds = Math.max(Math.floor((finishedAtMs - startedAtMs) / 1000), 0);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return `${hours}ч ${minutes}м ${seconds}с`;
+    }
+
+    return `${minutes}м ${seconds}с`;
   }
 
   typedKeyStatusClass(typedKey: TypedKeyLog): string {
