@@ -1,0 +1,39 @@
+@if (isVisible()) {
+  <div class="push-prompt">
+    <mat-icon class="push-prompt__icon" aria-hidden="true" [svgIcon]="AppIcon.notifications"/>
+
+    <div class="push-prompt__body">
+      @if (isBlocked()) {
+        <p class="push-prompt__title">Уведомления заблокированы</p>
+        <p class="push-prompt__text">Разрешите их в настройках браузера, чтобы не пропустить подсказку.</p>
+      } @else {
+        <p class="push-prompt__title">Не пропустите подсказку</p>
+        <p class="push-prompt__text">Включите уведомления — сообщим о новой подсказке и смене уровня.</p>
+      }
+    </div>
+
+    <div class="push-prompt__actions">
+      @if (!isBlocked()) {
+        <app-push-toggle [allowDisable]="false"/>
+      }
+      <button
+        type="button"
+        class="push-prompt__dismiss"
+        title="Не показывать для этой игры"
+        (click)="dismiss()"
+      >
+        Не показывать
+      </button>
+    </div>
+
+    <button
+      type="button"
+      class="push-prompt__close"
+      aria-label="Не показывать для этой игры"
+      title="Не показывать для этой игры"
+      (click)="dismiss()"
+    >
+      <mat-icon aria-hidden="true" [svgIcon]="AppIcon.close"/>
+    </button>
+  </div>
+}

@@ -1,6 +1,6 @@
-<div class="push-toggle-bar">
-  <app-push-toggle [allowDisable]="false"></app-push-toggle>
-</div>
+@if (pushPromptScope(); as scope) {
+  <app-push-prompt [scope]="scope"/>
+}
 
 @if (isLoading() && !hasHints() && !hasWaivers()) {
   <p class="status-message">Загрузка текущей игры...</p>
