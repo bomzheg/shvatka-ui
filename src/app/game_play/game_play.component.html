@@ -73,7 +73,9 @@
     <h3 class="level-header">Уровень №{{ getCurrentHints()!.level_number! + 1 }} начался {{ toLocal(getCurrentHints()!.started_at) }} ({{ getLevelElapsed(getCurrentHints()!.started_at) }})</h3>
     <ul class="hints">
       @for (item of getLevelFeed(); track item.id) {
-        <li [class.feed-timer]="item.kind === 'timer'">
+        <li [class.feed-timer]="item.source === 'timer'"
+            [class.feed-key]="item.source === 'key'"
+            [class.feed-effect]="item.source === 'effect'">
           <h5 class="hint-header">{{ item.label }}</h5>
           @if (item.tags.length > 0) {
             <div class="typed-effects">
@@ -123,16 +125,6 @@
                 <div class="typed-effects">
                   @for (tag of getTypedKeyEffects(typedKey); track $index) {
                     <span class="effect-tag">@if (tag.prefix) {<span class="effect-tag-prefix">{{ tag.prefix }}</span>}<mat-icon class="app-icon-inline" [svgIcon]="tag.icon"/>{{ tag.text }}</span>
-                  }
-
-                  @if (getTypedKeyHints(typedKey).length > 0) {
-                    <ul class="typed-key-hints">
-                      @for (hint of getTypedKeyHints(typedKey); track hint) {
-                        <li>
-                          <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
-                        </li>
-                      }
-                    </ul>
                   }
                 </div>
               }

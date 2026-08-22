@@ -35,15 +35,15 @@ import {SnackbarService} from "../snackbar/snackbar.service";
 import {DebugLogService} from "../debug/debug-log.service";
 import {TeamMember} from "../team/team.models";
 
-/**
- * One line of the current level's feed: either a hint the scenario opened on a
- * schedule, or a timer that fired on this level.
- */
+/** What put a line into the level feed. */
+export type LevelFeedSource = 'hint' | 'timer' | 'key' | 'effect';
+
+/** One line of the current level's feed: everything that brought the team hints. */
 export interface LevelFeedItem {
   id: string;
-  kind: 'hint' | 'timer';
-  /** Minutes since the level started — what the feed is ordered by. */
-  minutes: number;
+  source: LevelFeedSource;
+  /** When it landed, in epoch ms — what the feed is ordered by. */
+  sortMs: number;
   label: string;
   tags: IconTag[];
   hints: HintPart[];
@@ -535,10 +535,6 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return this.getEffectsTags(typedKey?.effects);
   }
 
-  getTypedKeyHints(typedKey: TypedKeyLog): HintPart[] {
-    return this.getEffectsHints(typedKey?.effects);
-  }
-
   isTypedKeyTappable(typedKey: TypedKeyLog): boolean {
     return Effects.normalize(typedKey.effects).some(effect => Effects.hasVisiblePayload(effect));
   }
@@ -602,18 +598,28 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * The events of this level still worth their own log line. The timers moved
-   * into the hints feed, so only the keys are left to list here.
+   * The events of this level that brought hints: they belong in the feed, next
+   * to the scheduled hints, whatever fired them.
+   */
+  getCurrentLevelHintEvents(): GameEvent[] {
+    return this.getCurrentLevelEvents().filter(event => this.hasEventHints(event));
+  }
+
+  /**
+   * The events of this level still worth their own log line — the ones that
+   * only moved the clock or the level. Everything that carried a hint moved
+   * into the feed.
    */
   getCurrentLevelLogEvents(): GameEvent[] {
-    return this.getCurrentLevelEvents().filter(event => !event.is_timer);
+    return this.getCurrentLevelEvents().filter(event => !this.hasEventHints(event));
   }
 
   /**
    * The current level as a single chronological feed: the hints the scenario
-   * opened on a schedule and the timers that fired between them. A timer's
-   * effects and bonus hints belong where they happened — next to the hint the
-   * team was reading at that minute — instead of in a log of their own.
+   * opened on a schedule, and every event that brought more of them — a timer,
+   * a key with effects, or an effect the backend left unlinked. A hint belongs
+   * where it arrived, next to the ones the team was already reading, instead of
+   * behind a spoiler of its own.
    */
   getLevelFeed(): LevelFeedItem[] {
     const hints = this.getCurrentHints();
@@ -634,30 +640,60 @@ export class GamePlayComponent implements OnInit, OnDestroy {
 
     const items: LevelFeedItem[] = (hints.hints ?? []).map(timeHint => ({
       id: `hint:${timeHint.time}`,
-      kind: 'hint' as const,
-      minutes: timeHint.time,
+      source: 'hint' as const,
+      sortMs: Number.isNaN(startedAtMs) ? 0 : startedAtMs + timeHint.time * 60_000,
       label: `Подсказка ${timeHint.time} мин.`,
       tags: [],
       hints: timeHint.hint ?? [],
     }));
 
-    for (const event of this.getCurrentLevelEvents().filter(event => event.is_timer)) {
-      const minutes = this.getEventElapsedMinutes(event, startedAtMs);
+    for (const event of this.getCurrentLevelHintEvents()) {
+      const eventAtMs = Date.parse(event.at);
       items.push({
-        id: `timer:${event.id}`,
-        kind: 'timer',
-        minutes: minutes ?? Number.MAX_SAFE_INTEGER,
-        label: minutes === undefined
-          ? "Сработал таймер"
-          : `Таймер ${minutes} мин. (${this.toLocal(event.at)})`,
+        id: `event:${event.id}`,
+        source: this.getEventSource(event),
+        // a broken timestamp sinks to the end instead of jumping to the top
+        sortMs: Number.isNaN(eventAtMs) ? Number.MAX_SAFE_INTEGER : eventAtMs,
+        label: this.getEventLabel(event, startedAtMs),
         tags: this.getEventEffects(event),
         hints: this.getEventHints(event),
       });
     }
 
-    // On a tie the hint goes first: the timer fired while it was already out.
+    // On a tie the scheduled hint goes first: the event landed on a level that already had it.
     return items.sort((left, right) =>
-      left.minutes - right.minutes || this.feedKindOrder(left) - this.feedKindOrder(right));
+      left.sortMs - right.sortMs || this.feedSourceOrder(left) - this.feedSourceOrder(right));
+  }
+
+  private hasEventHints(event: GameEvent): boolean {
+    return this.getEventHints(event).length > 0;
+  }
+
+  /**
+   * An event with no timer of its own is a key's, unless it has no key either:
+   * a timer that fired several effects at once only gets its last event linked,
+   * and the rest arrive with neither.
+   */
+  private getEventSource(event: GameEvent): LevelFeedSource {
+    if (event.is_timer) {
+      return 'timer';
+    }
+
+    return event.key ? 'key' : 'effect';
+  }
+
+  private getEventLabel(event: GameEvent, startedAtMs: number): string {
+    const minutes = this.getEventElapsedMinutes(event, startedAtMs);
+    const at = minutes === undefined ? "" : ` ${minutes} мин. (${this.toLocal(event.at)})`;
+
+    switch (this.getEventSource(event)) {
+      case 'timer':
+        return `Таймер${at}`;
+      case 'key':
+        return `Ключ «${event.key}»${at}`;
+      default:
+        return `Эффект${at}`;
+    }
   }
 
   /** Minutes from the level start to the event, undefined when either time is broken. */
@@ -670,8 +706,8 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     return Math.max(Math.floor((eventAtMs - startedAtMs) / 60_000), 0);
   }
 
-  private feedKindOrder(item: LevelFeedItem): number {
-    return item.kind === 'timer' ? 1 : 0;
+  private feedSourceOrder(item: LevelFeedItem): number {
+    return item.source === 'hint' ? 0 : 1;
   }
 
   getPreviousLevelEvents(): GameEvent[] {

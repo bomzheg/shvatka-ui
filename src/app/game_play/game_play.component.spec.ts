@@ -12,6 +12,14 @@ function timerEvent(id: number, at: string, effects?: Effect[]): GameEvent {
   return {id, level_time_id: 11, at, is_timer: true, effects};
 }
 
+function keyEvent(id: number, at: string, key: string, effects?: Effect[]): GameEvent {
+  return {id, level_time_id: 11, at, is_timer: false, key, effects};
+}
+
+function hintEffect(id: string, text: string, bonusMinutes = 0): Effect {
+  return new Effect(id, [HintPart.create({type: HintType.text, text})], bonusMinutes);
+}
+
 function currentHints(hints: TimeHint[], events: GameEvent[]): CurrentHints {
   return new CurrentHints(hints, [], events, 0, 11, LEVEL_STARTED_AT, 7, false);
 }
@@ -56,56 +64,80 @@ describe('GamePlayComponent', () => {
     expect(component.getPassedLevelDuration(level)).toBe("—");
   });
 
-  it('puts the timers of this level between the hints of the feed', () => {
-    const bonusHint = HintPart.create({type: HintType.text, text: "бонусная подсказка"});
+  it('threads every hint of this level into one feed, whatever brought it', () => {
     spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
       [new TimeHint(0, []), new TimeHint(10, [])],
       [
-        timerEvent(1, "2024-05-05T10:05:00+00:00", [new Effect("e1", [bonusHint], 5)]),
-        {id: 2, level_time_id: 11, at: "2024-05-05T10:06:00+00:00", is_timer: false, key: "КЛЮЧ"},
-        timerEvent(3, "2024-05-05T10:07:00+00:00"),
+        timerEvent(1, "2024-05-05T10:05:00+00:00", [hintEffect("e1", "от таймера", 5)]),
+        keyEvent(2, "2024-05-05T10:06:00+00:00", "ЛОМ", [hintEffect("e2", "за ключ")]),
+        // a timer that fired several effects: only its last event is linked back
+        {id: 3, level_time_id: 11, at: "2024-05-05T10:07:00+00:00", is_timer: false,
+          effects: [hintEffect("e3", "без источника")]},
+        // no hints — this one stays in the log
+        timerEvent(4, "2024-05-05T10:08:00+00:00", [new Effect("e4", [], -10)]),
+        // another level entirely
+        {id: 5, level_time_id: 12, at: "2024-05-05T10:09:00+00:00", is_timer: true,
+          effects: [hintEffect("e5", "прошлый уровень")]},
       ],
     ));
 
     const feed = component.getLevelFeed();
 
-    expect(feed.map(item => item.id)).toEqual(["hint:0", "timer:1", "timer:3", "hint:10"]);
-    const timer = feed[1];
-    expect(timer.label).toContain("Таймер 5 мин.");
-    expect(timer.hints).toEqual([bonusHint]);
-    expect(timer.tags.map(tag => tag.text)).toEqual(["бонус 5 мин.", "бонусные подсказки: 1"]);
+    expect(feed.map(item => item.id))
+      .toEqual(["hint:0", "event:1", "event:2", "event:3", "hint:10"]);
+    expect(feed.map(item => item.source))
+      .toEqual(["hint", "timer", "key", "effect", "hint"]);
+    expect(feed[1].label).toContain("Таймер 5 мин.");
+    expect(feed[1].tags.map(tag => tag.text)).toEqual(["бонус 5 мин.", "бонусные подсказки: 1"]);
+    expect(feed[2].label).toContain("Ключ «ЛОМ» 6 мин.");
+    expect(feed[3].label).toContain("Эффект 7 мин.");
+    expect(feed[2].hints.map(hint => hint.text)).toEqual(["за ключ"]);
   });
 
-  it('leaves the timers out of the event log they moved from', () => {
+  it('orders a key and a timer of the same minute by when they landed', () => {
     spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
-      [],
+      [new TimeHint(5, [])],
       [
-        timerEvent(1, "2024-05-05T10:05:00+00:00"),
-        {id: 2, level_time_id: 11, at: "2024-05-05T10:06:00+00:00", is_timer: false, key: "КЛЮЧ"},
+        timerEvent(1, "2024-05-05T10:05:40+00:00", [hintEffect("e1", "таймер")]),
+        keyEvent(2, "2024-05-05T10:05:10+00:00", "ЛОМ", [hintEffect("e2", "ключ")]),
       ],
     ));
 
-    expect(component.getCurrentLevelLogEvents().map(event => event.id)).toEqual([2]);
+    expect(component.getLevelFeed().map(item => item.id)).toEqual(["hint:5", "event:2", "event:1"]);
   });
 
-  it('shows no event log when this level only had timers', () => {
+  it('leaves the events without hints to the log', () => {
     spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
       [],
-      [timerEvent(1, "2024-05-05T10:05:00+00:00")],
+      [
+        timerEvent(1, "2024-05-05T10:05:00+00:00", [hintEffect("e1", "подсказка")]),
+        timerEvent(2, "2024-05-05T10:06:00+00:00", [new Effect("e2", [], -10)]),
+        keyEvent(3, "2024-05-05T10:07:00+00:00", "ЛОМ", [new Effect("e3", [], 0, true)]),
+      ],
+    ));
+
+    expect(component.getLevelFeed().map(item => item.id)).toEqual(["event:1"]);
+    expect(component.getCurrentLevelLogEvents().map(event => event.id)).toEqual([2, 3]);
+  });
+
+  it('shows no event log when every event of this level brought hints', () => {
+    spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
+      [],
+      [timerEvent(1, "2024-05-05T10:05:00+00:00", [hintEffect("e1", "подсказка")])],
     ));
 
     expect(component.hasAnyEvents()).toBeFalse();
   });
 
-  it('keeps a timer with a broken time at the end of the feed', () => {
+  it('keeps an event with a broken time at the end of the feed', () => {
     spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
       [new TimeHint(30, [])],
-      [timerEvent(1, "not a date")],
+      [timerEvent(1, "not a date", [hintEffect("e1", "подсказка")])],
     ));
 
     const feed = component.getLevelFeed();
 
-    expect(feed.map(item => item.id)).toEqual(["hint:30", "timer:1"]);
-    expect(feed[1].label).toBe("Сработал таймер");
+    expect(feed.map(item => item.id)).toEqual(["hint:30", "event:1"]);
+    expect(feed[1].label).toBe("Таймер");
   });
 });
