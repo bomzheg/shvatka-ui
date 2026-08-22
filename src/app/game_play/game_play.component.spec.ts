@@ -106,7 +106,7 @@ describe('GamePlayComponent', () => {
     expect(component.getLevelFeed().map(item => item.id)).toEqual(["hint:5", "event:2", "event:1"]);
   });
 
-  it('leaves the events without hints to the log', () => {
+  it('keeps the events without hints out of the feed, but logs every one of them', () => {
     spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
       [],
       [
@@ -117,16 +117,32 @@ describe('GamePlayComponent', () => {
     ));
 
     expect(component.getLevelFeed().map(item => item.id)).toEqual(["event:1"]);
-    expect(component.getCurrentLevelLogEvents().map(event => event.id)).toEqual([2, 3]);
+    expect(component.getCurrentLevelEvents().map(event => event.id)).toEqual([1, 2, 3]);
+    expect(component.hasAnyEvents()).toBeTrue();
   });
 
-  it('shows no event log when every event of this level brought hints', () => {
+  it('alerts about the newest unclosed timer of the last three minutes', () => {
+    const now = Date.now();
+    const ago = (minutes: number) => new Date(now - minutes * 60_000).toISOString();
     spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
       [],
-      [timerEvent(1, "2024-05-05T10:05:00+00:00", [hintEffect("e1", "подсказка")])],
+      [
+        timerEvent(1, ago(10), [new Effect("e1", [], -10)]),
+        timerEvent(2, ago(2), [hintEffect("e2", "подсказка", 5)]),
+        keyEvent(3, ago(1), "ЛОМ", [new Effect("e3", [], 5)]),
+      ],
     ));
 
-    expect(component.hasAnyEvents()).toBeFalse();
+    const alert = component.getRecentTimerEvent();
+
+    expect(alert?.id).toBe(2);
+    // the alert names the effects, never the hints themselves — those are in the feed
+    expect(component.getEventEffects(alert!).map(tag => tag.text))
+      .toEqual(["бонус 5 мин.", "бонусные подсказки: 1"]);
+
+    component.closeRecentTimerEvent(alert!);
+
+    expect(component.getRecentTimerEvent()).toBeUndefined();
   });
 
   it('keeps an event with a broken time at the end of the feed', () => {

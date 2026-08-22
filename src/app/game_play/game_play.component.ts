@@ -97,6 +97,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private windowFocusHandler: (() => void) | undefined;
   private openedTypedKeyEffects = new Set<string>();
   private openedEventEffects = new Set<number>();
+  private closedRecentTimerEvents = new Set<number>();
   private feedCacheHints: CurrentHints | undefined;
   private feedCache: LevelFeedItem[] = [];
 
@@ -598,20 +599,36 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * The timer that fired in the last three minutes, unless the team closed it.
+   * The alert says a timer went off and what it cost or paid — its hints are
+   * in the feed, so it never repeats them.
+   */
+  getRecentTimerEvent(): GameEvent | undefined {
+    return this.getCurrentLevelEvents()
+      .filter(event => event.is_timer && !this.closedRecentTimerEvents.has(event.id) && this.isEventLessThanThreeMinutesOld(event))
+      .sort((left, right) => Date.parse(right.at) - Date.parse(left.at))[0];
+  }
+
+  closeRecentTimerEvent(event: GameEvent): void {
+    this.closedRecentTimerEvents.add(event.id);
+  }
+
+  private isEventLessThanThreeMinutesOld(event: GameEvent): boolean {
+    const eventAtMs = Date.parse(event.at);
+    if (Number.isNaN(eventAtMs)) {
+      return false;
+    }
+
+    const eventAgeMs = Date.now() - eventAtMs;
+    return eventAgeMs >= 0 && eventAgeMs < 3 * 60_000;
+  }
+
+  /**
    * The events of this level that brought hints: they belong in the feed, next
    * to the scheduled hints, whatever fired them.
    */
   getCurrentLevelHintEvents(): GameEvent[] {
     return this.getCurrentLevelEvents().filter(event => this.hasEventHints(event));
-  }
-
-  /**
-   * The events of this level still worth their own log line — the ones that
-   * only moved the clock or the level. Everything that carried a hint moved
-   * into the feed.
-   */
-  getCurrentLevelLogEvents(): GameEvent[] {
-    return this.getCurrentLevelEvents().filter(event => !this.hasEventHints(event));
   }
 
   /**
@@ -720,7 +737,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   }
 
   hasAnyEvents(): boolean {
-    return this.getCurrentLevelLogEvents().length > 0 || this.getPreviousLevelEvents().length > 0;
+    return this.getCurrentLevelEvents().length > 0 || this.getPreviousLevelEvents().length > 0;
   }
 
   hasAnyTypedKeys(): boolean {
