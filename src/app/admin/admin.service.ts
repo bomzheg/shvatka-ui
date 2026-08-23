@@ -7,6 +7,7 @@ import {FullGame} from '../domain/game.models';
 import {ScenarioPayload, UploadedFile, UploadOptions, uploadOptionsQuery} from '../constructor/constructor.models';
 import {
   AdminEmail,
+  AdminGame,
   AdminPlayerDetails,
   AdminPlayerListItem,
   AdminPlayerRef,
@@ -130,6 +131,27 @@ export class AdminService {
 
   listGames(): Observable<Page<Game>> {
     return this.http.get<Page<Game>>('/games');
+  }
+
+  // ---------------------------------------------------------------------------
+  // Game statuses. The one thing an admin may change about a game that is not
+  // complete — and all an admin may see of it: these two answer with the game's
+  // identity and status, never with a level, a hint or a file.
+  // ---------------------------------------------------------------------------
+
+  /** Games an admin may act on: active (waivers/started/finished) and complete.
+   *  A game still being written belongs to its author and is not listed. */
+  listAdminGames(): Observable<Page<AdminGame>> {
+    return this.http.get<Page<AdminGame>>('/admin/games');
+  }
+
+  /**
+   * Move the game to another status — the way back out of waivers opened too
+   * early. Moving it to `underconstruction` or `ready` is final for the admin:
+   * the game becomes its author's again and disappears from the panel.
+   */
+  changeGameStatus(id: number, status: string): Observable<AdminGame> {
+    return this.http.put<AdminGame>(`/admin/games/${id}/status`, {status});
   }
 
   // ---------------------------------------------------------------------------

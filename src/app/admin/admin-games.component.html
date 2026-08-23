@@ -1,23 +1,89 @@
-<p class="hint">Редактирование сценария уже завершённой игры: замена уровней, загрузка новых файлов, смена автора.</p>
+<p class="hint">
+  Игры, которые уже вышли из черновиков: активные и завершённые. Здесь виден
+  только статус — сценарий, ключи и файлы идущей игры остаются у автора и оргов.
+  Возврат игры в «в процессе создания» отдаёт её автору: она пропадёт из
+  админки, запланированный старт отменится, и поменять статус обратно будет
+  нельзя.
+</p>
 
 @if (isLoading) {
   <p class="status-message">Загрузка...</p>
 } @else if (games.length === 0) {
-  <p class="status-message">Завершённых игр нет.</p>
+  <p class="status-message">Игр, доступных админу, нет.</p>
 } @else {
-  <ul class="games-list">
-    @for (game of games; track game.id) {
-      <li>
-        <a class="game-link" [routerLink]="['/admin/games', game.id]">
-          @if (game.number) {
-            <span class="game-number">№{{ game.number }}</span>
-          }
-          <span class="game-name">{{ game.name }}</span>
-          @if (startYear(game)) {
-            <span class="game-year">{{ startYear(game) }}</span>
-          }
-        </a>
-      </li>
-    }
-  </ul>
+  @if (activeGames.length > 0) {
+    <h2 class="section-title">Активные</h2>
+    <ul class="games-list">
+      @for (game of activeGames; track game.id) {
+        <li class="game-card">
+          <div class="game-head">
+            <span class="game-name">{{ game.name }}</span>
+            <span class="game-status">{{ statusLabel(game.status) }}</span>
+          </div>
+          <div class="game-meta">
+            <span>Автор: {{ game.author.name_mention }}</span>
+            @if (startedAt(game)) {
+              <span>Старт: {{ startedAt(game) }}</span>
+            }
+          </div>
+          <div class="status-form">
+            <label class="visually-hidden" [attr.for]="'status-' + game.id">Новый статус</label>
+            <select
+              [id]="'status-' + game.id"
+              [value]="targets[game.id] ?? game.status"
+              [disabled]="savingId !== null"
+              (change)="onTargetChange(game, $event)">
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ statusLabel(status) }}</option>
+              }
+            </select>
+            <button type="button" class="save-button" [disabled]="!canSave(game)" (click)="save(game)">
+              {{ savingId === game.id ? 'Сохраняем...' : 'Сохранить' }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (completedGames.length > 0) {
+    <h2 class="section-title">Завершённые</h2>
+    <p class="hint">
+      Завершённая игра открыта всем, поэтому её сценарий можно и править —
+      ссылка на редактор рядом с названием.
+    </p>
+    <ul class="games-list">
+      @for (game of completedGames; track game.id) {
+        <li class="game-card">
+          <div class="game-head">
+            @if (game.number) {
+              <span class="game-number">№{{ game.number }}</span>
+            }
+            <a class="game-link" [routerLink]="['/admin/games', game.id]">{{ game.name }}</a>
+            @if (startYear(game)) {
+              <span class="game-year">{{ startYear(game) }}</span>
+            }
+          </div>
+          <div class="game-meta">
+            <span>Автор: {{ game.author.name_mention }}</span>
+          </div>
+          <div class="status-form">
+            <label class="visually-hidden" [attr.for]="'status-' + game.id">Новый статус</label>
+            <select
+              [id]="'status-' + game.id"
+              [value]="targets[game.id] ?? game.status"
+              [disabled]="savingId !== null"
+              (change)="onTargetChange(game, $event)">
+              @for (status of statuses; track status) {
+                <option [value]="status">{{ statusLabel(status) }}</option>
+              }
+            </select>
+            <button type="button" class="save-button" [disabled]="!canSave(game)" (click)="save(game)">
+              {{ savingId === game.id ? 'Сохраняем...' : 'Сохранить' }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
 }
