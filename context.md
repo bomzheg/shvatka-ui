@@ -114,6 +114,15 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 **`finished` is not `complete`** — the distinction is visible to users, so don't
 collapse the two in copy or in conditionals.
 
+The **admin panel** sees a game only once it stops being a draft — active
+(`getting_waivers`, `started`, `finished`) or `complete` — and of it only the
+status: `/admin/games` and `PUT /admin/games/{id}/status` answer with the game's
+identity and status, never a level, a hint or a file, and the scenario of a game
+that is not complete is closed to an admin like it is to everyone but its author
+and orgs. Moving a game to `underconstruction` or `ready` hands it back to its
+author and ends the admin's part in it: the game leaves the panel and its status
+cannot be changed from there again.
+
 A game's **release** stays editable longer than its scenario: through `finished`
 included, and after `complete` only for an admin. When it reaches the
 announcements channel is the engine's business, not the UI's — the constructor

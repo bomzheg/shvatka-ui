@@ -10,6 +10,11 @@
   margin-top: 0;
 }
 
+.section-title {
+  font-size: 1.05rem;
+  margin: 1.25rem 0 0.5rem;
+}
+
 .games-list {
   list-style: none;
   padding-left: 0;
@@ -18,17 +23,17 @@
   gap: 0.5rem;
 }
 
-.game-link {
+.game-card {
   @include cm.surface-card(12px, 0.7rem 1rem);
+  display: grid;
+  gap: 0.4rem;
+}
+
+.game-head {
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
-  color: var(--app-text);
-  text-decoration: none;
-
-  &:hover .game-name {
-    text-decoration: underline;
-  }
+  flex-wrap: wrap;
 }
 
 .game-number {
@@ -36,9 +41,28 @@
   flex-shrink: 0;
 }
 
-.game-name {
+.game-name,
+.game-link {
   font-weight: 600;
   overflow-wrap: anywhere;
+}
+
+.game-link {
+  color: var(--app-text);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.game-status {
+  margin-left: auto;
+  font-size: 0.85rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  flex-shrink: 0;
 }
 
 .game-year {
@@ -46,4 +70,47 @@
   color: var(--tg-theme-hint-color, #6b7280);
   font-size: 0.9rem;
   flex-shrink: 0;
+}
+
+.game-meta {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+}
+
+.status-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+
+  select {
+    @include cm.input-control();
+    padding: 0.4rem 0.5rem;
+  }
+}
+
+.save-button {
+  @include cm.button-base(10px, 0.45rem 0.9rem);
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

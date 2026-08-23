@@ -4,7 +4,7 @@ import {HttpTestingController, provideHttpClientTesting} from '@angular/common/h
 
 import {AdminService} from './admin.service';
 import {AuthStateService} from '../auth/auth-state.service';
-import {FileGarbage} from './admin.models';
+import {AdminGame, FileGarbage} from './admin.models';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -40,6 +40,44 @@ describe('AdminService', () => {
     request.flush(garbage);
 
     expect(received).toEqual(garbage);
+  });
+
+  it('lists the games an admin may act on from the admin endpoint', () => {
+    let received: AdminGame[] | undefined;
+    service.listAdminGames().subscribe(page => received = page.content);
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/admin/games'));
+    expect(request.request.method).toBe('GET');
+
+    const game: AdminGame = {
+      id: 4,
+      author: {id: 1, can_be_author: true, name_mention: 'author', username: 'author'},
+      name: 'бегущая игра',
+      status: 'started',
+      start_at: null,
+      number: null,
+    };
+    request.flush({content: [game]});
+
+    expect(received).toEqual([game]);
+    // the answer carries no scenario: what the panel shows is the status
+    expect(Object.keys(received![0])).not.toContain('levels');
+  });
+
+  it('changes only the status of a game', () => {
+    service.changeGameStatus(4, 'underconstruction').subscribe();
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/admin/games/4/status'));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({status: 'underconstruction'});
+    request.flush({
+      id: 4,
+      author: {id: 1, can_be_author: true, name_mention: 'author', username: 'author'},
+      name: 'бегущая игра',
+      status: 'underconstruction',
+      start_at: null,
+      number: null,
+    });
   });
 
   it('deletes only when explicitly told to', () => {

@@ -116,3 +116,19 @@ export interface FileGarbage {
   file_guids: string[];
   stored_files: string[];
 }
+
+/**
+ * Row of `GET /admin/games` — a game's identity and its status, nothing of
+ * what it is made of. An admin sees only games that stopped being drafts
+ * (collecting waivers, running, finished, complete) and may change the status
+ * of one; its scenario, keys and files are not an admin's to read until the
+ * game is complete and public anyway.
+ */
+export interface AdminGame {
+  id: number;
+  author: AdminPlayerRef;
+  name: string;
+  status: string;
+  start_at: string | null;
+  number: number | null;
+}
