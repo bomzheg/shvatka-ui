@@ -1,0 +1,133 @@
+@use 'component-mixins' as cm;
+
+/**
+ * The small vocabulary the profile page is built from. Angular scopes component
+ * styles, so every section of the page includes the pieces it uses instead of
+ * inheriting a global stylesheet — pulling in only those keeps each component's
+ * emitted CSS honest.
+ */
+
+/** Buttons and link-buttons. */
+@mixin profile-buttons() {
+  .button {
+    @include cm.button-base(10px, 0.55rem 0.9rem);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .button--primary {
+    background: var(--app-accent);
+    color: var(--app-accent-contrast);
+  }
+
+  .button--quiet {
+    background: transparent;
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+  }
+
+  .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+/** Small status pills: роль, состояние привязки. */
+@mixin profile-chips() {
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.12rem 0.55rem;
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--app-text) 6%, transparent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .chip--ok {
+    border-color: color-mix(in srgb, var(--app-accent) 45%, transparent);
+    background: color-mix(in srgb, var(--app-accent) 14%, transparent);
+  }
+
+  .chip--accent {
+    border-color: color-mix(in srgb, #6366f1 45%, transparent);
+    background: color-mix(in srgb, #6366f1 16%, transparent);
+  }
+
+  .chip--warn {
+    border-color: color-mix(in srgb, #f59e0b 55%, transparent);
+    background: color-mix(in srgb, #f59e0b 16%, transparent);
+  }
+}
+
+/** A labelled setting: heading, hint, inputs and their error line. */
+@mixin profile-fields() {
+  .field {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
+  .field + .field {
+    margin-top: 1.4rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--app-border);
+  }
+
+  .field__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .field__hint {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--app-muted-text);
+  }
+
+  .field__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .field__stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .field__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  input {
+    @include cm.input-control();
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* Side by side with its button, the input takes the room that is left. */
+  .field__row input {
+    flex: 1 1 12rem;
+    width: auto;
+  }
+
+  .field-error {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #dc2626;
+  }
+}

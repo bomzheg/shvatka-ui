@@ -28,7 +28,8 @@ import {GameScenarioCompactPartComponent} from "../game_scenario_compact.part/ga
 import {ScenarioGraphPartComponent} from "../scenario_graph.part/scenario_graph.part.component";
 import {GraphLevel, routingGraphFromGame} from "../scenario_graph.part/scenario_graph.model";
 import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
-import {PushToggleComponent} from "../push/push-toggle.component";
+import {PushPromptComponent} from "../push/push-prompt.component";
+import {PushPromptService} from "../push/push-prompt.service";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon, IconTag} from "../ui/icons";
 import {SnackbarService} from "../snackbar/snackbar.service";
@@ -60,7 +61,7 @@ export interface LevelFeedItem {
     GameScenarioPartComponent,
     GameScenarioCompactPartComponent,
     ScenarioGraphPartComponent,
-    PushToggleComponent,
+    PushPromptComponent,
     MatIcon,
     RouterLink,
   ],
@@ -107,6 +108,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private snackbar: SnackbarService,
     private debugLog: DebugLogService,
+    private pushPrompts: PushPromptService,
     ) {
   }
 
@@ -132,6 +134,16 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     this.clearCountdownTicker();
     this.clearAutoRefreshTicker();
     this.stopVisibilityWatcher();
+  }
+
+  /**
+   * What a "don't ask again" for the notifications prompt is remembered
+   * against: the running game. Undefined until it is known — there is nothing
+   * to promise notifications about yet.
+   */
+  pushPromptScope(): string | undefined {
+    const gameId = this.activeGame?.id;
+    return gameId === undefined ? undefined : this.pushPrompts.gameScope(gameId);
   }
 
   getCurrentHints(): CurrentHints | undefined {

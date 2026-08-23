@@ -1,0 +1,113 @@
+<div class="identity">
+  <div class="identity__head">
+    <mat-icon class="identity__icon" aria-hidden="true" [svgIcon]="AppIcon.email"/>
+    <div class="identity__title">
+      <span class="identity__name">Email</span>
+      @if (linkedEmail?.email) {
+        <span class="identity__value">{{ linkedEmail?.email }}</span>
+      } @else {
+        <span class="identity__value identity__value--empty">не привязан</span>
+      }
+    </div>
+    @if (linkedEmail) {
+      <span class="chip" [class.chip--ok]="isEmailVerified" [class.chip--warn]="!isEmailVerified">
+        {{ isEmailVerified ? 'подтверждён' : 'не подтверждён' }}
+      </span>
+    }
+  </div>
+
+  @if (pendingEmail) {
+    <p class="identity__note identity__note--pending">
+      Переезжаем на <strong>{{ pendingEmail }}</strong>.
+      Старый адрес продолжает работать, пока новый не подтверждён.
+    </p>
+  } @else if (linkedEmail && !isEmailVerified) {
+    <p class="identity__note identity__note--pending">
+      Вход по email не заработает, пока вы не введёте код из письма.
+    </p>
+  } @else if (isEmailVerified) {
+    <p class="identity__note">
+      Чтобы входить по email, задайте пароль во вкладке «Аккаунт».
+    </p>
+  } @else {
+    <p class="identity__note">
+      Привяжите email, чтобы входить без Telegram и восстанавливать доступ.
+    </p>
+  }
+
+  @if (emailAwaitingCode; as awaiting) {
+    <app-email-confirm-form [email]="awaiting" (confirmed)="onEmailConfirmed()"/>
+  }
+
+  @if (isEditingEmail) {
+    <form class="identity__form" (ngSubmit)="submitEmail()">
+      <label for="profileEmail">{{ linkedEmail ? 'Новый email' : 'Email' }}</label>
+      <input
+        id="profileEmail"
+        name="profileEmail"
+        type="email"
+        autocomplete="email"
+        [(ngModel)]="email"
+      />
+      @if (emailError) {
+        <p class="field-error">{{ emailError }}</p>
+      }
+
+      <div class="identity__actions">
+        <button class="button button--primary" type="submit" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Отправляем…' : 'Отправить код' }}
+        </button>
+        @if (linkedEmail) {
+          <button class="button button--quiet" type="button" (click)="cancelEditingEmail()">
+            Отмена
+          </button>
+        }
+      </div>
+    </form>
+  } @else {
+    <button class="button button--quiet identity__change" type="button" (click)="startEditingEmail()">
+      {{ linkedEmail ? 'Указать другой email' : 'Привязать email' }}
+    </button>
+  }
+</div>
+
+<div class="identity">
+  <div class="identity__head">
+    <mat-icon class="identity__icon" aria-hidden="true" [svgIcon]="AppIcon.telegram"/>
+    <div class="identity__title">
+      <span class="identity__name">Telegram</span>
+      @if (linkedTg) {
+        <span class="identity__value">{{ tgDisplayName() }}</span>
+      } @else {
+        <span class="identity__value identity__value--empty">не привязан</span>
+      }
+    </div>
+    @if (linkedTg) {
+      <span class="chip chip--ok">привязан</span>
+    }
+  </div>
+
+  @if (linkedTg) {
+    <p class="identity__note">ID {{ linkedTg.tg_id }} — по нему приходят уведомления от бота.</p>
+  } @else {
+    <p class="identity__note">
+      Привяжите Telegram, чтобы входить через него и получать уведомления от бота.
+    </p>
+    <button class="button button--primary identity__change" type="button" (click)="openTgLinkForm()">
+      Привязать Telegram
+    </button>
+  }
+</div>
+
+@if (forumName) {
+  <div class="identity">
+    <div class="identity__head">
+      <mat-icon class="identity__icon" aria-hidden="true" [svgIcon]="AppIcon.link"/>
+      <div class="identity__title">
+        <span class="identity__name">Форум</span>
+        <span class="identity__value">{{ forumName }}</span>
+      </div>
+      <span class="chip chip--ok">привязан</span>
+    </div>
+  </div>
+}

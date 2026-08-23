@@ -30,6 +30,11 @@ export class UserData {
   forum: ForumIdentity | null | undefined;
   email: EmailIdentity | null | undefined;
   is_admin: boolean | undefined;
+  /**
+   * An address waiting for its confirmation code while another one is still
+   * linked — i.e. a move to another email that has not landed yet.
+   */
+  pending_email: string | null | undefined;
 }
 
 @Injectable({

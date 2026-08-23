@@ -1,0 +1,27 @@
+<div class="field">
+  <span class="field__label">Push-уведомления</span>
+  <p class="field__hint">
+    @if (isEnabled) {
+      Этот браузер получает уведомления о подсказках, сменах уровня и приглашениях.
+    } @else {
+      Включите, чтобы во время игры узнавать о новой подсказке, не открывая сайт.
+    }
+  </p>
+  <app-push-toggle/>
+</div>
+
+@if (hasDismissedPrompts()) {
+  <div class="field">
+    <span class="field__label">Предложение включить уведомления</span>
+    <p class="field__hint">Вы скрыли его в одной из игр — можно вернуть.</p>
+    <button class="button button--quiet" type="button" (click)="restorePrompts()">
+      Показывать снова
+    </button>
+  </div>
+}
+
+<div class="field">
+  <span class="field__label">История уведомлений</span>
+  <p class="field__hint">Приглашения, аппрувы и всё, что приходило в аккаунт.</p>
+  <a class="button button--quiet" routerLink="/notifications">Открыть уведомления</a>
+</div>

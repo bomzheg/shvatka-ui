@@ -1,0 +1,94 @@
+@use '../../styles/component-mixins' as cm;
+
+.push-prompt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--app-border);
+  border-radius: 14px;
+  background: var(--app-surface);
+}
+
+.push-prompt__icon {
+  flex-shrink: 0;
+  color: var(--app-accent);
+}
+
+.push-prompt__body {
+  /* zero basis: the text shares the first row with the bell instead of
+     wrapping under it once the row is allowed to wrap */
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.push-prompt__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.push-prompt__text {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--app-muted-text, var(--tg-theme-hint-color, #6b7280));
+}
+
+.push-prompt__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.push-prompt__dismiss {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--app-muted-text, var(--tg-theme-hint-color, #6b7280));
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.push-prompt__close {
+  display: none;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--app-muted-text, var(--tg-theme-hint-color, #6b7280));
+  cursor: pointer;
+}
+
+/* Narrow screens: the button drops under the text, and the wordy
+   "не показывать" becomes an × pinned to the corner. */
+@media (max-width: 600px) {
+  .push-prompt {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .push-prompt__body {
+    /* room for the × so the text never runs under it */
+    padding-right: 1.75rem;
+  }
+
+  .push-prompt__actions {
+    flex-basis: 100%;
+    padding-left: 2.25rem;
+  }
+
+  .push-prompt__dismiss {
+    display: none;
+  }
+
+  .push-prompt__close {
+    display: block;
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+  }
+}

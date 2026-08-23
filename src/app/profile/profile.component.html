@@ -1,64 +1,81 @@
-<section class="profile-page">
-  <h1>Профиль</h1>
-
-  @if (isAuthenticated) {
-    <p class="username">Пользователь: <strong>{{ username }}</strong></p>
-
-    <div class="profile-section">
-      <h2 class="section-title">Имя пользователя</h2>
-      <form class="section-form" (ngSubmit)="changeUsername()">
-        <label for="newUsername">Новое имя пользователя</label>
-        <input
-          id="newUsername"
-          name="newUsername"
-          type="text"
-          [(ngModel)]="newUsername"
-          autocomplete="username"
-        />
-
-        <button class="primary" type="submit" [disabled]="isUsernameSubmitting">
-          {{ isUsernameSubmitting ? 'Сохраняем...' : 'Изменить имя' }}
-        </button>
-      </form>
-    </div>
-
-    <div class="profile-section">
-      <h2 class="section-title">Уведомления</h2>
-      <app-push-toggle></app-push-toggle>
-    </div>
-
-    <div class="profile-section">
-      <h2 class="section-title">Смена пароля</h2>
-      <form class="section-form" (ngSubmit)="changePassword()">
-        <label for="newPassword">Новый пароль</label>
-        <input
-          id="newPassword"
-          name="newPassword"
-          type="password"
-          [(ngModel)]="newPassword"
-          autocomplete="new-password"
-        />
-
-        <label for="confirmPassword">Повторите пароль</label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          [(ngModel)]="confirmPassword"
-          autocomplete="new-password"
-        />
-
-        <button class="primary" type="submit" [disabled]="isSubmitting">
-          {{ isSubmitting ? 'Сохраняем...' : 'Изменить пароль' }}
-        </button>
-      </form>
-    </div>
-
-    <div class="profile-section">
-      <h2 class="section-title">Связанные аккаунты</h2>
-      <app-linked-accounts></app-linked-accounts>
+<section class="profile">
+  @if (!isAuthenticated) {
+    <div class="profile__guest">
+      <h1 class="profile__guest-title">Профиль</h1>
+      <p class="profile__guest-text">Авторизуйтесь, чтобы управлять аккаунтом.</p>
+      <button class="button button--primary" type="button" (click)="openLoginForm()">Войти</button>
     </div>
   } @else {
-    <p>Авторизуйтесь, чтобы управлять профилем.</p>
+    <header class="hero">
+      <div class="hero__avatar" aria-hidden="true">{{ initial }}</div>
+
+      <div class="hero__identity">
+        <h1 class="hero__name">{{ displayName }}</h1>
+        @if (username) {
+          <p class="hero__handle">&#64;{{ username }}</p>
+        }
+        <div class="hero__chips">
+          @if (isAuthor) {
+            <span class="chip chip--ok">автор</span>
+          }
+          @if (isAdmin) {
+            <span class="chip chip--accent">админ</span>
+          }
+          @if (currentTeamName) {
+            <span class="chip">{{ currentTeamName }}</span>
+          }
+        </div>
+      </div>
+
+      @if (playerId !== undefined) {
+        <a class="hero__public" [routerLink]="['/players', playerId]">Публичный профиль</a>
+      }
+    </header>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat__value">{{ playedGamesCount ?? '—' }}</span>
+        <span class="stat__label">игр сыграно</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value">{{ typedKeysCount ?? '—' }}</span>
+        <span class="stat__label">ключей введено</span>
+      </div>
+      <div class="stat">
+        <span class="stat__value">{{ correctKeysPercent !== null ? correctKeysPercent + '%' : '—' }}</span>
+        <span class="stat__label">верных</span>
+      </div>
+    </div>
+
+    <nav class="tabs" role="tablist">
+      @for (tab of tabs; track tab.id) {
+        <button
+          type="button"
+          role="tab"
+          class="tabs__tab"
+          [class.tabs__tab--active]="activeTab === tab.id"
+          [attr.aria-selected]="activeTab === tab.id"
+          (click)="selectTab(tab.id)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+
+    <div class="panel">
+      <h2 class="panel__title">{{ activeTabTitle() }}</h2>
+
+      @switch (activeTab) {
+        @case ('account') {
+          <app-profile-account/>
+        }
+        @case ('identities') {
+          <app-profile-identities/>
+        }
+        @case ('notifications') {
+          <app-profile-notifications/>
+        }
+      }
+    </div>
   }
 </section>
