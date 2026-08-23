@@ -6,6 +6,7 @@ import {UserService} from "../auth/user.service";
 import {Router, RouterLink, RouterLinkActive} from "@angular/router";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon} from "../ui/icons";
+import {AvatarComponent} from "../ui/avatar.component";
 import {ActiveGame, GamesService} from "../games/games.service";
 import {ThemeMode, ThemeService} from "../theme/theme.service";
 import {PushService} from "../push/push.service";
@@ -32,6 +33,7 @@ interface Countdown {
     RouterLink,
     RouterLinkActive,
     MatIcon,
+    AvatarComponent,
   ],
   templateUrl: 'header.component.html',
   styleUrl: './header.component.scss',
@@ -140,6 +142,12 @@ export class HeaderComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getMe() {
     return this.userService.getMe();
+  }
+
+  /** Only a confirmed address stands for this player; see AvatarComponent. */
+  gravatarEmail(): string | null {
+    const email = this.userService.getMe()?.email;
+    return email?.is_verified ? email.email ?? null : null;
   }
 
   isAuthenticated() {

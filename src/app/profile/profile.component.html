@@ -7,7 +7,9 @@
     </div>
   } @else {
     <header class="hero">
-      <div class="hero__avatar" aria-hidden="true">{{ initial }}</div>
+      <app-avatar class="hero__avatar" [email]="gravatarEmail" [size]="64" [alt]="displayName">
+        <span aria-hidden="true">{{ initial }}</span>
+      </app-avatar>
 
       <div class="hero__identity">
         <h1 class="hero__name">{{ displayName }}</h1>

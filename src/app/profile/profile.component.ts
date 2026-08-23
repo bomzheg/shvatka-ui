@@ -5,6 +5,7 @@ import {UserService} from '../auth/user.service';
 import {AuthService} from '../auth/auth.service';
 import {TeamService} from '../team/team.service';
 import {PlayerProfile, PlayerStat} from '../team/team.models';
+import {AvatarComponent} from '../ui/avatar.component';
 import {ProfileAccountComponent} from './profile-account.component';
 import {ProfileIdentitiesComponent} from './profile-identities.component';
 import {ProfileNotificationsComponent} from './profile-notifications.component';
@@ -30,6 +31,7 @@ const TABS: TabDescriptor[] = [
   standalone: true,
   imports: [
     RouterLink,
+    AvatarComponent,
     ProfileAccountComponent,
     ProfileIdentitiesComponent,
     ProfileNotificationsComponent,
@@ -83,6 +85,15 @@ export class ProfileComponent implements OnInit {
 
   get isAdmin(): boolean {
     return this.userService.isAdmin();
+  }
+
+  /**
+   * The address the avatar is looked up by: only a confirmed one, since an
+   * address still waiting for its code is not yet known to be this player's.
+   */
+  get gravatarEmail(): string | null {
+    const email = this.userService.getMe()?.email;
+    return email?.is_verified ? email.email ?? null : null;
   }
 
   /** The letter drawn in the avatar circle. */

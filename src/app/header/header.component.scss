@@ -265,6 +265,14 @@
   opacity: 0.95;
 }
 
+/* Sized to the icon it replaces, so the header keeps its height either way. */
+.avatar-link__avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
 .ghost-button,
 .solid-button {
   border: 0;
