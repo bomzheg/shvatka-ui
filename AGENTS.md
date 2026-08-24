@@ -91,7 +91,8 @@ components are dumb/presentational pieces composed by larger feature components.
 - **A hint that explains a rule links to the documentation.** Info blocks next to
   a form or a list are `<app-info-notice doc="CREATE_TEAM">`
   (`ui/info-notice.component.ts`); with a `doc` it renders «Подробнее: <page
-  title>» under the text. The value is a `DocPage` **member name** from the
+  title>» under the text, and a hint that spans two pages takes them both
+  (`[doc]="['CREATE_TEAM', 'MOVE_CHAT']"`). The value is a `DocPage` **member name** from the
   engine (`shvatka/core/utils/doc_pages.py`), never a path — `DocsService`
   fetches the urls and titles once from `GET /docs/pages` and caches them. So
   the ui holds no docs configuration and survives a page being renamed; a name

@@ -82,7 +82,7 @@
             </button>
           </div>
         </form>
-        <app-info-notice class="create-team-notice" doc="CREATE_TEAM">
+        <app-info-notice class="create-team-notice" [doc]="['CREATE_TEAM', 'MOVE_CHAT']">
           Вы станете капитаном новой команды. Команда сможет играть через сайт; позже капитан сможет привязать Telegram-чат в боте.
         </app-info-notice>
       } @else {

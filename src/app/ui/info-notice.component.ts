@@ -1,6 +1,6 @@
 import {AsyncPipe} from "@angular/common";
 import {Component, Input, OnChanges} from "@angular/core";
-import {Observable, of} from "rxjs";
+import {Observable, combineLatest, map, of} from "rxjs";
 
 import {DocPage, DocPageLink} from "../docs/doc-pages";
 import {DocsService} from "../docs/docs.service";
@@ -21,10 +21,14 @@ import {DocsService} from "../docs/docs.service";
     <span class="notice-icon">ℹ️</span>
     <div class="notice-body">
       <p class="notice-text"><ng-content/></p>
-      @if (link | async; as page) {
-        <a class="notice-doc" [href]="page.url" target="_blank" rel="noopener">
-          Подробнее: {{ page.title }}
-        </a>
+      @if (links | async; as pages) {
+        @if (pages.length) {
+          <p class="notice-docs">Подробнее:
+            @for (page of pages; track page.url; let last = $last) {
+              <a class="notice-doc" [href]="page.url" target="_blank" rel="noopener">{{ page.title }}</a>@if (!last) {<span aria-hidden="true"> · </span>}
+            }
+          </p>
+        }
       }
     </div>
     <ng-content select="[notice-action]"/>
@@ -55,21 +59,30 @@ import {DocsService} from "../docs/docs.service";
       color: inherit;
     }
 
-    .notice-doc {
-      display: inline-block;
-      margin-top: 0.35rem;
+    .notice-docs {
+      margin: 0.35rem 0 0;
       font-size: 0.85rem;
+      color: var(--app-text);
+    }
+
+    .notice-doc {
       color: var(--app-accent);
     }
   `],
 })
 export class InfoNoticeComponent implements OnChanges {
-  @Input() doc?: DocPage;
-  link: Observable<DocPageLink | null> = of(null);
+  /** The page — or pages, when a hint spans two of them — that explain it. */
+  @Input() doc?: DocPage | DocPage[];
+  links: Observable<DocPageLink[]> = of([]);
 
   constructor(private docs: DocsService) {}
 
   ngOnChanges(): void {
-    this.link = this.doc ? this.docs.page(this.doc) : of(null);
+    const pages = this.doc === undefined ? [] : ([] as DocPage[]).concat(this.doc);
+    this.links = pages.length
+      ? combineLatest(pages.map(page => this.docs.page(page))).pipe(
+          map(links => links.filter((link): link is DocPageLink => link !== null)),
+        )
+      : of([]);
   }
 }
