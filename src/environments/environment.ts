@@ -6,6 +6,5 @@ export const environment = {
   apiUrl: env["apiUrl"],
   cdnUrl: env["cdnUrl"],
   botUsername: env["botUsername"],
-  docsUrl: env["docsUrl"],
   baseHref: env["baseHref"] || "/",
 };

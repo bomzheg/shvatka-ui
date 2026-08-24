@@ -1,6 +1,8 @@
-import {Component, Input} from "@angular/core";
+import {AsyncPipe} from "@angular/common";
+import {Component, Input, OnChanges} from "@angular/core";
+import {Observable, of} from "rxjs";
 
-import {DocPage} from "../docs/doc-pages";
+import {DocPage, DocPageLink} from "../docs/doc-pages";
 import {DocsService} from "../docs/docs.service";
 
 /**
@@ -8,17 +10,21 @@ import {DocsService} from "../docs/docs.service";
  *
  * Give it a `doc` and it also offers the documentation page that explains the
  * rule in full — the same idea as the «Справка» action on an error, for the
- * hints shown before anything went wrong.
+ * hints shown before anything went wrong. The url and the page's title come
+ * from the engine (`DocsService`), so this only ever names the page.
  */
 @Component({
   selector: "app-info-notice",
   standalone: true,
+  imports: [AsyncPipe],
   template: `
     <span class="notice-icon">ℹ️</span>
     <div class="notice-body">
       <p class="notice-text"><ng-content/></p>
-      @if (doc) {
-        <a class="notice-doc" [href]="url" target="_blank" rel="noopener">Подробнее в документации</a>
+      @if (link | async; as page) {
+        <a class="notice-doc" [href]="page.url" target="_blank" rel="noopener">
+          Подробнее: {{ page.title }}
+        </a>
       }
     </div>
     <ng-content select="[notice-action]"/>
@@ -57,12 +63,13 @@ import {DocsService} from "../docs/docs.service";
     }
   `],
 })
-export class InfoNoticeComponent {
+export class InfoNoticeComponent implements OnChanges {
   @Input() doc?: DocPage;
+  link: Observable<DocPageLink | null> = of(null);
 
   constructor(private docs: DocsService) {}
 
-  get url(): string {
-    return this.doc ? this.docs.pageUrl(this.doc) : "";
+  ngOnChanges(): void {
+    this.link = this.doc ? this.docs.page(this.doc) : of(null);
   }
 }

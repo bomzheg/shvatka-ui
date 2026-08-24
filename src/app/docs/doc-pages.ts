@@ -1,26 +1,38 @@
 /**
- * The documentation pages the ui links to.
+ * A page of the user documentation, named the way the engine names it.
  *
- * The value is the page path inside the ROOT module of the docs, the same
- * string the engine's `DocPage` uses (`shvatka/core/utils/doc_pages.py`) — the
- * two lists describe one site, so a page renamed there is renamed here.
+ * The value is a `DocPage` member name from
+ * `shvatka/core/utils/doc_pages.py` — the name, never the path: the engine
+ * turns it into a url (`GET /docs/pages`), so a page renamed or moved in the
+ * docs changes nothing here. A name the engine does not know renders no link.
  */
-export const DocPage = {
-  auth: "player/auth",
-  joinTeam: "player/join_team",
-  leaveTeam: "player/leave_team",
-  play: "player/play",
-  promotion: "player/promotion",
-  createTeam: "setup_team/create_team",
-  addPlayers: "setup_team/add_players",
-  manageTeam: "setup_team/manage_team",
-  teamPermissions: "setup_team/permissions",
-  changeCaptain: "setup_team/change_captain",
-  waivers: "setup_team/waivers",
-  moveChat: "setup_team/move_chat",
-  gameCreate: "author/game-create",
-  levelCreate: "author/level-create",
-  gameOrgs: "author/game-orgs",
-} as const;
+export type DocPage =
+  | "AUTH"
+  | "JOIN_TEAM"
+  | "LEAVE_TEAM"
+  | "PLAY"
+  | "PLAY_KEYS"
+  | "PROMOTION"
+  | "CREATE_CHAT"
+  | "GROUP_TO_SUPERGROUP"
+  | "CHECK_CHAT"
+  | "CREATE_TEAM"
+  | "ADD_PLAYERS"
+  | "MANAGE_TEAM"
+  | "TEAM_PERMISSIONS"
+  | "CHANGE_CAPTAIN"
+  | "WAIVERS"
+  | "MOVE_CHAT"
+  | "LEVEL_CONCEPT"
+  | "GAME_CREATE"
+  | "LEVEL_CREATE"
+  | "GAME_LEVELS"
+  | "GAME_SCHEDULE"
+  | "GAME_ORGS"
+  | "SPY";
 
-export type DocPage = typeof DocPage[keyof typeof DocPage];
+/** A page as the engine hands it over: where it is and what it is called. */
+export interface DocPageLink {
+  url: string;
+  title: string;
+}

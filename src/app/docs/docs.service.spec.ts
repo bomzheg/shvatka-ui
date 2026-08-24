@@ -1,33 +1,60 @@
+import {HttpClientTestingModule, HttpTestingController} from '@angular/common/http/testing';
 import {TestBed} from '@angular/core/testing';
 
-import {DEFAULT_DOCS_URL, ShvatkaConfig} from '../app.config';
-import {DocPage} from './doc-pages';
+import {ShvatkaConfig} from '../app.config';
+import {DocPageLink} from './doc-pages';
 import {DocsService} from './docs.service';
 
-function serviceWith(docsUrl: string): DocsService {
-  TestBed.configureTestingModule({
-    providers: [DocsService, {provide: ShvatkaConfig, useValue: {docsUrl}}],
-  });
-  return TestBed.inject(DocsService);
-}
+const CREATE_TEAM: DocPageLink = {
+  url: 'https://bomzheg.github.io/Shvatka/shvatka/setup_team/create_team.html',
+  title: 'Создание команды',
+};
 
 describe('DocsService', () => {
-  afterEach(() => TestBed.resetTestingModule());
+  let http: HttpTestingController;
+  let service: DocsService;
 
-  it('builds a page url under the configured docs root', () => {
-    const docs = serviceWith('https://docs.example.org/shvatka/3.7.0');
-    expect(docs.pageUrl(DocPage.createTeam))
-      .toBe('https://docs.example.org/shvatka/3.7.0/setup_team/create_team.html');
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [DocsService, {provide: ShvatkaConfig, useValue: {apiUrl: '/api'}}],
+    });
+    http = TestBed.inject(HttpTestingController);
+    service = TestBed.inject(DocsService);
   });
 
-  it('does not double the slash of a root that ends with one', () => {
-    const docs = serviceWith('https://docs.example.org/shvatka/master/');
-    expect(docs.pageUrl(DocPage.promotion))
-      .toBe('https://docs.example.org/shvatka/master/player/promotion.html');
+  afterEach(() => http.verify());
+
+  function answer(pages: Record<string, DocPageLink>): void {
+    http.expectOne('/api/docs/pages').flush({pages});
+  }
+
+  it('asks the engine where the page is', () => {
+    const seen: (DocPageLink | null)[] = [];
+    service.page('CREATE_TEAM').subscribe(link => seen.push(link));
+    answer({CREATE_TEAM});
+    expect(seen).toEqual([CREATE_TEAM]);
   });
 
-  it('falls back to the docs of master when nothing is configured', () => {
-    const config = TestBed.configureTestingModule({}).inject(ShvatkaConfig);
-    expect(config.docsUrl).toBe(DEFAULT_DOCS_URL);
+  it('asks once, however many hints are on the page', () => {
+    service.page('CREATE_TEAM').subscribe();
+    service.page('PROMOTION').subscribe();
+    answer({CREATE_TEAM});
+    service.page('MOVE_CHAT').subscribe();
+    http.expectNone('/api/docs/pages');
+  });
+
+  it('has no link for a page the engine does not know', () => {
+    const seen: (DocPageLink | null)[] = [];
+    service.page('MOVE_CHAT').subscribe(link => seen.push(link));
+    answer({CREATE_TEAM});
+    expect(seen).toEqual([null]);
+  });
+
+  it('stays quiet when the request fails', () => {
+    const seen: (DocPageLink | null)[] = [];
+    service.page('CREATE_TEAM').subscribe(link => seen.push(link));
+    http.expectOne('/api/docs/pages').error(new ProgressEvent('network error'));
+    expect(seen).toEqual([null]);
   });
 });

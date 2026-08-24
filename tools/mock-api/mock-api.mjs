@@ -99,6 +99,22 @@ const levelTime = (id, team_, level_number, name_id, start_at, is_finished = fal
 const routes = {
   'GET /users/me': me,
   'GET /version': {version: '1.0.0'},
+  'GET /docs/pages': {
+    pages: {
+      CREATE_TEAM: {
+        url: 'https://bomzheg.github.io/Shvatka/shvatka/setup_team/create_team.html',
+        title: 'Создание команды',
+      },
+      PROMOTION: {
+        url: 'https://bomzheg.github.io/Shvatka/shvatka/player/promotion.html',
+        title: 'Аппрув',
+      },
+      MOVE_CHAT: {
+        url: 'https://bomzheg.github.io/Shvatka/shvatka/setup_team/move_chat.html',
+        title: 'Перенести команду в другой чат',
+      },
+    },
+  },
   'GET /push/config': {vapid_public_key: null, enabled: false},
 
 

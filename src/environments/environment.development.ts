@@ -3,6 +3,5 @@ export const environment = {
   apiUrl: "http://localhost:4200/api",
   cdnUrl: "http://localhost:4200/cdn",
   botUsername: "shvatkatestbot",
-  docsUrl: "",
   baseHref: "/",
 };

@@ -82,11 +82,11 @@
             </button>
           </div>
         </form>
-        <app-info-notice class="create-team-notice" [doc]="DocPage.createTeam">
+        <app-info-notice class="create-team-notice" doc="CREATE_TEAM">
           Вы станете капитаном новой команды. Команда сможет играть через сайт; позже капитан сможет привязать Telegram-чат в боте.
         </app-info-notice>
       } @else {
-        <app-info-notice class="create-team-notice" [doc]="DocPage.promotion">
+        <app-info-notice class="create-team-notice" doc="PROMOTION">
           Создавать команды могут только игроки с правами автора. Если вы хотите создать команду, обратитесь к администраторам.
         </app-info-notice>
       }
@@ -94,7 +94,7 @@
   } @else {
 
     @if (showWebOnlyTeamHint) {
-      <app-info-notice class="create-team-notice web-only-hint" [doc]="DocPage.moveChat">
+      <app-info-notice class="create-team-notice web-only-hint" doc="MOVE_CHAT">
         Команда создана! Пока она играет только через сайт. Чтобы привязать Telegram-чат,
         откройте личный чат с ботом <a [href]="botLink" target="_blank" rel="noopener">&#64;{{ botUsername }}</a>,
         выполните /manage_team и выберите «🔀Перенести в другой чат» (целевой чат — супергруппа с добавленным ботом).

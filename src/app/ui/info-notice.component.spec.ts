@@ -1,11 +1,15 @@
 import {Component} from '@angular/core';
 import {ComponentFixture, TestBed} from '@angular/core/testing';
+import {of} from 'rxjs';
 
-import {DocPage} from '../docs/doc-pages';
+import {DocPage, DocPageLink} from '../docs/doc-pages';
 import {DocsService} from '../docs/docs.service';
 import {InfoNoticeComponent} from './info-notice.component';
 
-const DOCS_ROOT = 'https://docs.example.org/shvatka/master';
+const CREATE_TEAM: DocPageLink = {
+  url: 'https://bomzheg.github.io/Shvatka/shvatka/setup_team/create_team.html',
+  title: 'Создание команды',
+};
 
 @Component({
   standalone: true,
@@ -19,12 +23,22 @@ class HostComponent {
 
 describe('InfoNoticeComponent', () => {
   let fixture: ComponentFixture<HostComponent>;
+  let asked: DocPage[];
 
   beforeEach(() => {
+    asked = [];
     TestBed.configureTestingModule({
       imports: [HostComponent],
       providers: [
-        {provide: DocsService, useValue: {pageUrl: (page: DocPage) => `${DOCS_ROOT}/${page}.html`}},
+        {
+          provide: DocsService,
+          useValue: {
+            page: (page: DocPage) => {
+              asked.push(page);
+              return of(page === 'CREATE_TEAM' ? CREATE_TEAM : null);
+            },
+          },
+        },
       ],
     });
     fixture = TestBed.createComponent(HostComponent);
@@ -34,17 +48,25 @@ describe('InfoNoticeComponent', () => {
     return fixture.nativeElement.querySelector('.notice-doc');
   }
 
-  it('offers the documentation page it was given', () => {
-    fixture.componentInstance.doc = DocPage.createTeam;
+  it('offers the page the engine gave it, by its title', () => {
+    fixture.componentInstance.doc = 'CREATE_TEAM';
     fixture.detectChanges();
-    expect(link()?.getAttribute('href'))
-      .toBe(`${DOCS_ROOT}/setup_team/create_team.html`);
+    expect(asked).toEqual(['CREATE_TEAM']);
+    expect(link()?.getAttribute('href')).toBe(CREATE_TEAM.url);
+    expect(link()?.textContent).toContain('Создание команды');
     expect(link()?.getAttribute('rel')).toBe('noopener');
   });
 
-  it('shows the hint without a link when there is no page for it', () => {
+  it('shows the hint alone when the engine has no such page', () => {
+    fixture.componentInstance.doc = 'MOVE_CHAT';
     fixture.detectChanges();
     expect(link()).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Вы станете капитаном новой команды.');
+  });
+
+  it('asks for nothing when the hint names no page', () => {
+    fixture.detectChanges();
+    expect(asked).toEqual([]);
+    expect(link()).toBeNull();
   });
 });
