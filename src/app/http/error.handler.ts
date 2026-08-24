@@ -3,6 +3,7 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {AuthService} from "../auth/auth.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {DebugLogService} from "../debug/debug-log.service";
+import {readApiError} from "./api-error";
 
 @Injectable({
   providedIn: 'root'
@@ -41,15 +42,15 @@ export class GlobalErrorHandler implements ErrorHandler {
         this.authService.showLoginForm();
       } else {
         console.error(error);
-        const backendError = error.error;
-        if (backendError && typeof backendError === "object") {
-          const type = String(backendError.type ?? "UnknownError");
+        const backendError = readApiError(error);
+        if (backendError) {
+          const type = backendError.type || "UnknownError";
           const typeText = this.knownErrorTranslations[type] ?? type;
-          const text = String(backendError.text ?? "");
-          const description = String(backendError.description ?? "");
-          const parts = [typeText, text, description].filter(v => v.length > 0).join(": ");
+          const parts = [typeText, backendError.text, backendError.description]
+            .filter(v => v.length > 0)
+            .join(": ");
           const message = `[${error.status}] ${parts || "Ошибка запроса"}`;
-          this.snackbar.error(message, 'Закрыть');
+          this.snackbar.errorWithDoc(message, backendError.docUrl);
           return;
         }
 

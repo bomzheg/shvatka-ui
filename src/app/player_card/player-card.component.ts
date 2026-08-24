@@ -8,6 +8,7 @@ import {PlayerProfile, PlayerStat, PlayerTg} from '../team/team.models';
 import {SnackbarService} from '../snackbar/snackbar.service';
 import {UserService} from '../auth/user.service';
 import {NotificationsService} from '../notifications/notifications.service';
+import {readApiError} from '../http/api-error';
 
 /** Shown before an author confirms granting author rights ("аппрув"). */
 const PROMOTION_WARNING =
@@ -120,10 +121,11 @@ export class PlayerCardComponent implements OnInit, OnDestroy {
             this.snackbar.info("У игрока уже есть аппрув");
             return;
           }
-          const description = error instanceof HttpErrorResponse ? error.error?.description : undefined;
-          this.snackbar.error(typeof description === "string" && description
-            ? description
-            : "Не удалось отправить приглашение");
+          const backendError = readApiError(error);
+          this.snackbar.errorWithDoc(
+            backendError?.description || "Не удалось отправить приглашение",
+            backendError?.docUrl,
+          );
         },
       });
   }

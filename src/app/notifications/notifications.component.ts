@@ -14,6 +14,7 @@ import {AdminMergeTimelineComponent, TimelineState} from "../admin/admin-merge-t
 import {TeamService} from "../team/team.service";
 import {TeamPlayerHistory} from "../team/team.models";
 import {NotificationsService} from "./notifications.service";
+import {readApiError} from "../http/api-error";
 import {notificationIcon, notificationText, requestResultText, requestText, typeIcon} from "./notification-render";
 import {
   ACTIONABLE_NOTIFICATION_TYPES,
@@ -515,9 +516,10 @@ export class NotificationsComponent implements OnInit {
       this.loadRequests();
       return;
     }
-    const description = error instanceof HttpErrorResponse ? error.error?.description : undefined;
-    this.snackbar.error(typeof description === "string" && description
-      ? description
-      : "Не удалось выполнить действие");
+    const backendError = readApiError(error);
+    this.snackbar.errorWithDoc(
+      backendError?.description || "Не удалось выполнить действие",
+      backendError?.docUrl,
+    );
   }
 }
