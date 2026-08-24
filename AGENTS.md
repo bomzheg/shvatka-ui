@@ -85,8 +85,15 @@ components are dumb/presentational pieces composed by larger feature components.
 - **Errors flow to `GlobalErrorHandler`** (registered as Angular `ErrorHandler`),
   which renders user-facing messages via `SnackbarService` in **Russian**. A 401
   opens the login form via `AuthService.showLoginForm()`. Backend errors are
-  expected as `{ type, text, description }`; map new known `type` codes in
-  `knownErrorTranslations`.
+  expected as `{ type, text, description, docUrl }`; read them with
+  `readApiError` (`http/api-error.ts`) rather than poking at `err.error`, and map
+  new known `type` codes in `knownErrorTranslations`.
+- **An error that carries a `docUrl` shows it.** The backend puts a link to the
+  documentation page explaining the rule into the error body; show such errors
+  with `snackbar.errorWithDoc(message, docUrl)`, which offers the page as the
+  snackbar's «Справка» action (a snackbar is text-only, so the action button is
+  the only place a link can go). Only http(s) urls are ever opened — see
+  `isSafeDocUrl`.
 - **Runtime configuration** comes from `window.env` (`environment.ts`), populated
   at container start by nginx (`envsubst` over `assets/env.template.js`). Do **not**
   hardcode API/CDN/bot values; read them through `ShvatkaConfig`. Local dev values

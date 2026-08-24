@@ -8,6 +8,7 @@ import {UserService} from '../auth/user.service';
 import {NotificationsService} from '../notifications/notifications.service';
 import {pluralizeGames} from '../ui/plural-ru';
 import {memberEmoji} from '../ui/role-emoji';
+import {readApiError} from '../http/api-error';
 
 @Component({
   selector: 'app-team-card',
@@ -122,15 +123,18 @@ export class TeamCardComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.isJoining = false;
-          const backendError = (err as {error?: {type?: string; description?: string}} | null)?.error;
+          const backendError = readApiError(err);
           if (backendError?.type === 'PlayerAlreadyInTeam') {
-            this.snackbar.error('Сначала выйдите из текущей команды — это можно сделать в разделе «Команда»');
+            this.snackbar.errorWithDoc(
+              'Сначала выйдите из текущей команды — это можно сделать в разделе «Команда»',
+              backendError.docUrl,
+            );
             return;
           }
-          const description = typeof backendError?.description === 'string' && backendError.description
-            ? backendError.description
-            : null;
-          this.snackbar.error(description ?? 'Не удалось вступить в команду');
+          this.snackbar.errorWithDoc(
+            backendError?.description || 'Не удалось вступить в команду',
+            backendError?.docUrl,
+          );
         },
       });
   }
@@ -148,15 +152,15 @@ export class TeamCardComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.isRequestingJoin = false;
-          const backendError = (err as {error?: {type?: string; description?: string}} | null)?.error;
+          const backendError = readApiError(err);
           if (backendError?.type === 'PlayerAlreadyInTeam') {
-            this.snackbar.error('Вы уже состоите в команде');
+            this.snackbar.errorWithDoc('Вы уже состоите в команде', backendError.docUrl);
             return;
           }
-          const description = typeof backendError?.description === 'string' && backendError.description
-            ? backendError.description
-            : null;
-          this.snackbar.error(description ?? 'Не удалось отправить заявку');
+          this.snackbar.errorWithDoc(
+            backendError?.description || 'Не удалось отправить заявку',
+            backendError?.docUrl,
+          );
         },
       });
   }

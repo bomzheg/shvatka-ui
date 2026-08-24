@@ -35,6 +35,7 @@ import {AppIcon, IconTag} from "../ui/icons";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {DebugLogService} from "../debug/debug-log.service";
 import {TeamMember} from "../team/team.models";
+import {readApiError} from "../http/api-error";
 
 /** What put a line into the level feed. */
 export type LevelFeedSource = 'hint' | 'timer' | 'key' | 'effect';
@@ -380,8 +381,11 @@ export class GamePlayComponent implements OnInit, OnDestroy {
         },
         error: error => {
           this.debugLog.error("publish team waivers", error);
-          const description = error?.error?.description;
-          this.snackbar.error(description || "Не удалось опубликовать вейверы");
+          const backendError = readApiError(error);
+          this.snackbar.errorWithDoc(
+            backendError?.description || "Не удалось опубликовать вейверы",
+            backendError?.docUrl,
+          );
         }
       });
   }
