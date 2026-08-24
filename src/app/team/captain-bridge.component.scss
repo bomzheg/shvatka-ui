@@ -28,25 +28,7 @@ h1 {
   font-weight: 600;
 }
 
-.create-team-notice {
-  display: flex;
-  gap: 0.65rem;
-  align-items: flex-start;
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  border-radius: 10px;
-  padding: 0.75rem;
-
-  p {
-    margin: 0;
-    font-size: 0.9rem;
-    color: var(--app-text);
-
-    a {
-      color: inherit;
-    }
-  }
-}
+// the notice itself is styled by InfoNoticeComponent; the page only places it
 
 .edit-form + .create-team-notice {
   margin-top: 1rem;

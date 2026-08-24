@@ -82,29 +82,24 @@
             </button>
           </div>
         </form>
-        <div class="create-team-notice">
-          <span class="notice-icon">ℹ️</span>
-          <p>Вы станете капитаном новой команды. Команда сможет играть через сайт; позже капитан сможет привязать Telegram-чат в боте.</p>
-        </div>
+        <app-info-notice class="create-team-notice" [doc]="DocPage.createTeam">
+          Вы станете капитаном новой команды. Команда сможет играть через сайт; позже капитан сможет привязать Telegram-чат в боте.
+        </app-info-notice>
       } @else {
-        <div class="create-team-notice">
-          <span class="notice-icon">ℹ️</span>
-          <p>Создавать команды могут только игроки с правами автора. Если вы хотите создать команду, обратитесь к администраторам.</p>
-        </div>
+        <app-info-notice class="create-team-notice" [doc]="DocPage.promotion">
+          Создавать команды могут только игроки с правами автора. Если вы хотите создать команду, обратитесь к администраторам.
+        </app-info-notice>
       }
     </div>
   } @else {
 
     @if (showWebOnlyTeamHint) {
-      <div class="create-team-notice web-only-hint">
-        <span class="notice-icon">ℹ️</span>
-        <p>
-          Команда создана! Пока она играет только через сайт. Чтобы привязать Telegram-чат,
-          откройте личный чат с ботом <a [href]="botLink" target="_blank" rel="noopener">&#64;{{ botUsername }}</a>,
-          выполните /manage_team и выберите «🔀Перенести в другой чат» (целевой чат — супергруппа с добавленным ботом).
-        </p>
-        <button type="button" class="btn-clear" (click)="dismissWebOnlyTeamHint()" aria-label="Скрыть подсказку"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
-      </div>
+      <app-info-notice class="create-team-notice web-only-hint" [doc]="DocPage.moveChat">
+        Команда создана! Пока она играет только через сайт. Чтобы привязать Telegram-чат,
+        откройте личный чат с ботом <a [href]="botLink" target="_blank" rel="noopener">&#64;{{ botUsername }}</a>,
+        выполните /manage_team и выберите «🔀Перенести в другой чат» (целевой чат — супергруппа с добавленным ботом).
+        <button notice-action type="button" class="btn-clear" (click)="dismissWebOnlyTeamHint()" aria-label="Скрыть подсказку"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.close"/></button>
+      </app-info-notice>
     }
 
     <!-- Team info card -->

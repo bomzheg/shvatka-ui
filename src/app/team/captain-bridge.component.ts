@@ -19,6 +19,8 @@ import {
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon} from "../ui/icons";
 import {memberEmoji} from "../ui/role-emoji";
+import {InfoNoticeComponent} from "../ui/info-notice.component";
+import {DocPage} from "../docs/doc-pages";
 
 export interface PermissionLabel {
   key: keyof TeamMemberPermissions;
@@ -28,12 +30,13 @@ export interface PermissionLabel {
 @Component({
   selector: 'app-captain-bridge',
   standalone: true,
-  imports: [FormsModule, MatIcon, RouterLink],
+  imports: [FormsModule, MatIcon, RouterLink, InfoNoticeComponent],
   templateUrl: './captain-bridge.component.html',
   styleUrl: './captain-bridge.component.scss',
 })
 export class CaptainBridgeComponent implements OnInit, OnDestroy {
   protected readonly AppIcon = AppIcon;
+  protected readonly DocPage = DocPage;
   isLoading = false;
   playerProfile: PlayerProfile | null = null;
   team: TeamDetails | null = null;
