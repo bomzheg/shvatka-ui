@@ -4,6 +4,7 @@ import {RouterLink} from '@angular/router';
 import {finalize} from 'rxjs';
 import {AdminService} from './admin.service';
 import {AdminGame} from './admin.models';
+import {TeamDetails} from '../team/team.models';
 import {STATUS_LABELS} from '../constructor/constructor.models';
 import {SnackbarService} from '../snackbar/snackbar.service';
 
@@ -19,6 +20,11 @@ import {SnackbarService} from '../snackbar/snackbar.service';
  * Moving a game back to «в процессе создания» hands it to its author and is the
  * end of the admin's part in it: the game leaves this list, and the status of a
  * game that is not here cannot be changed again.
+ *
+ * The running game also gets the resend button: telegram loses a message and a
+ * team is left without its puzzle. The engine sends the level again — the page
+ * only names the team, and gets back the teams it asked for and nothing about
+ * where any of them is.
  */
 @Component({
   selector: 'app-admin-games',
@@ -48,6 +54,12 @@ export class AdminGamesComponent implements OnInit {
   /** Statuses that keep a game in the panel — the rest hand it to its author. */
   private readonly visibleStatuses = ['getting_waivers', 'started', 'finished', 'complete'];
 
+  /** Teams playing the running game, offered as the resend target. */
+  resendTeams: TeamDetails[] = [];
+  /** Team picked for the resend; `null` means every team at once. */
+  resendTarget: number | null = null;
+  isResending = false;
+
   constructor(
     private adminService: AdminService,
     private snackbar: SnackbarService,
@@ -74,6 +86,47 @@ export class AdminGamesComponent implements OnInit {
 
   statusLabel(status: string): string {
     return STATUS_LABELS[status] ?? status;
+  }
+
+  /** The one game being played, if any — only it has messages to resend. */
+  get runningGame(): AdminGame | undefined {
+    return this.games.find(game => game.status === 'started');
+  }
+
+  onResendTargetChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value;
+    this.resendTarget = value === '' ? null : Number(value);
+  }
+
+  /**
+   * Ask the engine to send the level's messages to the team (or to all of
+   * them) again. Nothing of the level comes back here — the answer is the
+   * teams it went to, which is all the button needs to report.
+   */
+  resend(): void {
+    if (this.isResending) {
+      return;
+    }
+    const team = this.resendTeams.find(t => t.id === this.resendTarget);
+    const target = team ? `команде «${team.name}»` : 'всем командам';
+    if (!confirm(`Переотправить сообщения текущего уровня ${target}?`)) {
+      return;
+    }
+    this.isResending = true;
+    this.adminService.resendCurrentLevel(this.resendTarget ?? undefined)
+      .pipe(finalize(() => { this.isResending = false; }))
+      .subscribe({
+        next: sent => {
+          this.snackbar.success(
+            `Сообщения уровня отправлены заново: ${sent.items.length === 1
+              ? sent.items[0].name
+              : `команд — ${sent.items.length}`}`,
+          );
+        },
+        error: err => {
+          this.snackbar.error(this.errorMessage(err, 'Не удалось переотправить сообщения уровня'));
+        },
+      });
   }
 
   startYear(game: AdminGame): string | null {
@@ -118,11 +171,14 @@ export class AdminGamesComponent implements OnInit {
           if (this.visibleStatuses.includes(updated.status)) {
             this.games = this.games.map(g => (g.id === updated.id ? updated : g));
             delete this.targets[game.id];
+            // a game that started (or stopped) changes who the resend may reach
+            this.loadResendTeams();
             this.snackbar.success(`Статус игры «${game.name}» — ${this.statusLabel(updated.status)}`);
           } else {
             // the game is its author's again, and the panel loses sight of it
             this.games = this.games.filter(g => g.id !== updated.id);
             delete this.targets[game.id];
+            this.loadResendTeams();
             this.snackbar.success(
               `Игра «${game.name}» возвращена автору (${this.statusLabel(updated.status)})`
               + ' и больше не видна в админке',
@@ -152,11 +208,35 @@ export class AdminGamesComponent implements OnInit {
       .subscribe({
         next: page => {
           this.games = [...page.content];
+          this.loadResendTeams();
         },
         error: err => {
           this.snackbar.error(this.errorMessage(err, 'Не удалось загрузить список игр'));
         },
       });
+  }
+
+  /**
+   * Who to offer the resend to. The waivers are what the panel already sees of
+   * a running game — the teams that signed up — so the picker costs no new
+   * sight of it.
+   */
+  private loadResendTeams(): void {
+    const running = this.runningGame;
+    this.resendTeams = [];
+    this.resendTarget = null;
+    if (!running) {
+      return;
+    }
+    this.adminService.getGameWaivers(running.id).subscribe({
+      next: waivers => {
+        this.resendTeams = [...waivers.teams].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+      },
+      error: () => {
+        // the button still works for everybody at once; only the picker is lost
+        this.snackbar.error('Не удалось загрузить список команд идущей игры');
+      },
+    });
   }
 
   private errorMessage(err: unknown, fallback: string): string {

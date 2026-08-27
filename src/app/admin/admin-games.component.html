@@ -41,6 +41,30 @@
               {{ savingId === game.id ? 'Сохраняем...' : 'Сохранить' }}
             </button>
           </div>
+          @if (game.status === 'started') {
+            <div class="resend-form">
+              <p class="hint">
+                Телеграм иногда теряет сообщение, и команда остаётся без загадки.
+                Кнопка отправит команде текущий уровень заново — загадку и те
+                подсказки, которые уже вышли. Что именно отправлено, админке не
+                показывается: движок шлёт это командам напрямую.
+              </p>
+              <label class="visually-hidden" for="resend-target">Кому переотправить</label>
+              <select
+                id="resend-target"
+                [value]="resendTarget ?? ''"
+                [disabled]="isResending"
+                (change)="onResendTargetChange($event)">
+                <option value="">Всем командам</option>
+                @for (team of resendTeams; track team.id) {
+                  <option [value]="team.id">{{ team.name }}</option>
+                }
+              </select>
+              <button type="button" class="save-button" [disabled]="isResending" (click)="resend()">
+                {{ isResending ? 'Отправляем...' : 'Переотправить уровень' }}
+              </button>
+            </div>
+          }
         </li>
       }
     </ul>

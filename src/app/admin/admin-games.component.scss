@@ -92,6 +92,25 @@
   }
 }
 
+.resend-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  border-top: 1px solid var(--app-border);
+  padding-top: 0.5rem;
+
+  .hint {
+    flex-basis: 100%;
+    margin-bottom: 0;
+  }
+
+  select {
+    @include cm.input-control();
+    padding: 0.4rem 0.5rem;
+  }
+}
+
 .save-button {
   @include cm.button-base(10px, 0.45rem 0.9rem);
   background: var(--app-accent);

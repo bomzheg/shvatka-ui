@@ -154,6 +154,20 @@ export class AdminService {
     return this.http.put<AdminGame>(`/admin/games/${id}/status`, {status});
   }
 
+  /**
+   * Send the running level's messages to a team again — telegram lost them.
+   * Without `teamId` every team of the game gets its own level back.
+   *
+   * The answer is the teams the request covered and nothing else: the puzzle
+   * and the hints go from the engine to the teams, never through here, and
+   * which level anybody is on stays as invisible as before the button.
+   */
+  resendCurrentLevel(teamId?: number): Observable<Items<TeamDetails>> {
+    return this.http.post<Items<TeamDetails>>('/admin/games/running/resend', {
+      team_id: teamId ?? null,
+    });
+  }
+
   // ---------------------------------------------------------------------------
   // Editing completed games (superuser only). The admin endpoints work only on
   // completed games — any other status is reported as 404 GameNotFound.

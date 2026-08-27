@@ -1,9 +1,10 @@
 import {of} from 'rxjs';
 import {AdminGamesComponent} from './admin-games.component';
-import {AdminGame} from './admin.models';
+import {AdminGame, GameWaivers} from './admin.models';
 import {AdminService} from './admin.service';
 import {SnackbarService} from '../snackbar/snackbar.service';
 import {Page} from '../games/games.service';
+import {Items, TeamDetails} from '../team/team.models';
 
 function game(overrides: Partial<AdminGame> = {}): AdminGame {
   return {
@@ -17,14 +18,27 @@ function game(overrides: Partial<AdminGame> = {}): AdminGame {
   };
 }
 
+function team(id: number, name: string): TeamDetails {
+  return {id, name, description: null, captain: null};
+}
+
+function waivers(teams: TeamDetails[]): GameWaivers {
+  return {teams, waivers: {}};
+}
+
+function sent(teams: TeamDetails[]): Items<TeamDetails> {
+  return {items: teams};
+}
+
 describe('AdminGamesComponent', () => {
   let adminService: jasmine.SpyObj<AdminService>;
   let snackbar: jasmine.SpyObj<SnackbarService>;
 
   beforeEach(() => {
     adminService = jasmine.createSpyObj<AdminService>(
-      'AdminService', ['listAdminGames', 'changeGameStatus'],
+      'AdminService', ['listAdminGames', 'changeGameStatus', 'getGameWaivers', 'resendCurrentLevel'],
     );
+    adminService.getGameWaivers.and.returnValue(of(waivers([])));
     snackbar = jasmine.createSpyObj<SnackbarService>('SnackbarService', ['success', 'error', 'info']);
   });
 
@@ -93,5 +107,74 @@ describe('AdminGamesComponent', () => {
 
     expect(adminService.changeGameStatus).not.toHaveBeenCalled();
     expect(c.games.length).toBe(1);
+  });
+});
+
+describe('AdminGamesComponent resending a level', () => {
+  let adminService: jasmine.SpyObj<AdminService>;
+  let snackbar: jasmine.SpyObj<SnackbarService>;
+
+  const gryffindor = team(1, 'Гриффиндор');
+  const slytherin = team(2, 'Слизерин');
+
+  beforeEach(() => {
+    adminService = jasmine.createSpyObj<AdminService>(
+      'AdminService', ['listAdminGames', 'changeGameStatus', 'getGameWaivers', 'resendCurrentLevel'],
+    );
+    snackbar = jasmine.createSpyObj<SnackbarService>('SnackbarService', ['success', 'error', 'info']);
+    adminService.getGameWaivers.and.returnValue(of(waivers([slytherin, gryffindor])));
+  });
+
+  function component(games: AdminGame[]): AdminGamesComponent {
+    adminService.listAdminGames.and.returnValue(of(new Page(games)));
+    const c = new AdminGamesComponent(adminService, snackbar);
+    c.ngOnInit();
+    return c;
+  }
+
+  it('offers the teams of the running game, in alphabetical order', () => {
+    const c = component([game({id: 2, status: 'started'}), game({id: 1, status: 'complete'})]);
+
+    expect(adminService.getGameWaivers).toHaveBeenCalledWith(2);
+    expect(c.resendTeams.map(t => t.name)).toEqual(['Гриффиндор', 'Слизерин']);
+  });
+
+  it('asks for nobody while no game is being played', () => {
+    const c = component([game({status: 'getting_waivers'})]);
+
+    expect(adminService.getGameWaivers).not.toHaveBeenCalled();
+    expect(c.resendTeams).toEqual([]);
+    expect(c.runningGame).toBeUndefined();
+  });
+
+  it('resends to every team while no team is picked', () => {
+    const c = component([game({id: 2, status: 'started'})]);
+    adminService.resendCurrentLevel.and.returnValue(of(sent([gryffindor, slytherin])));
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    c.resend();
+
+    expect(adminService.resendCurrentLevel).toHaveBeenCalledWith(undefined);
+    expect(snackbar.success).toHaveBeenCalled();
+  });
+
+  it('resends to the picked team alone', () => {
+    const c = component([game({id: 2, status: 'started'})]);
+    c.resendTarget = gryffindor.id;
+    adminService.resendCurrentLevel.and.returnValue(of(sent([gryffindor])));
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    c.resend();
+
+    expect(adminService.resendCurrentLevel).toHaveBeenCalledWith(gryffindor.id);
+  });
+
+  it('sends nothing when the confirmation is declined', () => {
+    const c = component([game({id: 2, status: 'started'})]);
+    spyOn(window, 'confirm').and.returnValue(false);
+
+    c.resend();
+
+    expect(adminService.resendCurrentLevel).not.toHaveBeenCalled();
   });
 });

@@ -80,6 +80,29 @@ describe('AdminService', () => {
     });
   });
 
+  it('resends the running level without learning anything about it', () => {
+    let received: {id: number; name: string}[] | undefined;
+    service.resendCurrentLevel(3).subscribe(sent => received = sent.items);
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/admin/games/running/resend'));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({team_id: 3});
+
+    request.flush({items: [{id: 3, name: 'Гриффиндор', description: null, captain: null}]});
+
+    expect(received!.map(t => t.name)).toEqual(['Гриффиндор']);
+    // the answer names the team and nothing of the level it was sent
+    expect(Object.keys(received![0])).toEqual(['id', 'name', 'description', 'captain']);
+  });
+
+  it('resends to every team when no team is named', () => {
+    service.resendCurrentLevel().subscribe();
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/admin/games/running/resend'));
+    expect(request.request.body).toEqual({team_id: null});
+    request.flush({items: []});
+  });
+
   it('deletes only when explicitly told to', () => {
     service.collectFileGarbage(false).subscribe();
 
