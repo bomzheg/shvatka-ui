@@ -108,9 +108,15 @@
     <div class="block">
       <div class="block-head">
         <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.level"/> Уровни</h2>
-        @if (isEditable) {
-          <button type="button" class="primary" (click)="addLevel()">+ Уровень</button>
-        }
+        <div class="block-head-actions">
+          <button type="button" class="ghost-button" (click)="toggleEffectConditions()">
+            <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>
+            {{ showEffectConditions ? "Убрать сложное" : "Показать ключи и таймеры с эффектами" }}
+          </button>
+          @if (isEditable) {
+            <button type="button" class="primary" (click)="addLevel()">+ Уровень</button>
+          }
+        </div>
       </div>
 
       @if (levels.length > 0) {
@@ -192,79 +198,88 @@
               }
             </div>
 
-            <!-- 3. Effect keys -->
-            <div class="sub-block">
-              <div class="block-head">
-                <h3><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/> Ключи с эффектами</h3>
-                @if (isEditable) {
-                  <button type="button" class="ghost-button" (click)="addKeyCondition(level)">+ Ключ</button>
-                }
-              </div>
-              @for (c of level.keyConditions; track c; let ci = $index) {
-                <div class="condition">
-                  <div class="condition-head">
-                    <input type="text" [ngModel]="c.keysText"
-                           (ngModelChange)="c.keysText = upperKeys($event)"
-                           [disabled]="!isEditable" placeholder="например: SHBONUS"
-                           [class.invalid]="!areKeysOk(c.keysText)" />
-                    @if (isEditable) {
-                      <button type="button" class="ghost-button danger" (click)="removeKeyCondition(level, ci)">Удалить</button>
-                    }
-                  </div>
-                  @if (!areKeysOk(c.keysText)) {
-                    <span class="field-error">Ключ начинается с SH или СХ, дальше только заглавные буквы и цифры (например SH123, СХКЛЮЧ).</span>
-                  }
-                  <app-effects-editor
-                    [effects]="c.effects"
-                    [files]="files"
-                    [gameId]="gameId"
-                    [objectUrls]="objectUrls"
-                    [disabled]="!isEditable"
-                    [adminUpload]="adminMode"
-                    [allowLevelUp]="true"
-                    [levelIds]="allLevelIds()"
-                    (fileUploaded)="onHintFileUploaded($event)"
-                    (fileRenamed)="onHintFileRenamed($event)"
-                  ></app-effects-editor>
-                </div>
-              }
-            </div>
+            @if (!showEffectConditions && hiddenEffectConditionsCount(level) > 0) {
+              <p class="hint-note collapsed-effects-note">
+                Скрыты ключи и таймеры с эффектами: {{ hiddenEffectConditionsCount(level) }}.
+                Ключ уровня, автозавершение и подсказки доступны ниже.
+              </p>
+            }
 
-            <!-- 4. Effect timers -->
-            <div class="sub-block">
-              <div class="block-head">
-                <h3><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.timer"/> Таймеры с эффектами</h3>
-                @if (isEditable) {
-                  <button type="button" class="ghost-button" (click)="addTimerCondition(level)">+ Таймер</button>
+            @if (showEffectConditions) {
+              <!-- 3. Effect keys -->
+              <div class="sub-block">
+                <div class="block-head">
+                  <h3><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.key"/> Ключи с эффектами</h3>
+                  @if (isEditable) {
+                    <button type="button" class="ghost-button" (click)="addKeyCondition(level)">+ Ключ</button>
+                  }
+                </div>
+                @for (c of level.keyConditions; track c; let ci = $index) {
+                  <div class="condition">
+                    <div class="condition-head">
+                      <input type="text" [ngModel]="c.keysText"
+                             (ngModelChange)="c.keysText = upperKeys($event)"
+                             [disabled]="!isEditable" placeholder="например: SHBONUS"
+                             [class.invalid]="!areKeysOk(c.keysText)" />
+                      @if (isEditable) {
+                        <button type="button" class="ghost-button danger" (click)="removeKeyCondition(level, ci)">Удалить</button>
+                      }
+                    </div>
+                    @if (!areKeysOk(c.keysText)) {
+                      <span class="field-error">Ключ начинается с SH или СХ, дальше только заглавные буквы и цифры (например SH123, СХКЛЮЧ).</span>
+                    }
+                    <app-effects-editor
+                      [effects]="c.effects"
+                      [files]="files"
+                      [gameId]="gameId"
+                      [objectUrls]="objectUrls"
+                      [disabled]="!isEditable"
+                      [adminUpload]="adminMode"
+                      [allowLevelUp]="true"
+                      [levelIds]="allLevelIds()"
+                      (fileUploaded)="onHintFileUploaded($event)"
+                      (fileRenamed)="onHintFileRenamed($event)"
+                    ></app-effects-editor>
+                  </div>
                 }
               </div>
-              @for (c of level.timerConditions; track c; let ci = $index) {
-                <div class="condition">
-                  <div class="condition-head">
-                    <label class="inline-label">Минута</label>
-                    <input class="time-input" type="number" min="0" [(ngModel)]="c.action_time" [disabled]="!isEditable"
-                           [class.invalid]="c.action_time != null && c.action_time < 0" />
-                    @if (isEditable) {
-                      <button type="button" class="ghost-button danger" (click)="removeTimerCondition(level, ci)">Удалить</button>
-                    }
-                  </div>
-                  @if (c.action_time != null && c.action_time < 0) {
-                    <span class="field-error">Время не может быть отрицательным.</span>
+
+              <!-- 4. Effect timers -->
+              <div class="sub-block">
+                <div class="block-head">
+                  <h3><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.timer"/> Таймеры с эффектами</h3>
+                  @if (isEditable) {
+                    <button type="button" class="ghost-button" (click)="addTimerCondition(level)">+ Таймер</button>
                   }
-                  <app-effects-editor
-                    [effects]="c.effects"
-                    [files]="files"
-                    [gameId]="gameId"
-                    [objectUrls]="objectUrls"
-                    [disabled]="!isEditable"
-                    [adminUpload]="adminMode"
-                    [allowLevelUp]="false"
-                    (fileUploaded)="onHintFileUploaded($event)"
-                    (fileRenamed)="onHintFileRenamed($event)"
-                  ></app-effects-editor>
                 </div>
-              }
-            </div>
+                @for (c of level.timerConditions; track c; let ci = $index) {
+                  <div class="condition">
+                    <div class="condition-head">
+                      <label class="inline-label">Минута</label>
+                      <input class="time-input" type="number" min="0" [(ngModel)]="c.action_time" [disabled]="!isEditable"
+                             [class.invalid]="c.action_time != null && c.action_time < 0" />
+                      @if (isEditable) {
+                        <button type="button" class="ghost-button danger" (click)="removeTimerCondition(level, ci)">Удалить</button>
+                      }
+                    </div>
+                    @if (c.action_time != null && c.action_time < 0) {
+                      <span class="field-error">Время не может быть отрицательным.</span>
+                    }
+                    <app-effects-editor
+                      [effects]="c.effects"
+                      [files]="files"
+                      [gameId]="gameId"
+                      [objectUrls]="objectUrls"
+                      [disabled]="!isEditable"
+                      [adminUpload]="adminMode"
+                      [allowLevelUp]="false"
+                      (fileUploaded)="onHintFileUploaded($event)"
+                      (fileRenamed)="onHintFileRenamed($event)"
+                    ></app-effects-editor>
+                  </div>
+                }
+              </div>
+            }
 
             <!-- 5. Time hints -->
             <div class="sub-block">

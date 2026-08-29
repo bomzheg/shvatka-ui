@@ -1,5 +1,5 @@
 import {Component, Input} from '@angular/core';
-import {FullGame, HintPart, Level, ScenarioCondition, ScenarioConditionType} from "../domain/game.models";
+import {EffectLike, Effects, FullGame, HintPart, Level, ScenarioCondition, ScenarioConditionType} from "../domain/game.models";
 import {HintPartComponent} from "../hint.part/hint.part.component";
 import {EffectsPartComponent} from "../effects.part/effects.part.component";
 import {HttpAdapter} from "../http/http.adapter";
@@ -20,6 +20,7 @@ import {AppIcon} from "../ui/icons";
 export class GameScenarioPartComponent {
   protected readonly ScenarioConditionType = ScenarioConditionType;
   protected readonly AppIcon = AppIcon;
+  showEffectConditions = true;
 
   @Input({required: true}) game!: FullGame;
   /** Blob URLs by file guid, winning over the CDN copy. The constructor's
@@ -42,8 +43,22 @@ export class GameScenarioPartComponent {
     return this.getScenarioConditions(level).filter(condition => condition.type === ScenarioConditionType.effectsKey);
   }
 
+  getWinTimerConditions(level: Level): ScenarioCondition[] {
+    return this.getScenarioConditions(level)
+      .filter(condition => condition.type === ScenarioConditionType.effectsTimer && this.conditionHasLevelUp(condition));
+  }
+
   getEffectsTimerConditions(level: Level): ScenarioCondition[] {
-    return this.getScenarioConditions(level).filter(condition => condition.type === ScenarioConditionType.effectsTimer);
+    return this.getScenarioConditions(level)
+      .filter(condition => condition.type === ScenarioConditionType.effectsTimer && !this.conditionHasLevelUp(condition));
+  }
+
+  hiddenEffectConditionsCount(level: Level): number {
+    return this.getEffectsKeyConditions(level).length + this.getEffectsTimerConditions(level).length;
+  }
+
+  toggleEffectConditions(): void {
+    this.showEffectConditions = !this.showEffectConditions;
   }
 
   getConditionKeys(condition: ScenarioCondition): string[] {
@@ -56,6 +71,11 @@ export class GameScenarioPartComponent {
     }
 
     return typeof condition.action_time === 'number' ? condition.action_time : undefined;
+  }
+
+  private conditionHasLevelUp(condition: ScenarioCondition): boolean {
+    return Effects.normalize(condition.effects as EffectLike[] | EffectLike | undefined)
+      .some(effect => effect.level_up === true);
   }
 
   getFileUrl(hint: HintPart) {

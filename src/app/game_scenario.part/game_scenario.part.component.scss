@@ -5,6 +5,23 @@
   min-width: 0;
 }
 
+.scenario-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+
 .level-card {
   min-width: 0;
   border: 1px solid #e5e7eb;
@@ -73,6 +90,15 @@
   border-radius: 8px;
   background: rgba(148, 163, 184, 0.08);
   padding: 0.35rem 0.45rem;
+}
+
+.collapsed-effects-note {
+  margin: 0.45rem 0 0.35rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px dashed var(--app-border);
+  border-radius: 8px;
+  color: var(--app-muted-text);
+  background: rgba(148, 163, 184, 0.08);
 }
 
 .hints {
