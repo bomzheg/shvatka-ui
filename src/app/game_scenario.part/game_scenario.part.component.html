@@ -1,4 +1,10 @@
 <div class="scenario">
+  <div class="scenario-actions">
+    <button type="button" class="ghost-button" (click)="toggleEffectConditions()">
+      <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>
+      {{ showEffectConditions ? "Убрать сложное" : "Показать ключи и таймеры с эффектами" }}
+    </button>
+  </div>
   @for (level of game.levels; track level.db_id) {
     <section class="level-card" [attr.id]="'scn-level-' + level.name_id">
       <h3 class="level-header">Уровень №{{ level.number_in_game! + 1 }} ({{ level.name_id }})</h3>
@@ -12,26 +18,10 @@
         </ul>
       }
 
-      @if (getEffectsKeyConditions(level).length > 0) {
-        <h4 class="level-keys-header"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>Ключи с эффектами:</h4>
+      @if (getWinTimerConditions(level).length > 0) {
+        <h4 class="level-keys-header"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.autoFinish"/>Таймер автозавершения:</h4>
         <ul class="level-effects-list">
-          @for (condition of getEffectsKeyConditions(level); track 'effects-key:' + $index) {
-            <li class="level-effect-item">
-              <ul class="level-keys nested-level-keys">
-                @for (key of getConditionKeys(condition); track key) {
-                  <li class="level-key">{{ key }}</li>
-                }
-              </ul>
-              <app-effects-part [effects]="condition.effects" [gameId]="game.id" [localUrls]="localUrls"></app-effects-part>
-            </li>
-          }
-        </ul>
-      }
-
-      @if (getEffectsTimerConditions(level).length > 0) {
-        <h4 class="level-keys-header"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>Таймерные эффекты:</h4>
-        <ul class="level-effects-list">
-          @for (condition of getEffectsTimerConditions(level); track 'effects-timer:' + $index) {
+          @for (condition of getWinTimerConditions(level); track 'win-timer:' + $index) {
             <li class="level-effect-item">
               @if (getTimerActionTime(condition); as actionTime) {
                 <strong>{{ actionTime }} мин.</strong>
@@ -40,6 +30,45 @@
             </li>
           }
         </ul>
+      }
+
+      @if (!showEffectConditions && hiddenEffectConditionsCount(level) > 0) {
+        <p class="collapsed-effects-note">
+          Скрыты ключи и таймеры с эффектами: {{ hiddenEffectConditionsCount(level) }}.
+          Мастер-ключ, таймер автозавершения и подсказки доступны.
+        </p>
+      }
+
+      @if (showEffectConditions) {
+        @if (getEffectsKeyConditions(level).length > 0) {
+          <h4 class="level-keys-header"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>Ключи с эффектами:</h4>
+          <ul class="level-effects-list">
+            @for (condition of getEffectsKeyConditions(level); track 'effects-key:' + $index) {
+              <li class="level-effect-item">
+                <ul class="level-keys nested-level-keys">
+                  @for (key of getConditionKeys(condition); track key) {
+                    <li class="level-key">{{ key }}</li>
+                  }
+                </ul>
+                <app-effects-part [effects]="condition.effects" [gameId]="game.id" [localUrls]="localUrls"></app-effects-part>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (getEffectsTimerConditions(level).length > 0) {
+          <h4 class="level-keys-header"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.effects"/>Таймерные эффекты:</h4>
+          <ul class="level-effects-list">
+            @for (condition of getEffectsTimerConditions(level); track 'effects-timer:' + $index) {
+              <li class="level-effect-item">
+                @if (getTimerActionTime(condition); as actionTime) {
+                  <strong>{{ actionTime }} мин.</strong>
+                }
+                <app-effects-part [effects]="condition.effects" [gameId]="game.id" [localUrls]="localUrls"></app-effects-part>
+              </li>
+            }
+          </ul>
+        }
       }
     }
     <h4 class="hints-header">Подсказки:</h4>
