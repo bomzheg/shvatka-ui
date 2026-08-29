@@ -103,6 +103,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   isSaving = false;
   isUploading = false;
   isDownloadingKeys = false;
+  showEffectConditions = true;
 
   /** Superuser mode (/admin/games/:id): editing an already completed game
    *  through the /admin endpoints. Start, status and organizers are frozen —
@@ -543,6 +544,14 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
   hintsCount(level: EditorLevel): number {
     return level.time_hints.length;
+  }
+
+  hiddenEffectConditionsCount(level: EditorLevel): number {
+    return level.keyConditions.length + level.timerConditions.length;
+  }
+
+  toggleEffectConditions(): void {
+    this.showEffectConditions = !this.showEffectConditions;
   }
 
   // -------------------------------------------------------------------------
