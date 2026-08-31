@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {HttpAdapter} from '../http/http.adapter';
-import {Items, TeamDetails, TeamMember} from '../team/team.models';
+import {Items, TeamDetails, TeamMember, TeamRef} from '../team/team.models';
 import {Game, Page} from '../games/games.service';
 import {FullGame} from '../domain/game.models';
 import {ScenarioPayload, UploadedFile, UploadOptions, uploadOptionsQuery} from '../constructor/constructor.models';
@@ -162,8 +162,8 @@ export class AdminService {
    * and the hints go from the engine to the teams, never through here, and
    * which level anybody is on stays as invisible as before the button.
    */
-  resendCurrentLevel(teamId?: number): Observable<Items<TeamDetails>> {
-    return this.http.post<Items<TeamDetails>>('/admin/games/running/resend', {
+  resendCurrentLevel(teamId?: number): Observable<Items<TeamRef>> {
+    return this.http.post<Items<TeamRef>>('/admin/games/running/resend', {
       team_id: teamId ?? null,
     });
   }

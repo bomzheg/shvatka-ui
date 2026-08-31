@@ -1,4 +1,4 @@
-import {PlayedGame, PlayerTg, TeamDetails, TeamMemberPermissions} from '../team/team.models';
+import {PlayedGame, PlayerTg, TeamDetails, TeamMemberPermissions, TeamRef} from '../team/team.models';
 
 /** Compact player as returned inside admin poll/waiver structures. */
 export interface AdminPlayerRef {
@@ -53,7 +53,7 @@ export interface PollEntry {
 }
 
 export interface PollTeam {
-  team: TeamDetails;
+  team: TeamRef;
   entries: PollEntry[];
 }
 

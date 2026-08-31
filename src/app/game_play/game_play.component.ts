@@ -322,7 +322,7 @@ export class GamePlayComponent implements OnInit, OnDestroy {
     }
 
     const myId = this.userService.getMe()?.id;
-    if (myId !== undefined && role.team.captain?.id === myId) {
+    if (myId !== undefined && role.team.captain_id === myId) {
       return true;
     }
 
