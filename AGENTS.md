@@ -103,6 +103,13 @@ components are dumb/presentational pieces composed by larger feature components.
   snackbar's «Справка» action (a snackbar is text-only, so the action button is
   the only place a link can go). Only http(s) urls are ever opened — see
   `isSafeDocUrl`.
+- **A scenario travels as YAML.** The editor writes and reads the whole scenario
+  as a document (`constructor/scenario-yaml.ts`) in exactly the keys the API
+  takes — in a text area on the page, and as a file — so it can be edited by hand
+  or moved to another game. Media never travels in it: only file guids and names,
+  and `relinkFileGuids` points the hints at the files of the game they land in,
+  matching by name. `js-yaml` is imported dynamically and must stay out of the
+  initial bundle.
 - **Runtime configuration** comes from `window.env` (`environment.ts`), populated
   at container start by nginx (`envsubst` over `assets/env.template.js`). Do **not**
   hardcode API/CDN/bot values; read them through `ShvatkaConfig`. Local dev values

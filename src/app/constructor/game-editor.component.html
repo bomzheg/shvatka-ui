@@ -400,6 +400,75 @@
       }
     </div>
 
+    <!-- Scenario as a file -->
+    <div class="block">
+      <h2><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.text"/> Сценарий в YAML</h2>
+      <p class="hint-note">
+        Сценарий целиком текстом: правьте его прямо здесь, скачайте файл, чтобы хранить
+        рядом с остальными материалами игры, или вставьте готовый — хоть из другой игры.
+        Файлы (фото, аудио, видео) в документ не попадают — только их имена: загрузите
+        их в игру сами, и подсказки свяжутся с ними по имени.
+      </p>
+      <div class="yaml-actions">
+        <button type="button" class="ghost-button" (click)="exportYaml()">
+          <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.download"/> Скачать YAML
+        </button>
+        <button type="button" class="ghost-button" (click)="toggleYamlEditor()">
+          <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/>
+          {{ isYamlOpen ? "Скрыть текст" : "Показать текст" }}
+        </button>
+        @if (isEditable) {
+          <label class="upload-button" [class.busy]="isImporting">
+            <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.upload"/>
+            {{ isImporting ? "Читаем..." : "Загрузить YAML" }}
+            <input type="file" hidden accept=".yaml,.yml,text/yaml,application/yaml"
+                   (change)="onYamlSelected($event)" [disabled]="isImporting" />
+          </label>
+        }
+      </div>
+
+      @if (isYamlOpen) {
+        <textarea class="yaml-text" rows="20" spellcheck="false" wrap="off"
+                  aria-label="Сценарий в YAML"
+                  [(ngModel)]="yamlText" [disabled]="isImporting"></textarea>
+        <div class="yaml-actions">
+          <button type="button" class="ghost-button" (click)="refreshYamlText()">
+            Обновить из редактора
+          </button>
+          @if (isEditable) {
+            <button type="button" class="primary" (click)="applyYamlText()" [disabled]="isImporting">
+              Применить к редактору
+            </button>
+          }
+        </div>
+        @if (yamlError) {
+          <p class="warn">{{ yamlError }}</p>
+        }
+      }
+
+      @if (isEditable) {
+        <p class="hint-note">
+          «Применить» и загрузка файла заменяют все уровни в редакторе; в игре ничего
+          не меняется, пока вы не сохраните сценарий.
+        </p>
+      }
+
+      @if (missingFiles.length > 0) {
+        <div class="missing-files">
+          <p class="warn">
+            Подсказки ссылаются на файлы, которых нет в игре ({{ missingFiles.length }}).
+            Загрузите их в разделе «Файлы» с теми же именами и нажмите «Привязать файлы».
+          </p>
+          <ul>
+            @for (f of missingFiles; track f.guid) {
+              <li>{{ missingFileLabel(f) }}</li>
+            }
+          </ul>
+          <button type="button" class="ghost-button" (click)="onRelinkClick()">Привязать файлы</button>
+        </div>
+      }
+    </div>
+
     <!-- Validation errors -->
     @if (validationErrors.length > 0) {
       <div class="block errors">
