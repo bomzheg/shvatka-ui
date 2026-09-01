@@ -29,6 +29,8 @@ export class PassedLevel {
     public started_at: string,
     public finished_at: string,
     public hints: TimeHint[],
+    /** Whether the last of `hints` is the last hint the level has. */
+    public is_last_hint_shown: boolean = false,
   ) {
   }
 }
@@ -51,6 +53,8 @@ export class CurrentHints {
     public started_at: string,
     public game_id: number,
     public is_finished: boolean,
+    /** Whether the last of `hints` is the last hint the level has. */
+    public is_last_hint_shown: boolean = false,
   ) {
   }
 }

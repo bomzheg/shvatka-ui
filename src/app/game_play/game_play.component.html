@@ -90,7 +90,8 @@
       @for (item of getLevelFeed(); track item.id) {
         <li [class.feed-timer]="item.source === 'timer'"
             [class.feed-key]="item.source === 'key'"
-            [class.feed-effect]="item.source === 'effect'">
+            [class.feed-effect]="item.source === 'effect'"
+            [class.feed-last-hint]="item.isLastHint">
           <h5 class="hint-header">{{ item.label }}</h5>
           @if (item.tags.length > 0) {
             <div class="typed-effects">
@@ -124,9 +125,9 @@
           <summary>Уровень №{{ level.level_number + 1 }} ({{ getPassedLevelDuration(level) }})</summary>
           <p class="passed-level-times">{{ toLocal(level.started_at) }} — {{ toLocal(level.finished_at) }}</p>
           <ul class="hints">
-            @for (timeHint of level.hints; track timeHint.time) {
-              <li>
-                <h5 class="hint-header">Подсказка {{ timeHint.time }} мин.</h5>
+            @for (timeHint of level.hints; track timeHint.time; let i = $index) {
+              <li [class.feed-last-hint]="isLastPassedHint(level, i)">
+                <h5 class="hint-header">{{ hintLabel(timeHint.time, isLastPassedHint(level, i)) }}</h5>
                 @for (hint of timeHint.hint; track hint) {
                   <app-hint-part [hint]="hint" [fileUrl]="getFileUrl(hint)" [thumbUrl]="getThumbUrl(hint)"></app-hint-part>
                 }

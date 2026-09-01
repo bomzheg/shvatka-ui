@@ -576,6 +576,12 @@ ul.hints > li > .hint-header {
   margin: 0;
 }
 
+/* The level's last hint: nothing more is coming, so its caption stands out. */
+ul.hints > li.feed-last-hint > .hint-header {
+  font-weight: 600;
+  color: var(--app-accent);
+}
+
 /* The feed carries more than scheduled hints — say what brought each line. */
 ul.hints > li.feed-timer::before {
   -webkit-mask-image: url("/assets/svg-icons/timer.svg");

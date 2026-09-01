@@ -20,8 +20,12 @@ function hintEffect(id: string, text: string, bonusMinutes = 0): Effect {
   return new Effect(id, [HintPart.create({type: HintType.text, text})], bonusMinutes);
 }
 
-function currentHints(hints: TimeHint[], events: GameEvent[]): CurrentHints {
-  return new CurrentHints(hints, [], events, 0, 11, LEVEL_STARTED_AT, 7, false);
+function currentHints(
+  hints: TimeHint[],
+  events: GameEvent[],
+  isLastHintShown: boolean = false,
+): CurrentHints {
+  return new CurrentHints(hints, [], events, 0, 11, LEVEL_STARTED_AT, 7, false, isLastHintShown);
 }
 
 describe('GamePlayComponent', () => {
@@ -92,6 +96,40 @@ describe('GamePlayComponent', () => {
     expect(feed[2].label).toContain("Ключ «ЛОМ» 6 мин.");
     expect(feed[3].label).toContain("Эффект 7 мин.");
     expect(feed[2].hints.map(hint => hint.text)).toEqual(["за ключ"]);
+  });
+
+  it('marks the last hint of the level, and only when it is out', () => {
+    spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
+      [new TimeHint(0, []), new TimeHint(10, [])],
+      [],
+      true,
+    ));
+
+    expect(component.getLevelFeed().map(item => item.label))
+      .toEqual(["Подсказка 0 мин.", "Последняя подсказка уровня 10 мин."]);
+    expect(component.getLevelFeed().map(item => item.isLastHint)).toEqual([false, true]);
+  });
+
+  it('says nothing about the last hint while the level has more to give', () => {
+    spyOn(gameService, 'getCurrentHints').and.returnValue(currentHints(
+      [new TimeHint(0, []), new TimeHint(10, [])],
+      [],
+    ));
+
+    expect(component.getLevelFeed().map(item => item.label))
+      .toEqual(["Подсказка 0 мин.", "Подсказка 10 мин."]);
+  });
+
+  it('marks the last hint of a passed level too', () => {
+    const shown = [new TimeHint(0, []), new TimeHint(10, [])];
+    const withLast = new PassedLevel(0, 11, LEVEL_STARTED_AT, "2024-05-05T10:12:00+00:00",
+      shown, true);
+    const withoutLast = new PassedLevel(0, 12, LEVEL_STARTED_AT, "2024-05-05T10:12:00+00:00",
+      shown, false);
+
+    expect(component.isLastPassedHint(withLast, 1)).toBeTrue();
+    expect(component.isLastPassedHint(withLast, 0)).toBeFalse();
+    expect(component.isLastPassedHint(withoutLast, 1)).toBeFalse();
   });
 
   it('orders a key and a timer of the same minute by when they landed', () => {
