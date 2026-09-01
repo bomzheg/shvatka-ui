@@ -137,6 +137,13 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   files: UploadedFile[] = [];
 
   isImporting = false;
+  /** Whether the YAML text area is open. */
+  isYamlOpen = false;
+  /** The working copy of the scenario as text — what the text area shows, what
+   *  «Скачать» writes and what «Применить» reads. */
+  yamlText = "";
+  /** What is wrong with the text, shown under the text area. */
+  yamlError: string | null = null;
   /** Files an imported scenario refers to that this game does not have. */
   missingFiles: MissingScenarioFile[] = [];
   /** File metadata as the imported document carried it: what a relink matches
@@ -247,9 +254,15 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     );
     this.levels = rawLevels.map(level => this.toEditorLevel(level));
 
-    // The game as the server has it replaces whatever was imported.
+    // The game as the server has it replaces whatever was imported, the text
+    // area's working copy included.
     this.importedFiles = [];
     this.missingFiles = [];
+    this.yamlText = "";
+    this.yamlError = null;
+    if (this.isYamlOpen) {
+      this.refreshYamlText();
+    }
 
     // Reconstruct the files list: prefer a server-provided files array if any,
     // otherwise rebuild best-effort entries from the guids referenced in hints.
@@ -998,11 +1011,45 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   // travel in it — only their guids and names; see {@link relinkImportedFiles}.
   // -------------------------------------------------------------------------
 
-  /** Write the scenario being edited — unsaved changes and all — to a file. */
-  exportYaml(): void {
+  /** Show or hide the text area, filling it the first time it opens. */
+  toggleYamlEditor(): void {
+    this.isYamlOpen = !this.isYamlOpen;
+    if (this.isYamlOpen && this.yamlText.length === 0) {
+      this.refreshYamlText();
+    }
+  }
+
+  /** (Re)write the text area from the scenario being edited, dropping whatever
+   *  was typed there — the button says as much. */
+  refreshYamlText(): void {
     scenarioToYaml(this.buildScenario()).then(
-      yaml => this.download(
-        new Blob([yaml], {type: "text/yaml;charset=utf-8"}),
+      yaml => {
+        this.yamlText = yaml;
+        this.yamlError = null;
+      },
+      () => this.snackbar.error("Не удалось подготовить YAML"),
+    );
+  }
+
+  /** Read the text area back into the editor. */
+  applyYamlText(): void {
+    if (!this.isEditable) {
+      return;
+    }
+    this.importYaml(this.yamlText);
+  }
+
+  /**
+   * Write the scenario to a file — the text as it stands when the text area is
+   * open (what you see is what you get), otherwise straight from the editor.
+   */
+  exportYaml(): void {
+    const yaml = this.isYamlOpen && this.yamlText.trim().length > 0
+      ? Promise.resolve(this.yamlText)
+      : scenarioToYaml(this.buildScenario());
+    yaml.then(
+      text => this.download(
+        new Blob([text], {type: "text/yaml;charset=utf-8"}),
         yamlFileName(this.name),
       ),
       () => this.snackbar.error("Не удалось подготовить YAML"),
@@ -1016,26 +1063,40 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     if (!file) {
       return;
     }
+
+    file.text().then(
+      text => {
+        // The file becomes the working copy, so a document the editor refuses
+        // can be fixed where it is shown instead of outside and reloaded.
+        this.yamlText = text;
+        this.importYaml(text);
+      },
+      () => this.snackbar.error("Не удалось прочитать файл"),
+    );
+  }
+
+  private importYaml(text: string): void {
     if (this.levels.length > 0
       && !confirm("Импорт заменит все уровни в редакторе. Продолжить?")) {
       return;
     }
 
     this.isImporting = true;
-    file.text()
-      .then(text => parseScenarioYaml(text))
-      .then(
-        scenario => {
-          this.isImporting = false;
-          this.applyImportedScenario(scenario);
-        },
-        err => {
-          this.isImporting = false;
-          this.snackbar.error(err instanceof ScenarioYamlError
-            ? `Импорт не удался: ${err.message}`
-            : "Не удалось прочитать файл");
-        },
-      );
+    parseScenarioYaml(text).then(
+      scenario => {
+        this.isImporting = false;
+        this.yamlError = null;
+        this.applyImportedScenario(scenario);
+      },
+      err => {
+        this.isImporting = false;
+        this.yamlError = err instanceof ScenarioYamlError
+          ? `Ошибка в YAML: ${err.message}`
+          : "Ошибка в YAML: не удалось разобрать документ";
+        // Show the text with the error against it, so it can be fixed here.
+        this.isYamlOpen = true;
+      },
+    );
   }
 
   private applyImportedScenario(scenario: ScenarioPayload): void {

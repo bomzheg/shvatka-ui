@@ -416,7 +416,21 @@ input.time-input {
   margin: 0.3rem 0;
 }
 
-// Scenario as a YAML file
+// Scenario as YAML
+.yaml-text {
+  @include cm.input-control();
+  width: 100%;
+  margin-top: 0.6rem;
+  // A document is read by its indentation, so keep it monospaced and let a
+  // long line scroll instead of wrapping into a false level.
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre;
+  overflow: auto;
+  resize: vertical;
+}
+
 .yaml-actions {
   display: flex;
   flex-wrap: wrap;
