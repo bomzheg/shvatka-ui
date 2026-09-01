@@ -54,7 +54,18 @@
     <!-- Game name -->
     <div class="block">
       <label for="gameName">Название игры</label>
-      <input id="gameName" type="text" [(ngModel)]="name" [disabled]="!isEditable" />
+      <div class="name-row">
+        <input id="gameName" type="text" [(ngModel)]="name" [disabled]="!isEditable"
+               (keydown.enter)="renameGame()" />
+        @if (!adminMode) {
+          <button type="button" class="primary" (click)="renameGame()" [disabled]="!canRename">
+            {{ isRenamingGame ? "Переименовываем..." : "Переименовать" }}
+          </button>
+        }
+      </div>
+      @if (adminMode) {
+        <p class="hint-note">Название сохраняется вместе со сценарием.</p>
+      }
     </div>
 
     @if (adminMode) {

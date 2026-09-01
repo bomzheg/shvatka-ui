@@ -37,6 +37,19 @@ describe('ConstructorService', () => {
     expect(received).toBe(pdf);
   });
 
+  it('renames a game without touching its scenario', () => {
+    let renamed: {name: string} | undefined;
+    service.renameGame(42, 'новое имя').subscribe(game => renamed = game);
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/games/my/42/name'));
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual({name: 'новое имя'});
+    expect(request.request.withCredentials).toBeTrue();
+    request.flush({id: 42, name: 'новое имя', status: 'underconstruction'});
+
+    expect(renamed?.name).toBe('новое имя');
+  });
+
   it('deletes a game file through the cdn', () => {
     let done = false;
     service.deleteFile(42, 'the-guid').subscribe(() => done = true);

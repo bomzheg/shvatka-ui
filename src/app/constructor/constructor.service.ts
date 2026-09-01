@@ -41,6 +41,15 @@ export class ConstructorService {
     return this.http.post<MyGame>("/games/my", {name});
   }
 
+  /** Rename the game, without touching its scenario.
+   *
+   *  Saving a scenario renames the game too — but a draft with no levels yet
+   *  has no scenario to save, so the name gets its own route.
+   */
+  renameGame(id: number, name: string): Observable<MyGame> {
+    return this.http.put<MyGame>(`/games/my/${id}/name`, {name});
+  }
+
   /** §1.4 — replace the whole scenario. */
   saveScenario(id: number, scenario: ScenarioPayload): Observable<FullGame> {
     return this.http.put<FullGame>(`/games/my/${id}/scenario`, scenario);
