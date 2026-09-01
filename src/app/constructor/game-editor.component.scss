@@ -416,6 +416,25 @@ input.time-input {
   margin: 0.3rem 0;
 }
 
+// Scenario as a YAML file
+.yaml-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.6rem 0 0.2rem;
+}
+
+.missing-files {
+  margin-top: 0.8rem;
+
+  ul {
+    margin: 0.5rem 0;
+    padding-left: 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
 .link-button {
   background: none;
   border: none;

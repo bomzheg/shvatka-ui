@@ -22,6 +22,7 @@ import {
   CONTENT_TYPE_LABELS,
   describeError,
   EffectsPayload,
+  FilePayload,
   generateEffectId,
   HintPayload,
   isEditableStatus,
@@ -32,10 +33,20 @@ import {
   SCENARIO_MODEL_VERSION,
   ScenarioPayload,
   STATUS_LABELS,
+  TimeHintPayload,
   UploadedFile,
   UploadOptions,
   validateScenario,
 } from "./constructor.models";
+import {
+  MissingScenarioFile,
+  parseScenarioYaml,
+  relinkFileGuids,
+  scenarioHints,
+  ScenarioYamlError,
+  scenarioToYaml,
+  yamlFileName,
+} from "./scenario-yaml";
 import {HeicUploadService} from "./heic-upload.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {AdminService} from "../admin/admin.service";
@@ -124,6 +135,13 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   isRenamingGame = false;
   levels: EditorLevel[] = [];
   files: UploadedFile[] = [];
+
+  isImporting = false;
+  /** Files an imported scenario refers to that this game does not have. */
+  missingFiles: MissingScenarioFile[] = [];
+  /** File metadata as the imported document carried it: what a relink matches
+   *  the game's own files against, by name. */
+  private importedFiles: FilePayload[] = [];
 
   startAtLocal = "";
   validationErrors: string[] = [];
@@ -229,6 +247,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     );
     this.levels = rawLevels.map(level => this.toEditorLevel(level));
 
+    // The game as the server has it replaces whatever was imported.
+    this.importedFiles = [];
+    this.missingFiles = [];
+
     // Reconstruct the files list: prefer a server-provided files array if any,
     // otherwise rebuild best-effort entries from the guids referenced in hints.
     // Keep files already uploaded this session (they may not yet be referenced
@@ -250,21 +272,35 @@ export class GameEditorComponent implements OnInit, OnDestroy {
 
   private toEditorLevel(level: Level): EditorLevel {
     const scenario = level.scenario;
+    return this.toEditorLevelFrom(
+      scenario?.id ?? level.name_id,
+      (scenario?.conditions ?? []) as unknown[],
+      (scenario?.time_hints ?? []) as TimeHintPayload[],
+    );
+  }
+
+  /** The editor's view of one level, from the level as the contract spells it —
+   *  the shape the API answers with and the one a YAML import produces. */
+  private toEditorLevelFrom(
+    id: string,
+    conditions: unknown[],
+    timeHints: TimeHintPayload[],
+  ): EditorLevel {
     const editor: EditorLevel = {
       expanded: false,
-      id: scenario?.id ?? level.name_id,
+      id,
       winKeysText: "",
       autoFinishTime: null,
       autoFinishEffects: this.newEffects(),
       keyConditions: [],
       timerConditions: [],
-      time_hints: (scenario?.time_hints ?? []).map(th => ({
+      time_hints: timeHints.map(th => ({
         time: th.time,
         hint: (th.hint ?? []) as HintPayload[],
       })),
     };
 
-    for (const condition of (scenario?.conditions ?? []) as any[]) {
+    for (const condition of conditions as any[]) {
       const keys: string[] = Array.isArray(condition.keys) ? condition.keys : [];
       const effects = this.toEffects(condition.effects);
       const actionTime = typeof condition.action_time === "number" ? condition.action_time : null;
@@ -665,6 +701,9 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       return;
     }
     this.files = [...this.files.filter(f => f.guid !== file.guid), file];
+    // A file uploaded to fill a gap an import left should close it right away,
+    // without the author importing the document a second time.
+    this.relinkImportedFiles();
   }
 
   /** guid of the file currently being renamed inline, or null. */
@@ -952,6 +991,138 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   }
 
   // -------------------------------------------------------------------------
+  // Import / export of the scenario as YAML
+  //
+  // The document is the scenario exactly as the API takes it, so it can be
+  // edited by hand or kept next to the rest of a game's material. Files never
+  // travel in it — only their guids and names; see {@link relinkImportedFiles}.
+  // -------------------------------------------------------------------------
+
+  /** Write the scenario being edited — unsaved changes and all — to a file. */
+  exportYaml(): void {
+    scenarioToYaml(this.buildScenario()).then(
+      yaml => this.download(
+        new Blob([yaml], {type: "text/yaml;charset=utf-8"}),
+        yamlFileName(this.name),
+      ),
+      () => this.snackbar.error("Не удалось подготовить YAML"),
+    );
+  }
+
+  onYamlSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) {
+      return;
+    }
+    if (this.levels.length > 0
+      && !confirm("Импорт заменит все уровни в редакторе. Продолжить?")) {
+      return;
+    }
+
+    this.isImporting = true;
+    file.text()
+      .then(text => parseScenarioYaml(text))
+      .then(
+        scenario => {
+          this.isImporting = false;
+          this.applyImportedScenario(scenario);
+        },
+        err => {
+          this.isImporting = false;
+          this.snackbar.error(err instanceof ScenarioYamlError
+            ? `Импорт не удался: ${err.message}`
+            : "Не удалось прочитать файл");
+        },
+      );
+  }
+
+  private applyImportedScenario(scenario: ScenarioPayload): void {
+    // Relink before the levels are mapped: the editor keeps the very hint
+    // objects the document produced, so this rewrites what it will show.
+    this.importedFiles = scenario.files;
+    this.missingFiles = relinkFileGuids(scenarioHints(scenario), this.files, this.importedFiles);
+
+    if (scenario.name) {
+      this.name = scenario.name;
+    }
+    this.levels = scenario.levels.map(
+      level => this.toEditorLevelFrom(level.id, level.conditions, level.time_hints),
+    );
+    // The document may say things the engine will not take; show that now
+    // rather than at the first attempt to save.
+    this.validationErrors = validateScenario(this.buildScenario());
+
+    if (this.missingFiles.length > 0) {
+      this.snackbar.info(
+        `Сценарий импортирован, но не хватает файлов: ${this.missingFiles.length}. `
+        + "Загрузите их — подсказки свяжутся с ними по имени.",
+        "OK",
+        8000,
+      );
+    } else {
+      this.snackbar.success("Сценарий импортирован. Проверьте и сохраните.");
+    }
+  }
+
+  /**
+   * Point the imported hints at the files this game actually has, matching a
+   * guid the game does not know by the name the document gave it. Run after an
+   * import, after every upload, and on demand — a file renamed to match is
+   * exactly the case the button is for.
+   */
+  relinkImportedFiles(): void {
+    if (this.importedFiles.length === 0) {
+      return;
+    }
+    this.missingFiles = relinkFileGuids(this.editorHints(), this.files, this.importedFiles);
+  }
+
+  /** The button next to the list of what is missing: relink and say what came
+   *  of it. */
+  onRelinkClick(): void {
+    const before = this.missingFiles.length;
+    this.relinkImportedFiles();
+    const resolved = before - this.missingFiles.length;
+    if (resolved > 0) {
+      this.snackbar.success(`Подсказки связаны с файлами: ${resolved}`);
+    } else {
+      this.snackbar.info("Подходящих по имени файлов не нашлось");
+    }
+  }
+
+  /** Every hint held by the editor: time hints first, then the effects'. */
+  private editorHints(): HintPayload[] {
+    const hints: HintPayload[] = [];
+    for (const level of this.levels) {
+      for (const timeHint of level.time_hints) {
+        hints.push(...timeHint.hint);
+      }
+      hints.push(...level.autoFinishEffects.hints);
+      for (const condition of [...level.keyConditions, ...level.timerConditions]) {
+        hints.push(...condition.effects.hints);
+      }
+    }
+    return hints;
+  }
+
+  missingFileLabel(file: MissingScenarioFile): string {
+    return file.name ?? `файл ${file.guid.slice(0, 8)}…`;
+  }
+
+  private download(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // -------------------------------------------------------------------------
   // Author reassignment (admin mode)
   // -------------------------------------------------------------------------
 
@@ -1040,14 +1211,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.constructorService.keysToPrint(this.gameId).subscribe({
       next: blob => {
         this.isDownloadingKeys = false;
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${this.name || "game"}-keys.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
+        this.download(blob, `${this.name || "game"}-keys.pdf`);
       },
       error: () => {
         this.isDownloadingKeys = false;
