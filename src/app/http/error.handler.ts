@@ -18,6 +18,8 @@ export class GlobalErrorHandler implements ErrorHandler {
     PermissionsError: "Недостаточно прав",
     FileIsUsed: "Файл используется",
     FileNotFound: "Файл не найден",
+    CantEditGame: "Нельзя изменить игру",
+    GameHasAnotherAuthor: "Игра принадлежит другому автору",
   };
   constructor(
     private snackbar: SnackbarService,

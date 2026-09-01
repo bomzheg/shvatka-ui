@@ -118,6 +118,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   private authorSearchTimer: ReturnType<typeof setTimeout> | undefined;
 
   name = "";
+  /** The name as the server last confirmed it — what "Переименовать" compares
+   *  against, so the button only offers to write an actual change. */
+  savedName = "";
+  isRenamingGame = false;
   levels: EditorLevel[] = [];
   files: UploadedFile[] = [];
 
@@ -217,6 +221,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   private applyGame(game: FullGame) {
     this.game = game;
     this.name = game.name;
+    this.savedName = game.name;
     this.startAtLocal = game.start_at ? this.toLocalInput(game.start_at) : this.defaultStartAtLocal();
 
     const rawLevels = [...(game.levels ?? [])].sort(
@@ -871,6 +876,54 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       level_up: e.level_up === true,
       next_level: e.next_level && e.next_level.length > 0 ? e.next_level : null,
     };
+  }
+
+  /** Whether the typed name is a change worth writing.
+   *
+   *  Not in admin mode: `/games/my/...` belongs to the game's own author, and
+   *  an admin edits a completed game — which is frozen — through /admin, where
+   *  the name still travels with the scenario.
+   */
+  get canRename(): boolean {
+    const name = this.name.trim();
+    return !this.adminMode
+      && this.isEditable
+      && !this.isRenamingGame
+      && name.length > 0
+      && name !== this.savedName;
+  }
+
+  /** Write just the name, leaving the scenario alone — a draft without levels
+   *  cannot be saved as a scenario, and that is exactly when a name typed in a
+   *  hurry wants fixing. */
+  renameGame() {
+    if (this.adminMode || !this.isEditable || this.isRenamingGame) {
+      return;
+    }
+    const name = this.name.trim();
+    if (!name) {
+      this.snackbar.error("Название игры не может быть пустым");
+      return;
+    }
+    if (name === this.savedName) {
+      return;
+    }
+
+    this.isRenamingGame = true;
+    this.constructorService.renameGame(this.gameId, name).subscribe({
+      next: renamed => {
+        this.isRenamingGame = false;
+        this.name = renamed.name;
+        this.savedName = renamed.name;
+        if (this.game) {
+          this.game.name = renamed.name;
+        }
+        this.snackbar.success("Игра переименована");
+      },
+      error: () => {
+        this.isRenamingGame = false;
+      },
+    });
   }
 
   save() {

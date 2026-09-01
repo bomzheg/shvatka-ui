@@ -469,11 +469,16 @@ input.time-input {
   padding: 0.7rem 1.4rem;
 }
 
-.start-row {
+.start-row,
+.name-row {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.name-row input {
+  flex: 1 1 16rem;
 }
 
 @media (max-width: 640px) {
