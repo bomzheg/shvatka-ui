@@ -81,7 +81,7 @@ describe('AdminGamesComponent', () => {
 
     c.save(c.games[0]);
 
-    expect(adminService.changeGameStatus).toHaveBeenCalledWith(7, 'underconstruction');
+    expect(adminService.changeGameStatus).toHaveBeenCalledWith(7, 'underconstruction', false);
     // the admin cannot walk it back: the game is gone from the list
     expect(c.games).toEqual([]);
     expect(snackbar.success).toHaveBeenCalled();
@@ -107,6 +107,82 @@ describe('AdminGamesComponent', () => {
 
     expect(adminService.changeGameStatus).not.toHaveBeenCalled();
     expect(c.games.length).toBe(1);
+  });
+});
+
+describe('AdminGamesComponent purging a false start', () => {
+  let adminService: jasmine.SpyObj<AdminService>;
+  let snackbar: jasmine.SpyObj<SnackbarService>;
+
+  beforeEach(() => {
+    adminService = jasmine.createSpyObj<AdminService>(
+      'AdminService', ['listAdminGames', 'changeGameStatus', 'getGameWaivers', 'resendCurrentLevel'],
+    );
+    adminService.getGameWaivers.and.returnValue(of(waivers([])));
+    snackbar = jasmine.createSpyObj<SnackbarService>('SnackbarService', ['success', 'error', 'info']);
+  });
+
+  function component(games: AdminGame[]): AdminGamesComponent {
+    adminService.listAdminGames.and.returnValue(of(new Page(games)));
+    const c = new AdminGamesComponent(adminService, snackbar);
+    c.ngOnInit();
+    return c;
+  }
+
+  it('offers the purge only on a move that rewinds a played game', () => {
+    const c = component([game({status: 'started'})]);
+
+    // forward: the game is going on, its history is not the panel's
+    c.targets[7] = 'finished';
+    expect(c.canPurge(c.games[0])).toBeFalse();
+    // back before the run: this is the false start being undone
+    c.targets[7] = 'getting_waivers';
+    expect(c.canPurge(c.games[0])).toBeTrue();
+  });
+
+  it('offers nothing to purge on a game that was never played', () => {
+    const c = component([game({status: 'getting_waivers'})]);
+    c.targets[7] = 'underconstruction';
+
+    expect(c.canPurge(c.games[0])).toBeFalse();
+  });
+
+  it('sends the purge along with the status change', () => {
+    const c = component([game({status: 'finished'})]);
+    c.targets[7] = 'getting_waivers';
+    c.purgeRuntime[7] = true;
+    adminService.changeGameStatus.and.returnValue(of(game({status: 'getting_waivers'})));
+    spyOn(window, 'confirm').and.returnValue(true);
+
+    c.save(c.games[0]);
+
+    expect(adminService.changeGameStatus).toHaveBeenCalledWith(7, 'getting_waivers', true);
+  });
+
+  it('drops a tick the admin left behind on a move that no longer allows it', () => {
+    const c = component([game({status: 'finished'})]);
+    c.targets[7] = 'getting_waivers';
+    c.purgeRuntime[7] = true;
+
+    // the admin changes their mind and picks a forward move instead
+    c.onTargetChange(c.games[0], {target: {value: 'complete'}} as unknown as Event);
+    adminService.changeGameStatus.and.returnValue(of(game({status: 'complete'})));
+    spyOn(window, 'confirm').and.returnValue(true);
+    c.save(c.games[0]);
+
+    expect(adminService.changeGameStatus).toHaveBeenCalledWith(7, 'complete', false);
+  });
+
+  it('says out loud that the run is going, and irreversibly', () => {
+    const c = component([game({status: 'finished'})]);
+    c.targets[7] = 'getting_waivers';
+    c.purgeRuntime[7] = true;
+    const confirm = spyOn(window, 'confirm').and.returnValue(false);
+
+    c.save(c.games[0]);
+
+    expect(confirm.calls.mostRecent().args[0]).toContain('безвозвратно');
+    expect(adminService.changeGameStatus).not.toHaveBeenCalled();
   });
 });
 

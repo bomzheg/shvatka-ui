@@ -1,5 +1,9 @@
 @use '../../styles/component-mixins' as cm;
 
+// The team search mirrors the merge screens' picker (`_merge-shared.scss`) but
+// keeps its own few rules: pulling the whole shared sheet in for two selectors
+// would double this component's stylesheet.
+
 .status-message,
 .hint {
   color: var(--tg-theme-hint-color, #6b7280);
@@ -8,6 +12,50 @@
 .hint {
   font-size: 0.9rem;
   margin-top: 0;
+}
+
+.search-input {
+  @include cm.input-control();
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.search-results {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5rem 0 0;
+  max-height: 14rem;
+  overflow-y: auto;
+  display: grid;
+  gap: 0.25rem;
+
+  button {
+    @include cm.button-base(8px, 0.45rem 0.6rem);
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.2rem 0.6rem;
+    text-align: left;
+    font-weight: 400;
+    background: transparent;
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+
+    &:hover {
+      border-color: var(--app-accent);
+    }
+  }
+}
+
+.result-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.result-id {
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
 }
 
 .game-select-label {
@@ -25,7 +73,8 @@
   margin-bottom: 1.25rem;
 }
 
-.team-card {
+.team-card,
+.picker-card {
   @include cm.surface-card(12px, 1rem);
   margin-bottom: 1rem;
 }
@@ -43,6 +92,12 @@
   gap: 0.35rem;
 }
 
+.entry {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .player-link {
   color: var(--app-text);
   font-weight: 600;
@@ -52,4 +107,75 @@
   &:hover {
     text-decoration: underline;
   }
+}
+
+.remove-button {
+  @include cm.button-base(8px, 0.25rem 0.6rem);
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 400;
+  white-space: nowrap;
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid color-mix(in srgb, #dc2626 45%, var(--app-border));
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+}
+
+.link-button {
+  margin-top: 0.6rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--app-accent);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.add-form {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+
+  select {
+    @include cm.input-control();
+    padding: 0.4rem 0.5rem;
+  }
+
+  .status-message {
+    margin: 0;
+  }
+}
+
+.save-button {
+  @include cm.button-base(10px, 0.45rem 0.9rem);
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

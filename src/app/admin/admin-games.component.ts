@@ -21,6 +21,13 @@ import {SnackbarService} from '../snackbar/snackbar.service';
  * end of the admin's part in it: the game leaves this list, and the status of a
  * game that is not here cannot be changed again.
  *
+ * Rewinding a game that was *played* offers one more thing: the checkbox that
+ * sweeps its run — level times, typed keys, bonuses, timers. Without it a game
+ * started by mistake stays unplayable, because every team would resume where
+ * the false start left it. It shows only for a move the engine actually allows
+ * (a played game going back before its run), and the waivers are never part of
+ * it: who signed up survives a false start.
+ *
  * The running game also gets the resend button: telegram loses a message and a
  * team is left without its puzzle. The engine sends the level again — the page
  * only names the team, and gets back the teams it asked for and nothing about
@@ -53,6 +60,15 @@ export class AdminGamesComponent implements OnInit {
 
   /** Statuses that keep a game in the panel — the rest hand it to its author. */
   private readonly visibleStatuses = ['getting_waivers', 'started', 'finished', 'complete'];
+
+  /** Statuses a game only reaches by having been played — the ones with a run. */
+  private readonly playedStatuses = ['started', 'finished', 'complete'];
+
+  /** Statuses that put a game back before its run. */
+  private readonly rewoundStatuses = ['getting_waivers', 'ready', 'underconstruction'];
+
+  /** Games whose run the admin ticked to purge along with the status change. */
+  purgeRuntime: Record<number, boolean> = {};
 
   /** Teams playing the running game, offered as the resend target. */
   resendTeams: TeamDetails[] = [];
@@ -153,6 +169,26 @@ export class AdminGamesComponent implements OnInit {
 
   onTargetChange(game: AdminGame, event: Event): void {
     this.targets[game.id] = (event.target as HTMLSelectElement).value;
+    if (!this.canPurge(game)) {
+      // the checkbox is gone from the form — don't let a stale tick ride along
+      delete this.purgeRuntime[game.id];
+    }
+  }
+
+  /**
+   * Whether the move being set up is a rewind — a played game going back to a
+   * status before its run. Only then is there a run to sweep, and only then
+   * does the backend allow it.
+   */
+  canPurge(game: AdminGame): boolean {
+    const target = this.targets[game.id];
+    return !!target
+      && this.playedStatuses.includes(game.status)
+      && this.rewoundStatuses.includes(target);
+  }
+
+  onPurgeChange(game: AdminGame, event: Event): void {
+    this.purgeRuntime[game.id] = (event.target as HTMLInputElement).checked;
   }
 
   save(game: AdminGame): void {
@@ -160,24 +196,30 @@ export class AdminGamesComponent implements OnInit {
     if (!target || target === game.status) {
       return;
     }
-    if (!confirm(this.confirmText(game, target))) {
+    const purge = this.canPurge(game) && !!this.purgeRuntime[game.id];
+    if (!confirm(this.confirmText(game, target, purge))) {
       return;
     }
     this.savingId = game.id;
-    this.adminService.changeGameStatus(game.id, target)
+    this.adminService.changeGameStatus(game.id, target, purge)
       .pipe(finalize(() => { this.savingId = null; }))
       .subscribe({
         next: updated => {
           if (this.visibleStatuses.includes(updated.status)) {
             this.games = this.games.map(g => (g.id === updated.id ? updated : g));
             delete this.targets[game.id];
+            delete this.purgeRuntime[game.id];
             // a game that started (or stopped) changes who the resend may reach
             this.loadResendTeams();
-            this.snackbar.success(`Статус игры «${game.name}» — ${this.statusLabel(updated.status)}`);
+            this.snackbar.success(
+              `Статус игры «${game.name}» — ${this.statusLabel(updated.status)}`
+              + (purge ? ', ход игры очищен' : ''),
+            );
           } else {
             // the game is its author's again, and the panel loses sight of it
             this.games = this.games.filter(g => g.id !== updated.id);
             delete this.targets[game.id];
+            delete this.purgeRuntime[game.id];
             this.loadResendTeams();
             this.snackbar.success(
               `Игра «${game.name}» возвращена автору (${this.statusLabel(updated.status)})`
@@ -191,14 +233,19 @@ export class AdminGamesComponent implements OnInit {
       });
   }
 
-  private confirmText(game: AdminGame, target: string): string {
+  private confirmText(game: AdminGame, target: string, purge: boolean): string {
     const move = `Изменить статус игры «${game.name}»`
       + ` с «${this.statusLabel(game.status)}» на «${this.statusLabel(target)}»?`;
-    if (this.visibleStatuses.includes(target)) {
-      return move;
+    const parts = [move];
+    if (!this.visibleStatuses.includes(target)) {
+      parts.push('Игра вернётся автору: она пропадёт из админки, и поменять её статус'
+        + ' обратно будет уже нельзя. Запланированный старт при этом отменяется.');
     }
-    return `${move}\n\nИгра вернётся автору: она пропадёт из админки, и поменять её статус`
-      + ' обратно будет уже нельзя. Запланированный старт при этом отменяется.';
+    if (purge) {
+      parts.push('ВНИМАНИЕ: весь ход игры будет удалён безвозвратно — время на уровнях,'
+        + ' введённые ключи, бонусы и таймеры. Вейверы останутся.');
+    }
+    return parts.join('\n\n');
   }
 
   private load(): void {

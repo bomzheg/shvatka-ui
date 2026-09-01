@@ -92,6 +92,21 @@
   }
 }
 
+.purge-toggle {
+  flex-basis: 100%;
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  color: var(--tg-theme-hint-color, #6b7280);
+  cursor: pointer;
+
+  input {
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+  }
+}
+
 .resend-form {
   display: flex;
   gap: 0.5rem;
