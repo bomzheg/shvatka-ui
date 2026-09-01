@@ -1,4 +1,9 @@
-<p class="hint">Подтверждённые составы команд на игру (только просмотр).</p>
+<p class="hint">
+  Подтверждённые составы команд на игру. Состав можно и поправить — это то, чем
+  разруливают команду, у которой капитан пропал, недоступен или не успел к
+  дедлайну. Добавить можно только того, кто сейчас в команде: если игрока в ней
+  нет, сначала заведите его на вкладке «Команды».
+</p>
 
 <label class="game-select-label" for="waiversGame">Игра</label>
 <select
@@ -24,10 +29,10 @@
 } @else if (loadFailed) {
   <p class="status-message">Не удалось загрузить вейверы.</p>
 } @else if (waivers) {
-  @if (waivers.teams.length === 0) {
+  @if (displayTeams.length === 0) {
     <p class="status-message">По этой игре нет вейверов.</p>
   }
-  @for (team of waivers.teams; track team.id) {
+  @for (team of displayTeams; track team.id) {
     <div class="team-card">
       <h3 class="team-name">{{ team.name }}</h3>
       @if (teamWaivers(team).length === 0) {
@@ -39,10 +44,87 @@
               <a class="player-link" [routerLink]="['/admin/players', entry.player.id]">
                 {{ entry.player.username || entry.player.name_mention }}
               </a>
+              <button
+                class="remove-button"
+                type="button"
+                [disabled]="removingKey === entryKey(team, entry)"
+                (click)="remove(team, entry)"
+              >
+                {{ removingKey === entryKey(team, entry) ? 'Убираем...' : 'Убрать' }}
+              </button>
             </li>
           }
         </ul>
       }
+
+      <button class="link-button" type="button" (click)="toggleAddForm(team)">
+        {{ addingTo === team.id ? 'Отмена' : 'Добавить игрока' }}
+      </button>
+
+      @if (addingTo === team.id) {
+        <div class="add-form">
+          @if (loadingMembersFor === team.id) {
+            <p class="status-message">Загружаем состав команды...</p>
+          } @else if (addableMembers(team).length === 0) {
+            <p class="status-message">Все игроки команды уже в составе на игру.</p>
+          } @else {
+            <label class="visually-hidden" [attr.for]="'add-waiver-' + team.id">Игрок</label>
+            <select
+              [id]="'add-waiver-' + team.id"
+              [value]="selectedMemberId ?? ''"
+              [disabled]="isAdding"
+              (change)="onMemberChange($event)"
+            >
+              <option value="">— выберите игрока —</option>
+              @for (member of addableMembers(team); track member.id) {
+                <option [value]="member.id">{{ memberName(member) }}</option>
+              }
+            </select>
+            <button
+              class="save-button"
+              type="button"
+              [disabled]="selectedMemberId === null || isAdding"
+              (click)="add(team)"
+            >
+              {{ isAdding ? 'Добавляем...' : 'Добавить' }}
+            </button>
+          }
+        </div>
+      }
     </div>
   }
+
+  <div class="picker-card">
+    <p class="hint">
+      Команды без единого вейвера в составе игры не значатся. Найдите такую, чтобы
+      завести ей первый вейвер.
+    </p>
+    <label class="game-select-label" for="waiver-team-search">Команда</label>
+    <input
+      id="waiver-team-search"
+      type="text"
+      class="search-input"
+      placeholder="Поиск по названию..."
+      name="waiverTeamQuery"
+      autocomplete="off"
+      [ngModel]="teamQuery"
+      (ngModelChange)="onTeamQueryChange($event)"
+    />
+    @if (isSearchingTeams) {
+      <p class="status-message">Ищем...</p>
+    } @else if (teamResults.length > 0) {
+      <ul class="search-results">
+        @for (found of teamResults; track found.id) {
+          <li>
+            <button type="button" (click)="pickTeam(found)">
+              <span class="result-name">{{ found.name }}</span>
+              <span class="result-id">#{{ found.id }}</span>
+            </button>
+          </li>
+        }
+      </ul>
+    } @else if (teamQuery.trim()) {
+      <p class="status-message">Ничего не нашли.</p>
+    }
+  </div>
 }

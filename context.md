@@ -95,6 +95,7 @@ Routes use the same nouns (`/games`, `/games/running`, `/games/constructor`,
 | **Game** | Игра | The aggregate root: an author, a name, an ordered list of levels, a status, a start time, results. | `FullGame` in `domain/game.models.ts` |
 | **Game status** | Статус игры | Where the game is in its lifecycle — see below. Drives what the UI offers. | `FullGame.status` |
 | **Game number** | Номер игры | The game's place in the archive; only played games have one. | games list |
+| **Game run** | Ход игры | Everything playing a game produced: the level times, the typed keys, the events and the timers. Not part of the game — the game is what the author wrote — but what a *second* run of the same game would collide with. The app never reads it as a whole; it only offers the admin the checkbox that sweeps it. | `admin-games.component.ts` |
 | **Organizer (org)** | Организатор (орг) | A player who runs a game rather than playing it. The author is the **primary organizer** with every right; others are **secondary organizers** with explicit permissions and **nothing granted by default**. | `game_play/` |
 | **Org permission** | Полномочие орга | What a secondary organizer may do: spy, see the key log, validate waivers, view the scenario. **Nothing is granted by default.** The labels are the bot's, see below. | `game_play.component.html`, `constructor/organizers.models.ts` |
 | **Release** | Релиз | The promo an author publishes before a game — a **banner**, then a few words about the theme and a map of the district. Everything after the banner is a plain list of hint parts, so it renders through the same components as a hint. Optional. Written on its own page under the constructor (`/games/constructor/:id/release`), which the scenario editor links to; read on the main page in full, and on a game's card behind the first spoiler. Whether it also stands in the bot's announcements channel is the bot's own business — this app never asks. | `GameRelease` in `domain/game.models.ts`, `constructor/release-editor.component.ts`, `home/`, `game/` |
@@ -122,6 +123,18 @@ that is not complete is closed to an admin like it is to everyone but its author
 and orgs. Moving a game to `underconstruction` or `ready` hands it back to its
 author and ends the admin's part in it: the game leaves the panel and its status
 cannot be changed from there again.
+
+Moving a game that was *played* (`started`, `finished`, `complete`) back to a
+status before its run (`getting_waivers`, `ready`, `underconstruction`) is a
+**rewind**, and only there does the panel offer to sweep the **game run** with
+it — the checkbox on the status form. Without it a game started by mistake stays
+unplayable: every team would resume where the false start left it. The waivers
+are never part of the sweep.
+
+The panel also **edits a game's waivers** one player at a time: the way in when
+a captain is gone, unreachable, or missed the deadline. Only a player who is in
+the team right now can be signed up (the engine reads a roster through the live
+membership); putting them in the team first is the neighbouring admin screen.
 
 A game's **release** stays editable longer than its scenario: through `finished`
 included, and after `complete` only for an admin. When it reaches the

@@ -3,7 +3,8 @@
   только статус — сценарий, ключи и файлы идущей игры остаются у автора и оргов.
   Возврат игры в «в процессе создания» отдаёт её автору: она пропадёт из
   админки, запланированный старт отменится, и поменять статус обратно будет
-  нельзя.
+  нельзя. Если игра уже игралась, при возврате назад можно заодно очистить её
+  ход — иначе при повторной игре команды продолжат с прежних мест.
 </p>
 
 @if (isLoading) {
@@ -40,6 +41,22 @@
             <button type="button" class="save-button" [disabled]="!canSave(game)" (click)="save(game)">
               {{ savingId === game.id ? 'Сохраняем...' : 'Сохранить' }}
             </button>
+            @if (canPurge(game)) {
+              <label class="purge-toggle" [attr.for]="'purge-' + game.id">
+                <input
+                  type="checkbox"
+                  [id]="'purge-' + game.id"
+                  [checked]="!!purgeRuntime[game.id]"
+                  [disabled]="savingId !== null"
+                  (change)="onPurgeChange(game, $event)"
+                />
+                <span>
+                  Очистить ход игры: время на уровнях, введённые ключи, бонусы и таймеры.
+                  Без этого команды при повторной игре продолжат с того места, где их
+                  застал ложный старт. Вейверы останутся. Отменить нельзя.
+                </span>
+              </label>
+            }
           </div>
           @if (game.status === 'started') {
             <div class="resend-form">
@@ -105,6 +122,22 @@
             <button type="button" class="save-button" [disabled]="!canSave(game)" (click)="save(game)">
               {{ savingId === game.id ? 'Сохраняем...' : 'Сохранить' }}
             </button>
+            @if (canPurge(game)) {
+              <label class="purge-toggle" [attr.for]="'purge-' + game.id">
+                <input
+                  type="checkbox"
+                  [id]="'purge-' + game.id"
+                  [checked]="!!purgeRuntime[game.id]"
+                  [disabled]="savingId !== null"
+                  (change)="onPurgeChange(game, $event)"
+                />
+                <span>
+                  Очистить ход игры: время на уровнях, введённые ключи, бонусы и таймеры.
+                  Без этого команды при повторной игре продолжат с того места, где их
+                  застал ложный старт. Вейверы останутся. Отменить нельзя.
+                </span>
+              </label>
+            }
           </div>
         </li>
       }

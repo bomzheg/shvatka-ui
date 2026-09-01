@@ -4,7 +4,7 @@ import {HttpTestingController, provideHttpClientTesting} from '@angular/common/h
 
 import {AdminService} from './admin.service';
 import {AuthStateService} from '../auth/auth-state.service';
-import {AdminGame, FileGarbage} from './admin.models';
+import {AdminGame, FileGarbage, TeamWaivers} from './admin.models';
 
 describe('AdminService', () => {
   let service: AdminService;
@@ -69,7 +69,8 @@ describe('AdminService', () => {
 
     const request = httpMock.expectOne(req => req.url.endsWith('/admin/games/4/status'));
     expect(request.request.method).toBe('PUT');
-    expect(request.request.body).toEqual({status: 'underconstruction'});
+    // the run is kept unless the admin ticks the box
+    expect(request.request.body).toEqual({status: 'underconstruction', purge_runtime: false});
     request.flush({
       id: 4,
       author: {id: 1, can_be_author: true, name_mention: 'author', username: 'author'},
@@ -78,6 +79,50 @@ describe('AdminService', () => {
       start_at: null,
       number: null,
     });
+  });
+
+  it('asks for the run to go along with the status when told to', () => {
+    service.changeGameStatus(4, 'getting_waivers', true).subscribe();
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/admin/games/4/status'));
+    expect(request.request.body).toEqual({status: 'getting_waivers', purge_runtime: true});
+    request.flush({
+      id: 4,
+      author: {id: 1, can_be_author: true, name_mention: 'author', username: 'author'},
+      name: 'ложный старт',
+      status: 'getting_waivers',
+      start_at: null,
+      number: null,
+    });
+  });
+
+  it('signs a player up for a game over the captain head', () => {
+    let received: TeamWaivers | undefined;
+    service.addWaiver(4, 3, 9).subscribe(waivers => received = waivers);
+
+    const request = httpMock.expectOne(
+      req => req.url.endsWith('/admin/waivers/game/4/teams/3/players'),
+    );
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({player_id: 9, played: 'yes'});
+
+    const answer: TeamWaivers = {
+      team: {id: 3, name: 'Гриффиндор', description: null, captain: null},
+      players: [{player: {id: 9, can_be_author: false, name_mention: 'ron'}, played: 'yes'}],
+    };
+    request.flush(answer);
+
+    expect(received).toEqual(answer);
+  });
+
+  it('takes a player back out of the roster', () => {
+    service.removeWaiver(4, 3, 9).subscribe();
+
+    const request = httpMock.expectOne(
+      req => req.url.endsWith('/admin/waivers/game/4/teams/3/players/9'),
+    );
+    expect(request.request.method).toBe('DELETE');
+    request.flush(null);
   });
 
   it('resends the running level without learning anything about it', () => {

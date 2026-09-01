@@ -98,6 +98,23 @@ export interface GameWaivers {
   waivers: Record<string, WaiverEntry[]>;
 }
 
+/** One player's waiver for a game, as the roster editor sees it. */
+export interface WaiverPlayer {
+  player: AdminPlayerRef;
+  played: PollVote;
+}
+
+/**
+ * `POST /admin/waivers/game/{id}/teams/{team_id}/players` — the team's whole
+ * waiver list after the change, `played` included. Unlike `GameWaivers` (which
+ * is the roster: only the players who play), this carries every waiver the team
+ * has for the game, so the editor can show a `no` and turn it into a `yes`.
+ */
+export interface TeamWaivers {
+  team: TeamDetails | null;
+  players: WaiverPlayer[];
+}
+
 /** One `game_files` row the garbage collector considers unused. */
 export interface UnusedGameFile {
   game_id: number;

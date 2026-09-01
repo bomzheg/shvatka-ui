@@ -17,6 +17,8 @@ import {
   GameWaivers,
   MergeTimelineItem,
   OneTimeLink,
+  PollVote,
+  TeamWaivers,
   WaiverPoint,
 } from './admin.models';
 
@@ -129,6 +131,29 @@ export class AdminService {
     return this.http.get<GameWaivers>(`/admin/waivers/game/${gameId}`);
   }
 
+  /**
+   * Sign a player up for the game over the captain's head — the way in when the
+   * captain is gone, unreachable, or missed the deadline. The player must play
+   * in the team right now; one who already has a waiver gets it rewritten, so
+   * this is also how `played` is changed. Answers with the team's whole waiver
+   * list as it now is.
+   */
+  addWaiver(gameId: number, teamId: number, playerId: number, played: PollVote = 'yes'): Observable<TeamWaivers> {
+    return this.http.post<TeamWaivers>(
+      `/admin/waivers/game/${gameId}/teams/${teamId}/players`,
+      {player_id: playerId, played},
+    );
+  }
+
+  /**
+   * Take the player back out of the game's roster. The waiver is deleted rather
+   * than marked «отозван» — unlike the captain's own revoke, this leaves the
+   * team free to sign the player up again.
+   */
+  removeWaiver(gameId: number, teamId: number, playerId: number): Observable<void> {
+    return this.http.del<void>(`/admin/waivers/game/${gameId}/teams/${teamId}/players/${playerId}`);
+  }
+
   listGames(): Observable<Page<Game>> {
     return this.http.get<Page<Game>>('/games');
   }
@@ -149,9 +174,16 @@ export class AdminService {
    * Move the game to another status — the way back out of waivers opened too
    * early. Moving it to `underconstruction` or `ready` is final for the admin:
    * the game becomes its author's again and disappears from the panel.
+   *
+   * With `purgeRuntime` the move also erases what playing the game produced:
+   * level times, typed keys, events and timers. That is what makes a game
+   * started by mistake playable again from the beginning — without it every
+   * team would resume where the false start left it. The backend allows it only
+   * when a played game is rewound and refuses the whole request otherwise, so
+   * nothing is half-done. The waivers are never touched.
    */
-  changeGameStatus(id: number, status: string): Observable<AdminGame> {
-    return this.http.put<AdminGame>(`/admin/games/${id}/status`, {status});
+  changeGameStatus(id: number, status: string, purgeRuntime = false): Observable<AdminGame> {
+    return this.http.put<AdminGame>(`/admin/games/${id}/status`, {status, purge_runtime: purgeRuntime});
   }
 
   /**
