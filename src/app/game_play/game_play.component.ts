@@ -49,6 +49,8 @@ export interface LevelFeedItem {
   label: string;
   tags: IconTag[];
   hints: HintPart[];
+  /** The level's last scheduled hint: nothing more is coming on this level. */
+  isLastHint: boolean;
 }
 
 @Component({
@@ -671,14 +673,20 @@ export class GamePlayComponent implements OnInit, OnDestroy {
   private buildLevelFeed(hints: CurrentHints): LevelFeedItem[] {
     const startedAtMs = Date.parse(hints.started_at);
 
-    const items: LevelFeedItem[] = (hints.hints ?? []).map(timeHint => ({
-      id: `hint:${timeHint.time}`,
-      source: 'hint' as const,
-      sortMs: Number.isNaN(startedAtMs) ? 0 : startedAtMs + timeHint.time * 60_000,
-      label: `Подсказка ${timeHint.time} мин.`,
-      tags: [],
-      hints: timeHint.hint ?? [],
-    }));
+    const timeHints = hints.hints ?? [];
+    const items: LevelFeedItem[] = timeHints.map((timeHint, index) => {
+      // hints come out in order, so only the last one shown can be the level's last
+      const isLastHint = hints.is_last_hint_shown && index === timeHints.length - 1;
+      return {
+        id: `hint:${timeHint.time}`,
+        source: 'hint' as const,
+        sortMs: Number.isNaN(startedAtMs) ? 0 : startedAtMs + timeHint.time * 60_000,
+        label: this.hintLabel(timeHint.time, isLastHint),
+        tags: [],
+        hints: timeHint.hint ?? [],
+        isLastHint,
+      };
+    });
 
     for (const event of this.getCurrentLevelHintEvents()) {
       const eventAtMs = Date.parse(event.at);
@@ -690,12 +698,28 @@ export class GamePlayComponent implements OnInit, OnDestroy {
         label: this.getEventLabel(event, startedAtMs),
         tags: this.getEventEffects(event),
         hints: this.getEventHints(event),
+        isLastHint: false,
       });
     }
 
     // On a tie the scheduled hint goes first: the event landed on a level that already had it.
     return items.sort((left, right) =>
       left.sortMs - right.sortMs || this.feedSourceOrder(left) - this.feedSourceOrder(right));
+  }
+
+  /**
+   * Caption of a scheduled hint. The level's last one says so — the same thing
+   * the bot writes above it, so a team knows nothing more is coming.
+   */
+  hintLabel(time: number, isLastHint: boolean): string {
+    return isLastHint
+      ? `Последняя подсказка уровня ${time} мин.`
+      : `Подсказка ${time} мин.`;
+  }
+
+  /** Whether the hint at `index` of a passed level was the last one that level had. */
+  isLastPassedHint(level: PassedLevel, index: number): boolean {
+    return level.is_last_hint_shown && index === level.hints.length - 1;
   }
 
   private hasEventHints(event: GameEvent): boolean {
