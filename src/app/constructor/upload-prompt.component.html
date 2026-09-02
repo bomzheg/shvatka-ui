@@ -1,0 +1,23 @@
+@if (prompt.prompt$ | async; as pending) {
+  <div class="upload-overlay" (click)="cancel()">
+    <div class="upload-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true"
+         aria-labelledby="upload-prompt-title">
+      @if (pending.refusal === "telegram") {
+        <h2 id="upload-prompt-title" class="upload-title">Telegram не принял файл</h2>
+        <p class="upload-message">{{ pending.message }}</p>
+        <div class="upload-actions">
+          <button type="button" class="ghost-button" (click)="force()">Загрузить как есть</button>
+          <button type="button" class="primary" (click)="cancel()">Отмена</button>
+        </div>
+      } @else {
+        <h2 id="upload-prompt-title" class="upload-title">Неподдерживаемый формат</h2>
+        <p class="upload-message">{{ pending.message }}</p>
+        <div class="upload-actions">
+          <button type="button" class="primary" (click)="convert()">Конвертировать в JPEG</button>
+          <button type="button" class="ghost-button" (click)="keep()">Оставить как есть</button>
+          <button type="button" class="ghost-button" (click)="cancel()">Отмена</button>
+        </div>
+      }
+    </div>
+  </div>
+}

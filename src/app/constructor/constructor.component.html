@@ -19,6 +19,19 @@
       </div>
     </form>
 
+    <div class="import-zip">
+      <label class="upload-button" [class.busy]="isImporting">
+        {{ isImporting ? "Загружаем..." : "Загрузить игру из zip" }}
+        <input type="file" hidden accept=".zip,application/zip"
+               (change)="onZipSelected($event)" [disabled]="isImporting" />
+      </label>
+      <p class="import-note">
+        Архив со сценарием и файлами — такой же, какой понимает бот и который можно
+        скачать на странице игры. Название игры внутри архива: если такой игры у вас
+        ещё нет, появится новая, а свою одноимённую архив перезапишет.
+      </p>
+    </div>
+
     @if (isLoading) {
       <div class="loading-state" aria-live="polite">
         <span class="loading-spinner"></span>

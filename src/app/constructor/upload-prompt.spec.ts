@@ -7,13 +7,21 @@ import {
   uploadOptionsQuery,
   UploadedFile,
 } from "./constructor.models";
-import {HeicUploadService} from "./heic-upload.service";
+import {UploadPromptService} from "./upload-prompt.service";
 
 function makeFile(name: string, type = ""): File {
   return new File([new Uint8Array([1, 2, 3])], name, {type});
 }
 
 const STORED: UploadedFile = {guid: "g1", original_filename: "photo", extension: ".jpg"};
+
+/** What the engine answers when telegram refuses the file it was sending. */
+function telegramError(description: string): HttpErrorResponse {
+  return new HttpErrorResponse({
+    status: 422,
+    error: {type: "FileRejectedByTelegram", text: "rejected", description, docUrl: null},
+  });
+}
 
 describe("uploadOptionsQuery", () => {
   it("is empty when no options apply", () => {
@@ -68,11 +76,11 @@ describe("unsupported media error", () => {
   });
 });
 
-describe("HeicUploadService", () => {
-  let service: HeicUploadService;
+describe("UploadPromptService", () => {
+  let service: UploadPromptService;
 
   beforeEach(() => {
-    service = new HeicUploadService();
+    service = new UploadPromptService();
   });
 
   it("uploads ordinary files without prompting", () => {
@@ -139,6 +147,57 @@ describe("HeicUploadService", () => {
     expect(uploadFn).toHaveBeenCalledTimes(2);
     expect(uploadFn.calls.mostRecent().args).toEqual([{allowConversion: true}]);
     expect(result).toEqual(STORED);
+  });
+
+  it("prompts when telegram refuses the file and forces on the author's word", () => {
+    const err = telegramError("«clip.mov»: Request Entity Too Large");
+    const uploadFn = jasmine
+      .createSpy("uploadFn")
+      .and.returnValues(throwError(() => err), of(STORED));
+    let result: UploadedFile | undefined;
+    service.upload(makeFile("clip.mov", "video/quicktime"), uploadFn).subscribe(
+      f => (result = f),
+    );
+
+    expect(uploadFn).toHaveBeenCalledTimes(1);
+    expect(service.prompt$.value?.refusal).toBe("telegram");
+    expect(service.prompt$.value?.message).toContain("Request Entity Too Large");
+
+    service.choose("force");
+
+    expect(uploadFn.calls.mostRecent().args).toEqual([{force: true}]);
+    expect(result).toEqual(STORED);
+  });
+
+  it("keeps nothing when the author declines a file telegram refused", () => {
+    const uploadFn = jasmine
+      .createSpy("uploadFn")
+      .and.returnValue(throwError(() => telegramError("слишком большой")));
+    let emitted = false;
+    let completed = false;
+    service.upload(makeFile("clip.mov", "video/quicktime"), uploadFn).subscribe({
+      next: () => (emitted = true),
+      complete: () => (completed = true),
+    });
+
+    service.choose("cancel");
+
+    expect(uploadFn).toHaveBeenCalledTimes(1);
+    expect(emitted).toBeFalse();
+    expect(completed).toBeTrue();
+  });
+
+  it("carries the format choice into the forced upload", () => {
+    const uploadFn = jasmine
+      .createSpy("uploadFn")
+      .and.returnValues(throwError(() => telegramError("не принят")), of(STORED));
+    service.upload(makeFile("a.heic"), uploadFn).subscribe();
+
+    service.choose("keep");
+    expect(uploadFn.calls.mostRecent().args).toEqual([{saveUnsupportedAsIs: true}]);
+
+    service.choose("force");
+    expect(uploadFn.calls.mostRecent().args).toEqual([{saveUnsupportedAsIs: true, force: true}]);
   });
 
   it("propagates non-415 errors without prompting", () => {

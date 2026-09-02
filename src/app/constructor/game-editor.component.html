@@ -408,10 +408,18 @@
         рядом с остальными материалами игры, или вставьте готовый — хоть из другой игры.
         Файлы (фото, аудио, видео) в документ не попадают — только их имена: загрузите
         их в игру сами, и подсказки свяжутся с ними по имени.
+        Чтобы перенести игру вместе с файлами, скачайте zip — такой же архив
+        понимает бот, а загрузить его обратно можно на странице списка игр.
+        В zip попадает сохранённая игра, а не то, что сейчас в редакторе.
       </p>
       <div class="yaml-actions">
         <button type="button" class="ghost-button" (click)="exportYaml()">
           <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.download"/> Скачать YAML
+        </button>
+        <button type="button" class="ghost-button" (click)="exportZip()"
+                [disabled]="isExportingZip">
+          <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.download"/>
+          {{ isExportingZip ? "Собираем..." : "Скачать zip с файлами" }}
         </button>
         <button type="button" class="ghost-button" (click)="toggleYamlEditor()">
           <mat-icon class="app-icon-inline" [svgIcon]="AppIcon.edit"/>

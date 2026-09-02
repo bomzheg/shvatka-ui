@@ -3,7 +3,7 @@ import {MatIconRegistry} from '@angular/material/icon';
 import {APP_BASE_HREF, CommonModule, DOCUMENT} from '@angular/common';
 import {NavigationEnd, Router, RouterLink, RouterOutlet} from '@angular/router';
 import {HeaderComponent} from "./header/header.component";
-import {HeicUploadPromptComponent} from "./constructor/heic-upload-prompt.component";
+import {UploadPromptComponent} from "./constructor/upload-prompt.component";
 import {environment} from "../environments/environment";
 import {DomSanitizer} from "@angular/platform-browser";
 import {ThemeService} from "./theme/theme.service";
@@ -17,7 +17,7 @@ import {registerAppIcons} from "./ui/icons";
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, HeaderComponent, HeicUploadPromptComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, HeaderComponent, UploadPromptComponent],
   providers: [
     {provide: APP_BASE_HREF, useValue: environment.baseHref}
   ],

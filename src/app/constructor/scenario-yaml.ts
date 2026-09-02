@@ -71,12 +71,21 @@ export async function scenarioToYaml(scenario: ScenarioPayload): Promise<string>
 
 /** A file name safe to offer as the download name of an exported scenario. */
 export function yamlFileName(gameName: string): string {
+  return `${downloadBaseName(gameName)}.yaml`;
+}
+
+/** The same, for the zip package (the scenario with its media). */
+export function zipFileName(gameName: string): string {
+  return `${downloadBaseName(gameName)}.zip`;
+}
+
+function downloadBaseName(gameName: string): string {
   const base = (gameName || "scenario")
     .trim()
     .replace(/[\\/:*?"<>|]+/g, "")
     .replace(/\s+/g, "-")
     .slice(0, 80);
-  return `${base || "scenario"}.yaml`;
+  return base || "scenario";
 }
 
 /** Deep copy without the undefined values js-yaml would silently drop anyway. */

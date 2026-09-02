@@ -1,6 +1,6 @@
 @use "../../styles/component-mixins" as cm;
 
-.heic-overlay {
+.upload-overlay {
   position: fixed;
   inset: 0;
   z-index: 1100;
@@ -11,7 +11,7 @@
   padding: 1.5rem;
 }
 
-.heic-dialog {
+.upload-dialog {
   @include cm.surface-card(16px, 1.5rem);
   max-width: 420px;
   width: 100%;
@@ -21,18 +21,20 @@
   gap: 1rem;
 }
 
-.heic-title {
+.upload-title {
   margin: 0;
   font-size: 1.15rem;
 }
 
-.heic-message {
+.upload-message {
   margin: 0;
   color: var(--app-muted-text);
   line-height: 1.5;
+  // the telegram refusal is written as several lines
+  white-space: pre-line;
 }
 
-.heic-actions {
+.upload-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;

@@ -50,6 +50,37 @@ describe('ConstructorService', () => {
     expect(renamed?.name).toBe('новое имя');
   });
 
+  it('downloads the game as a zip package', () => {
+    let received: Blob | undefined;
+    service.exportZip(42).subscribe(blob => received = blob);
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/games/my/42/scenario/zip'));
+    expect(request.request.method).toBe('GET');
+    expect(request.request.responseType).toBe('blob');
+    expect(request.request.withCredentials).toBeTrue();
+
+    const zip = new Blob(['PK'], {type: 'application/zip'});
+    request.flush(zip);
+
+    expect(received).toBe(zip);
+  });
+
+  it('imports a zip package as multipart form data', () => {
+    const file = new File([new Uint8Array([80, 75])], 'game.zip', {type: 'application/zip'});
+    let imported: {name: string} | undefined;
+    service.importZip(file).subscribe(game => imported = game);
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/games/my/zip'));
+    expect(request.request.method).toBe('POST');
+    expect(request.request.withCredentials).toBeTrue();
+    const body = request.request.body as FormData;
+    expect(body instanceof FormData).toBeTrue();
+    expect((body.get('file') as File).name).toBe('game.zip');
+    request.flush({id: 7, name: 'из архива', levels: []});
+
+    expect(imported?.name).toBe('из архива');
+  });
+
   it('deletes a game file through the cdn', () => {
     let done = false;
     service.deleteFile(42, 'the-guid').subscribe(() => done = true);
