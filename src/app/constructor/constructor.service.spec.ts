@@ -81,6 +81,15 @@ describe('ConstructorService', () => {
     expect(imported?.name).toBe('из архива');
   });
 
+  it('asks the server to overwrite only when told to', () => {
+    const file = new File([new Uint8Array([80, 75])], 'game.zip', {type: 'application/zip'});
+    service.importZip(file, true).subscribe();
+
+    const request = httpMock.expectOne(req => req.url.endsWith('/games/my/zip?overwrite=true'));
+    expect(request.request.method).toBe('POST');
+    request.flush({id: 7, name: 'из архива', levels: []});
+  });
+
   it('deletes a game file through the cdn', () => {
     let done = false;
     service.deleteFile(42, 'the-guid').subscribe(() => done = true);

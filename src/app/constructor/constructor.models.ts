@@ -106,6 +106,24 @@ export function unsupportedMediaMessage(err: HttpErrorResponse): string {
 }
 
 /**
+ * Whether an import would rewrite a game the author already has.
+ *
+ * The package carries the game name, so only the server knows what an import
+ * would land on: it stops and says so rather than writing over a game, and the
+ * import is repeated with `overwrite` once the author agrees.
+ */
+export function isGameWouldBeRewritten(err: unknown): boolean {
+  return readApiError(err)?.type === "GameWouldBeRewritten";
+}
+
+/** The question to put to the author before their game is written over. */
+export function rewriteQuestion(err: unknown): string {
+  const description = readApiError(err)?.description ?? "";
+  const about = description.length > 0 ? description : "Игра с таким названием уже есть";
+  return `${about}. Перезаписать её содержимым архива?`;
+}
+
+/**
  * Whether Telegram refused the file the upload was sending.
  *
  * A hint reaches a team as a Telegram message, so the engine sends every

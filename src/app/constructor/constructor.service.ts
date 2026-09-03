@@ -66,14 +66,17 @@ export class ConstructorService {
 
   /** Write a whole game from a zip package.
    *
-   *  The package names the game: an unknown name creates a draft, your own game
-   *  of that name is rewritten. A package holding a file Telegram will not take
-   *  is refused whole — an import is expected to be correct.
+   *  The package names the game: an unknown name creates a draft, while your
+   *  own game of that name is only rewritten with `overwrite` — without it the
+   *  server answers 409 (`GameWouldBeRewritten`) so the author can be asked
+   *  first. A package holding a file Telegram will not take is refused whole —
+   *  an import is expected to be correct.
    */
-  importZip(file: File): Observable<FullGame> {
+  importZip(file: File, overwrite = false): Observable<FullGame> {
     const formData = new FormData();
     formData.append("file", file);
-    return this.http.postForm<FullGame>("/games/my/zip", formData);
+    const query = overwrite ? "?overwrite=true" : "";
+    return this.http.postForm<FullGame>(`/games/my/zip${query}`, formData);
   }
 
   /** §1.5 — set or clear the planned start. */
