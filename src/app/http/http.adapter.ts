@@ -102,6 +102,18 @@ export class HttpAdapter {
     return this.uploadCdn<T>(url, formData);
   }
 
+  /** A multipart POST to the api (not the cdn) — a zip package, say. */
+  postForm<T>(url: string, formData: FormData): Observable<T> {
+    if (this.shouldBlockProtectedRequest(url)) {
+      return this.unauthorizedError(url);
+    }
+    return this.http.post<T>(
+      this.config.apiUrl + url,
+      formData,
+      {withCredentials: true},
+    );
+  }
+
   private shouldBlockProtectedRequest(url: string): boolean {
     if (!this.authStateService.isUnauthenticated()) {
       return false;

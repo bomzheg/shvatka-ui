@@ -1,5 +1,6 @@
 import {HintType, ScenarioConditionType, SPOILER_HINT_TYPES} from "../domain/game.models";
 import {HttpErrorResponse} from "@angular/common/http";
+import {readApiError} from "../http/api-error";
 
 // The spoilerable types live with the model: the read-only hint view needs the
 // same list, and it must not drift from the editor's copy.
@@ -40,15 +41,17 @@ export interface UploadedFile {
 }
 
 /**
- * Optional flags of `POST /cdn/games/{id}/files` that control how an
- * unsupported image (HEIC/HEIF) is handled server-side. Both default to false;
- * ordinary formats (JPEG/PNG/mp4/…) ignore them entirely.
+ * Optional flags of `POST /cdn/games/{id}/files`. The first two control how an
+ * unsupported image (HEIC/HEIF) is handled server-side; ordinary formats
+ * (JPEG/PNG/mp4/…) ignore them entirely. All default to false.
  */
 export interface UploadOptions {
   /** Convert the unsupported image to JPEG before storing (lands as `.jpg`). */
   allowConversion?: boolean;
   /** Store the original bytes untouched instead of rejecting (won't preview). */
   saveUnsupportedAsIs?: boolean;
+  /** Keep the file even though Telegram refused it — see {@link isTelegramRejection}. */
+  force?: boolean;
 }
 
 /** Build the query string for {@link UploadOptions}, or "" when none apply. */
@@ -59,6 +62,9 @@ export function uploadOptionsQuery(options?: UploadOptions): string {
   }
   if (options?.saveUnsupportedAsIs) {
     params.set("save_unsupported_as_is", "true");
+  }
+  if (options?.force) {
+    params.set("force", "true");
   }
   const qs = params.toString();
   return qs ? `?${qs}` : "";
@@ -97,6 +103,47 @@ export function unsupportedMediaMessage(err: HttpErrorResponse): string {
   return typeof text === "string" && text.length > 0
     ? text
     : "Формат файла не поддерживается для загрузки.";
+}
+
+/**
+ * Whether an import would rewrite a game the author already has.
+ *
+ * The package carries the game name, so only the server knows what an import
+ * would land on: it stops and says so rather than writing over a game, and the
+ * import is repeated with `overwrite` once the author agrees.
+ */
+export function isGameWouldBeRewritten(err: unknown): boolean {
+  return readApiError(err)?.type === "GameWouldBeRewritten";
+}
+
+/** The question to put to the author before their game is written over. */
+export function rewriteQuestion(err: unknown): string {
+  const description = readApiError(err)?.description ?? "";
+  const about = description.length > 0 ? description : "Игра с таким названием уже есть";
+  return `${about}. Перезаписать её содержимым архива?`;
+}
+
+/**
+ * Whether Telegram refused the file the upload was sending.
+ *
+ * A hint reaches a team as a Telegram message, so the engine sends every
+ * uploaded file to Telegram while storing it: one Telegram will not take is
+ * refused here too, and only `force` keeps it (see {@link UploadOptions}).
+ */
+export function isTelegramRejection(err: unknown): boolean {
+  return readApiError(err)?.type === "FileRejectedByTelegram";
+}
+
+/** What Telegram said about the file, as the author should read it. */
+export function telegramRejectionMessage(err: unknown): string {
+  const description = readApiError(err)?.description ?? "";
+  const reason = description.length > 0 ? `\n${description}` : "";
+  return (
+    "Telegram не принял этот файл, поэтому показать его в подсказке не получится." +
+    reason +
+    "\nМожно исправить файл и загрузить заново — или загрузить как есть, " +
+    "если вы точно знаете, что делаете."
+  );
 }
 
 export interface LinkPreview {

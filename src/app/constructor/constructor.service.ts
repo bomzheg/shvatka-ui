@@ -55,6 +55,30 @@ export class ConstructorService {
     return this.http.put<FullGame>(`/games/my/${id}/scenario`, scenario);
   }
 
+  /** The game as a zip package: the scenario and every file it uses.
+   *
+   *  Unlike the YAML document, media travels with it — this is how a whole game
+   *  moves between the site, the bot and another engine.
+   */
+  exportZip(id: number): Observable<Blob> {
+    return this.http.getBlob(`/games/my/${id}/scenario/zip`);
+  }
+
+  /** Write a whole game from a zip package.
+   *
+   *  The package names the game: an unknown name creates a draft, while your
+   *  own game of that name is only rewritten with `overwrite` — without it the
+   *  server answers 409 (`GameWouldBeRewritten`) so the author can be asked
+   *  first. A package holding a file Telegram will not take is refused whole —
+   *  an import is expected to be correct.
+   */
+  importZip(file: File, overwrite = false): Observable<FullGame> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const query = overwrite ? "?overwrite=true" : "";
+    return this.http.postForm<FullGame>(`/games/my/zip${query}`, formData);
+  }
+
   /** §1.5 — set or clear the planned start. */
   setStartAt(id: number, startAt: string | null): Observable<MyGame> {
     return this.http.put<MyGame>(`/games/my/${id}/start_at`, {start_at: startAt});

@@ -2,7 +2,12 @@ import {Component, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {Router, RouterLink} from "@angular/router";
 import {ConstructorService} from "./constructor.service";
-import {MyGame, STATUS_LABELS} from "./constructor.models";
+import {
+  isGameWouldBeRewritten,
+  MyGame,
+  rewriteQuestion,
+  STATUS_LABELS,
+} from "./constructor.models";
 import {UserService} from "../auth/user.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 
@@ -18,6 +23,7 @@ export class ConstructorComponent implements OnInit {
   isLoading = false;
   newGameName = "";
   isCreating = false;
+  isImporting = false;
 
   constructor(
     private constructorService: ConstructorService,
@@ -56,6 +62,43 @@ export class ConstructorComponent implements OnInit {
 
   statusLabel(status: string): string {
     return STATUS_LABELS[status] ?? status;
+  }
+
+  /**
+   * Write a whole game from a zip package — the scenario with its media.
+   *
+   * The package names the game, so what lands where is the server's call: a new
+   * draft, or the author's own game of that name rewritten. Either way the
+   * editor of that game is where the author continues.
+   */
+  onZipSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) {
+      return;
+    }
+
+    this.importZip(file);
+  }
+
+  private importZip(file: File, overwrite = false) {
+    this.isImporting = true;
+    this.constructorService.importZip(file, overwrite).subscribe({
+      next: game => {
+        this.isImporting = false;
+        this.snackbar.success(`Игра «${game.name}» загружена`);
+        this.router.navigate(["/games/constructor", game.id]);
+      },
+      error: err => {
+        this.isImporting = false;
+        // the package names a game the author already has: it is only
+        // rewritten if they say so, and the server asked rather than wrote
+        if (isGameWouldBeRewritten(err) && confirm(rewriteQuestion(err))) {
+          this.importZip(file, true);
+        }
+      },
+    });
   }
 
   createGame() {

@@ -20,6 +20,10 @@ export class GlobalErrorHandler implements ErrorHandler {
     FileNotFound: "Файл не найден",
     CantEditGame: "Нельзя изменить игру",
     GameHasAnotherAuthor: "Игра принадлежит другому автору",
+    FileRejectedByTelegram: "Telegram не принял файл",
+    GameWouldBeRewritten: "Импорт перезапишет существующую игру",
+    FilesCantBeSentToTg: "Telegram не принял файлы игры",
+    ScenarioNotCorrect: "Сценарий некорректен",
   };
   constructor(
     private snackbar: SnackbarService,

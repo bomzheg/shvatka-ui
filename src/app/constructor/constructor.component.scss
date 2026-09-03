@@ -46,6 +46,35 @@ label {
   cursor: wait;
 }
 
+.import-zip {
+  @include cm.surface-card(16px, 1rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.upload-button {
+  @include cm.button-base();
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+}
+
+.upload-button.busy {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.import-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
 .games-list {
   list-style: none;
   padding-left: 0;

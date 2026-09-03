@@ -16,7 +16,7 @@ import {
   isHeicFile,
 } from "./constructor.models";
 import {ConstructorService} from "./constructor.service";
-import {HeicUploadService} from "./heic-upload.service";
+import {UploadPromptService} from "./upload-prompt.service";
 import {finalize} from "rxjs";
 import {AdminService} from "../admin/admin.service";
 import {HttpAdapter} from "../http/http.adapter";
@@ -68,7 +68,7 @@ export class HintEditorComponent {
     private adminService: AdminService,
     private http: HttpAdapter,
     private snackbar: SnackbarService,
-    private heicUpload: HeicUploadService,
+    private uploadPrompt: UploadPromptService,
   ) {
   }
 
@@ -156,7 +156,7 @@ export class HintEditorComponent {
     const uploadFn = (options?: UploadOptions) => this.adminUpload
       ? this.adminService.uploadGameFile(gameId, file, options)
       : this.constructorService.uploadFile(gameId, file, options);
-    this.heicUpload.upload(file, uploadFn).pipe(
+    this.uploadPrompt.upload(file, uploadFn).pipe(
       finalize(() => {
         this.isUploading = false;
         input.value = "";

@@ -46,8 +46,9 @@ import {
   ScenarioYamlError,
   scenarioToYaml,
   yamlFileName,
+  zipFileName,
 } from "./scenario-yaml";
-import {HeicUploadService} from "./heic-upload.service";
+import {UploadPromptService} from "./upload-prompt.service";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {AdminService} from "../admin/admin.service";
 import {AdminPlayerListItem} from "../admin/admin.models";
@@ -139,6 +140,8 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   isImporting = false;
   /** Whether the YAML text area is open. */
   isYamlOpen = false;
+  /** Whether the zip package is being built by the server right now. */
+  isExportingZip = false;
   /** The working copy of the scenario as text — what the text area shows, what
    *  «Скачать» writes and what «Применить» reads. */
   yamlText = "";
@@ -166,7 +169,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private snackbar: SnackbarService,
     private http: HttpAdapter,
-    private heicUpload: HeicUploadService,
+    private uploadPrompt: UploadPromptService,
   ) {
   }
 
@@ -674,7 +677,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     const uploadFn = (options?: UploadOptions) => this.adminMode
       ? this.adminService.uploadGameFile(this.gameId, file, options)
       : this.constructorService.uploadFile(this.gameId, file, options);
-    this.heicUpload.upload(file, uploadFn).pipe(
+    this.uploadPrompt.upload(file, uploadFn).pipe(
       finalize(() => {
         this.isUploading = false;
         input.value = "";
@@ -1054,6 +1057,25 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       ),
       () => this.snackbar.error("Не удалось подготовить YAML"),
     );
+  }
+
+  /**
+   * Write the game to a zip package — the saved scenario with its media.
+   *
+   * The package comes from the server, so it holds the game as it is saved, not
+   * as the editor has it now: unsaved edits belong in the YAML document.
+   */
+  exportZip(): void {
+    this.isExportingZip = true;
+    this.constructorService.exportZip(this.gameId).subscribe({
+      next: blob => {
+        this.isExportingZip = false;
+        this.download(blob, zipFileName(this.savedName || this.name));
+      },
+      error: () => {
+        this.isExportingZip = false;
+      },
+    });
   }
 
   onYamlSelected(event: Event): void {
