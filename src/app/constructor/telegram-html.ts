@@ -1,4 +1,3 @@
-// ---------------------------------------------------------------------------
 // Telegram message-entity HTML.
 //
 // Text hints are stored as the exact HTML subset Telegram accepts in the
@@ -12,7 +11,6 @@
 // bridge the two: `serializeTelegramHtml` turns the contenteditable DOM into the
 // clean Telegram subset, and `telegramHtmlToEditable` turns stored hint HTML
 // back into something the contenteditable can display.
-// ---------------------------------------------------------------------------
 
 interface TagWrap {
   open: string;

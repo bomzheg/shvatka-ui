@@ -12,17 +12,8 @@ import {AppIcon} from "../ui/icons";
 import {MatIcon} from "@angular/material/icon";
 
 /**
- * The game's release — the promo published before it.
- *
- * It leads with a banner: a wide title picture with a caption, the one part
- * shown above the site's header. After it comes the rest — the theme, a map —
- * as an ordinary list of hint parts. Both are edited with the same hint
- * editors as the scenario; the banner is simply a photo part kept apart.
- *
- * Saving and announcing are separate: the engine decides when a release
- * reaches the announcements channel (with the start of the waivers), and
- * editing an already announced one edits it there. Entirely optional — a game
- * without a release is played exactly as before.
+ * Edits a game's {@link GameRelease}. Both halves go through the same hint
+ * editors as the scenario — the banner is simply a photo part kept apart.
  */
 @Component({
   selector: "app-release-editor",

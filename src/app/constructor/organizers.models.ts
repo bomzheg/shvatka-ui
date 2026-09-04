@@ -1,8 +1,5 @@
-// ---------------------------------------------------------------------------
-// Game organizers model — mirrors the "Game Organizers API" contract.
-// Endpoints live under /games/{id}/organizers. snake_case throughout so the
-// objects can be round-tripped between server responses and the UI.
-// ---------------------------------------------------------------------------
+// The organizers of a game, under /games/{id}/organizers. snake_case
+// throughout, so an object round-trips between the server and the ui.
 
 /** Standard player projection used across the API. */
 export interface OrgPlayer {

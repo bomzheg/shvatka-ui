@@ -140,10 +140,6 @@ export class HintEditorComponent {
     this.remove.emit();
   }
 
-  // ---------------------------------------------------------------------
-  // Upload (for an empty hint or to replace the current file)
-  // ---------------------------------------------------------------------
-
   onUploadSelected(event: Event, target: "file" | "thumb") {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -187,10 +183,6 @@ export class HintEditorComponent {
       },
     });
   }
-
-  // ---------------------------------------------------------------------
-  // Preview of the selected file
-  // ---------------------------------------------------------------------
 
   previewKind(): PreviewKind {
     if (!this.hint.file_guid) {
@@ -253,10 +245,6 @@ export class HintEditorComponent {
     const f = this.files.find(file => file.guid === this.hint.thumb_guid);
     return f ? this.fileLabel(f) : undefined;
   }
-
-  // ---------------------------------------------------------------------
-  // Rename the current main file
-  // ---------------------------------------------------------------------
 
   /** The uploaded-file entry the main hint file points at, if known. */
   currentFile(): UploadedFile | undefined {
