@@ -249,14 +249,9 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
           this.team = null;
           this.members = [];
           if (profile.player_in_team) {
-            const teamData = profile.player_in_team.team;
-            this.team = {
-              id: teamData.id,
-              name: teamData.name,
-              description: teamData.description,
-              captain: teamData.captain,
-            };
-            this.loadMembers(teamData.id);
+            // the profile embeds the team without its captain, and this screen
+            // names them — so ask for the team itself
+            this.loadTeam(profile.player_in_team.team.id);
           }
         },
         error: (err) => {
@@ -266,6 +261,17 @@ export class CaptainBridgeComponent implements OnInit, OnDestroy {
           this.snackbar.error('Не удалось загрузить профиль игрока');
         },
       });
+  }
+
+  /** Load a team with its captain, then its members. */
+  private loadTeam(teamId: number): void {
+    this.teamService.getTeam(teamId).subscribe({
+      next: (team) => {
+        this.team = team;
+        this.loadMembers(teamId);
+      },
+      error: () => { this.snackbar.error('Не удалось загрузить команду'); },
+    });
   }
 
   loadMembers(teamId: number): void {
