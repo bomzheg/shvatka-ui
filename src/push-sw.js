@@ -70,6 +70,34 @@ async function setBadgeCount(count) {
   }
 }
 
+// The tag already collapses same-kind pushes (a new hint replaces the previous
+// one), but a level up leaves the hints of the level the team has just left
+// sitting in the tray. A push whose kind is listed here closes those: the tray
+// shows where the team is now, not the history of how it got there.
+const SUPERSEDED_KINDS = {
+  puzzle: ['hint', 'effects'],
+  team_finished: ['puzzle', 'hint', 'effects'],
+  game_finished: ['puzzle', 'hint', 'effects', 'team_finished'],
+};
+
+async function closeSuperseded(payload) {
+  const data = (payload && payload.data) || {};
+  const kinds = SUPERSEDED_KINDS[data.kind];
+  if (!kinds || !self.registration.getNotifications) {
+    return;
+  }
+  // The game ending is everyone's news; the rest only concern one team, and a
+  // player may well be following another team's pushes as an org.
+  const wholeGame = data.kind === 'game_finished';
+  const shown = await self.registration.getNotifications();
+  for (const notification of shown) {
+    const other = notification.data || {};
+    if (kinds.includes(other.kind) && (wholeGame || other.team_id === data.team_id)) {
+      notification.close();
+    }
+  }
+}
+
 self.addEventListener('push', (event) => {
   const payload = parsePayload(event) || {};
   const title = payload.title || 'Shvatka';
@@ -95,6 +123,9 @@ self.addEventListener('push', (event) => {
     const isAppVisible = clientsList.some((client) => client.visibilityState === 'visible');
 
     clientsList.forEach((client) => client.postMessage({ type: 'push', payload }));
+
+    // before showing, so the new notification is never a candidate for closing
+    await closeSuperseded(payload);
 
     await Promise.all([
       self.registration.showNotification(title, options),
