@@ -13,11 +13,10 @@ import {
   TimeHintPayload,
 } from "./constructor.models";
 
-// ---------------------------------------------------------------------------
 // The scenario as a YAML document: what the constructor writes out and reads
-// back. The document mirrors the "Game Scenario object" contract one to one —
-// the same snake_case keys the API takes — so a file can be edited by hand, put
-// under version control, or moved between games.
+// back. The document holds exactly the snake_case keys the api takes, so a
+// file can be edited by hand, put under version control, or moved between
+// games.
 //
 // A file (photo, audio, video…) is never part of the document: only its guid
 // and its name travel. Importing into another game therefore needs the files
@@ -25,7 +24,6 @@ import {
 //
 // js-yaml is pulled in on demand — only an author who exports or imports pays
 // for it, and the bundle everyone else loads is unchanged.
-// ---------------------------------------------------------------------------
 
 /** A file a hint refers to that the game does not (yet) have. */
 export interface MissingScenarioFile {
@@ -44,10 +42,6 @@ export class ScenarioYamlError extends Error {
 
 const KNOWN_HINT_TYPES = new Set<string>(Object.values(HintType));
 const KNOWN_CONDITION_TYPES = new Set<string>(Object.values(ScenarioConditionType));
-
-// ---------------------------------------------------------------------------
-// Writing
-// ---------------------------------------------------------------------------
 
 /** The scenario as a YAML document, with a header explaining the file part. */
 export async function scenarioToYaml(scenario: ScenarioPayload): Promise<string> {
@@ -104,10 +98,6 @@ function stripUndefined<T>(value: T): T {
   }
   return value;
 }
-
-// ---------------------------------------------------------------------------
-// Reading
-// ---------------------------------------------------------------------------
 
 /**
  * Parse a YAML document into a scenario payload, rejecting anything the editor
@@ -339,10 +329,6 @@ function parseFiles(raw: unknown): FilePayload[] {
     .filter((f): f is FilePayload => f !== undefined);
 }
 
-// ---------------------------------------------------------------------------
-// Files: matching an imported guid to a file of this game
-// ---------------------------------------------------------------------------
-
 /** Every hint of a scenario — time hints first, then the ones effects carry. */
 export function scenarioHints(scenario: ScenarioPayload): HintPayload[] {
   const hints: HintPayload[] = [];
@@ -423,10 +409,8 @@ function fileLabel(file: FilePayload): string {
   return `${file.original_filename}${file.extension || ""}`;
 }
 
-// ---------------------------------------------------------------------------
 // Small typed readers. Everything they reject is reported in Russian, naming
 // the place in the document the author has to look at.
-// ---------------------------------------------------------------------------
 
 function asRecord(value: unknown, what: string): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {

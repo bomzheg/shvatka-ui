@@ -11,23 +11,13 @@ import {TeamDetails, TeamMember} from '../team/team.models';
 import {TeamService} from '../team/team.service';
 
 /**
- * The roster of a game, and the way to fix it.
+ * The roster of a game, and the way to fix it over the captain's head. A player
+ * can only be signed up while they play in the team: the engine reads a roster
+ * through the live membership, so a waiver for anybody else would be invisible.
+ * Putting them in the team first is the neighbouring screen, «Команды».
  *
- * Reading was all this page did: the approved composition of every team, which
- * is what the orgs check on the evening of the game. Editing is the way in when
- * the captain is gone, unreachable, or missed the deadline — the panel writes
- * the waiver the team would have written.
- *
- * A player can only be signed up if they play in the team right now (the
- * engine reads a roster through the live membership, so a waiver for anybody
- * else would be invisible); putting them in the team first is the neighbouring
- * screen, «Команды». Removing deletes the waiver rather than marking it
- * «отозван» — unlike the captain's own revoke, an admin undoing a mistake
- * leaves the team free to sign the player up again.
- *
- * A team with no waivers at all is not in the game's roster and so not on the
- * page; the search below adds one to the page so its first waiver can be
- * written.
+ * A team with no waivers at all is not in the roster and so not on the page —
+ * the search adds one so its first waiver can be written.
  */
 @Component({
   selector: 'app-admin-waivers',

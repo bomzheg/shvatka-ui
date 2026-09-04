@@ -88,10 +88,8 @@ export class AdminService {
     });
   }
 
-  // ---------------------------------------------------------------------------
   // Team membership over the head of the captain. These endpoints skip the team
   // permissions entirely — the way out when the captain is gone or unreachable.
-  // ---------------------------------------------------------------------------
 
   /** Make another player of the team its captain. The target must already play there. */
   changeTeamCaptain(teamId: number, playerId: number): Observable<TeamDetails> {
@@ -158,11 +156,9 @@ export class AdminService {
     return this.http.get<Page<Game>>('/games');
   }
 
-  // ---------------------------------------------------------------------------
   // Game statuses. The one thing an admin may change about a game that is not
   // complete — and all an admin may see of it: these two answer with the game's
   // identity and status, never with a level, a hint or a file.
-  // ---------------------------------------------------------------------------
 
   /** Games an admin may act on: active (waivers/started/finished) and complete.
    *  A game still being written belongs to its author and is not listed. */
@@ -200,10 +196,8 @@ export class AdminService {
     });
   }
 
-  // ---------------------------------------------------------------------------
   // Editing completed games (superuser only). The admin endpoints work only on
   // completed games — any other status is reported as 404 GameNotFound.
-  // ---------------------------------------------------------------------------
 
   /** Full game (with levels/scenario) — completed games are readable here. */
   getGame(id: number): Observable<FullGame> {

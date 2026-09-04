@@ -138,7 +138,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   files: UploadedFile[] = [];
 
   isImporting = false;
-  /** Whether the YAML text area is open. */
   isYamlOpen = false;
   /** Whether the zip package is being built by the server right now. */
   isExportingZip = false;
@@ -225,10 +224,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   get canComplete(): boolean {
     return !this.adminMode && this.game?.status === "finished";
   }
-
-  // -------------------------------------------------------------------------
-  // Loading & state mapping
-  // -------------------------------------------------------------------------
 
   load() {
     this.isLoading = true;
@@ -414,10 +409,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Level operations
-  // -------------------------------------------------------------------------
-
   addLevel() {
     this.levels.push({
       expanded: true,
@@ -537,10 +528,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     scrollToLevel(id);
   }
 
-  // -------------------------------------------------------------------------
-  // Preview
-  // -------------------------------------------------------------------------
-
   /** Whether the preview spoiler is open — nothing is built while it is shut. */
   isPreviewOpen = false;
 
@@ -573,10 +560,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     }
     return this.previewGameCache;
   }
-
-  // -------------------------------------------------------------------------
-  // Live field validation
-  // -------------------------------------------------------------------------
 
   /** Auto-capitalize keys as the user types. */
   upperKeys(value: string): string {
@@ -611,10 +594,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.showEffectConditions = !this.showEffectConditions;
   }
 
-  // -------------------------------------------------------------------------
-  // Time hints
-  // -------------------------------------------------------------------------
-
   addTimeHint(level: EditorLevel) {
     const maxTime = level.time_hints.reduce((m, th) => Math.max(m, th.time), -1);
     level.time_hints.push({time: maxTime + 5, hint: []});
@@ -631,10 +610,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   removeHint(timeHint: EditorTimeHint, index: number) {
     timeHint.hint.splice(index, 1);
   }
-
-  // -------------------------------------------------------------------------
-  // Conditions
-  // -------------------------------------------------------------------------
 
   addKeyCondition(level: EditorLevel) {
     level.keyConditions.push({keysText: "", action_time: null, effects: this.newEffects()});
@@ -661,10 +636,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       next_level: null,
     };
   }
-
-  // -------------------------------------------------------------------------
-  // Files
-  // -------------------------------------------------------------------------
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -860,10 +831,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     return this.objectUrls.get(file.guid) ?? this.http.getFileUrl(this.gameId, file.guid);
   }
 
-  // -------------------------------------------------------------------------
-  // Saving scenario
-  // -------------------------------------------------------------------------
-
   private buildScenario(): ScenarioPayload {
     return {
       name: this.name.trim(),
@@ -1005,14 +972,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       },
     });
   }
-
-  // -------------------------------------------------------------------------
-  // Import / export of the scenario as YAML
-  //
-  // The document is the scenario exactly as the API takes it, so it can be
-  // edited by hand or kept next to the rest of a game's material. Files never
-  // travel in it — only their guids and names; see {@link relinkImportedFiles}.
-  // -------------------------------------------------------------------------
 
   /** Show or hide the text area, filling it the first time it opens. */
   toggleYamlEditor(): void {
@@ -1205,10 +1164,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     URL.revokeObjectURL(url);
   }
 
-  // -------------------------------------------------------------------------
-  // Author reassignment (admin mode)
-  // -------------------------------------------------------------------------
-
   onAuthorQueryChange(value: string) {
     this.authorQuery = value;
     if (this.authorSearchTimer) clearTimeout(this.authorSearchTimer);
@@ -1247,10 +1202,6 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   playerLabel(player: {username?: string | null; name_mention: string}): string {
     return player.username ? `@${player.username}` : player.name_mention;
   }
-
-  // -------------------------------------------------------------------------
-  // Start time & status
-  // -------------------------------------------------------------------------
 
   saveStartAt() {
     if (!this.startAtLocal) {

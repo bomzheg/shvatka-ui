@@ -82,10 +82,6 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // Loading & derived lists
-  // -------------------------------------------------------------------------
-
   load(): void {
     this.isLoading = true;
     this.constructorService.listOrganizers(this.gameId)
@@ -159,10 +155,6 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
     return org[key];
   }
 
-  // -------------------------------------------------------------------------
-  // Permission toggle
-  // -------------------------------------------------------------------------
-
   togglePermission(org: GameOrganizer, key: OrgPermissionKey, value: boolean): void {
     if (org.org_id === null) {
       return;
@@ -180,10 +172,6 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
         },
       });
   }
-
-  // -------------------------------------------------------------------------
-  // Remove (soft delete)
-  // -------------------------------------------------------------------------
 
   removeOrganizer(org: GameOrganizer): void {
     if (org.org_id === null) {
@@ -204,10 +192,6 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
         error: err => { this.snackbar.error(`Не удалось удалить организатора: ${describeError(err)}`); },
       });
   }
-
-  // -------------------------------------------------------------------------
-  // Add (via search)
-  // -------------------------------------------------------------------------
 
   onSearchQueryChange(query: string): void {
     this.searchQuery = query;
@@ -317,10 +301,6 @@ export class OrganizersEditorComponent implements OnInit, OnDestroy {
       this.snackbar.error(`Не удалось добавить организатора: ${describeError(err)}`);
     }
   }
-
-  // -------------------------------------------------------------------------
-  // Helpers
-  // -------------------------------------------------------------------------
 
   /** Insert or replace an organizer by org_id, keeping the existing order. */
   private replaceOrg(org: GameOrganizer): void {

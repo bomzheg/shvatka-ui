@@ -6,11 +6,8 @@ import {readApiError} from "../http/api-error";
 // same list, and it must not drift from the editor's copy.
 export {SPOILER_HINT_TYPES};
 
-// ---------------------------------------------------------------------------
-// Constructor payload model — mirrors the "Game Scenario object" contract (§2).
-// All fields are snake_case so the objects can be round-tripped (load → edit →
-// save) without any key conversion.
-// ---------------------------------------------------------------------------
+// The payload keeps the api's snake_case, so a scenario round-trips (load →
+// edit → save) without any key conversion.
 
 export const SCENARIO_MODEL_VERSION = 1;
 
@@ -20,7 +17,7 @@ export interface MyGameAuthor {
   name_mention: string;
 }
 
-/** Item shape of `GET /games/my` and `POST /games/my` (§1.1). */
+/** Item shape of `GET /games/my` and `POST /games/my`. */
 export interface MyGame {
   id: number;
   author: MyGameAuthor;
@@ -30,7 +27,7 @@ export interface MyGame {
   number: number | null;
 }
 
-/** Upload response of `POST /cdn/games/{id}/files` (§1.7). */
+/** Upload response of `POST /cdn/games/{id}/files`. */
 export interface UploadedFile {
   guid: string;
   original_filename: string;
@@ -154,8 +151,8 @@ export interface LinkPreview {
   show_above_text?: boolean;
 }
 
-/** Hint, discriminated by `type` (§2.3). Only the fields relevant to the
- *  selected type are sent; the rest stay undefined. */
+/** Hint, discriminated by `type`. Only the fields relevant to the selected
+ *  type are sent; the rest stay undefined. */
 export interface HintPayload {
   type: HintType;
   // text
@@ -220,7 +217,7 @@ export interface TimeHintPayload {
   hint: HintPayload[];
 }
 
-/** Effects (§2.5). A single object per effects condition. */
+/** A single effects object per effects condition. */
 export interface EffectsPayload {
   id: string;
   hints: HintPayload[];
@@ -229,7 +226,7 @@ export interface EffectsPayload {
   next_level: string | null;
 }
 
-/** Condition, discriminated by `type` (§2.4). */
+/** Condition, discriminated by `type`. */
 export interface ConditionPayload {
   type: ScenarioConditionType;
   keys?: string[];
@@ -253,17 +250,13 @@ export interface FilePayload {
   sha256?: string;
 }
 
-/** Body of `PUT /games/my/{id}/scenario` (§2). */
+/** Body of `PUT /games/my/{id}/scenario`. */
 export interface ScenarioPayload {
   name: string;
   __model_version__: number;
   levels: LevelPayload[];
   files: FilePayload[];
 }
-
-// ---------------------------------------------------------------------------
-// Constants for UI rendering
-// ---------------------------------------------------------------------------
 
 export const HINT_TYPE_LABELS: Record<HintType, string> = {
   [HintType.text]: "Текст",
@@ -372,10 +365,8 @@ export function isEditableStatus(status: string | undefined): boolean {
   return !!status && EDITABLE_STATUSES.includes(status);
 }
 
-// ---------------------------------------------------------------------------
-// Key format (§2.6): start with Latin SH or Cyrillic СХ, then uppercase
-// letters/digits (Latin or Cyrillic). No lowercase, no spaces.
-// ---------------------------------------------------------------------------
+// A key starts with Latin SH or Cyrillic СХ, then uppercase letters/digits
+// (Latin or Cyrillic). No lowercase, no spaces.
 
 const KEY_REGEX = /^(SH|СХ)[A-Z0-9А-ЯЁ]+$/;
 const LEVEL_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
@@ -429,11 +420,8 @@ export function generateEffectId(): string {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Client-side validation of the scenario (§3). The server enforces all of
-// these regardless; we validate locally for good UX. Returns a list of human
-// readable (ru) error messages — empty list means valid.
-// ---------------------------------------------------------------------------
+// The server enforces every rule below regardless; validating locally only
+// saves the author a round trip.
 
 function isWinningTimer(c: ConditionPayload): boolean {
   return c.type === ScenarioConditionType.effectsTimer && c.effects?.level_up === true;
@@ -468,7 +456,6 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
   scenario.levels.forEach((level, index) => {
     const label = `Уровень ${index + 1}${level.id ? ` (${level.id})` : ""}`;
 
-    // §13 — level id format
     if (!isValidLevelId(level.id)) {
       errors.push(`${label}: идентификатор уровня должен соответствовать ^[a-zA-Z0-9_-]+$.`);
     }
@@ -476,13 +463,10 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
       errors.push(`${label}: идентификатор уровня повторяется.`);
     }
 
-    // time_hints
     const times = level.time_hints.map(t => t.time);
-    // §1 — must include time 0
     if (!times.includes(0)) {
       errors.push(`${label}: должна быть подсказка для времени 0.`);
     }
-    // §2 — unique times, non-empty hint lists
     const seenTimes = new Set<number>();
     level.time_hints.forEach(th => {
       if (th.time < 0) {
@@ -498,8 +482,6 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
       collectGuids(th.hint, usedGuids);
     });
 
-    // conditions
-    // §4 — non-empty
     if (level.conditions.length === 0) {
       errors.push(`${label}: должно быть хотя бы одно условие.`);
     }
@@ -511,24 +493,18 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
         (c.type === ScenarioConditionType.effectsKey || c.type === ScenarioConditionType.effectsTimer)
         && c.effects?.level_up === true);
 
-    // §5 — at least one win
     if (!hasWin) {
       errors.push(`${label}: нет условия победы (WIN_KEY или эффект с переходом на уровень).`);
     }
-    // §6 — at most one WIN_KEY
     if (winKeys.length > 1) {
       errors.push(`${label}: допускается не более одного условия WIN_KEY.`);
     }
-    // §7 — at most one winning timer
     if (winningTimers.length > 1) {
       errors.push(`${label}: допускается не более одного победного таймера.`);
     }
 
-    // §8 — keys globally unique within a level
     const keySeen = new Set<string>();
-    // §9 — effect ids unique within a level
     const effectIds = new Set<string>();
-    // §10 — timer action_times unique
     const timerTimes = new Set<number>();
 
     level.conditions.forEach((c, ci) => {
@@ -564,11 +540,9 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
           errors.push(`${cl}: идентификатор эффекта повторяется в уровне.`);
         }
         effectIds.add(c.effects.id);
-        // next_level requires level_up
         if (c.effects.next_level && !c.effects.level_up) {
           errors.push(`${cl}: переход на другой уровень требует включённого «победа/переход».`);
         }
-        // §12 — next_level must exist
         if (c.effects.next_level && !levelIds.includes(c.effects.next_level)) {
           errors.push(`${cl}: уровень перехода «${c.effects.next_level}» не существует.`);
         }
@@ -576,7 +550,6 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
       }
     });
 
-    // §3 / §11 — winning timer constraints
     if (winningTimers.length === 1) {
       const winTime = winningTimers[0].action_time;
       if (typeof winTime === "number") {
@@ -594,7 +567,6 @@ export function validateScenario(scenario: ScenarioPayload): string[] {
     }
   });
 
-  // §14 — every used guid must be present in the files array
   usedGuids.forEach(guid => {
     if (!knownFileGuids.has(guid)) {
       errors.push(`Файл ${guid} используется в подсказке, но отсутствует в списке файлов. Загрузите его заново.`);
