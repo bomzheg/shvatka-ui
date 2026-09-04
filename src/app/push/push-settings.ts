@@ -12,7 +12,7 @@
  * categories, it is handed the flat list of muted kinds.
  */
 
-export type PushCategory = "play" | "hints" | "team" | "org";
+export type PushCategory = "play" | "team" | "org";
 
 export interface PushCategoryDescriptor {
   id: PushCategory;
@@ -29,14 +29,8 @@ export const PUSH_CATEGORIES: readonly PushCategoryDescriptor[] = [
   {
     id: "play",
     label: "Ход игры",
-    hint: "Новый уровень, сработавшие эффекты, финиш команды и игры.",
-    kinds: ["puzzle", "effects", "team_finished", "game_finished"],
-  },
-  {
-    id: "hints",
-    label: "Подсказки",
-    hint: "Каждая подсказка, открывшаяся команде на уровне.",
-    kinds: ["hint"],
+    hint: "Новый уровень, каждая подсказка, сработавшие эффекты, финиш команды и игры.",
+    kinds: ["puzzle", "hint", "effects", "team_finished", "game_finished"],
   },
   {
     id: "team",

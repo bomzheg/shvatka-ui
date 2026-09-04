@@ -68,14 +68,14 @@ describe('PushSettingsService', () => {
 
   it('remembers the choice across reloads', () => {
     const settings = service();
-    settings.setCategoryEnabled('hints', false);
+    settings.setCategoryEnabled('play', false);
     settings.setVibrate(false);
 
     TestBed.resetTestingModule();
     configure();
 
     const reloaded = service();
-    expect(reloaded.isCategoryEnabled('hints')).toBeFalse();
+    expect(reloaded.isCategoryEnabled('play')).toBeFalse();
     expect(reloaded.vibrate).toBeFalse();
     expect(reloaded.isDefault()).toBeFalse();
   });
@@ -97,7 +97,6 @@ describe('PushSettingsService', () => {
     settings.setCategoryEnabled('play', false);
     expect(settings.isEverythingMuted()).toBeFalse();
 
-    settings.setCategoryEnabled('hints', false);
     settings.setCategoryEnabled('team', false);
     settings.setCategoryEnabled('org', false);
 
@@ -113,12 +112,12 @@ describe('PushSettingsService', () => {
   it('hands the service worker the muted kinds on every change', async () => {
     const settings = service();
 
-    settings.setCategoryEnabled('hints', false);
+    settings.setCategoryEnabled('org', false);
     await TestBed.inject(DOCUMENT).defaultView!.navigator.serviceWorker.ready;
 
     expect(worker.postMessage).toHaveBeenCalledWith({
       type: 'set-push-settings',
-      mutedKinds: ['hint'],
+      mutedKinds: ['org_level_up', 'new_org', 'level_test_completed'],
       vibrate: true,
     });
   });
