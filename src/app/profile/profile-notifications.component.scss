@@ -6,3 +6,45 @@
 :host {
   display: block;
 }
+
+.switches {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.switch {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  cursor: pointer;
+
+  /* `profile-fields()` dresses every input as a text field; a checkbox is not one. */
+  input[type='checkbox'] {
+    flex: 0 0 auto;
+    width: auto;
+    margin: 0.15rem 0 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    accent-color: var(--app-accent);
+  }
+}
+
+.switch__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.switch__name {
+  font-size: 0.9rem;
+}
+
+.switch__hint {
+  font-size: 0.8rem;
+  color: var(--app-muted-text);
+}

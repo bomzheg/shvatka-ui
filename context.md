@@ -205,7 +205,9 @@ the language should be enforced in one place.
 | **Action request** | Заявка | A user-to-user request needing someone's decision: `pending` → `accepted` / `declined` / `cancelled` / `expired`. Types: team join invite, team join request, org invite, team merge, player merge, promotion. | `notifications/` |
 | **Notification** | Уведомление | One inbox item for exactly one recipient — the record that something happened. A request produces notifications; a notification is not itself actionable. | `notifications/`, `notification-render.ts` |
 | **Severity** | Важность | How much a notification matters (`low` / `normal` / `important`); drives UI emphasis and push urgency. | `notifications/` |
-| **Push** | Пуш | A web push notification delivered through the service worker. | `push/`, `src/push-sw.js` |
+| **Push** | Пуш | A web push notification delivered through the service worker. Carries a `kind` naming what happened. | `push/`, `src/push-sw.js` |
+| **Push category** | Категория пушей | The group a push kind belongs to, as the player chooses it: ход игры, команда, организатору. Not a domain concept — the engine knows only kinds — but the unit the profile switches on and off. | `push/push-settings.ts` |
+| **Push settings** | Настройки пушей | Which categories this browser shows, and whether it vibrates. Per-device and per-browser: kept in `localStorage` and mirrored to the service worker, never sent to the engine, which goes on sending every push the player is entitled to. | `push/push-settings.service.ts`, `profile/profile-notifications.component` |
 
 ## Search
 
