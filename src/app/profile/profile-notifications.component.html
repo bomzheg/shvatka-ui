@@ -10,6 +10,54 @@
   <app-push-toggle/>
 </div>
 
+@if (isEnabled) {
+  <div class="field">
+    <span class="field__label">Что присылать</span>
+    <p class="field__hint">
+      Выбор хранится в этом браузере: на телефоне и на компьютере он свой.
+    </p>
+
+    <div class="switches">
+      @for (category of categories; track category.id) {
+        <label class="switch">
+          <input
+            type="checkbox"
+            [checked]="isCategoryEnabled(category.id)"
+            (change)="toggleCategory(category.id, $event)"
+          />
+          <span class="switch__text">
+            <span class="switch__name">{{ category.label }}</span>
+            <span class="switch__hint">{{ category.hint }}</span>
+          </span>
+        </label>
+      }
+    </div>
+
+    @if (settings.isEverythingMuted()) {
+      <p class="field__hint">
+        Сейчас не придёт ничего. Если уведомления не нужны совсем — лучше отключить их кнопкой выше.
+      </p>
+    }
+
+    @if (!settings.isDefault()) {
+      <button class="button button--quiet" type="button" (click)="settings.resetToDefaults()">
+        Вернуть как было
+      </button>
+    }
+  </div>
+
+  <div class="field">
+    <span class="field__label">Вибрация</span>
+    <p class="field__hint">Телефон вибрирует, когда показывает уведомление.</p>
+    <label class="switch">
+      <input type="checkbox" [checked]="settings.vibrate" (change)="toggleVibrate($event)"/>
+      <span class="switch__text">
+        <span class="switch__name">Вибрировать при уведомлении</span>
+      </span>
+    </label>
+  </div>
+}
+
 @if (hasDismissedPrompts()) {
   <div class="field">
     <span class="field__label">Предложение включить уведомления</span>

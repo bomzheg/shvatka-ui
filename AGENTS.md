@@ -121,6 +121,13 @@ components are dumb/presentational pieces composed by larger feature components.
 - **Theming** is handled by `ThemeService` (`system`/`light`/`dark`), persisted in
   `localStorage`, synced with the OS media query and Telegram WebApp chrome. Theme
   is applied via `data-theme` / `color-scheme` on `<html>`; style with those hooks.
+- **A per-device preference lives in `localStorage`, not on the account.** Theme,
+  the dismissed push prompt and the push settings are all of that shape. When a
+  preference has to reach the push service worker (which cannot read
+  `localStorage`), the app posts it there and the worker keeps its own copy in
+  Cache Storage — see `push/push-settings.service.ts` and `src/push-sw.js`. The
+  mapping from what the player picks to what the worker applies stays in the app:
+  the worker is handed the outcome, never the vocabulary.
 - **Telegram Mini App**: code reads `window.Telegram.WebApp` defensively
   (optional-chaining everything). Preserve that defensiveness.
 

@@ -4,6 +4,7 @@ import {firstValueFrom} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {HttpAdapter} from '../http/http.adapter';
 import {SnackbarService} from '../snackbar/snackbar.service';
+import {PushSettingsService} from './push-settings.service';
 import {environment} from '../../environments/environment';
 
 export interface PushConfig {
@@ -45,6 +46,7 @@ export class PushService {
     private httpClient: HttpClient,
     private router: Router,
     private snackbar: SnackbarService,
+    private settings: PushSettingsService,
     private zone: NgZone,
   ) {
   }
@@ -77,6 +79,10 @@ export class PushService {
       return;
     }
 
+    // The worker keeps its own copy of the settings, so hand it the current one:
+    // it may have been installed just now, or evicted since the last change.
+    this.settings.syncToServiceWorker();
+
     if (Notification.permission === 'granted') {
       await this.refresh();
     } else {
@@ -108,6 +114,7 @@ export class PushService {
       }
 
       this.registration = await this.registerServiceWorker();
+      this.settings.syncToServiceWorker();
 
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
@@ -289,6 +296,11 @@ export class PushService {
   }
 
   private showForegroundToast(payload: BackendPushPayload): void {
+    // The worker already dropped a muted push from the tray; the toast this
+    // same message raises has to honour the same choice.
+    if (!this.settings.isKindEnabled(payload.data?.['kind'] as string | undefined)) {
+      return;
+    }
     const message = payload.body ? `${payload.title}: ${payload.body}` : payload.title;
     const url = payload.url || (payload.data?.['url'] as string | undefined);
     const ref = this.snackbar.info(message, url ? 'Открыть' : 'OK', 6000);
