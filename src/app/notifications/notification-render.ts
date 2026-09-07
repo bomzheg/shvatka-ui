@@ -19,6 +19,51 @@ function bool(payload: NotificationPayload, key: string): boolean {
   return payload[key] === true;
 }
 
+function num(payload: NotificationPayload, key: string): number | null {
+  const value = payload[key];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+/** «Расписание сезона 2027: 3 изменения», or the line announcing a new one. */
+function seasonScheduleText(payload: NotificationPayload): string {
+  const year = num(payload, "year");
+  const season = year === null ? "сезона" : `сезона ${year}`;
+  if (bool(payload, "published")) {
+    const slots = num(payload, "slots");
+    const dates = slots === null ? "" : `: ${slots} ${pluralDates(slots)}`;
+    return `Опубликовано расписание ${season}${dates}`;
+  }
+  const changes = num(payload, "changes");
+  if (changes === null) {
+    return `Изменилось расписание ${season}`;
+  }
+  return `Расписание ${season}: ${changes} ${pluralChanges(changes)}`;
+}
+
+/** Russian counts one, few and many differently; so does every count we show. */
+function plural(count: number, one: string, few: string, many: string): string {
+  const mod100 = Math.abs(count) % 100;
+  const mod10 = mod100 % 10;
+  if (mod100 >= 11 && mod100 <= 14) return many;
+  if (mod10 === 1) return one;
+  if (mod10 >= 2 && mod10 <= 4) return few;
+  return many;
+}
+
+function pluralDates(count: number): string {
+  return plural(count, "дата", "даты", "дат");
+}
+
+function pluralChanges(count: number): string {
+  return plural(count, "изменение", "изменения", "изменений");
+}
+
+/** Where a notification of this type takes the reader. */
+export function seasonScheduleLink(payload: NotificationPayload): string {
+  const year = num(payload, "year");
+  return year === null ? "/season" : `/season/${year}`;
+}
+
 /** Builds "запрос по команде «X»" style context from whatever keys exist. */
 function requestContext(payload: NotificationPayload): string {
   const teamName = str(payload, "team_name");
@@ -119,7 +164,7 @@ function renderTypeText(type: string, payload: NotificationPayload, currentPlaye
     case NotificationType.gameScheduleChanged:
       return gameName ? `Изменилось расписание игры «${gameName}»` : "Изменилось расписание игры";
     case NotificationType.seasonScheduleChanged:
-      return "Изменилось расписание сезона";
+      return seasonScheduleText(payload);
     case NotificationType.teamJoinInvite: {
       const inviter = str(payload, "inviter_name");
       if (currentPlayerId !== undefined && payload["inviter_id"] === currentPlayerId) {

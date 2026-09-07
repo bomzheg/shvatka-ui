@@ -26,6 +26,7 @@ import {AdminGamesComponent} from "./admin/admin-games.component";
 import {AdminFilesComponent} from "./admin/admin-files.component";
 import {adminGuard} from "./admin/admin.guard";
 import {SearchComponent} from "./search/search.component";
+import {SeasonComponent} from "./season/season.component";
 
 
 export const routes: Routes = [
@@ -38,6 +39,8 @@ export const routes: Routes = [
   {path: "games/constructor/:id/release", component: ReleasePageComponent},
   {path: "games/:id/chart", component: GameChartPageComponent},
   {path: "games/:id", component: GameComponent},
+  {path: "season", component: SeasonComponent},
+  {path: "season/:year", component: SeasonComponent},
   {path: "team", component: CaptainBridgeComponent},
   {path: "teams", component: TeamsComponent},
   {path: "teams/:id", component: TeamCardComponent},
