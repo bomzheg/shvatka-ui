@@ -20,7 +20,6 @@ import {AppIcon} from "../ui/icons";
 export class GameScenarioPartComponent {
   protected readonly ScenarioConditionType = ScenarioConditionType;
   protected readonly AppIcon = AppIcon;
-  showEffectConditions = true;
 
   @Input({required: true}) game!: FullGame;
   /** Blob URLs by file guid, winning over the CDN copy. The constructor's
@@ -51,14 +50,6 @@ export class GameScenarioPartComponent {
   getEffectsTimerConditions(level: Level): ScenarioCondition[] {
     return this.getScenarioConditions(level)
       .filter(condition => condition.type === ScenarioConditionType.effectsTimer && !this.conditionHasLevelUp(condition));
-  }
-
-  hiddenEffectConditionsCount(level: Level): number {
-    return this.getEffectsKeyConditions(level).length + this.getEffectsTimerConditions(level).length;
-  }
-
-  toggleEffectConditions(): void {
-    this.showEffectConditions = !this.showEffectConditions;
   }
 
   getConditionKeys(condition: ScenarioCondition): string[] {
