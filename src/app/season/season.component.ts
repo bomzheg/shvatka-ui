@@ -28,7 +28,7 @@ import {
 } from "./season-grid";
 import {UserService} from "../auth/user.service";
 import {TeamService} from "../team/team.service";
-import {CaptainedTeam, PlayerSearchResult} from "../team/team.models";
+import {PlayerSearchResult, TeamDetails} from "../team/team.models";
 import {SnackbarService} from "../snackbar/snackbar.service";
 import {readApiError} from "../http/api-error";
 import {AppIcon} from "../ui/icons";
@@ -75,7 +75,9 @@ export class SeasonComponent implements OnInit {
   pendingDate: string | null = null;
   authorKind: SlotAuthorKind = "player";
   selectedTeamId: number | null = null;
-  captainedTeams: CaptainedTeam[] = [];
+  /** Teams this player may put on a date: the ones they captain, or all of
+   * them for the engine admin, who books a date when a captain asks them to. */
+  authorTeams: TeamDetails[] = [];
   orgs: SeasonPlayer[] = [];
   orgQuery = "";
   orgResults: PlayerSearchResult[] = [];
@@ -206,6 +208,11 @@ export class SeasonComponent implements OnInit {
     return this.canBeAuthor();
   }
 
+  /** The admin picks from every team, so the hint has to say which list this is. */
+  picksAnyTeam(): boolean {
+    return this.users.isAdmin();
+  }
+
   // ---------- composing ----------
 
   startComposing(): void {
@@ -329,10 +336,13 @@ export class SeasonComponent implements OnInit {
     this.selectedTeamId = slot.team?.id ?? null;
     this.orgQuery = "";
     this.orgResults = [];
-    if (this.captainedTeams.length === 0 && this.canBeAuthor()) {
-      this.teams.getCaptainedTeams().subscribe({
-        next: res => { this.captainedTeams = res.items; },
-        error: () => { this.captainedTeams = []; },
+    if (this.authorTeams.length === 0 && this.canBeAuthor()) {
+      const teams$ = this.users.isAdmin()
+        ? this.teams.listTeams({active: true})
+        : this.teams.getCaptainedTeams();
+      teams$.subscribe({
+        next: res => { this.authorTeams = res.items; },
+        error: () => { this.authorTeams = []; },
       });
     }
   }
