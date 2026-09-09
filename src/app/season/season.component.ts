@@ -1,4 +1,4 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, HostListener, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {ActivatedRoute, Router, RouterLink} from "@angular/router";
 import {HttpErrorResponse} from "@angular/common/http";
@@ -69,7 +69,10 @@ export class SeasonComponent implements OnInit {
   composing = false;
   draft: SlotDraft[] = [];
 
+  /** The date the modal is open on. Nothing on the page edits in place. */
   selected: Slot | null = null;
+  /** A day with no date yet: the modal offers to add one instead of adding it. */
+  pendingDate: string | null = null;
   authorKind: SlotAuthorKind = "player";
   selectedTeamId: number | null = null;
   captainedTeams: CaptainedTeam[] = [];
@@ -105,7 +108,7 @@ export class SeasonComponent implements OnInit {
     this.isLoading = true;
     this.loadFailed = false;
     this.isMissing = false;
-    this.closeSlot();
+    this.closeModal();
     this.seasons.getSeason(this.year)
       .pipe(finalize(() => { this.isLoading = false; }))
       .subscribe({
@@ -198,9 +201,9 @@ export class SeasonComponent implements OnInit {
     return this.users.isUserLoaded() && this.users.canBeAuthor();
   }
 
-  canEdit(slot: Slot): boolean {
-    if (!this.canBeAuthor()) return false;
-    return slot.is_free || this.isOwn(slot);
+  /** Promotion is the whole gate — a date belongs to the authors collectively. */
+  canEdit(): boolean {
+    return this.canBeAuthor();
   }
 
   // ---------- composing ----------
@@ -309,8 +312,16 @@ export class SeasonComponent implements OnInit {
 
   // ---------- one date ----------
 
+  /** A day with no date: offer to add one. Tapping a day never writes. */
+  openEmptyDay(cell: DayCell): void {
+    if (this.composing || !cell.date || !this.canBeAuthor() || this.isMissing) return;
+    this.selected = null;
+    this.pendingDate = cell.date;
+  }
+
   openSlot(slot: Slot): void {
     if (this.composing) return;
+    this.pendingDate = null;
     this.selected = slot;
     this.noteDraft = slot.note ?? "";
     this.orgs = [...slot.orgs];
@@ -326,10 +337,20 @@ export class SeasonComponent implements OnInit {
     }
   }
 
-  closeSlot(): void {
+  closeModal(): void {
     this.selected = null;
+    this.pendingDate = null;
     this.orgResults = [];
     this.orgQuery = "";
+  }
+
+  get isModalOpen(): boolean {
+    return this.selected !== null || this.pendingDate !== null;
+  }
+
+  @HostListener("document:keydown.escape")
+  onEscape(): void {
+    if (this.isModalOpen) this.closeModal();
   }
 
   authorName(slot: Slot): string | null {
@@ -344,10 +365,16 @@ export class SeasonComponent implements OnInit {
     return shortDate(date);
   }
 
-  addDate(cell: DayCell): void {
-    if (!cell.date || !this.canBeAuthor()) return;
-    this.seasons.addSlot(this.year, cell.date).subscribe({
-      next: () => this.load(),
+  modalTitle(): string {
+    const date = this.selected?.date ?? this.pendingDate;
+    return date ? `Дата ${shortDate(date)}` : "Дата";
+  }
+
+  addPendingDate(): void {
+    const date = this.pendingDate;
+    if (!date) return;
+    this.seasons.addSlot(this.year, date).subscribe({
+      next: () => { this.closeModal(); this.load(); },
     });
   }
 
@@ -359,7 +386,7 @@ export class SeasonComponent implements OnInit {
       team_id: this.authorKind === "team" ? this.selectedTeamId : null,
       org_player_ids: this.orgs.map(org => org.id),
     }).subscribe({
-      next: () => { this.closeSlot(); this.load(); },
+      next: () => { this.closeModal(); this.load(); },
     });
   }
 
@@ -367,7 +394,7 @@ export class SeasonComponent implements OnInit {
     const slot = this.selected;
     if (!slot) return;
     this.seasons.releaseSlot(this.year, slot.id).subscribe({
-      next: () => { this.closeSlot(); this.load(); },
+      next: () => { this.closeModal(); this.load(); },
     });
   }
 
@@ -375,7 +402,7 @@ export class SeasonComponent implements OnInit {
     const slot = this.selected;
     if (!slot) return;
     this.seasons.editSlot(this.year, slot.id, {note: this.noteDraft}).subscribe({
-      next: () => { this.closeSlot(); this.load(); },
+      next: () => { this.closeModal(); this.load(); },
     });
   }
 
@@ -383,7 +410,7 @@ export class SeasonComponent implements OnInit {
     const slot = this.selected;
     if (!slot || !date) return;
     this.seasons.editSlot(this.year, slot.id, {date}).subscribe({
-      next: () => { this.closeSlot(); this.load(); },
+      next: () => { this.closeModal(); this.load(); },
     });
   }
 
@@ -391,7 +418,7 @@ export class SeasonComponent implements OnInit {
     const slot = this.selected;
     if (!slot) return;
     this.seasons.removeSlot(this.year, slot.id).subscribe({
-      next: () => { this.closeSlot(); this.load(); },
+      next: () => { this.closeModal(); this.load(); },
     });
   }
 
@@ -399,7 +426,7 @@ export class SeasonComponent implements OnInit {
     const slot = this.selected;
     if (!slot) return;
     this.seasons.unlinkGame(this.year, slot.id).subscribe({
-      next: () => { this.closeSlot(); this.load(); },
+      next: () => { this.closeModal(); this.load(); },
     });
   }
 
@@ -441,7 +468,7 @@ export class SeasonComponent implements OnInit {
     const slot = this.selected;
     if (!slot) return;
     this.seasons.setOrgs(this.year, slot.id, this.orgs.map(org => org.id)).subscribe({
-      next: () => { this.closeSlot(); this.load(); },
+      next: () => { this.closeModal(); this.load(); },
     });
   }
 

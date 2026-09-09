@@ -217,8 +217,8 @@ the language should be enforced in one place.
 | --- | --- | --- | --- |
 | **Season** | Сезон | One calendar year's plan of games, as a list of dates. It exists only once published — there is no draft on the server; composing one lives in component state. | `GET /seasons/{year}` |
 | **Slot** | Дата игры (в разговоре — просто «дата») | One planned date in a season, before there is a game to put in it. Date-only; free or taken; may be linked to exactly one game. Никаких «слотов» в русских строках — только «дата». | `season/` |
-| **Taking a slot** | Взять дату | An author claiming a date, declaring whether the game will be authored by them or by their team. A taken date is locked to its owner. | `POST /seasons/{year}/slots/{id}/take` |
-| **Slot owner** | Владелец даты | The author who took it. Besides the superuser, the only person who may move, release or delete it. | `season/` |
+| **Taking a slot** | Взять дату | An author claiming a date, declaring whether the game will be authored by them or by their team. It records intent, not exclusive access. | `POST /seasons/{year}/slots/{id}/take` |
+| **Slot owner** | Владелец даты | The author who took it — who means to make the game there. Any author may still move, release or delete the date; the season needs no admin role. | `season/` |
 | **Slot org** | Орг на дату | A player the owner names as a co-organizer of the future game. Declared intent — it becomes an organizer when the game exists. | `season/` |
 | **Schedule publication** | Публикация расписания | Confirming a composed season in one request. Not *публикация результатов* — that is a different act on a different aggregate. | `POST /seasons` |
 | **Change digest** | Сводка изменений | The once-a-day summary of every change to a published season, delivered as a `season_schedule_changed` notification. | `notification-render.ts` |

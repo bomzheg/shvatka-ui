@@ -1,6 +1,10 @@
 @use '../../styles/component-mixins' as cm;
 
 .season-page {
+  --slot-free: rgba(34, 197, 94, 0.18);
+  --slot-taken: rgba(148, 163, 184, 0.28);
+  --slot-mine: rgba(250, 204, 21, 0.28);
+  --slot-linked: rgba(59, 130, 246, 0.26);
   max-width: 1080px;
   margin: 0 auto;
   padding: 0.5rem 0.75rem 2rem;
@@ -54,6 +58,12 @@
 
 .button--danger {
   color: #b91c1c;
+}
+
+@media (max-width: 480px) {
+  .slot-modal .button-row .button {
+    flex: 1 1 100%;
+  }
 }
 
 .link-button {
@@ -189,10 +199,14 @@
   white-space: nowrap;
 }
 
-.day-button--free { background: rgba(34, 197, 94, 0.18); }
-.day-button--taken { background: rgba(148, 163, 184, 0.28); }
-.day-button--mine { background: rgba(250, 204, 21, 0.28); }
-.day-button--linked { background: rgba(59, 130, 246, 0.26); }
+.day-button--free,
+.legend-swatch--free { background: var(--slot-free); }
+.day-button--taken,
+.legend-swatch--taken { background: var(--slot-taken); }
+.day-button--mine,
+.legend-swatch--mine { background: var(--slot-mine); }
+.day-button--linked,
+.legend-swatch--linked { background: var(--slot-linked); }
 .day-button--picked { background: rgba(34, 197, 94, 0.3); }
 
 .legend {
@@ -219,45 +233,54 @@
   border: 1px solid var(--app-border);
 }
 
-.legend-swatch--free { background: rgba(34, 197, 94, 0.18); }
-.legend-swatch--taken { background: rgba(148, 163, 184, 0.28); }
-.legend-swatch--mine { background: rgba(250, 204, 21, 0.28); }
-.legend-swatch--linked { background: rgba(59, 130, 246, 0.26); }
-
-.slot-panel {
-  @include cm.surface-card(14px, 1rem);
-  margin-top: 1.25rem;
+.slot-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1000;
 }
 
-.slot-panel__head {
+.slot-modal {
+  @include cm.surface-card(14px, 1rem);
+  position: relative;
+  width: 100%;
+  max-width: 30rem;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.3);
+  text-align: left;
+}
+
+/* on a phone the modal is a sheet: full width, anchored to the bottom, and
+   tall enough to reach the actions without the on-screen keyboard hiding them */
+@media (max-width: 480px) {
+  .slot-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .slot-modal {
+    max-width: none;
+    max-height: 92vh;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+
+.slot-modal__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
+  margin-bottom: 0.35rem;
 
   h2 {
     margin: 0;
     font-size: 1.05rem;
-  }
-}
-
-.slot-facts {
-  margin: 0.75rem 0;
-  display: grid;
-  gap: 0.35rem;
-
-  div {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  dt {
-    color: var(--tg-theme-hint-color, #6b7280);
-    min-width: 6rem;
-  }
-
-  dd {
-    margin: 0;
   }
 }
 
@@ -293,10 +316,11 @@
   display: grid;
   gap: 0.25rem;
   font-size: 0.9rem;
+}
 
-  li {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
+.org-list li,
+.org-results li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
