@@ -16,7 +16,7 @@ import {GameScenarioPartComponent} from "../game_scenario.part/game_scenario.par
 import {toPreviewGame} from "./scenario-preview";
 import {GraphLevel, GraphRoute, keyRouteLabel, timerRouteLabel} from "../scenario_graph.part/scenario_graph.model";
 import {scrollToLevel} from "../scenario_graph.part/scenario_graph.nav";
-import {FullGame, HintType, Level, ScenarioConditionType} from "../domain/game.models";
+import {FullGame, HintType, Level, RichFormat, ScenarioConditionType} from "../domain/game.models";
 import {
   cleanHint,
   CONTENT_TYPE_LABELS,

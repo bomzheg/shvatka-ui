@@ -19,7 +19,7 @@
   } @else if (isPreviewing) {
     <div class="published-release">
       @for (part of previewParts(); track $index) {
-        <app-hint-part [hint]="part" [fileUrl]="fileUrl(part)" [thumbUrl]="thumbUrl(part)"/>
+        <app-hint-part [hint]="part" [fileUrl]="fileUrl(part)" [thumbUrl]="thumbUrl(part)" [fileUrlFor]="fileUrlFor"/>
       }
     </div>
     <div class="release-actions">

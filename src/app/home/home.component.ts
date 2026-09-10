@@ -60,6 +60,10 @@ export class HomeComponent implements OnInit {
     return this.activeGame?.status === "getting_waivers" ? "идёт сбор вейверов" : "текущая игра";
   }
 
+  /** Bound once so the hint view can resolve any file of the release (a rich
+   *  hint embeds several) without a new closure on every change detection. */
+  fileUrlFor = (guid: string): string | undefined => this.urlFor(guid);
+
   fileUrl(hint: HintPart): string | undefined {
     return this.urlFor(hint.file_guid);
   }

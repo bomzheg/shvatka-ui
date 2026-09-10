@@ -105,6 +105,10 @@ export class GameComponent implements OnInit, OnDestroy, AfterViewChecked {
     return release.banner ? [release.banner, ...release.hints] : release.hints;
   }
 
+  /** Bound once so the hint view can resolve any file of the game (a rich
+   *  hint embeds several) without a new closure on every change detection. */
+  releaseFileUrlFor = (guid: string): string | undefined => this.releaseUrlFor(guid);
+
   releaseFileUrl(part: HintPart): string | undefined {
     return this.releaseUrlFor(part.file_guid);
   }
