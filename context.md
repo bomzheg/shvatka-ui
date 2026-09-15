@@ -209,6 +209,23 @@ the language should be enforced in one place.
 | **Push category** | Категория пушей | The group a push kind belongs to, as the player chooses it: ход игры, команда, организатору. Not a domain concept — the engine knows only kinds — but the unit the profile switches on and off. | `push/push-settings.ts` |
 | **Push settings** | Настройки пушей | Which categories this browser shows, and whether it vibrates. Per-device and per-browser: kept in `localStorage` and mirrored to the service worker, never sent to the engine, which goes on sending every push the player is entitled to. | `push/push-settings.service.ts`, `profile/profile-notifications.component` |
 
+## Season schedule
+
+Сезон — план игр на календарный год, который ведёт движок. См. SHEP-0003.
+
+| Term | Русский | Meaning | Where |
+| --- | --- | --- | --- |
+| **Season** | Сезон | One calendar year's plan of games, as a list of dates. It exists only once published — there is no draft on the server; composing one lives in component state. | `GET /seasons/{year}` |
+| **Slot** | Дата игры (в разговоре — просто «дата») | One planned date in a season, before there is a game to put in it. Date-only; free or taken; may be linked to exactly one game. Никаких «слотов» в русских строках — только «дата». | `GET /seasons/{year}` |
+| **Taking a slot** | Взять дату | An author claiming a date, declaring whether the game will be authored by them or by their team. It records intent, not exclusive access. Naming a *team* needs its captain; putting somebody else's player or team on a date is an admin-panel action, never part of the ordinary schedule. | `POST /seasons/{year}/slots/{id}/take` |
+| **Slot owner** | Владелец даты | The author who took it — who means to make the game there. Any author may still move, release or delete the date; the season gives nobody a lock and needs no admin role. | `GET /seasons/{year}` |
+| **Slot org** | Орг на дату | A player the owner names as a co-organizer of the future game. Declared intent — it becomes an organizer when the game exists. | `PUT /seasons/{year}/slots/{id}/orgs` |
+| **Schedule publication** | Публикация расписания | Confirming a composed season in one request. Not *публикация результатов* — that is a different act on a different aggregate. | `POST /seasons` |
+| **Change digest** | Сводка изменений | The once-a-day summary of every change to a published season, delivered as a `season_schedule_changed` notification. | `notification-render.ts` |
+
+Unqualified **расписание** means the season schedule; planning one game's start
+is *планирование старта игры*.
+
 ## Search
 
 | Term | Русский | Meaning | Where |
@@ -276,6 +293,7 @@ in code and in Russian UI copy alike.
 | Announcement, анонс | **Release** — релиз | Организаторы говорят *релиз* про промо перед игрой; *анонс* размывает его с любым другим объявлением. |
 | Fine, malus | **Penalty** — штраф | A penalty is a negative bonus, not another field. |
 | Group, squad, crew | **Team** — команда | Group means a Telegram chat here. |
+| Слот | **Дата игры** — «дата» | People say «дата игры»; inventing a borrowed word for something the domain already names is what this glossary exists to prevent. The API calls it `slot` because `date` is unusable as an identifier. |
 | Member | **Team player** — участник команды | Membership is an interval with permissions, not a flag. |
 | Finished = complete | **Finished** ≠ **complete** | Finished means all teams passed the last level; complete means closed and numbered. |
 
