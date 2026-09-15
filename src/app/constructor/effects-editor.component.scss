@@ -122,3 +122,31 @@ label {
   font-size: 0.9rem;
   flex-wrap: wrap;
 }
+
+.hints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.drag-handle {
+  cursor: grab;
+  font-size: 1rem;
+  line-height: 1;
+  opacity: 0.6;
+  width: 1rem;
+  text-align: center;
+  flex: none;
+}
+
+.drag-handle::before {
+  content: "⠿";
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle.is-hidden {
+  display: none;
+}

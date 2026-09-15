@@ -611,6 +611,23 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     timeHint.hint.splice(index, 1);
   }
 
+  /** A lone part has nowhere to go, so the grip and arrows stay away. */
+  canReorderHints(timeHint: EditorTimeHint): boolean {
+    return this.isEditable && timeHint.hint.length > 1;
+  }
+
+  moveHint(timeHint: EditorTimeHint, index: number, delta: number) {
+    const target = index + delta;
+    if (target < 0 || target >= timeHint.hint.length) {
+      return;
+    }
+    moveItemInArray(timeHint.hint, index, target);
+  }
+
+  onHintDrop(timeHint: EditorTimeHint, event: CdkDragDrop<HintPayload[]>) {
+    moveItemInArray(timeHint.hint, event.previousIndex, event.currentIndex);
+  }
+
   addKeyCondition(level: EditorLevel) {
     level.keyConditions.push({keysText: "", action_time: null, effects: this.newEffects()});
   }

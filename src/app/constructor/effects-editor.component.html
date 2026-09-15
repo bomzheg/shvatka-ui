@@ -32,18 +32,27 @@
         <app-hint-type-picker (picked)="addHint($event)"></app-hint-type-picker>
       }
     </div>
-    @for (h of effects.hints; track h; let hi = $index) {
-      <app-hint-editor
-        [hint]="h"
-        [files]="files"
-        [gameId]="gameId"
-        [objectUrls]="objectUrls"
-        [disabled]="disabled"
-        [adminUpload]="adminUpload"
-        (remove)="removeHint(hi)"
-        (fileUploaded)="onFileUploaded($event)"
-        (fileRenamed)="onFileRenamed($event)"
-      ></app-hint-editor>
-    }
+    <div class="hints" cdkDropList (cdkDropListDropped)="onHintDrop($event)">
+      @for (h of effects.hints; track h; let hi = $index) {
+        <app-hint-editor
+          cdkDrag [cdkDragDisabled]="!canReorder()"
+          [hint]="h"
+          [index]="hi"
+          [count]="effects.hints.length"
+          [files]="files"
+          [gameId]="gameId"
+          [objectUrls]="objectUrls"
+          [disabled]="disabled"
+          [adminUpload]="adminUpload"
+          (remove)="removeHint(hi)"
+          (move)="moveHint(hi, $event)"
+          (fileUploaded)="onFileUploaded($event)"
+          (fileRenamed)="onFileRenamed($event)"
+        >
+          <span class="drag-handle" hintDragHandle cdkDragHandle title="Перетащите, чтобы изменить порядок"
+                [class.is-hidden]="!canReorder()"></span>
+        </app-hint-editor>
+      }
+    </div>
   </div>
 </div>

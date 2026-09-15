@@ -315,19 +315,26 @@
                   @if (th.time < 0) {
                     <span class="field-error">Время не может быть отрицательным.</span>
                   }
-                  <div class="hints">
+                  <div class="hints" cdkDropList (cdkDropListDropped)="onHintDrop(th, $event)">
                     @for (h of th.hint; track h; let hi = $index) {
                       <app-hint-editor
+                        cdkDrag [cdkDragDisabled]="!canReorderHints(th)"
                         [hint]="h"
+                        [index]="hi"
+                        [count]="th.hint.length"
                         [files]="files"
                         [gameId]="gameId"
                         [objectUrls]="objectUrls"
                         [disabled]="!isEditable"
                         [adminUpload]="adminMode"
                         (remove)="removeHint(th, hi)"
+                        (move)="moveHint(th, hi, $event)"
                         (fileUploaded)="onHintFileUploaded($event)"
                         (fileRenamed)="onHintFileRenamed($event)"
-                      ></app-hint-editor>
+                      >
+                        <span class="drag-handle" hintDragHandle cdkDragHandle title="Перетащите, чтобы изменить порядок"
+                              [class.is-hidden]="!canReorderHints(th)"></span>
+                      </app-hint-editor>
                     }
                   </div>
                   @if (isEditable) {

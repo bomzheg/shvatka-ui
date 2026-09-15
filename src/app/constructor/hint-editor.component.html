@@ -1,8 +1,17 @@
 <div class="hint-editor">
   <div class="hint-head">
-    <span class="hint-type"><mat-icon class="app-icon-inline" [svgIcon]="typeIcon"/> {{ typeLabel }}</span>
+    <span class="hint-type">
+      <ng-content select="[hintDragHandle]"></ng-content>
+      <mat-icon class="app-icon-inline" [svgIcon]="typeIcon"/> {{ typeLabel }}
+    </span>
     @if (!disabled) {
-      <button type="button" class="ghost-button danger" (click)="onRemove()">Удалить</button>
+      <span class="hint-actions">
+        @if (count > 1) {
+          <button type="button" class="ghost-button icon" (click)="onMove(-1)" [disabled]="index === 0" title="Выше"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.up"/></button>
+          <button type="button" class="ghost-button icon" (click)="onMove(1)" [disabled]="index === count - 1" title="Ниже"><mat-icon class="app-icon-inline" [svgIcon]="AppIcon.down"/></button>
+        }
+        <button type="button" class="ghost-button danger" (click)="onRemove()">Удалить</button>
+      </span>
     }
   </div>
 
