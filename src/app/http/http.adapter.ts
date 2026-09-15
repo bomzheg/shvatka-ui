@@ -55,20 +55,6 @@ export class HttpAdapter {
     );
   }
 
-  patch<T>(url: string, body: any): Observable<T> {
-    if (this.shouldBlockProtectedRequest(url)) {
-      return this.unauthorizedError(url);
-    }
-    return this.http.patch<T>(
-      this.config.apiUrl + url,
-      body,
-      {
-        withCredentials: true,
-        headers: {"Content-Type": "application/json"},
-      },
-    );
-  }
-
   getBlob(url: string): Observable<Blob> {
     if (this.shouldBlockProtectedRequest(url)) {
       return this.unauthorizedError(url);

@@ -15,14 +15,7 @@ import {TeamService} from "../team/team.service";
 import {TeamPlayerHistory} from "../team/team.models";
 import {NotificationsService} from "./notifications.service";
 import {readApiError} from "../http/api-error";
-import {
-  notificationIcon,
-  notificationText,
-  requestResultText,
-  requestText,
-  seasonScheduleLink,
-  typeIcon,
-} from "./notification-render";
+import {notificationIcon, notificationText, requestResultText, requestText, typeIcon} from "./notification-render";
 import {
   ACTIONABLE_NOTIFICATION_TYPES,
   ADMIN_RESOLVED_REQUEST_TYPES,
@@ -128,12 +121,6 @@ export class NotificationsComponent implements OnInit {
       }
     }
     return notificationText(notification, this.userService.getMe()?.id);
-  }
-
-  /** A schedule notification points at the year it is about. */
-  seasonLink(view: NotificationView): string | null {
-    if (view.notification.type !== NotificationType.seasonScheduleChanged) return null;
-    return seasonScheduleLink(view.notification.payload ?? {});
   }
 
   requestRowText(requestView: RequestView): string {

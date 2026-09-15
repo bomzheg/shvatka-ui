@@ -1,10 +1,4 @@
-import {
-  notificationIcon,
-  notificationText,
-  requestResultText,
-  requestText,
-  seasonScheduleLink,
-} from "./notification-render";
+import {notificationIcon, notificationText, requestResultText, requestText} from "./notification-render";
 import {ActionRequest, AppNotification} from "./notifications.models";
 import {AppIcon} from "../ui/icons";
 
@@ -267,42 +261,5 @@ describe("notificationIcon", () => {
     expect(notificationIcon(makeNotification("team_merge_request", {}))).toBe(AppIcon.merge);
     expect(notificationIcon(makeNotification("promotion_invite", {}))).toBe(AppIcon.key);
     expect(notificationIcon(makeNotification("brand_new_type", {}))).toBe(AppIcon.notifications);
-  });
-});
-
-describe("season schedule notifications", () => {
-  it("counts the changes the digest collapsed to", () => {
-    const notification = makeNotification("season_schedule_changed", {year: 2027, changes: 3});
-
-    expect(notificationText(notification)).toBe("Расписание сезона 2027: 3 изменения");
-  });
-
-  it("declines the count the way Russian does", () => {
-    const of = (changes: number) =>
-      notificationText(makeNotification("season_schedule_changed", {year: 2027, changes}));
-
-    expect(of(1)).toBe("Расписание сезона 2027: 1 изменение");
-    expect(of(2)).toBe("Расписание сезона 2027: 2 изменения");
-    expect(of(5)).toBe("Расписание сезона 2027: 5 изменений");
-    expect(of(11)).toBe("Расписание сезона 2027: 11 изменений");
-    expect(of(21)).toBe("Расписание сезона 2027: 21 изменение");
-  });
-
-  it("announces a freshly published season by its size", () => {
-    const notification = makeNotification("season_schedule_changed", {
-      year: 2027, published: true, slots: 9,
-    });
-
-    expect(notificationText(notification)).toBe("Опубликовано расписание сезона 2027: 9 дат");
-  });
-
-  it("still says something without a year or a count", () => {
-    expect(notificationText(makeNotification("season_schedule_changed", {})))
-      .toBe("Изменилось расписание сезона");
-  });
-
-  it("links to the year it is about", () => {
-    expect(seasonScheduleLink({year: 2027})).toBe("/season/2027");
-    expect(seasonScheduleLink({})).toBe("/season");
   });
 });
