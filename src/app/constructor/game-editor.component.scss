@@ -214,6 +214,10 @@ input.invalid {
   cursor: grabbing;
 }
 
+.drag-handle.is-hidden {
+  display: none;
+}
+
 .ghost-button.icon {
   padding: 0.3rem 0.5rem;
   line-height: 1;

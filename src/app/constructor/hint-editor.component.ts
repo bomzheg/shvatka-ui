@@ -46,7 +46,13 @@ export class HintEditorComponent {
   /** Upload through the superuser endpoint (completed-game editing).
    *  Renaming is hidden in this mode — there is no admin rename endpoint. */
   @Input() adminUpload = false;
+  /** Position of this part in the hint, for the reorder arrows. */
+  @Input() index = 0;
+  /** How many parts the hint holds — a single part has nowhere to move. */
+  @Input() count = 1;
   @Output() remove = new EventEmitter<void>();
+  /** Reorder request: -1 moves the part one slot up, +1 one slot down. */
+  @Output() move = new EventEmitter<number>();
   @Output() fileUploaded = new EventEmitter<UploadedFile>();
   @Output() fileRenamed = new EventEmitter<UploadedFile>();
 
@@ -138,6 +144,10 @@ export class HintEditorComponent {
 
   onRemove() {
     this.remove.emit();
+  }
+
+  onMove(delta: number) {
+    this.move.emit(delta);
   }
 
   onUploadSelected(event: Event, target: "file" | "thumb") {
