@@ -1,7 +1,7 @@
 # Shvatka Design System — Figma plugin
 
 Finishes the design system in **[Shvatka UI — Design System](https://www.figma.com/design/qQVsZINvV8IouCBHzoxqrj)**:
-builds the **Header** component set and **10 screen frames** (5 screens × desktop + mobile)
+builds the **Header** component set and **14 screen frames** (7 screens × desktop + mobile)
 on top of the tokens and components already in the file.
 
 It runs inside your own Figma client, so it uses **no MCP tool calls** — the Starter
@@ -20,7 +20,7 @@ Local plugins need the **Figma desktop app** — the browser can't read a manife
 **Plugins** → **Development** → **Shvatka Design System**.
 
 It takes a few seconds and closes with a summary line, e.g.
-`Shvatka DS — tokens: 15 colour, 9 spacing, 5 radius, 8 text styles · Header component set created (2 variants) · built 10 screens`.
+`Shvatka DS — tokens: 15 colour, 9 spacing, 5 radius, 8 text styles · Header component set created (2 variants) · built 14 screens`.
 
 The new screens end up selected and zoomed into on the **Screens** page.
 
@@ -51,6 +51,39 @@ single biggest thing that made them look wrong.
 | Game detail | centred name, centred «Начало:» line, `<details>` blocks (`#e5e7eb`, radius 12), equal-width scenario tabs (radius **8**, `#e5e7eb` inactive) |
 | Game play | rule above the centred level header, centred key row (radius **8** field + button), 640px-max result panel with the `#94a3b8` border, indented hint list |
 | Profile | tinted green hero card, **tinted** chips with borders (not solid fills), three bordered stat tiles, one segmented pill for the tabs, settings card with field + disabled Save |
+| Constructor | «Мои игры»: the 720px column, the create-a-game card, the import-from-zip card, three drafts with their status pills |
+| Game editor | «Редактирование игры…»: the 880px column of blocks — start, name, organizers, release link, levels (one open), files, YAML — and the sticky Save |
+
+### The game constructor (third pass)
+
+`/games/constructor` and `/games/constructor/:id` are the one part of the app that is
+mostly form, so they are built out of the three mixins the app itself uses:
+`surface-card()` (radius 16 on the list page, **14** for every editor `.block`),
+`input-control()` (radius 10, `.65rem .75rem`) and `button-base()` (radius 10,
+`.6rem .9rem`, weight 600). Both pages keep their own narrower centred column —
+**720px** for the drafts list, **880px** for the editor — inside the usual 1100px panel.
+
+What the two screens carry:
+
+- **One status pill, everywhere.** `color-mix(in srgb, surface 70%, accent)` → `#c1ddca`
+  with muted `.85rem` text, used by the draft rows, the editor's title and the file type.
+- **The organizers editor**, with the author's amber card (`rgba(234,179,8,.06)` behind
+  `rgba(234,179,8,.4)`, «автор» badge, four read-only green permission chips), a
+  secondary organizer whose four permissions are checkboxes, and the quick-add chips for
+  the author's own team.
+- **Levels as `<details>`.** Two collapsed cards show what the list looks like; the first
+  is open, with the sticky opaque summary, the dashed `.sub-block` rules, the level id,
+  the level key, the auto-finish timer, an effects key with the bonus-minutes field and
+  the level-up toggle, and a time hint.
+- **The hint editor** as the app draws it: a dashed card per hint part holding the
+  Telegram text editor — «Визуально | HTML» tabs with the accent underline, the toolbar
+  of eight real icon buttons, then the text.
+- **The scenario's one Save** in the sticky right-aligned `.actions-bar`; the name and
+  the start keep their own buttons, because they write on their own routes.
+
+Sample content follows the engine: keys are `SH50A` / `СХ50А`, the statuses are
+`STATUS_LABELS` («В процессе создания», «Полностью готова», «Сбор вейверов»), and no
+effect touches a level's timer.
 
 ### Scenario / play vocabulary (second pass)
 
@@ -94,7 +127,8 @@ Corrections from the maintainer, now encoded in the placeholder content:
 
 Every screen previously carried the same header with «Прошедшие игры» lit. The nav pill
 is now set per screen: Games and Game detail light «Прошедшие игры», Game play lights
-«Текущая игра», Home and Profile light nothing.
+«Текущая игра», the constructor and the editor light «Мои игры», Home and Profile light
+nothing.
 
 ### One deliberate difference
 
@@ -110,6 +144,12 @@ screens before rebuilding. It never touches nodes it did not create.
 Note that it now **replaces** the `Header` and `Game Row` component sets rather than
 reusing them, because both were wrong. Any instances you placed by hand will need
 re-placing; everything the plugin itself builds is regenerated.
+
+## Checking a change without Figma
+
+`node ../scripts/mock-figma.js` runs the plugin against a stand-in Plugin API and
+prints the screens it built. It catches a typo, a missing helper or a bad argument
+before the file is ever opened; it says nothing about how the layout looks.
 
 ## If something is missing
 

@@ -1244,6 +1244,866 @@ async function screenProfile(headerSet, desktop) {
   return screen;
 }
 
+// ============================================================== CONSTRUCTOR ==
+/*
+ * The game constructor: /games/constructor (the author's drafts) and
+ * /games/constructor/:id (the editor). Both were built from screenshots of the
+ * running app — scripts/shoot.js carries the fixtures — and not from the
+ * templates, which say nothing about how much of this page is form furniture.
+ */
+const CTOR = {
+  listWidth: 720,          // .constructor-page max-width
+  editorWidth: 880,        // .editor-page     max-width
+  cardRadius: 16,          // surface-card(16px) — the two cards of the list page
+  blockRadius: 14,         // surface-card(14px) — .block / .organizers-block
+  pad: 16,                 // 1rem
+  inputRadius: 10, inputPadY: 10, inputPadX: 12, inputFont: 15.2,  // cm.input-control
+  btnRadius: 10, btnPadY: 10, btnPadX: 14, btnFont: 16,            // cm.button-base
+  innerRadius: 10,         // .condition / .time-hint / .org-card / .graph-spoiler
+  levelRadius: 12,         // .level-card
+  fileRadius: 8,           // .files-list li
+};
+
+// Colours the constructor hardcodes outside the token set.
+const CRAW = {
+  statusChip: '#c1ddca',   // color-mix(in srgb, surface 70%, accent) resolved
+  amber: '#eab308',        // the author card and its «автор» badge
+  amberText: '#92400e',
+  green: '#22c55e',        // the author's read-only permission chips
+  greenText: '#166534',
+  danger: '#c62828',       // .ghost-button.danger in the editor
+  dangerSoft: '#b91c1c',   // the same button in organizers-editor
+  dangerBorder: '#ef4444',
+};
+
+const SVG_BACK = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m313-440 224 224-57 56-320-320 320-320 57 56-224 224h487v80H313Z"/></svg>';
+const SVG_LEVEL = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M352-120H200q-33 0-56.5-23.5T120-200v-152q48 0 84-30.5t36-77.5q0-47-36-77.5T120-568v-152q0-33 23.5-56.5T200-800h160q0-42 29-71t71-29q42 0 71 29t29 71h160q33 0 56.5 23.5T800-720v160q42 0 71 29t29 71q0 42-29 71t-71 29v160q0 33-23.5 56.5T720-120H568q0-50-31.5-85T460-240q-45 0-76.5 35T352-120Zm-152-80h85q24-66 77-93t98-27q45 0 98 27t77 93h85v-240h80q8 0 14-6t6-14q0-8-6-14t-14-6h-80v-240H480v-80q0-8-6-14t-14-6q-8 0-14 6t-6 14v80H200v88q54 20 87 67t33 105q0 57-33 104t-87 68v88Zm260-260Z"/></svg>';
+const SVG_FOLDER = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h240l80 80h320q33 0 56.5 23.5T880-640v400q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H447l-80-80H160v480Zm0 0v-480 480Z"/></svg>';
+const SVG_DOC = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg>';
+const SVG_PERSON = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M367-527q-47-47-47-113t47-113q47-47 113-47t113 47q47 47 47 113t-47 113q-47 47-113 47t-113-47ZM160-160v-112q0-34 17.5-62.5T224-378q62-31 126-46.5T480-440q66 0 130 15.5T736-378q29 15 46.5 43.5T800-272v112H160Zm80-80h480v-32q0-11-5.5-20T700-306q-54-27-109-40.5T480-360q-56 0-111 13.5T260-306q-9 5-14.5 14t-5.5 20v32Zm296.5-343.5Q560-607 560-640t-23.5-56.5Q513-720 480-720t-56.5 23.5Q400-673 400-640t23.5 56.5Q447-560 480-560t56.5-23.5ZM480-640Zm0 400Z"/></svg>';
+const SVG_TRASH = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>';
+const SVG_UPLOAD = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M440-320v-326L336-542l-56-58 200-200 200 200-56 58-104-104v326h-80ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>';
+const SVG_DOWNLOAD = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>';
+const SVG_ALARM = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M339.5-108.5q-65.5-28.5-114-77t-77-114Q120-365 120-440t28.5-140.5q28.5-65.5 77-114t114-77Q405-800 480-800t140.5 28.5q65.5 28.5 114 77t77 114Q840-515 840-440t-28.5 140.5q-28.5 65.5-77 114t-114 77Q555-80 480-80t-140.5-28.5ZM480-440Zm112 168 56-56-128-128v-184h-80v216l152 152ZM224-866l56 56-170 170-56-56 170-170Zm512 0 170 170-56 56-170-170 56-56ZM480-160q117 0 198.5-81.5T760-440q0-117-81.5-198.5T480-720q-117 0-198.5 81.5T200-440q0 117 81.5 198.5T480-160Z"/></svg>';
+const SVG_CAMERA = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M480-260q75 0 127.5-52.5T660-440q0-75-52.5-127.5T480-620q-75 0-127.5 52.5T300-440q0 75 52.5 127.5T480-260Zm0-80q-42 0-71-29t-29-71q0-42 29-71t71-29q42 0 71 29t29 71q0 42-29 71t-71 29ZM160-120q-33 0-56.5-23.5T80-200v-480q0-33 23.5-56.5T160-760h126l74-80h240l74 80h126q33 0 56.5 23.5T880-680v480q0 33-23.5 56.5T800-120H160Zm0-80h640v-480H638l-73-80H395l-73 80H160v480Zm320-240Z"/></svg>';
+const SVG_EDIT = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>';
+const SVG_UP = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>';
+const SVG_DOWN = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>';
+const SVG_BOLD = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M272-200v-560h221q65 0 120 40t55 111q0 51-23 78.5T602-491q25 11 55.5 41t30.5 90q0 89-65 124.5T501-200H272Zm121-112h104q48 0 58.5-24.5T566-372q0-11-10.5-35.5T494-432H393v120Zm0-228h93q33 0 48-17t15-38q0-24-17-39t-44-15h-95v109Z"/></svg>';
+const SVG_ITALIC = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-200v-100h160l120-360H320v-100h400v100H580L460-300h140v100H200Z"/></svg>';
+const SVG_UNDER = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-120v-80h560v80H200Zm123-223q-56-63-56-167v-330h103v336q0 56 28 91t82 35q54 0 82-35t28-91v-336h103v330q0 104-56 167t-157 63q-101 0-157-63Z"/></svg>';
+const SVG_STRIKE = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M80-400v-80h800v80H80Zm340-160v-120H200v-120h560v120H540v120H420Zm0 400v-160h120v160H420Z"/></svg>';
+const SVG_SPOILER = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m644-428-58-58q9-47-27-88t-93-32l-58-58q17-8 34.5-12t37.5-4q75 0 127.5 52.5T660-500q0 20-4 37.5T644-428Zm128 126-58-56q38-29 67.5-63.5T832-500q-50-101-143.5-160.5T480-720q-29 0-57 4t-55 12l-62-62q41-17 84-25.5t90-8.5q151 0 269 83.5T920-500q-23 59-60.5 109.5T772-302Zm20 246L624-222q-35 11-70.5 16.5T480-200q-151 0-269-83.5T40-500q21-53 53-98.5t73-81.5L56-792l56-56 736 736-56 56ZM222-624q-29 26-53 57t-41 67q50 101 143.5 160.5T480-280q20 0 39-2.5t39-5.5l-36-38q-11 3-21 4.5t-21 1.5q-75 0-127.5-52.5T300-500q0-11 1.5-21t4.5-21l-84-82Zm319 93Zm-151 75Z"/></svg>';
+const SVG_CODE = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M320-240 80-480l240-240 57 57-184 184 183 183-56 56Zm320 0-57-57 184-184-183-183 56-56 240 240-240 240Z"/></svg>';
+const SVG_QUOTE = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m228-240 92-160q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 42.5T458-480L320-240h-92Zm360 0 92-160q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 23-5.5 42.5T818-480L680-240h-92ZM362.5-517.5Q380-535 380-560t-17.5-42.5Q345-620 320-620t-42.5 17.5Q260-585 260-560t17.5 42.5Q295-500 320-500t42.5-17.5Zm360 0Q740-535 740-560t-17.5-42.5Q705-620 680-620t-42.5 17.5Q620-585 620-560t17.5 42.5Q655-500 680-500t42.5-17.5ZM680-560Zm-360 0Z"/></svg>';
+const SVG_LINK = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M440-280H280q-83 0-141.5-58.5T80-480q0-83 58.5-141.5T280-680h160v80H280q-50 0-85 35t-35 85q0 50 35 85t85 35h160v80ZM320-440v-80h320v80H320Zm200 160v-80h160q50 0 85-35t35-85q0-50-35-85t-85-35H520v-80h160q83 0 141.5 58.5T880-480q0 83-58.5 141.5T680-280H520Z"/></svg>';
+const SVG_CHECK = '<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>';
+
+/** Fix a frame's width without freezing its height — resize() sets both. */
+function fixWidth(node, w) {
+  node.layoutSizingHorizontal = 'FIXED';
+  node.resize(w, node.height);
+  try { node.layoutSizingVertical = 'HUG'; } catch (e) { node.counterAxisSizingMode = 'AUTO'; }
+  return node;
+}
+
+/** cm.input-control(): border, radius 10, padding .65rem .75rem, .95rem. */
+async function ctorInput(parent, value, opts) {
+  const o = opts || {};
+  const f = frame('input', 'HORIZONTAL', 0);
+  f.counterAxisAlignItems = 'CENTER';
+  f.paddingTop = CTOR.inputPadY; f.paddingBottom = CTOR.inputPadY;
+  f.paddingLeft = CTOR.inputPadX; f.paddingRight = CTOR.inputPadX;
+  f.fills = [paint('surface')];
+  f.strokes = [paint('border/default')];
+  f.strokeWeight = 1;
+  f.cornerRadius = CTOR.inputRadius;
+  parent.appendChild(f);
+  if (o.width) {
+    fixWidth(f, o.width);
+  } else {
+    f.layoutSizingHorizontal = 'FILL';
+  }
+  const t = await text(value, null, o.placeholder ? 'text/muted' : 'text/primary', 'value');
+  t.fontSize = CTOR.inputFont;
+  f.appendChild(t);
+  if (!o.width) t.layoutSizingHorizontal = 'FILL';
+  return f;
+}
+
+/** cm.button-base(): radius 10, padding .6rem .9rem, weight 600, 1rem. */
+async function ctorButton(parent, label, kind, svg) {
+  const b = frame('button/' + kind, 'HORIZONTAL', 6);
+  b.counterAxisAlignItems = 'CENTER';
+  b.paddingTop = CTOR.btnPadY; b.paddingBottom = CTOR.btnPadY;
+  b.paddingLeft = CTOR.btnPadX; b.paddingRight = CTOR.btnPadX;
+  b.cornerRadius = CTOR.btnRadius;
+  if (kind === 'primary' || kind === 'disabled') {
+    b.fills = [paint('accent')];
+  } else {
+    b.fills = [];
+    b.strokeWeight = 1;
+    b.strokes = [kind === 'danger' ? solid(CRAW.danger) : paint('border/default')];
+  }
+  parent.appendChild(b);
+  const filled = kind === 'primary' || kind === 'disabled';
+  const glyph = filled ? '#ffffff' : kind === 'danger' ? CRAW.danger : '#1f2937';
+  if (svg) b.appendChild(iconLiteral(svg, glyph, 16));
+  const t = await text(label, null, null);
+  t.fontName = INTER('Semi Bold');
+  t.fontSize = CTOR.btnFont;
+  t.fills = filled ? [paint('accent/contrast')]
+    : kind === 'danger' ? [solid(CRAW.danger)] : [paint('text/primary')];
+  b.appendChild(t);
+  if (kind === 'disabled') b.opacity = 0.6;     // .primary:disabled
+  return b;
+}
+
+/** .ghost-button.icon — padding .3rem .5rem, nothing but the glyph. */
+function ctorIconButton(parent, svg, danger) {
+  const b = frame('icon-button', 'HORIZONTAL', 0);
+  b.counterAxisAlignItems = 'CENTER';
+  b.paddingTop = 5; b.paddingBottom = 5; b.paddingLeft = 8; b.paddingRight = 8;
+  b.cornerRadius = CTOR.btnRadius;
+  b.fills = [];
+  b.strokeWeight = 1;
+  b.strokes = [danger ? solid(CRAW.danger) : paint('border/default')];
+  parent.appendChild(b);
+  b.appendChild(iconLiteral(svg, danger ? CRAW.danger : '#1f2937', 16));
+  return b;
+}
+
+/** surface-card(): the white bordered box both pages are made of. */
+function ctorCard(parent, radius, gap) {
+  const c = frame('card', 'VERTICAL', gap === undefined ? 8 : gap);
+  c.fills = [paint('surface')];
+  c.strokes = [paint('border/default')];
+  c.strokeWeight = 1;
+  c.cornerRadius = radius;
+  c.paddingTop = CTOR.pad; c.paddingBottom = CTOR.pad;
+  c.paddingLeft = CTOR.pad; c.paddingRight = CTOR.pad;
+  parent.appendChild(c);
+  c.layoutSizingHorizontal = 'FILL';
+  return c;
+}
+
+/** An inner box: .condition, .time-hint, .org-card, .graph-spoiler. */
+function ctorBox(parent, radius, padY, padX, gap, dir) {
+  const b = frame('box', dir || 'VERTICAL', gap === undefined ? 8 : gap);
+  if (dir === 'HORIZONTAL') b.counterAxisAlignItems = 'CENTER';
+  b.fills = [paint('surface')];
+  b.strokes = [paint('border/default')];
+  b.strokeWeight = 1;
+  b.cornerRadius = radius;
+  b.paddingTop = padY; b.paddingBottom = padY;
+  b.paddingLeft = padX; b.paddingRight = padX;
+  parent.appendChild(b);
+  b.layoutSizingHorizontal = 'FILL';
+  return b;
+}
+
+/** A row that wraps the way the app's flex-wrap rows do. */
+function ctorRow(parent, gap, align) {
+  const r = frame('row', 'HORIZONTAL', gap);
+  r.counterAxisAlignItems = align || 'CENTER';
+  r.layoutWrap = 'WRAP';
+  r.counterAxisSpacing = gap;
+  parent.appendChild(r);
+  r.layoutSizingHorizontal = 'FILL';
+  return r;
+}
+
+/** The dashed rule .sub-block draws above itself. */
+function ctorDashedRule(parent) {
+  const line = figma.createLine();
+  line.name = 'sub-block-rule';
+  line.strokes = [paint('border/default')];
+  line.strokeWeight = 1;
+  line.dashPattern = [4, 4];
+  line.resize(100, 0);
+  parent.appendChild(line);
+  try { line.layoutSizingHorizontal = 'FILL'; } catch (e) { line.resize(600, 0); }
+  return line;
+}
+
+function ctorRule(parent) {
+  const r = figma.createRectangle();
+  r.name = 'rule';
+  r.resize(100, 1);
+  r.fills = [paint('border/default')];
+  parent.appendChild(r);
+  r.layoutSizingHorizontal = 'FILL';
+  return r;
+}
+
+/** label — .85rem muted, above its field. */
+async function ctorLabel(parent, chars, svg) {
+  const l = frame('label', 'HORIZONTAL', 4);
+  l.counterAxisAlignItems = 'CENTER';
+  parent.appendChild(l);
+  l.layoutSizingHorizontal = 'FILL';
+  if (svg) l.appendChild(iconLiteral(svg, '#4b5563', 14));
+  const t = await text(chars, null, 'text/muted');
+  t.fontSize = 13.6;
+  l.appendChild(t);
+  return l;
+}
+
+/** .hint-note — the muted paragraph under a block heading. */
+async function ctorNote(parent, chars, width) {
+  const t = await text(chars, null, 'text/muted', 'hint-note');
+  t.fontSize = 13.6;
+  t.lineHeight = { unit: 'PERCENT', value: 140 };
+  parent.appendChild(t);
+  t.layoutSizingHorizontal = 'FILL';
+  wrap(t, width);
+  return t;
+}
+
+/** h2 of a block: 1.1rem, with the block's icon in front of it. */
+async function ctorHeading(parent, chars, svg, size) {
+  const h = frame('block-heading', 'HORIZONTAL', 6);
+  h.counterAxisAlignItems = 'CENTER';
+  parent.appendChild(h);
+  if (svg) h.appendChild(iconLiteral(svg, '#1f2937', 18));
+  const t = await text(chars, null, 'text/primary');
+  t.fontName = INTER('Semi Bold');
+  t.fontSize = size || 17.6;                 // 1.1rem
+  h.appendChild(t);
+  return h;
+}
+
+/** .status-badge / .game-status — one tinted pill, both pages. */
+async function ctorStatusChip(parent, label) {
+  const c = frame('status-badge', 'HORIZONTAL', 0);
+  c.counterAxisAlignItems = 'CENTER';
+  c.paddingTop = 3; c.paddingBottom = 3; c.paddingLeft = 10; c.paddingRight = 10;
+  c.cornerRadius = 999;
+  c.fills = [solid(CRAW.statusChip)];
+  parent.appendChild(c);
+  const t = await text(label, null, 'text/muted');
+  t.fontSize = 13.6;
+  c.appendChild(t);
+  return c;
+}
+
+/** A native checkbox and its label, as the organizers editor renders them. */
+async function ctorCheckbox(parent, label, checked) {
+  const row = frame('checkbox', 'HORIZONTAL', 6);
+  row.counterAxisAlignItems = 'CENTER';
+  parent.appendChild(row);
+  const box = figma.createFrame();
+  box.name = 'box';
+  box.resize(15, 15);
+  box.cornerRadius = 3;
+  box.fills = checked ? [solid('#1a73e8')] : [paint('surface')];
+  box.strokes = checked ? [] : [solid('#767676')];
+  box.strokeWeight = 1;
+  row.appendChild(box);
+  if (checked) {
+    const tick = iconLiteral(SVG_CHECK, '#ffffff', 11);
+    box.appendChild(tick);
+    tick.x = 2; tick.y = 2;
+  }
+  const t = await text(label, null, 'text/primary');
+  t.fontSize = 14;
+  row.appendChild(t);
+  return row;
+}
+
+// -- Constructor: the author's drafts -----------------------------------------
+async function screenConstructor(headerSet, desktop) {
+  const { screen, panel } = await screenShell(
+    (desktop ? 'Desktop' : 'Mobile') + ' / Constructor', desktop, headerSet, 'Мои игры');
+  panel.counterAxisAlignItems = 'CENTER';    // .constructor-page margin: 0 auto
+
+  const page = frame('constructor-page', 'VERTICAL', 16);
+  panel.appendChild(page);
+  if (desktop) {
+    fixWidth(page, CTOR.listWidth);
+  } else {
+    page.layoutSizingHorizontal = 'FILL';
+  }
+
+  const h1 = await text('Мои игры', 'Heading/H1', 'text/primary', 'page-title');
+  page.appendChild(h1);
+  h1.layoutSizingHorizontal = 'FILL';
+
+  // .create-form — the only way to start a game from the site
+  const create = ctorCard(page, CTOR.cardRadius, 8);
+  const cl = await text('Название новой игры', null, 'text/primary', 'label');
+  cl.fontSize = 14.4;                        // label 0.9rem, colour inherited
+  create.appendChild(cl);
+  const createRow = frame('create-row', 'HORIZONTAL', 8);
+  createRow.counterAxisAlignItems = 'CENTER';
+  create.appendChild(createRow);
+  createRow.layoutSizingHorizontal = 'FILL';
+  await ctorInput(createRow, '');
+  await ctorButton(createRow, 'Создать', 'primary');
+
+  // .import-zip — the same package the bot reads
+  const importCard = ctorCard(page, CTOR.cardRadius, 8);
+  await ctorButton(importCard, 'Загрузить игру из zip', 'ghost');
+  await ctorNote(importCard,
+    'Архив со сценарием и файлами — такой же, какой понимает бот и который можно ' +
+    'скачать на странице игры. Название игры внутри архива: если такой игры у вас ' +
+    'ещё нет, появится новая, а свою одноимённую архив перезапишет.');
+
+  const list = frame('games-list', 'VERTICAL', 12);
+  page.appendChild(list);
+  list.layoutSizingHorizontal = 'FILL';
+  const drafts = [
+    ['Полночный экспресс', 'В процессе создания'],
+    ['Тайна старой водонапорной башни', 'Полностью готова'],
+    ['Ночь длинных ножей', 'Сбор вейверов'],
+  ];
+  for (const [name, status] of drafts) {
+    const row = ctorBox(list, CTOR.levelRadius, 13, 16, 12, 'HORIZONTAL');
+    const n = await text(name, 'Body/Default', 'text/primary', 'game-name');
+    row.appendChild(n);
+    n.layoutSizingHorizontal = 'FILL';
+    wrap(n);
+    await ctorStatusChip(row, status);
+  }
+
+  return screen;
+}
+
+// -- Game editor ---------------------------------------------------------------
+async function screenGameEditor(headerSet, desktop) {
+  const { screen, panel } = await screenShell(
+    (desktop ? 'Desktop' : 'Mobile') + ' / Game editor', desktop, headerSet, 'Мои игры');
+  panel.counterAxisAlignItems = 'CENTER';    // .editor-page margin: 0 auto
+
+  const page = frame('editor-page', 'VERTICAL', 16);
+  panel.appendChild(page);
+  if (desktop) {
+    fixWidth(page, CTOR.editorWidth);
+  } else {
+    page.layoutSizingHorizontal = 'FILL';
+  }
+
+  // .back-link — accent, no underline
+  const back = frame('back-link', 'HORIZONTAL', 6);
+  back.counterAxisAlignItems = 'CENTER';
+  page.appendChild(back);
+  back.appendChild(icon(SVG_BACK, 'accent', 16));
+  const bt = await text('К списку игр', null, 'accent');
+  bt.fontSize = 15.2;
+  back.appendChild(bt);
+
+  // .editor-head — title, status, and the two status actions; wraps on mobile
+  const head = ctorRow(page, 12);
+  const title = await text('Редактирование игры «Полночный экспресс»', null, 'text/primary', 'h1');
+  title.fontName = INTER('Bold');
+  title.fontSize = desktop ? 25.6 : 20.8;    // 1.6rem / 1.3rem under 640
+  head.appendChild(title);
+  if (!desktop) {
+    title.layoutSizingHorizontal = 'FILL';   // h1 { flex: 1 1 100% }
+    wrap(title);
+  }
+  await ctorStatusChip(head, 'В процессе создания');
+  await ctorButton(head, 'Начать сбор вейверов', 'primary');
+  await ctorButton(head, 'Ключи для печати', 'ghost', SVG_DOWNLOAD);
+
+  // -- Planned start
+  const start = ctorCard(page, CTOR.blockRadius, 10);
+  await ctorHeading(start, 'Планируемый старт');
+  await ctorInput(start, '11.10.2026, 21:00');
+  const startRow = ctorRow(start, 8);
+  await ctorButton(startRow, 'Сохранить', 'primary');
+  await ctorButton(startRow, 'Отменить старт', 'ghost');
+
+  // -- Name
+  const nameBlock = ctorCard(page, CTOR.blockRadius, 8);
+  await ctorLabel(nameBlock, 'Название игры');
+  const nameRow = ctorRow(nameBlock, 8);
+  await ctorInput(nameRow, 'Полночный экспресс', { width: desktop ? 600 : 240 });
+  await ctorButton(nameRow, 'Переименовать', 'disabled');
+
+  // -- Organizers
+  await organizersBlock(page);
+
+  // -- Release lives on its own page; here there is only the way to it
+  const release = ctorCard(page, CTOR.blockRadius, 8);
+  await ctorHeading(release, 'Релиз игры', SVG_BULB);
+  await ctorNote(release,
+    'Промо, которое публикуется примерно за неделю до игры: баннер, текст про тему, ' +
+    'карта района. Необязательно — без релиза игра идёт как обычно.');
+  await ctorButton(release, 'Открыть релиз', 'ghost');
+
+  // -- Levels
+  await levelsBlock(page, desktop);
+
+  // -- Files
+  const files = ctorCard(page, CTOR.blockRadius, 8);
+  await ctorHeading(files, 'Файлы', SVG_FOLDER);
+  await ctorNote(files, 'Все загруженные файлы игры. Загружать можно и прямо из подсказки.');
+  const file = ctorBox(files, CTOR.fileRadius, 8, 10, 7);
+  const fileRow = frame('file-info', 'HORIZONTAL', 8);
+  fileRow.counterAxisAlignItems = 'CENTER';
+  file.appendChild(fileRow);
+  fileRow.layoutSizingHorizontal = 'FILL';
+  const fileName = frame('file-name', 'HORIZONTAL', 6);
+  fileName.counterAxisAlignItems = 'CENTER';
+  fileRow.appendChild(fileName);
+  fileName.layoutSizingHorizontal = 'FILL';
+  fileName.appendChild(iconLiteral(SVG_CAMERA, '#1f2937', 16));
+  const fn = await text('ploshchad.jpg', null, 'text/primary');
+  fn.fontName = INTER('Semi Bold'); fn.fontSize = 14.4;
+  fileName.appendChild(fn);
+  await ctorStatusChip(fileRow, 'Фото');
+  ctorIconButton(fileRow, SVG_EDIT, false);
+  ctorIconButton(fileRow, SVG_TRASH, true);
+  const preview = figma.createFrame();
+  preview.name = 'file-preview';
+  preview.resize(240, 160);                  // max-width 240, max-height 180
+  preview.cornerRadius = CTOR.fileRadius;
+  preview.fills = [solid('#cfddd2')];
+  preview.strokes = [paint('border/default')];
+  preview.strokeWeight = 1;
+  file.appendChild(preview);
+  await ctorButton(files, 'Загрузить файл', 'ghost', SVG_UPLOAD);
+
+  // -- The scenario as a document
+  const yaml = ctorCard(page, CTOR.blockRadius, 8);
+  await ctorHeading(yaml, 'Сценарий в YAML', SVG_DOC);
+  await ctorNote(yaml,
+    'Сценарий целиком текстом: правьте его прямо здесь, скачайте файл, чтобы хранить ' +
+    'рядом с остальными материалами игры, или вставьте готовый — хоть из другой игры. ' +
+    'Файлы (фото, аудио, видео) в документ не попадают — только их имена: загрузите их ' +
+    'в игру сами, и подсказки свяжутся с ними по имени.');
+  const yamlActions = ctorRow(yaml, 8);
+  await ctorButton(yamlActions, 'Скачать YAML', 'ghost', SVG_DOWNLOAD);
+  await ctorButton(yamlActions, 'Скачать zip с файлами', 'ghost', SVG_DOWNLOAD);
+  await ctorButton(yamlActions, 'Показать текст', 'ghost', SVG_EDIT);
+  await ctorButton(yamlActions, 'Загрузить YAML', 'ghost', SVG_UPLOAD);
+  await ctorNote(yaml,
+    '«Применить» и загрузка файла заменяют все уровни в редакторе; в игре ничего ' +
+    'не меняется, пока вы не сохраните сценарий.');
+
+  // .actions-bar — sticky at the bottom, the scenario's one Save
+  const actions = frame('actions-bar', 'HORIZONTAL', 0);
+  actions.primaryAxisAlignItems = 'MAX';
+  actions.paddingTop = 12; actions.paddingBottom = 12;
+  page.appendChild(actions);
+  actions.layoutSizingHorizontal = 'FILL';
+  const save = await ctorButton(actions, 'Сохранить сценарий', 'primary');
+  save.paddingTop = 11; save.paddingBottom = 11;   // .actions-bar .primary .7rem 1.4rem
+  save.paddingLeft = 22; save.paddingRight = 22;
+
+  return screen;
+}
+
+/** The organizers editor — its own component, rendered inside the editor page. */
+async function organizersBlock(page) {
+  const block = ctorCard(page, CTOR.blockRadius, 8);
+  await ctorHeading(block, 'Организаторы', SVG_PERSON);
+  await ctorNote(block,
+    'Автор всегда имеет все права и не может быть удалён. Дополнительным ' +
+    'организаторам можно выдавать отдельные права.');
+
+  // .org-card-author — amber, and the only card with read-only permissions
+  const author = ctorBox(block, CTOR.innerRadius, 10, 13, 9);
+  author.fills = [solid(CRAW.amber, 0.06)];
+  author.strokes = [solid(CRAW.amber, 0.4)];
+  const authorRow = frame('org-row', 'HORIZONTAL', 7);
+  authorRow.counterAxisAlignItems = 'CENTER';
+  author.appendChild(authorRow);
+  authorRow.layoutSizingHorizontal = 'FILL';
+  const an = await text('Юрий Чебышев', null, 'text/primary', 'org-name');
+  an.fontName = INTER('Semi Bold'); an.fontSize = 16;
+  authorRow.appendChild(an);
+  const badge = frame('badge-author', 'HORIZONTAL', 0);
+  badge.paddingTop = 2; badge.paddingBottom = 2; badge.paddingLeft = 7; badge.paddingRight = 7;
+  badge.cornerRadius = 999;
+  badge.fills = [solid(CRAW.amber, 0.15)];
+  badge.strokes = [solid(CRAW.amber, 0.4)];
+  badge.strokeWeight = 1;
+  authorRow.appendChild(badge);
+  const bt = await text('автор', null, null);
+  bt.fontName = INTER('Semi Bold'); bt.fontSize = 11.5;
+  bt.fills = [solid(CRAW.amberText)];
+  badge.appendChild(bt);
+
+  const perms = ctorRow(author, 5);
+  for (const label of ['Шпионить', 'Смотреть лог ключей', 'Принимать вейверы', 'Смотреть сценарий']) {
+    const chip = frame('perm-chip', 'HORIZONTAL', 3);
+    chip.counterAxisAlignItems = 'CENTER';
+    chip.paddingTop = 2; chip.paddingBottom = 2; chip.paddingLeft = 6; chip.paddingRight = 6;
+    chip.cornerRadius = 999;
+    chip.fills = [solid(CRAW.green, 0.12)];
+    chip.strokes = [solid(CRAW.green, 0.35)];
+    chip.strokeWeight = 1;
+    perms.appendChild(chip);
+    chip.appendChild(iconLiteral(SVG_CHECK, CRAW.greenText, 11));
+    const t = await text(label, null, null);
+    t.fontSize = 11.2;
+    t.fills = [solid(CRAW.greenText)];
+    chip.appendChild(t);
+  }
+
+  // A secondary organizer: the same four permissions, now as checkboxes
+  const second = ctorBox(block, CTOR.innerRadius, 10, 13, 9);
+  const secondRow = frame('org-row', 'HORIZONTAL', 12);
+  secondRow.counterAxisAlignItems = 'CENTER';
+  second.appendChild(secondRow);
+  secondRow.layoutSizingHorizontal = 'FILL';
+  const sn = await text('Анна Ковалёва', null, 'text/primary', 'org-name');
+  sn.fontName = INTER('Semi Bold'); sn.fontSize = 16;
+  secondRow.appendChild(sn);
+  const spacer = figma.createFrame();
+  spacer.name = 'spacer'; spacer.fills = []; spacer.resize(8, 8);
+  secondRow.appendChild(spacer);
+  spacer.layoutSizingHorizontal = 'FILL';
+  ctorIconButton(secondRow, SVG_TRASH, true);
+  const toggles = ctorRow(second, 14);
+  for (const [label, on] of [['Шпионить', true], ['Смотреть лог ключей', false],
+                             ['Принимать вейверы', true], ['Смотреть сценарий', true]]) {
+    await ctorCheckbox(toggles, label, on);
+  }
+
+  // .add-org — invitation by default, with the author's team one click away
+  ctorRule(block);
+  const add = frame('add-org', 'VERTICAL', 10);
+  block.appendChild(add);
+  add.layoutSizingHorizontal = 'FILL';
+  add.paddingTop = 6;
+  await ctorHeading(add, 'Добавить организатора', null, 15.2);
+  await ctorCheckbox(add, 'Добавить сразу, без подтверждения игроком', false);
+  await ctorLabel(add, 'Из команды «Полуночники»:');
+  const chips = ctorRow(add, 7);
+  for (const [emoji, name] of [['🦉', 'mmorozova'], ['🧭', 'ilyin']]) {
+    const chip = frame('team-chip', 'HORIZONTAL', 6);
+    chip.counterAxisAlignItems = 'CENTER';
+    chip.paddingTop = 5; chip.paddingBottom = 5; chip.paddingLeft = 10; chip.paddingRight = 10;
+    chip.cornerRadius = 999;
+    chip.fills = [];
+    chip.strokes = [paint('border/default')];
+    chip.strokeWeight = 1;
+    chips.appendChild(chip);
+    const e = await text(emoji, null, 'text/primary');
+    e.fontSize = 13.6;
+    chip.appendChild(e);
+    const n = await text(name, null, 'text/primary');
+    n.fontName = INTER('Semi Bold'); n.fontSize = 13.6;
+    chip.appendChild(n);
+    const plus = await text('+', null, 'text/primary');
+    plus.fontSize = 14;
+    chip.appendChild(plus);
+  }
+  await ctorInput(add, 'Имя пользователя...', { placeholder: true });
+  return block;
+}
+
+/** The levels block: the spoilers, one open level and two collapsed ones. */
+async function levelsBlock(page, desktop) {
+  const block = ctorCard(page, CTOR.blockRadius, 10);
+  const head = ctorRow(block, 8);
+  await ctorHeading(head, 'Уровни', SVG_LEVEL);
+  const headSpacer = figma.createFrame();
+  headSpacer.name = 'spacer'; headSpacer.fills = []; headSpacer.resize(8, 8);
+  head.appendChild(headSpacer);
+  headSpacer.layoutSizingHorizontal = 'FILL';
+  await ctorButton(head, 'Убрать сложное', 'ghost', SVG_SPARK);
+  await ctorButton(head, '+ Уровень', 'primary');
+
+  for (const label of ['Граф переходов', 'Предпросмотр сценария']) {
+    const sp = ctorBox(block, CTOR.innerRadius, 8, 11, 0);
+    sp.fills = [Object.assign({}, paint('surface'), { opacity: 0.92 })];
+    const t = await text('▸  ' + label, null, 'text/primary', 'summary');
+    t.fontName = INTER('Semi Bold'); t.fontSize = 16;
+    sp.appendChild(t);
+  }
+
+  // The one open level — the form the whole page exists for
+  const open = ctorBox(block, CTOR.levelRadius, 0, 0, 0);
+  const summary = await levelSummary(open, '#1 (start)', 3, 2, desktop, true);
+  summary.paddingTop = 11; summary.paddingBottom = 11;
+  summary.paddingLeft = 14; summary.paddingRight = 14;
+
+  const body = frame('level-body', 'VERTICAL', 12);
+  body.paddingTop = 14; body.paddingBottom = 14;
+  body.paddingLeft = 14; body.paddingRight = 14;
+  open.appendChild(body);
+  body.layoutSizingHorizontal = 'FILL';
+
+  const idField = frame('level-id', 'VERTICAL', 4);
+  body.appendChild(idField);
+  idField.layoutSizingHorizontal = 'FILL';
+  await ctorLabel(idField, 'ID уровня');
+  await ctorInput(idField, 'start');
+
+  // 1. the level's own key, 2. its auto-finish timer
+  const keyField = await subBlock(body, null, null);
+  await ctorLabel(keyField, 'Ключ уровня (несколько — через пробел)', SVG_KEY);
+  await ctorInput(keyField, 'SH50A СХ50А');
+
+  const timerField = await subBlock(body, null, null);
+  await ctorLabel(timerField, 'Время автозавершения уровня (минуты; пусто — нет)', SVG_ALARM);
+  await ctorInput(timerField, '45', { width: 96 });   // .time-input width 6rem
+
+  // 3. keys that carry effects
+  const keysBlock = await subBlock(body, 'Ключи с эффектами', '+ Ключ', SVG_KEY);
+  const condition = ctorBox(keysBlock, CTOR.innerRadius, 10, 10, 8);
+  const condHead = ctorRow(condition, 8);
+  await ctorInput(condHead, 'SHBONUS', { width: desktop ? 560 : 200 });
+  await ctorButton(condHead, 'Удалить', 'danger');
+  await effectsEditor(condition);
+
+  // 4. timers that carry effects
+  await subBlock(body, 'Таймеры с эффектами', '+ Таймер', SVG_TIMER);
+
+  // 5. the hints the level gives on a schedule
+  const hintsBlock = await subBlock(body, 'Подсказки по времени', '+ Время', SVG_BULB);
+  const timeHint = ctorBox(hintsBlock, CTOR.innerRadius, 10, 10, 8);
+  const timeRow = ctorRow(timeHint, 8);
+  const pre = await text('подсказка в', null, 'text/primary');
+  pre.fontSize = 14.4;
+  timeRow.appendChild(pre);
+  await ctorInput(timeRow, '0', { width: 96 });
+  const post = await text('мин.', null, 'text/primary');
+  post.fontSize = 14.4;
+  timeRow.appendChild(post);
+  ctorIconButton(timeRow, SVG_TRASH, true);
+  await hintEditor(timeHint, 'Текст', 'Ищите то, что отбивает часы над площадью.');
+  await ctorButton(timeHint, '+ контент', 'ghost');
+
+  // The other two levels stay collapsed — that is how the list is read
+  for (const [label, conds, hints] of [['#2 (bridge)', 2, 1], ['#3 (final)', 2, 1]]) {
+    const card = ctorBox(block, CTOR.levelRadius, 0, 0, 0);
+    const s = await levelSummary(card, label, conds, hints, desktop, false);
+    s.paddingTop = 11; s.paddingBottom = 11; s.paddingLeft = 14; s.paddingRight = 14;
+  }
+  return block;
+}
+
+/** .drag-handle — the app draws "⠿"; six dots survive any font. */
+function dragHandle() {
+  const h = figma.createFrame();
+  h.name = 'drag-handle';
+  h.resize(8, 14);
+  h.fills = [];
+  h.opacity = 0.6;
+  for (let i = 0; i < 6; i++) {
+    const dot = figma.createEllipse();
+    dot.resize(2.4, 2.4);
+    dot.x = (i % 2) * 5;
+    dot.y = Math.floor(i / 2) * 5;
+    dot.fills = [paint('text/primary')];
+    h.appendChild(dot);
+  }
+  return h;
+}
+
+/** .level-summary — caption, the two counts, and the three actions. */
+async function levelSummary(card, label, conditions, hints, desktop, open) {
+  const s = ctorRow(card, 10);
+  s.name = 'level-summary';
+  if (open) {
+    // A sticky summary must be opaque, and it keeps only its top corners.
+    s.fills = [paint('surface')];
+    s.topLeftRadius = CTOR.levelRadius; s.topRightRadius = CTOR.levelRadius;
+  }
+
+  const caption = frame('level-caption', 'HORIZONTAL', 10);
+  caption.counterAxisAlignItems = 'CENTER';
+  s.appendChild(caption);
+  caption.appendChild(dragHandle());
+  const t = await text(label, null, 'text/primary', 'level-title');
+  t.fontName = INTER('Semi Bold'); t.fontSize = 16;
+  caption.appendChild(t);
+  if (desktop) caption.layoutSizingHorizontal = 'FILL';   // flex 1 1 auto
+
+  const stats = frame('level-stats', 'HORIZONTAL', 5);
+  stats.counterAxisAlignItems = 'CENTER';
+  s.appendChild(stats);
+  stats.appendChild(iconLiteral(SVG_KEY, '#4b5563', 14));
+  const c = await text('условий: ' + conditions, null, 'text/muted');
+  c.fontSize = 13.6;
+  stats.appendChild(c);
+  stats.appendChild(iconLiteral(SVG_BULB, '#4b5563', 14));
+  const h = await text('подсказок: ' + hints, null, 'text/muted');
+  h.fontSize = 13.6;
+  stats.appendChild(h);
+
+  const actions = frame('level-actions', 'HORIZONTAL', 6);
+  actions.counterAxisAlignItems = 'CENTER';
+  s.appendChild(actions);
+  ctorIconButton(actions, SVG_UP, false);
+  ctorIconButton(actions, SVG_DOWN, false);
+  ctorIconButton(actions, SVG_TRASH, true);
+
+  if (open) {
+    const dashed = figma.createLine();
+    dashed.name = 'summary-rule';
+    dashed.strokes = [paint('border/default')];
+    dashed.strokeWeight = 1;
+    dashed.dashPattern = [4, 4];
+    dashed.resize(100, 0);
+    card.appendChild(dashed);
+    try { dashed.layoutSizingHorizontal = 'FILL'; } catch (e) { dashed.resize(600, 0); }
+  }
+  return s;
+}
+
+/** .sub-block — a dashed rule, then a head with its "+" button. */
+async function subBlock(body, title, action, svg) {
+  ctorDashedRule(body);
+  const sub = frame('sub-block', 'VERTICAL', 8);
+  sub.paddingTop = 6;
+  body.appendChild(sub);
+  sub.layoutSizingHorizontal = 'FILL';
+  if (title) {
+    const head = ctorRow(sub, 8);
+    await ctorHeading(head, title, svg, 16);            // h3 1rem
+    const spacer = figma.createFrame();
+    spacer.name = 'spacer'; spacer.fills = []; spacer.resize(8, 8);
+    head.appendChild(spacer);
+    spacer.layoutSizingHorizontal = 'FILL';
+    if (action) await ctorButton(head, action, 'ghost');
+  }
+  return sub;
+}
+
+/** effects-editor: the bonus minutes, the level-up toggle, the bonus hints. */
+async function effectsEditor(parent) {
+  const ed = frame('effects-editor', 'VERTICAL', 8);
+  parent.appendChild(ed);
+  ed.layoutSizingHorizontal = 'FILL';
+
+  const row = ctorRow(ed, 16, 'MAX');
+  const bonus = frame('bonus-field', 'VERTICAL', 3);
+  row.appendChild(bonus);
+  await ctorLabel(bonus, 'Бонус минут', SVG_BULB);
+  await ctorInput(bonus, '10', { width: 128 });          // .bonus-field input 8rem
+  const hint = await text('+ бонус, − штраф', null, 'text/muted', 'field-hint');
+  hint.fontSize = 12.5;
+  bonus.appendChild(hint);
+
+  const levelUp = frame('level-up-row', 'HORIZONTAL', 10);
+  levelUp.counterAxisAlignItems = 'CENTER';
+  row.appendChild(levelUp);
+  const track = figma.createFrame();
+  track.name = 'toggle-track';
+  track.resize(38, 22);                                   // 2.4rem × 1.35rem
+  track.cornerRadius = 999;
+  track.fills = [paint('border/default')];                // off; accent when on
+  levelUp.appendChild(track);
+  const thumb = figma.createEllipse();
+  thumb.name = 'toggle-thumb';
+  thumb.resize(17, 17);
+  thumb.x = 2.5; thumb.y = 2.5;
+  thumb.fills = [solid('#ffffff')];
+  track.appendChild(thumb);
+  const lu = await text('Завершение уровня', null, 'text/primary');
+  lu.fontSize = 14.4;
+  levelUp.appendChild(lu);
+
+  const hintsHead = ctorRow(ed, 10);
+  await ctorLabel(hintsHead, 'Бонусные подсказки', SVG_BULB);
+  await ctorButton(hintsHead, '+ Подсказка', 'ghost');
+  await hintEditor(ed, 'Текст', 'Бонусная подсказка: загляните за ограду.');
+  return ed;
+}
+
+/** hint-editor: a dashed card per hint part, with the Telegram text editor. */
+async function hintEditor(parent, type, body) {
+  const card = frame('hint-editor', 'VERTICAL', 7);
+  card.fills = [Object.assign({}, paint('surface'), { opacity: 0.92 })];
+  card.strokes = [paint('border/default')];
+  card.strokeWeight = 1;
+  card.dashPattern = [4, 4];                              // 1px dashed
+  card.cornerRadius = CTOR.innerRadius;
+  card.paddingTop = 12; card.paddingBottom = 12;
+  card.paddingLeft = 12; card.paddingRight = 12;
+  parent.appendChild(card);
+  card.layoutSizingHorizontal = 'FILL';
+
+  const head = frame('hint-head', 'HORIZONTAL', 8);
+  head.counterAxisAlignItems = 'CENTER';
+  card.appendChild(head);
+  head.layoutSizingHorizontal = 'FILL';
+  const kind = frame('hint-type', 'HORIZONTAL', 6);
+  kind.counterAxisAlignItems = 'CENTER';
+  head.appendChild(kind);
+  kind.layoutSizingHorizontal = 'FILL';
+  kind.appendChild(iconLiteral(SVG_DOC, '#1f2937', 16));
+  const kt = await text(type, null, 'text/primary');
+  kt.fontName = INTER('Semi Bold'); kt.fontSize = 16;
+  kind.appendChild(kt);
+  await ctorButton(head, 'Удалить', 'danger');
+
+  // .tg-editor — the tabs, the toolbar, then the text itself
+  const editor = frame('tg-editor', 'VERTICAL', 0);
+  editor.fills = [paint('surface')];
+  editor.strokes = [paint('border/default')];
+  editor.strokeWeight = 1;
+  editor.cornerRadius = CTOR.inputRadius;
+  editor.clipsContent = true;
+  card.appendChild(editor);
+  editor.layoutSizingHorizontal = 'FILL';
+
+  const tabs = frame('tg-tabs', 'HORIZONTAL', 4);
+  tabs.paddingTop = 5; tabs.paddingLeft = 6; tabs.paddingRight = 6;
+  editor.appendChild(tabs);
+  tabs.layoutSizingHorizontal = 'FILL';
+  for (const [label, active] of [['Визуально', true], ['HTML', false]]) {
+    const tab = frame('tg-tab', 'VERTICAL', 4);
+    tab.counterAxisAlignItems = 'CENTER';
+    tab.paddingTop = 5; tab.paddingLeft = 10; tab.paddingRight = 10;
+    tabs.appendChild(tab);
+    const t = await text(label, null, active ? 'text/primary' : 'text/muted');
+    t.fontName = INTER('Semi Bold'); t.fontSize = 13.6;
+    tab.appendChild(t);
+    const underline = figma.createRectangle();
+    underline.name = 'tab-underline';
+    underline.resize(10, 2);
+    underline.fills = active ? [paint('accent')] : [];
+    tab.appendChild(underline);
+    underline.layoutSizingHorizontal = 'FILL';
+  }
+  ctorRule(editor);
+
+  const toolbar = frame('tg-toolbar', 'HORIZONTAL', 2);
+  toolbar.counterAxisAlignItems = 'CENTER';
+  toolbar.paddingTop = 5; toolbar.paddingBottom = 5;
+  toolbar.paddingLeft = 6; toolbar.paddingRight = 6;
+  toolbar.fills = [Object.assign({}, paint('surface'), { opacity: 0.92 })];
+  editor.appendChild(toolbar);
+  toolbar.layoutSizingHorizontal = 'FILL';
+  for (const svg of [SVG_BOLD, SVG_ITALIC, SVG_UNDER, SVG_STRIKE,
+                     SVG_SPOILER, SVG_CODE, SVG_QUOTE, SVG_LINK]) {
+    const b = figma.createFrame();
+    b.name = 'tool';
+    b.layoutMode = 'HORIZONTAL';
+    b.primaryAxisAlignItems = 'CENTER';
+    b.counterAxisAlignItems = 'CENTER';
+    b.fills = [];
+    b.cornerRadius = 6;
+    toolbar.appendChild(b);
+    b.resize(32, 32);                                  // 2rem square
+    b.layoutSizingHorizontal = 'FIXED';
+    b.layoutSizingVertical = 'FIXED';
+    b.appendChild(iconLiteral(svg, '#1f2937', 18));
+  }
+  ctorRule(editor);
+
+  const content = frame('tg-content', 'VERTICAL', 0);
+  content.paddingTop = 10; content.paddingBottom = 10;
+  content.paddingLeft = 12; content.paddingRight = 12;
+  editor.appendChild(content);
+  content.layoutSizingHorizontal = 'FILL';
+  try { content.minHeight = 72; } catch (e) { /* older API: padding carries it */ }
+  const ct = await text(body, null, 'text/primary');
+  ct.fontSize = CTOR.inputFont;
+  ct.lineHeight = { unit: 'PERCENT', value: 140 };
+  content.appendChild(ct);
+  ct.layoutSizingHorizontal = 'FILL';
+  wrap(ct);
+  return card;
+}
+
 // ==================================================================== main ==
 async function main() {
   await figma.loadAllPagesAsync();
@@ -1271,6 +2131,8 @@ async function main() {
       () => screenGameDetail(headerSet, desktop),
       () => screenGamePlay(headerSet, desktop),
       () => screenProfile(headerSet, desktop),
+      () => screenConstructor(headerSet, desktop),
+      () => screenGameEditor(headerSet, desktop),
     ];
     for (const make of makers) {
       const s = await make();
