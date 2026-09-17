@@ -19,7 +19,7 @@ function game(overrides: Partial<AdminGame> = {}): AdminGame {
 }
 
 function team(id: number, name: string): TeamDetails {
-  return {id, name, description: null, captain: null};
+  return {id, name, description: null, captain_id: null, captain: null};
 }
 
 function waivers(teams: TeamDetails[]): GameWaivers {

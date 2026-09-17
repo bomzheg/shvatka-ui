@@ -133,11 +133,11 @@ describe('AdminService', () => {
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({team_id: 3});
 
-    request.flush({items: [{id: 3, name: 'Гриффиндор', description: null, captain: null}]});
+    request.flush({items: [{id: 3, name: 'Гриффиндор', description: null, captain_id: null}]});
 
     expect(received!.map(t => t.name)).toEqual(['Гриффиндор']);
     // the answer names the team and nothing of the level it was sent
-    expect(Object.keys(received![0])).toEqual(['id', 'name', 'description', 'captain']);
+    expect(Object.keys(received![0])).toEqual(['id', 'name', 'description', 'captain_id']);
   });
 
   it('resends to every team when no team is named', () => {

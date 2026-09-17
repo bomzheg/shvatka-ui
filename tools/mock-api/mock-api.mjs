@@ -22,8 +22,10 @@ const me = {
 const captain = {id: 1, can_be_author: true, name_mention: 'bomzheg'};
 const rd = {id: 2, can_be_author: false, name_mention: 'rainbow_dash'};
 const flutter = {id: 3, can_be_author: false, name_mention: 'fluttershy'};
-const team = {id: 1, name: 'Пони', description: 'Дружба - это чудо', captain};
-const team2 = {id: 2, name: 'Дискорд', description: 'Хаос', captain: rd};
+const team = {
+  id: 1, name: 'Пони', description: 'Дружба - это чудо', captain_id: captain.id, captain,
+};
+const team2 = {id: 2, name: 'Дискорд', description: 'Хаос', captain_id: rd.id, captain: rd};
 
 const perms = (all = false) => ({
   can_manage_waivers: all, can_manage_players: all, can_change_team_name: all,
