@@ -1,0 +1,12 @@
+{
+  "name": "Shvatka Design System",
+  "id": "shvatka-design-system-builder",
+  "api": "1.0.0",
+  "main": "code.js",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"],
+    "reasoning": "Builds nodes from values embedded in the plugin; never calls out."
+  }
+}
