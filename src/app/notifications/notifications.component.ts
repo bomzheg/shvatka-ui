@@ -15,7 +15,7 @@ import {TeamService} from "../team/team.service";
 import {TeamPlayerHistory} from "../team/team.models";
 import {NotificationsService} from "./notifications.service";
 import {readApiError} from "../http/api-error";
-import {notificationIcon, notificationText, requestResultText, requestText, typeIcon} from "./notification-render";
+import {notificationIcon, notificationLink, notificationText, requestResultText, requestText, typeIcon} from "./notification-render";
 import {
   ACTIONABLE_NOTIFICATION_TYPES,
   ADMIN_RESOLVED_REQUEST_TYPES,
@@ -157,6 +157,11 @@ export class NotificationsComponent implements OnInit {
   }
 
   /** The related request, when this feed item is an invite/ask-to-join. */
+  /** Where the feed item leads, when it leads anywhere (a season digest does). */
+  feedLink(view: NotificationView): unknown[] | null {
+    return notificationLink(view.notification.type, view.notification.payload ?? {});
+  }
+
   requestView(view: NotificationView): RequestView | undefined {
     const requestId = view.notification.request_id;
     if (requestId === null || !ACTIONABLE_NOTIFICATION_TYPES.includes(view.notification.type)) {

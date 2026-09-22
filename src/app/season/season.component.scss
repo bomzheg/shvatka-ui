@@ -1,0 +1,234 @@
+@use "../../styles/component-mixins" as cm;
+
+.season-page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0.5rem 0.75rem 2rem;
+}
+
+.season-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}
+
+.year-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.year-chip {
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.85rem;
+  color: inherit;
+  text-decoration: none;
+
+  &.active {
+    background: var(--app-accent);
+    color: var(--app-accent-contrast);
+    border-color: transparent;
+  }
+}
+
+.status-message {
+  color: var(--app-muted-text);
+}
+
+.compose-bar,
+.move-bar {
+  @include cm.surface-card(12px, 0.9rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+// The day to move onto may be anywhere in a year-tall grid, so the instruction
+// follows the reader down instead of waiting at the top of the page.
+.move-bar {
+  position: sticky;
+  top: calc(var(--app-header-height, 64px) + 0.5rem);
+  z-index: 10;
+  background: var(--app-surface);
+}
+
+.compose-bar__text {
+  margin: 0;
+  flex: 1 1 18rem;
+  color: var(--app-muted-text);
+  line-height: 1.45;
+  font-size: 0.9rem;
+}
+
+.compose-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.range-controls {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.months {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.month-card {
+  @include cm.surface-card(14px, 0.85rem);
+}
+
+.month-title {
+  margin: 0 0 0.6rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.2rem;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--app-muted-text);
+  padding-bottom: 0.2rem;
+}
+
+.day {
+  @include cm.button-base(8px, 0.15rem);
+  min-height: 2.6rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: inherit;
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  line-height: 1.1;
+}
+
+.day--empty {
+  border: none;
+  background: none;
+  cursor: default;
+}
+
+.day--past .day__number {
+  color: var(--app-muted-text);
+}
+
+.day--today {
+  outline: 2px solid var(--app-accent);
+  outline-offset: -2px;
+}
+
+.day--planned {
+  border-color: var(--app-border);
+  background: color-mix(in srgb, var(--app-accent) 6%, transparent);
+}
+
+.day--mine {
+  border-color: var(--app-accent);
+}
+
+.day__number {
+  font-size: 0.85rem;
+}
+
+.day__mark {
+  font-size: 0.75rem;
+}
+
+.slot-list-title {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.slot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.slot-row {
+  @include cm.button-base(10px, 0.5rem 0.65rem);
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  font-weight: 400;
+  text-align: left;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.6rem;
+}
+
+.slot-row__day {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.slot-row__orgs,
+.slot-row__note {
+  color: var(--app-muted-text);
+  font-size: 0.85rem;
+}
+
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--app-muted-text);
+}
+
+.primary {
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+}
+
+.ghost-button {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+}
+
+button[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}

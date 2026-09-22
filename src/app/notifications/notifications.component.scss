@@ -78,6 +78,13 @@
   overflow-wrap: anywhere;
 }
 
+.notification-link {
+  display: inline-block;
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  color: var(--app-accent);
+}
+
 .notification-date {
   display: block;
   margin-top: 0.2rem;

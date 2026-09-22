@@ -55,6 +55,20 @@ export class HttpAdapter {
     );
   }
 
+  patch<T>(url: string, body: any): Observable<T> {
+    if (this.shouldBlockProtectedRequest(url)) {
+      return this.unauthorizedError(url);
+    }
+    return this.http.patch<T>(
+      this.config.apiUrl + url,
+      body,
+      {
+        withCredentials: true,
+        headers: {"Content-Type": "application/json"},
+      },
+    );
+  }
+
   getBlob(url: string): Observable<Blob> {
     if (this.shouldBlockProtectedRequest(url)) {
       return this.unauthorizedError(url);
@@ -139,7 +153,10 @@ export class HttpAdapter {
       || url === "/users/me/password"
       || url === "/users/me/username"
       || /^\/teams\/my(\/.*)?$/.test(url)
-      || /^\/teams\/\d+\/captain$/.test(url);
+      || /^\/teams\/\d+\/captain$/.test(url)
+      // Reading a season is public, so `/seasons` as a whole is not protected;
+      // these are the paths no GET ever uses — every date-level edit.
+      || /^\/seasons\/\d+\/slots\/\d+(\/(take|orgs|game))?$/.test(url);
   }
 
   private unauthorizedError<T>(url: string): Observable<T> {
