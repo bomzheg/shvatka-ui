@@ -1,4 +1,4 @@
-import {notificationIcon, notificationText, requestResultText, requestText} from "./notification-render";
+import {notificationIcon, notificationLink, notificationText, requestResultText, requestText} from "./notification-render";
 import {ActionRequest, AppNotification} from "./notifications.models";
 import {AppIcon} from "../ui/icons";
 
@@ -261,5 +261,73 @@ describe("notificationIcon", () => {
     expect(notificationIcon(makeNotification("team_merge_request", {}))).toBe(AppIcon.merge);
     expect(notificationIcon(makeNotification("promotion_invite", {}))).toBe(AppIcon.key);
     expect(notificationIcon(makeNotification("brand_new_type", {}))).toBe(AppIcon.notifications);
+  });
+});
+
+describe("the season schedule digest", () => {
+  it("says what changed, not how many times", () => {
+    const notification = makeNotification("season_schedule_changed", {
+      year: 2027,
+      changes: [{date: "2027-05-17", moved_from: "2027-05-15", moved_to: "2027-05-17", owner: "@harry"}],
+    });
+
+    expect(notificationText(notification))
+      .toBe("Расписание сезона 2027: 17.05 — перенесена с 15.05 на 17.05; занял @harry");
+  });
+
+  it("declines the count when several dates changed", () => {
+    const notification = makeNotification("season_schedule_changed", {
+      year: 2027,
+      changes: [
+        {date: "2027-05-15", added: true},
+        {date: "2027-06-05", released: true},
+      ],
+    });
+
+    expect(notificationText(notification))
+      .toBe("Расписание сезона 2027, 2 изменения: 15.05 — добавлена · 05.06 — освобождена");
+  });
+
+  it("declines «изменений» for five", () => {
+    const changes = ["2027-05-15", "2027-06-05", "2027-06-26", "2027-07-17", "2027-08-07"]
+      .map(date => ({date, added: true}));
+
+    expect(notificationText(makeNotification("season_schedule_changed", {year: 2027, changes})))
+      .toContain("5 изменений");
+  });
+
+  it("reads an empty org list and a cleared note as the words for them", () => {
+    const notification = makeNotification("season_schedule_changed", {
+      year: 2027,
+      changes: [{date: "2027-05-15", orgs: [], orgs_before: ["@ron"], note: null}],
+    });
+
+    expect(notificationText(notification))
+      .toBe("Расписание сезона 2027: 15.05 — орги: никого; заметка: убрана");
+  });
+
+  it("names a linked and an unlinked game", () => {
+    const linked = makeNotification("season_schedule_changed", {
+      year: 2027, changes: [{date: "2027-05-15", game: "Ночь"}],
+    });
+    const unlinked = makeNotification("season_schedule_changed", {
+      year: 2027, changes: [{date: "2027-05-15", game_unlinked: true}],
+    });
+
+    expect(notificationText(linked)).toContain("привязана игра Ночь");
+    expect(notificationText(unlinked)).toContain("игра отвязана");
+  });
+
+  it("still says something when the payload carries no digests", () => {
+    expect(notificationText(makeNotification("season_schedule_changed", {year: 2027})))
+      .toBe("Расписание сезона 2027 изменилось");
+    expect(notificationText(makeNotification("season_schedule_changed", {})))
+      .toBe("Расписание сезона изменилось");
+  });
+
+  it("leads to the season it is about", () => {
+    expect(notificationLink("season_schedule_changed", {year: 2027})).toEqual(["/season", 2027]);
+    expect(notificationLink("season_schedule_changed", {})).toEqual(["/season"]);
+    expect(notificationLink("team_renamed", {team_name: "Сова"})).toBeNull();
   });
 });

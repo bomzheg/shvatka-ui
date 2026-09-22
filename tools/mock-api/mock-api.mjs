@@ -39,6 +39,22 @@ const members = [
    role: 'полевой', permissions: perms(), date_joined: '2024-01-11T18:30:00', played_games_count: 3},
 ];
 
+const SEASON_YEAR = new Date().getFullYear();
+const slot = (id, slot_date, {owner = null, author_kind = null, team: slotTeam = null,
+                             orgs = [], game = null, note = null} = {}) => ({
+  id, slot_date, note, owner, author_kind, team: slotTeam, orgs, game,
+  taken_at: owner ? iso(60 * 24 * 20) : null, is_free: owner === null,
+});
+// the engine's own rule: nine dates, the first Saturday strictly after 9 May,
+// then every 21 days — mirrored here so «Опубликовать» has something to show
+const defaultSlotDates = year => {
+  const may9 = new Date(Date.UTC(year, 4, 9));
+  const shift = (6 - may9.getUTCDay() + 7) % 7 || 7;
+  const first = Date.UTC(year, 4, 9 + shift);
+  return Array.from({length: 9}, (_, i) =>
+    new Date(first + i * 21 * 86400000).toISOString().slice(0, 10));
+};
+
 const text = t => ({type: 'text', text: t});
 const hint = (time, ...parts) => ({time, hint: parts});
 const winKey = (...keys) => ({type: 'WIN_KEY', keys});
@@ -135,6 +151,7 @@ const routes = {
   'GET /users': {items: [rd, flutter]},
 
   'GET /teams/my': team,
+  'GET /teams/my/captained': {items: [{...team, played_games_count: 12, is_current: true}]},
   'GET /teams': {items: [{...team, played_games_count: 12}, {...team2, played_games_count: 5}]},
   'GET /games': {content: myGames.filter(g => g.number !== null)},
   'GET /teams/1': {...team, played_games_count: 12},
@@ -206,6 +223,31 @@ const routes = {
     },
   },
 
+  // The season schedule: one published year with a free date, one taken by the
+  // reader, one taken by another team and one with a real game in it.
+  'GET /seasons': {years: [SEASON_YEAR]},
+  'GET /seasons/defaults': url => ({
+    year: Number(url.searchParams.get('year')) || SEASON_YEAR + 1,
+    dates: defaultSlotDates(Number(url.searchParams.get('year')) || SEASON_YEAR + 1),
+  }),
+  [`GET /seasons/${SEASON_YEAR}`]: {
+    id: 1, year: SEASON_YEAR,
+    published_at: iso(60 * 24 * 30), updated_at: iso(60 * 24 * 2),
+    slots: [
+      slot(1, `${SEASON_YEAR}-05-16`, {
+        owner: captain, author_kind: 'player', orgs: [rd], note: 'открытие сезона',
+      }),
+      slot(2, `${SEASON_YEAR}-06-06`, {}),
+      slot(3, `${SEASON_YEAR}-06-27`, {owner: rd, author_kind: 'team', team: team2}),
+      slot(4, `${SEASON_YEAR}-07-18`, {
+        owner: captain, author_kind: 'player',
+        game: {id: 1, name: 'Схватка это чудо', start_at: GAME_START, number: 12},
+      }),
+      slot(5, `${SEASON_YEAR}-08-08`, {}),
+      slot(6, `${SEASON_YEAR}-10-31`, {note: 'хэллоуинская'}),
+    ],
+  },
+
   'GET /notifications/unread-count': {count: 2},
   'GET /notifications': {
     items: [
@@ -219,6 +261,13 @@ const routes = {
       {id: 3, type: 'game_schedule_changed', severity: 'normal', read: true, created_at: iso(65),
        actor_id: 1, request_id: null,
        payload: {game_id: 1, game_name: 'Схватка это чудо', start_at: GAME_START}},
+      {id: 4, type: 'season_schedule_changed', severity: 'low', read: true, created_at: iso(60),
+       actor_id: null, request_id: null,
+       payload: {year: SEASON_YEAR, changes: [
+         {date: `${SEASON_YEAR}-06-27`, moved_from: `${SEASON_YEAR}-06-26`,
+          moved_to: `${SEASON_YEAR}-06-27`, owner: 'Дискорд'},
+         {date: `${SEASON_YEAR}-10-31`, added: true, note: 'хэллоуинская'},
+       ]}},
     ],
     limit: 20, offset: 0, unread_only: false,
   },

@@ -1,0 +1,217 @@
+<div class="slot-overlay" (click)="close()">
+  <div
+    class="slot-dialog"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="season-slot-title"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="slot-dialog__header">
+      <h2 id="season-slot-title" class="slot-dialog__title">{{ title }}</h2>
+      <button type="button" class="icon-button" aria-label="Закрыть" (click)="close()">
+        <mat-icon aria-hidden="true" [svgIcon]="AppIcon.close"/>
+      </button>
+    </div>
+
+    @if (moving) {
+      <p class="slot-dialog__text">
+        Перенести дату {{ formatDay(moving.slot_date) }} на {{ formatDay(day) }}?
+      </p>
+      @if (slots.length > 0) {
+        <p class="slot-dialog__hint">На этот день уже запланирована игра — их станет две.</p>
+      }
+      <div class="slot-dialog__actions">
+        <button type="button" class="primary" [disabled]="busy" (click)="confirmMove()">Перенести</button>
+        <button type="button" class="ghost-button" [disabled]="busy" (click)="close()">Отмена</button>
+      </div>
+    } @else if (view === "note" && selected) {
+      <label class="slot-dialog__field">
+        <span>Заметка</span>
+        <input
+          type="text"
+          name="note"
+          maxlength="200"
+          placeholder="например, зимняя игра"
+          [(ngModel)]="noteDraft"
+        />
+      </label>
+      <div class="slot-dialog__actions">
+        <button type="button" class="primary" [disabled]="busy" (click)="submitNote()">Сохранить</button>
+        <button type="button" class="ghost-button" [disabled]="busy" (click)="view = 'overview'">Отмена</button>
+      </div>
+    } @else if (view === "remove" && selected) {
+      <p class="slot-dialog__text">
+        {{ compose ? "Убрать дату" : "Удалить дату" }} {{ formatDay(selected.slot_date) }} из расписания?
+      </p>
+      <div class="slot-dialog__actions">
+        <button type="button" class="danger" [disabled]="busy" (click)="confirmRemove()">
+          {{ compose ? "Убрать дату" : "Удалить дату" }}
+        </button>
+        <button type="button" class="ghost-button" [disabled]="busy" (click)="view = 'overview'">Отмена</button>
+      </div>
+    } @else if (view === "take" && selected) {
+      <p class="slot-dialog__text">Кто делает игру {{ formatDay(selected.slot_date) }}?</p>
+      <div class="slot-dialog__choice">
+        <label>
+          <input type="radio" name="authorKind" [value]="SlotAuthorKind.player" [(ngModel)]="takeKind"/>
+          Я
+        </label>
+        @if (canTakeAsTeam) {
+          <label>
+            <input type="radio" name="authorKind" [value]="SlotAuthorKind.team" [(ngModel)]="takeKind"/>
+            Команда
+          </label>
+        }
+      </div>
+
+      @if (takeKind === SlotAuthorKind.team) {
+        @if (canTakeAsTeam) {
+          <label class="slot-dialog__field">
+            <span>Команда</span>
+            <select name="teamId" [(ngModel)]="takeTeamId">
+              @for (team of captainedTeams; track team.id) {
+                <option [ngValue]="team.id">{{ team.name }}</option>
+              }
+            </select>
+          </label>
+        } @else {
+          <p class="slot-dialog__hint">Записать команду на дату может только её капитан.</p>
+        }
+      }
+
+      <div class="slot-dialog__field">
+        <span>Орги на дату</span>
+        @if (takeOrgs.length > 0) {
+          <ul class="org-chips">
+            @for (org of takeOrgs; track org.id) {
+              <li class="org-chip">
+                {{ org.name_mention }}
+                <button type="button" class="org-chip__remove" [attr.aria-label]="'Убрать ' + org.name_mention" (click)="removeOrg(org)">
+                  <mat-icon aria-hidden="true" [svgIcon]="AppIcon.close"/>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+        <input
+          type="text"
+          name="orgQuery"
+          autocomplete="off"
+          placeholder="Найти игрока..."
+          [ngModel]="orgQuery"
+          (ngModelChange)="onOrgQueryChange($event)"
+        />
+        @if (isSearchingOrgs) {
+          <p class="slot-dialog__hint">Ищем...</p>
+        }
+        @if (orgResults.length > 0) {
+          <ul class="org-results">
+            @for (candidate of orgResults; track candidate.id) {
+              <li>
+                <button type="button" (click)="addOrg(candidate)">{{ candidate.name_mention }}</button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+
+      <div class="slot-dialog__actions">
+        <button type="button" class="primary" [disabled]="busy" (click)="submitTake()">
+          {{ selected.is_free ? "Взять дату" : "Переназначить" }}
+        </button>
+        <button type="button" class="ghost-button" [disabled]="busy" (click)="view = 'overview'">Отмена</button>
+      </div>
+    } @else {
+      @if (slots.length === 0) {
+        <p class="slot-dialog__text">На этот день игра не запланирована.</p>
+        @if (canEdit) {
+          <label class="slot-dialog__field">
+            <span>Заметка</span>
+            <input
+              type="text"
+              name="note"
+              maxlength="200"
+              placeholder="например, зимняя игра"
+              [(ngModel)]="noteDraft"
+            />
+          </label>
+          <div class="slot-dialog__actions">
+            <button type="button" class="primary" [disabled]="busy" (click)="submitAdd()">Добавить дату</button>
+          </div>
+        }
+      } @else {
+        @if (slots.length > 1) {
+          <div class="slot-dialog__tabs" role="tablist">
+            @for (slot of slots; track slot.id; let i = $index) {
+              <button
+                type="button"
+                role="tab"
+                class="slot-dialog__tab"
+                [class.active]="selected?.id === slot.id"
+                [attr.aria-selected]="selected?.id === slot.id"
+                (click)="select(slot)"
+              >Игра {{ i + 1 }}</button>
+            }
+          </div>
+        }
+
+        @if (selected; as slot) {
+          <dl class="slot-facts">
+            <dt>Автор</dt>
+            <dd>
+              @if (authorName(slot); as name) {
+                {{ name }}@if (isMine(slot)) { <span class="slot-facts__mine">— ваша дата</span> }
+              } @else {
+                Свободна
+              }
+            </dd>
+
+            @if (slot.orgs.length > 0) {
+              <dt>Орги</dt>
+              <dd>{{ orgNames(slot) }}</dd>
+            }
+
+            @if (slot.note) {
+              <dt>Заметка</dt>
+              <dd>{{ slot.note }}</dd>
+            }
+
+            @if (slot.game; as game) {
+              <dt>Игра</dt>
+              <dd>
+                <a class="slot-facts__game" [routerLink]="['/games', game.id]" (click)="close()">
+                  {{ game.name }}
+                </a>
+              </dd>
+            }
+          </dl>
+
+          @if (canEdit) {
+            <div class="slot-dialog__actions">
+              @if (!compose) {
+                @if (slot.is_free) {
+                  <button type="button" class="primary" [disabled]="busy" (click)="startTake(slot)">Взять дату</button>
+                } @else {
+                  <button type="button" class="ghost-button" [disabled]="busy" (click)="startTake(slot)">Переназначить</button>
+                  @if (!slot.game) {
+                    <button type="button" class="ghost-button" [disabled]="busy" (click)="release(slot)">Освободить</button>
+                  }
+                }
+              }
+              <button type="button" class="ghost-button" [disabled]="busy" (click)="startMove(slot)">Перенести</button>
+              <button type="button" class="ghost-button" [disabled]="busy" (click)="startNote(slot)">Заметка</button>
+              <button type="button" class="danger" [disabled]="busy" (click)="startRemove(slot)">
+                {{ compose ? "Убрать дату" : "Удалить дату" }}
+              </button>
+            </div>
+            @if (slot.game) {
+              <p class="slot-dialog__hint">
+                Пока к дате привязана игра, освободить дату нельзя — сначала отвяжите игру.
+              </p>
+            }
+          }
+        }
+      }
+    }
+  </div>
+</div>

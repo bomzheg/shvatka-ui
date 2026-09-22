@@ -1,0 +1,242 @@
+@use "../../styles/component-mixins" as cm;
+
+.slot-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.slot-dialog {
+  @include cm.surface-card(16px, 1.25rem);
+  width: 100%;
+  max-width: 420px;
+  max-height: calc(100vh - 3rem);
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.slot-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.slot-dialog__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.icon-button {
+  @include cm.button-base(8px, 0.25rem);
+  background: transparent;
+  color: var(--app-muted-text);
+  display: inline-flex;
+}
+
+.slot-dialog__text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.slot-dialog__hint {
+  margin: 0;
+  color: var(--app-muted-text);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.slot-dialog__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+
+  input,
+  select {
+    @include cm.input-control();
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
+
+.slot-dialog__choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+  }
+}
+
+.slot-dialog__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.slot-dialog__tab {
+  @include cm.button-base(999px, 0.3rem 0.75rem);
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  font-size: 0.85rem;
+
+  &.active {
+    background: var(--app-accent);
+    color: var(--app-accent-contrast);
+    border-color: transparent;
+  }
+}
+
+.slot-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.95rem;
+
+  dt {
+    color: var(--app-muted-text);
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+.slot-facts__mine {
+  margin-left: 0.35rem;
+  color: var(--app-accent);
+}
+
+.slot-facts__game {
+  color: var(--app-accent);
+}
+
+.org-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.org-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  padding: 0.2rem 0.3rem 0.2rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.org-chip__remove {
+  @include cm.button-base(999px, 0.1rem);
+  background: transparent;
+  color: var(--app-muted-text);
+  display: inline-flex;
+
+  mat-icon {
+    width: 16px;
+    height: 16px;
+    font-size: 16px;
+  }
+}
+
+.org-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--app-border);
+  border-radius: 10px;
+  max-height: 10rem;
+  overflow-y: auto;
+
+  button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: inherit;
+    padding: 0.5rem 0.65rem;
+    cursor: pointer;
+  }
+}
+
+.slot-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.primary {
+  @include cm.button-base();
+  background: var(--app-accent);
+  color: var(--app-accent-contrast);
+  white-space: nowrap;
+}
+
+.ghost-button {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid var(--app-border);
+  color: inherit;
+  white-space: nowrap;
+}
+
+.danger {
+  @include cm.button-base();
+  background: transparent;
+  border: 1px solid #b91c1c;
+  color: #b91c1c;
+  white-space: nowrap;
+}
+
+button[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+// On a phone the grid is a dozen month cards tall, so the window comes up from
+// the bottom with full-width buttons that clear the home bar.
+@media (max-width: 480px) {
+  .slot-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .slot-dialog {
+    max-width: none;
+    border-radius: 16px 16px 0 0;
+    max-height: 85vh;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
+
+  .slot-dialog__actions {
+    // in DOM order, so the destructive one stays last under the thumb's reach
+    flex-direction: column;
+    align-items: stretch;
+
+    button {
+      width: 100%;
+      padding: 0.8rem 0.9rem;
+    }
+  }
+}
