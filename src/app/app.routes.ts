@@ -8,6 +8,7 @@ import {ProfileComponent} from "./profile/profile.component";
 import {OneTimeTokenComponent} from "./auth/one-time-token.component";
 import {ConstructorComponent} from "./constructor/constructor.component";
 import {GameEditorComponent} from "./constructor/game-editor.component";
+import {gameEditorUnsavedChangesGuard} from "./constructor/game-editor.guard";
 import {ReleasePageComponent} from "./constructor/release-page.component";
 import {CaptainBridgeComponent} from "./team/captain-bridge.component";
 import {TeamsComponent} from "./teams/teams.component";
@@ -34,7 +35,11 @@ export const routes: Routes = [
   {path: "games", component: GamesComponent},
   {path: "games/running", component: GamePlayComponent},
   {path: "games/constructor", component: ConstructorComponent},
-  {path: "games/constructor/:id", component: GameEditorComponent},
+  {
+    path: "games/constructor/:id",
+    component: GameEditorComponent,
+    canDeactivate: [gameEditorUnsavedChangesGuard],
+  },
   {path: "games/constructor/:id/release", component: ReleasePageComponent},
   {path: "games/:id/chart", component: GameChartPageComponent},
   {path: "games/:id", component: GameComponent},
@@ -50,6 +55,7 @@ export const routes: Routes = [
     path: "admin/games/:id",
     component: GameEditorComponent,
     canActivate: [adminGuard],
+    canDeactivate: [gameEditorUnsavedChangesGuard],
     data: {admin: true},
   },
   {

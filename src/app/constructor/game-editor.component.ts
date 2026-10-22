@@ -208,6 +208,12 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     event.returnValue = "";
   }
 
+  /** Confirm internal navigation when it would discard the working copy. */
+  canLeaveEditor(): boolean {
+    return !this.hasUnsavedScenarioChanges()
+      || confirm("В сценарии есть несохранённые изменения. Покинуть страницу и потерять их?");
+  }
+
   get status(): string | undefined {
     return this.game?.status;
   }
