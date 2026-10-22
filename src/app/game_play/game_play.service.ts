@@ -146,8 +146,9 @@ export class RoleTeam {
   constructor(
     public id: number,
     public name: string,
-    public captain: RolePlayer | null,
     public description: string | null,
+    /** Who captains the team. The captain themselves is not embedded here. */
+    public captain_id: number | null,
   ) {
   }
 }

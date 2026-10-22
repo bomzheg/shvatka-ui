@@ -11,11 +11,12 @@ export interface PlayerRef {
   name_mention: string;
 }
 
+/** A team as it appears inside another payload — the captain is not embedded. */
 export interface TeamRef {
   id: number;
   name: string;
   description: string | null;
-  captain: PlayerRef;
+  captain_id: number | null;
 }
 
 export interface PlayerInTeam {
@@ -58,6 +59,7 @@ export interface TeamDetails {
   id: number;
   name: string;
   description: string | null;
+  captain_id: number | null;
   captain: PlayerRef | null;
   played_games_count?: number;
 }
