@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from "@angular/core";
+import {Component, HostListener, OnDestroy, OnInit} from "@angular/core";
 import {FormsModule} from "@angular/forms";
 import {ActivatedRoute, ParamMap, RouterLink} from "@angular/router";
 import {Subscription, finalize} from "rxjs";
@@ -53,6 +53,7 @@ import {SnackbarService} from "../snackbar/snackbar.service";
 import {AdminService} from "../admin/admin.service";
 import {AdminPlayerListItem} from "../admin/admin.models";
 import {HttpAdapter} from "../http/http.adapter";
+import {readApiError} from "../http/api-error";
 import {MatIcon} from "@angular/material/icon";
 import {AppIcon, CONTENT_TYPE_ICON} from "../ui/icons";
 
@@ -155,6 +156,12 @@ export class GameEditorComponent implements OnInit, OnDestroy {
   startAtLocal = "";
   validationErrors: string[] = [];
 
+  /** The scenario last confirmed by the server. Kept separately from the
+   * editor objects so changing them immediately makes an unload warning work. */
+  private savedScenario: ScenarioPayload | undefined;
+  /** YAML that is still only in the text area, not in the editor model. */
+  private hasPendingYamlChanges = false;
+
   /** guid -> local blob URL, for instant previews right after upload
    *  (the CDN copy may not be readable for a moment). Shared with child
    *  hint editors so their previews resolve to the local copy too. */
@@ -188,6 +195,23 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.objectUrls.forEach(url => URL.revokeObjectURL(url));
     this.routeSubscription?.unsubscribe();
     if (this.authorSearchTimer) clearTimeout(this.authorSearchTimer);
+  }
+
+  /** Ask the browser to keep the tab open while the server has not confirmed
+   * the scenario currently in the editor. Browsers supply their own prompt. */
+  @HostListener("window:beforeunload", ["$event"])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.hasUnsavedScenarioChanges()) {
+      return;
+    }
+    event.preventDefault();
+    event.returnValue = "";
+  }
+
+  /** Confirm internal navigation when it would discard the working copy. */
+  canLeaveEditor(): boolean {
+    return !this.hasUnsavedScenarioChanges()
+      || confirm("В сценарии есть несохранённые изменения. Покинуть страницу и потерять их?");
   }
 
   get status(): string | undefined {
@@ -267,6 +291,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     // Keep files already uploaded this session (they may not yet be referenced
     // by any hint, so they wouldn't be re-derived from the scenario).
     this.files = this.mergeFiles(this.files, this.collectFiles(game));
+    // `cleanHint` intentionally retains the link-preview object, so keep a
+    // serialized copy instead of letting an editor mutation alter the baseline.
+    this.savedScenario = JSON.parse(JSON.stringify(this.buildScenario())) as ScenarioPayload;
+    this.hasPendingYamlChanges = false;
   }
 
   /** Merge two file lists by guid; entries in `existing` win (richer metadata). */
@@ -957,6 +985,9 @@ export class GameEditorComponent implements OnInit, OnDestroy {
         if (this.game) {
           this.game.name = renamed.name;
         }
+        if (this.savedScenario) {
+          this.savedScenario = {...this.savedScenario, name: renamed.name};
+        }
         this.snackbar.success("Игра переименована");
       },
       error: () => {
@@ -984,10 +1015,24 @@ export class GameEditorComponent implements OnInit, OnDestroy {
         this.isSaving = false;
         this.snackbar.success("Сценарий сохранён");
       },
-      error: () => {
+      error: error => {
         this.isSaving = false;
+        const backendError = readApiError(error);
+        const reason = backendError?.text || backendError?.description || describeError(error);
+        this.snackbar.errorWithDoc(
+          `Не удалось сохранить сценарий: ${reason}`,
+          backendError?.docUrl,
+        );
       },
     });
+  }
+
+  /** True while the visible scenario differs from the last confirmed version. */
+  private hasUnsavedScenarioChanges(): boolean {
+    return this.isSaving
+      || this.hasPendingYamlChanges
+      || this.pendingAuthor !== null
+      || JSON.stringify(this.buildScenario()) !== JSON.stringify(this.savedScenario);
   }
 
   /** Show or hide the text area, filling it the first time it opens. */
@@ -1005,6 +1050,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       yaml => {
         this.yamlText = yaml;
         this.yamlError = null;
+        this.hasPendingYamlChanges = false;
       },
       () => this.snackbar.error("Не удалось подготовить YAML"),
     );
@@ -1016,6 +1062,10 @@ export class GameEditorComponent implements OnInit, OnDestroy {
       return;
     }
     this.importYaml(this.yamlText);
+  }
+
+  onYamlTextChange(): void {
+    this.hasPendingYamlChanges = true;
   }
 
   /**
@@ -1109,6 +1159,7 @@ export class GameEditorComponent implements OnInit, OnDestroy {
     this.levels = scenario.levels.map(
       level => this.toEditorLevelFrom(level.id, level.conditions, level.time_hints),
     );
+    this.hasPendingYamlChanges = false;
     // The document may say things the engine will not take; show that now
     // rather than at the first attempt to save.
     this.validationErrors = validateScenario(this.buildScenario());

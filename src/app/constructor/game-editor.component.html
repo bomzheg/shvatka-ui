@@ -445,7 +445,8 @@
       @if (isYamlOpen) {
         <textarea class="yaml-text" rows="20" spellcheck="false" wrap="off"
                   aria-label="Сценарий в YAML"
-                  [(ngModel)]="yamlText" [disabled]="isImporting"></textarea>
+                  [(ngModel)]="yamlText" (ngModelChange)="onYamlTextChange()"
+                  [disabled]="isImporting"></textarea>
         <div class="yaml-actions">
           <button type="button" class="ghost-button" (click)="refreshYamlText()">
             Обновить из редактора
