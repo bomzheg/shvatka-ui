@@ -1,4 +1,6 @@
 import {AppIcon} from "../ui/icons";
+import {pluralRu} from "../ui/plural-ru";
+import {formatDay} from "../season/season-calendar";
 import {ActionRequest, AppNotification, NotificationPayload, NotificationType, RequestType} from "./notifications.models";
 
 /**
@@ -17,6 +19,11 @@ function str(payload: NotificationPayload, key: string): string {
 
 function bool(payload: NotificationPayload, key: string): boolean {
   return payload[key] === true;
+}
+
+function names(payload: NotificationPayload, key: string): string[] {
+  const value = payload[key];
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
 /** Builds "запрос по команде «X»" style context from whatever keys exist. */
@@ -119,7 +126,7 @@ function renderTypeText(type: string, payload: NotificationPayload, currentPlaye
     case NotificationType.gameScheduleChanged:
       return gameName ? `Изменилось расписание игры «${gameName}»` : "Изменилось расписание игры";
     case NotificationType.seasonScheduleChanged:
-      return "Изменилось расписание сезона";
+      return seasonScheduleText(payload);
     case NotificationType.teamJoinInvite: {
       const inviter = str(payload, "inviter_name");
       if (currentPlayerId !== undefined && payload["inviter_id"] === currentPlayerId) {
@@ -195,6 +202,69 @@ function renderTypeText(type: string, payload: NotificationPayload, currentPlaye
       return context ? `Уведомление ${context}` : `Уведомление: ${type}`;
     }
   }
+}
+
+/**
+ * The daily digest of a season's changes (SHEP-0003 §Notification audience).
+ *
+ * The payload carries the collapsed changes themselves, not a count, so the
+ * line says what happened: a feed item reading «3 изменения» would leave the
+ * reader with nowhere to go — `season_changes` is the engine's audit trail,
+ * not an endpoint, and this item is the only place the web learns of them.
+ * The count is still there, declined, when there is more than one.
+ */
+export function seasonScheduleText(payload: NotificationPayload): string {
+  const year = payload["year"];
+  const head = typeof year === "number" ? `Расписание сезона ${year}` : "Расписание сезона";
+  const changes = Array.isArray(payload["changes"]) ? payload["changes"] : [];
+  const lines = changes
+    .filter((change): change is NotificationPayload => typeof change === "object" && change !== null)
+    .map(seasonDigestLine)
+    .filter(line => line.length > 0);
+  if (lines.length === 0) {
+    return `${head} изменилось`;
+  }
+  if (lines.length === 1) {
+    return `${head}: ${lines[0]}`;
+  }
+  const count = `${lines.length} ${pluralRu(lines.length, {one: "изменение", few: "изменения", many: "изменений"})}`;
+  return `${head}, ${count}: ${lines.join(" · ")}`;
+}
+
+/** One date's net change, worded as the channel digest words it. */
+export function seasonDigestLine(change: NotificationPayload): string {
+  const parts: string[] = [];
+  if (bool(change, "added")) parts.push("добавлена");
+  if (bool(change, "removed")) parts.push("удалена");
+  if (change["moved_from"] && change["moved_to"]) {
+    parts.push(`перенесена с ${formatDay(str(change, "moved_from"))} на ${formatDay(str(change, "moved_to"))}`);
+  }
+  const owner = str(change, "owner");
+  if (owner) parts.push(`занял ${owner}`);
+  if (bool(change, "released")) parts.push("освобождена");
+  if ("orgs" in change) {
+    const orgs = names(change, "orgs");
+    parts.push(`орги: ${orgs.length > 0 ? orgs.join(", ") : "никого"}`);
+  }
+  if ("note" in change) {
+    const note = str(change, "note");
+    parts.push(`заметка: ${note || "убрана"}`);
+  }
+  const game = str(change, "game");
+  if (game) parts.push(`привязана игра ${game}`);
+  if (bool(change, "game_unlinked")) parts.push("игра отвязана");
+  if (parts.length === 0) return "";
+  return `${formatDay(str(change, "date"))} — ${parts.join("; ")}`;
+}
+
+/**
+ * Where a feed item leads, when it leads anywhere. A schedule digest is about
+ * a whole season, so it opens that season's calendar.
+ */
+export function notificationLink(type: string, payload: NotificationPayload): unknown[] | null {
+  if (type !== NotificationType.seasonScheduleChanged) return null;
+  const year = payload["year"];
+  return typeof year === "number" ? ["/season", year] : ["/season"];
 }
 
 const TYPE_ICONS: Record<string, AppIcon> = {

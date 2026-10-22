@@ -1,0 +1,139 @@
+<section class="season-page">
+  <div class="season-header">
+    <h1>Расписание сезона {{ year }}</h1>
+    @if (years.length > 1) {
+      <nav class="year-switcher" aria-label="Сезоны">
+        @for (one of years; track one) {
+          <a
+            class="year-chip"
+            [class.active]="one === year"
+            [routerLink]="['/season', one]"
+          >{{ one }}</a>
+        }
+      </nav>
+    }
+  </div>
+
+  @if (mode === "loading" || mode === "waiting") {
+    <p class="status-message">Загрузка...</p>
+  } @else if (mode === "failed") {
+    <p class="status-message">Не удалось загрузить расписание.</p>
+  } @else if (mode === "none") {
+    <p class="status-message">Расписание на {{ year }} ещё не опубликовано.</p>
+  } @else {
+    @if (compose) {
+      <div class="compose-bar">
+        <p class="compose-bar__text">
+          Расписание на {{ year }} ещё не опубликовано. Соберите даты — список хранится только в этом
+          браузере, пока вы его не опубликуете.
+        </p>
+        <div class="compose-bar__actions">
+          <button type="button" class="primary" [disabled]="busy" (click)="publish()">
+            Опубликовать ({{ plannedCount }})
+          </button>
+          <button type="button" class="ghost-button" [disabled]="busy" (click)="resetDrafts()">
+            Вернуть даты по умолчанию
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (moving; as slot) {
+      <div class="move-bar" role="status">
+        <span>Выберите день, куда перенести дату {{ formatDay(slot.slot_date) }}.</span>
+        <button type="button" class="ghost-button" (click)="cancelMove()">Отмена</button>
+      </div>
+    }
+
+    <div class="range-controls">
+      <button type="button" class="ghost-button" [disabled]="!canExtendEarlier" (click)="extendEarlier()">
+        ← Раньше
+      </button>
+      <button type="button" class="ghost-button" [disabled]="!canExtendLater" (click)="extendLater()">
+        Позже →
+      </button>
+    </div>
+
+    <div class="months">
+      @for (month of months; track month.month) {
+        <section class="month-card">
+          <h2 class="month-title">{{ month.title }}</h2>
+          <div class="month-grid">
+            @for (name of WEEKDAY_NAMES; track name) {
+              <span class="weekday">{{ name }}</span>
+            }
+            @for (cell of month.cells; track $index) {
+              @if (cell) {
+                <button
+                  type="button"
+                  class="day"
+                  [class.day--planned]="cell.slots.length > 0"
+                  [class.day--today]="cell.isToday"
+                  [class.day--past]="cell.isPast"
+                  [class.day--free]="cell.mark === SlotMark.free"
+                  [class.day--taken]="cell.mark === SlotMark.taken"
+                  [class.day--mine]="cell.mark === SlotMark.mine"
+                  [class.day--linked]="cell.mark === SlotMark.linked"
+                  [attr.title]="cellTitle(cell)"
+                  (click)="onDayClick(cell)"
+                >
+                  <span class="day__number">{{ cell.dayOfMonth }}</span>
+                  @if (cell.mark) {
+                    <span class="day__mark" aria-hidden="true">{{ SLOT_MARK_EMOJI[cell.mark] }}</span>
+                  }
+                </button>
+              } @else {
+                <span class="day day--empty"></span>
+              }
+            }
+          </div>
+        </section>
+      }
+    </div>
+
+    @if (plannedSlots.length > 0) {
+      <h2 class="slot-list-title">Даты сезона</h2>
+      <ul class="slot-list">
+        @for (slot of plannedSlots; track slot.id) {
+          <li>
+            <button type="button" class="slot-row" (click)="openSlot(slot)">
+              <span class="slot-row__mark" aria-hidden="true">{{ SLOT_MARK_EMOJI[markOfSlot(slot)] }}</span>
+              <span class="slot-row__day">{{ formatDay(slot.slot_date) }}</span>
+              <span class="slot-row__who">
+                {{ slot.game?.name ?? slotAuthorName(slot) ?? "свободна" }}
+              </span>
+              @if (slot.orgs.length > 0) {
+                <span class="slot-row__orgs">орги: {{ orgNames(slot) }}</span>
+              }
+              @if (slot.note) {
+                <span class="slot-row__note">{{ slot.note }}</span>
+              }
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    <ul class="legend">
+      <li><span aria-hidden="true">{{ SLOT_MARK_EMOJI[SlotMark.free] }}</span> свободна</li>
+      <li><span aria-hidden="true">{{ SLOT_MARK_EMOJI[SlotMark.taken] }}</span> занята</li>
+      <li><span aria-hidden="true">{{ SLOT_MARK_EMOJI[SlotMark.mine] }}</span> ваша дата</li>
+      <li><span aria-hidden="true">{{ SLOT_MARK_EMOJI[SlotMark.linked] }}</span> игра назначена</li>
+    </ul>
+  }
+
+  @if (openDay) {
+    <app-season-slot-dialog
+      [day]="openDay"
+      [slots]="openSlots"
+      [compose]="compose"
+      [canEdit]="canEdit"
+      [currentPlayerId]="currentPlayerId"
+      [captainedTeams]="captainedTeams"
+      [busy]="busy"
+      [moving]="moving"
+      (action)="onDialogAction($event)"
+      (closed)="closeDialog()"
+    />
+  }
+</section>

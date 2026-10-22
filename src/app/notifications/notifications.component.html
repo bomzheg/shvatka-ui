@@ -48,6 +48,9 @@
             <mat-icon class="notification-icon" aria-hidden="true" [svgIcon]="view.icon"/>
             <div class="notification-body">
               <p class="notification-text">{{ text(view) }}</p>
+              @if (feedLink(view); as target) {
+                <a class="notification-link" [routerLink]="target">Открыть расписание</a>
+              }
               <span class="notification-date">{{ view.notification.created_at | date:'dd.MM.yyyy HH:mm' }}</span>
 
               @if (requestView(view); as rv) {
